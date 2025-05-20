@@ -6,6 +6,7 @@ import {
   useGetOverviewBucketedPastMinutes,
 } from "@/api/analytics/useGetOverviewBucketed";
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
+import { usePageMetadata } from "@/api/usePageMetadata";
 import { Card, CardContent } from "@/components/ui/card";
 import { Filter, useStore } from "@/lib/store";
 import { truncateString } from "@/lib/utils";
@@ -27,6 +28,7 @@ export function PageListItem({
   isLoading = false,
 }: PageListItemProps) {
   const [isHovering, setIsHovering] = useState(false);
+  const [thumbnailError, setThumbnailError] = useState(false);
   const { data: siteMetadata } = useGetSite();
   const { site, time, bucket } = useStore(); // Get time and bucket from store
 
@@ -73,6 +75,22 @@ export function PageListItem({
     ? `https://${siteMetadata.domain}${pageData.value}`
     : "";
 
+  // Fetch page metadata using TanStack Query
+  const {
+    data: metadata,
+    isLoading: isLoadingMetadata,
+    isError: isMetadataError,
+  } = usePageMetadata(pageUrl);
+
+  // Get thumbnail URL from metadata
+  const thumbnailUrl =
+    !thumbnailError && !isMetadataError ? metadata?.image : null;
+
+  // Handle image error
+  const handleImageError = () => {
+    setThumbnailError(true);
+  };
+
   return (
     <Card
       className="w-full mb-3"
@@ -81,29 +99,42 @@ export function PageListItem({
     >
       <CardContent className="p-4">
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
-          {/* Left side: Page title/path */}
-          <div className="flex-1 min-w-0">
-            <div className="flex items-center gap-2">
-              <h3 className="text-lg font-medium truncate">
-                {truncateString(
-                  pageData.title || pageData.value,
-                  MAX_TITLE_LENGTH
+          {/* Left side: Page title/path with thumbnail */}
+          <div className="flex gap-3 flex-1 min-w-0">
+            {thumbnailUrl && !isLoadingMetadata && (
+              <div className="hidden sm:block flex-shrink-0 h-16 w-24 relative rounded-md overflow-hidden border border-neutral-800">
+                <img
+                  src={thumbnailUrl}
+                  alt={`Thumbnail for ${pageData.title || pageData.value}`}
+                  className="w-full h-full object-cover"
+                  onError={handleImageError}
+                />
+              </div>
+            )}
+
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h3 className="text-lg font-medium truncate">
+                  {truncateString(
+                    pageData.title || pageData.value,
+                    MAX_TITLE_LENGTH
+                  )}
+                </h3>
+                {pageUrl && (
+                  <Link
+                    href={pageUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-muted-foreground hover:text-primary"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Link>
                 )}
-              </h3>
-              {pageUrl && (
-                <Link
-                  href={pageUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-muted-foreground hover:text-primary"
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Link>
-              )}
+              </div>
+              <p className="text-sm text-muted-foreground truncate">
+                {pageData.value}
+              </p>
             </div>
-            <p className="text-sm text-muted-foreground truncate">
-              {pageData.value}
-            </p>
           </div>
 
           {/* Right side: Sparkline chart and session count */}
