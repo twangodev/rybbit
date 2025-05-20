@@ -1,20 +1,18 @@
 "use client";
 
 import { useGetSite } from "@/api/admin/sites";
-import { Card, CardContent } from "@/components/ui/card";
-import { truncateString } from "@/lib/utils";
-import { useState } from "react";
-import { Filter, useStore } from "@/lib/store";
 import {
   useGetOverviewBucketed,
   useGetOverviewBucketedPastMinutes,
 } from "@/api/analytics/useGetOverviewBucketed";
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
-import { ResponsiveLine } from "@nivo/line";
-import { nivoTheme } from "@/lib/nivo";
-import { DateTime } from "luxon";
-import Link from "next/link";
+import { Card, CardContent } from "@/components/ui/card";
+import { Filter, useStore } from "@/lib/store";
+import { truncateString } from "@/lib/utils";
 import { ExternalLink } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
+import { PageSparklineChart } from "./PageSparklineChart";
 
 // Maximum length for page titles
 const MAX_TITLE_LENGTH = 70;
@@ -70,17 +68,6 @@ export function PageListItem({
     ? isLoadingPastMinutes
     : isLoadingRegular;
 
-  // Format the chart data
-  const sparklineData = pageTrafficData?.data
-    ?.filter((e: any) => {
-      // Filter out dates from the future
-      return DateTime.fromSQL(e.time).toUTC() <= DateTime.now();
-    })
-    .map((e: any) => ({
-      x: DateTime.fromSQL(e.time).toUTC().toFormat("yyyy-MM-dd HH:mm:ss"),
-      y: e.sessions || 0,
-    }));
-
   // External URL for the page
   const pageUrl = siteMetadata?.domain
     ? `https://${siteMetadata.domain}${pageData.value}`
@@ -123,70 +110,12 @@ export function PageListItem({
           <div className="flex items-center gap-6 w-full md:w-auto">
             {/* Sparkline chart */}
             <div className="h-16 w-48">
-              {isLoadingTrafficData ? (
-                <div className="h-full w-full flex items-center justify-center animate-pulse">
-                  <div className="h-[1px] w-full bg-border opacity-50"></div>
-                </div>
-              ) : sparklineData && sparklineData.length > 0 ? (
-                <ResponsiveLine
-                  data={[{ id: pageData.value, data: sparklineData }]}
-                  theme={nivoTheme}
-                  margin={{ top: 5, right: 0, bottom: 0, left: 0 }}
-                  xScale={{
-                    type: "time",
-                    format: "%Y-%m-%d %H:%M:%S",
-                    precision: "second",
-                    useUTC: true,
-                  }}
-                  yScale={{
-                    type: "linear",
-                    min: 0,
-                    stacked: false,
-                    reverse: false,
-                  }}
-                  enableGridX={false}
-                  enableGridY={false}
-                  axisTop={null}
-                  axisRight={null}
-                  axisBottom={null}
-                  axisLeft={null}
-                  enableTouchCrosshair={true}
-                  enablePoints={false}
-                  useMesh={true}
-                  animate={false}
-                  enableSlices={"x"}
-                  colors={[
-                    isHovering
-                      ? "hsl(var(--dataviz-2))"
-                      : "hsl(var(--dataviz))",
-                  ]}
-                  enableArea={true}
-                  areaBaselineValue={0}
-                  areaOpacity={0.3}
-                  curve="monotoneX"
-                  defs={[
-                    {
-                      id: "gradient",
-                      type: "linearGradient",
-                      colors: [
-                        { offset: 0, color: "hsl(var(--dataviz))", opacity: 1 },
-                        {
-                          offset: 100,
-                          color: "hsl(var(--dataviz))",
-                          opacity: 0,
-                        },
-                      ],
-                    },
-                  ]}
-                  fill={[{ match: () => true, id: "gradient" }]}
-                  sliceTooltip={() => null}
-                  enableCrosshair={false}
-                />
-              ) : (
-                <div className="h-full w-full flex items-center justify-center">
-                  <div className="h-[1px] w-full bg-border opacity-50"></div>
-                </div>
-              )}
+              <PageSparklineChart
+                data={pageTrafficData}
+                isHovering={isHovering}
+                pageTitle={pageData.title || pageData.value}
+                isLoading={isLoadingTrafficData}
+              />
             </div>
 
             {/* Session count */}

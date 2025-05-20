@@ -55,6 +55,9 @@ export default function Pages() {
   const pagesDataArray: PageTitleItem[] | undefined = apiResponse?.data?.data;
   const totalCount: number | undefined = apiResponse?.data?.totalCount;
 
+  // Determine if we should show the loading state - show skeleton for ANY loading or fetching
+  const isLoading = isLoadingPages || isFetching;
+
   useEffect(() => {
     if (!isLoadingPages && !isPlaceholderData && !isFetching) {
       if (totalCount !== undefined) {
@@ -105,54 +108,45 @@ export default function Pages() {
     <div className="p-2 md:p-4 max-w-[1100px] mx-auto space-y-3">
       <SubHeader />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>All Pages</CardTitle>
-          <CardDescription>
-            Overview of your website's pages, sorted by session count
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {
-            (isLoadingPages || (isFetching && !pagesDataArray)) &&
-            currentPage === 1 ? (
-              <PageListSkeleton count={PAGE_SIZE} />
-            ) : isErrorPages ? (
-              <div className="text-center p-8 text-destructive">
-                <p>Error loading pages data</p>
-                <p className="text-sm">{pagesError?.toString()}</p>
-              </div>
-            ) : pagesDataArray && pagesDataArray.length > 0 ? (
-              <>
-                {pagesDataArray.map(
-                  (pageItem: PageTitleItem, index: number) => (
-                    <PageListItem
-                      key={`${pageItem.value}-${index}-${currentPage}`}
-                      pageData={{
-                        value: pageItem.pathname,
-                        title: pageItem.value,
-                        count: pageItem.count,
-                        percentage: pageItem.percentage,
-                      }}
-                    />
-                  )
-                )}
-                {totalPages > 0 && (
-                  <Pagination
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                  />
-                )}
-              </>
-            ) : !isLoadingPages && !isFetching ? ( // Only show "No pages" if not loading
-              <div className="text-center py-12 text-muted-foreground">
-                <p>No pages data found for the selected period.</p>
-              </div>
-            ) : null // Otherwise, render nothing (or a minimal loader if preferred while subsequent pages load)
-          }
-        </CardContent>
-      </Card>
+      {/* <CardTitle>All Pages</CardTitle>
+      <CardDescription>
+        Overview of your website's pages, sorted by session count
+      </CardDescription> */}
+      {
+        isLoading ? (
+          <PageListSkeleton count={PAGE_SIZE} />
+        ) : isErrorPages ? (
+          <div className="text-center p-8 text-destructive">
+            <p>Error loading pages data</p>
+            <p className="text-sm">{pagesError?.toString()}</p>
+          </div>
+        ) : pagesDataArray && pagesDataArray.length > 0 ? (
+          <>
+            {pagesDataArray.map((pageItem: PageTitleItem, index: number) => (
+              <PageListItem
+                key={`${pageItem.value}-${index}-${currentPage}`}
+                pageData={{
+                  value: pageItem.pathname,
+                  title: pageItem.value,
+                  count: pageItem.count,
+                  percentage: pageItem.percentage,
+                }}
+              />
+            ))}
+            {totalPages > 0 && (
+              <Pagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            )}
+          </>
+        ) : !isLoadingPages && !isFetching ? ( // Only show "No pages" if not loading
+          <div className="text-center py-12 text-muted-foreground">
+            <p>No pages data found for the selected period.</p>
+          </div>
+        ) : null // Otherwise, render nothing (or a minimal loader if preferred while subsequent pages load)
+      }
     </div>
   );
 }
