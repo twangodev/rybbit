@@ -3,7 +3,6 @@ import clickhouse from "../../db/clickhouse/clickhouse.js";
 import { getUserHasAccessToSitePublic } from "../../lib/auth-utils.js";
 import {
   getFilterStatement,
-  // getSqlParam, // page_title is a direct column name
   getTimeStatement,
   processResults,
 } from "./utils.js";
@@ -19,7 +18,7 @@ interface GetPageTitlesRequest {
     timeZone: string;
     filters: string;
     limit?: number;
-    offset?: number; // For potential future full pagination
+    offset?: number;
   };
 }
 
@@ -29,7 +28,6 @@ type PageTitleItem = {
   pathname: string; // A representative pathname for this title
   count: number; // Unique sessions or pageviews for this title
   percentage: number;
-  // Potentially other metrics like avg_time_on_page_seconds if grouped by title + pathname
 };
 
 // Structure for paginated response (if/when fully paginated)
