@@ -1,18 +1,19 @@
 "use client";
 
+import { useStore } from "@/lib/store";
+import { Expand } from "lucide-react";
 import { useState } from "react";
+import { useGetSite } from "../../../../../api/admin/sites";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "../../../../../components/ui/basic-tabs";
-import { Card, CardContent } from "../../../../../components/ui/card";
-import { StandardSection } from "../../../components/shared/StandardSection/StandardSection";
-import { useGetSite } from "../../../../../api/admin/sites";
-import { truncateString } from "../../../../../lib/utils";
 import { Button } from "../../../../../components/ui/button";
-import { Expand } from "lucide-react";
+import { Card, CardContent } from "../../../../../components/ui/card";
+import { truncateString } from "../../../../../lib/utils";
+import { StandardSection } from "../../../components/shared/StandardSection/StandardSection";
 
 type Tab = "pages" | "page_title" | "entry_pages" | "exit_pages";
 
@@ -61,14 +62,18 @@ export function Pages() {
           </TabsContent>
           <TabsContent value="page_title">
             <StandardSection
-              filterParameter="pathname"
+              filterParameter="page_title"
               title="Page Title"
               getValue={(e) => e.value}
               getKey={(e) => e.value}
               getLabel={(e) =>
-                truncateString(e?.title ?? "", MAX_LABEL_LENGTH) || "Other"
+                truncateString(e.value, MAX_LABEL_LENGTH) || "Other"
               }
-              getLink={(e) => `https://${siteMetadata?.domain}${e.value}`}
+              // getLink={(e) =>
+              //   e.pathname
+              //     ? `https://${siteMetadata?.domain}${e.pathname}`
+              //     : "#"
+              // }
               expanded={expanded}
               close={close}
             />
@@ -80,7 +85,7 @@ export function Pages() {
               getValue={(e) => e.value}
               getKey={(e) => e.value}
               getLabel={(e) =>
-                truncateString(e?.title ?? "", MAX_LABEL_LENGTH) || "Other"
+                truncateString(e.value, MAX_LABEL_LENGTH) || "Other"
               }
               getLink={(e) => `https://${siteMetadata?.domain}${e.value}`}
               expanded={expanded}

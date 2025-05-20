@@ -9,7 +9,8 @@ import {
   Rewind,
   Settings,
   Split,
-  User
+  User,
+  File,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -52,6 +53,12 @@ export function Sidebar() {
           active={isActiveTab("main")}
           href={getTabPath("main")}
           icon={<LayoutDashboard className="w-4 h-4" />}
+        />
+        <SidebarLink
+          label="Pages"
+          active={isActiveTab("pages")}
+          href={getTabPath("pages")}
+          icon={<File className="w-4 h-4" />}
         />
         <SidebarLink
           label="Realtime"
@@ -145,7 +152,14 @@ function SidebarLink({
 }) {
   return (
     <Link href={href} className="focus:outline-none">
-      <div className={cn("px-3 py-2 rounded-lg transition-colors w-full", active ? "bg-neutral-800 text-white" : "text-neutral-200 hover:text-white hover:bg-neutral-800/50")}>
+      <div
+        className={cn(
+          "px-3 py-2 rounded-lg transition-colors w-full",
+          active
+            ? "bg-neutral-800 text-white"
+            : "text-neutral-200 hover:text-white hover:bg-neutral-800/50"
+        )}
+      >
         <div className="flex items-center gap-2">
           {icon}
           <span className="text-sm">{label}</span>

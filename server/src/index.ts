@@ -58,6 +58,7 @@ import { handleWebhook } from "./api/stripe/webhook.js";
 import { IS_CLOUD } from "./lib/const.js";
 import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
 import { getConfig } from "./api/getConfig.js";
+import { getPageTitles } from "./api/analytics/getPageTitles.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -133,6 +134,7 @@ const ANALYTICS_ROUTES = [
   "/overview/",
   "/overview-bucketed/",
   "/single-col/",
+  "/page-titles/",
   "/retention/",
   "/site-has-data/",
   "/site-is-public/",
@@ -200,6 +202,7 @@ server.get("/live-user-count/:site", getLiveUsercount);
 server.get("/overview/:site", getOverview);
 server.get("/overview-bucketed/:site", getOverviewBucketed);
 server.get("/single-col/:site", getSingleCol);
+server.get("/page-titles/:site", getPageTitles);
 server.get("/retention/:site", getRetention);
 server.get("/site-has-data/:site", getSiteHasData);
 server.get("/site-is-public/:site", getSiteIsPublic);

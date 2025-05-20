@@ -4,7 +4,7 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { BACKEND_URL } from "../../lib/const";
-import { TimeBucket, useStore } from "../../lib/store";
+import { Filter, TimeBucket, useStore } from "../../lib/store";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { APIResponse } from "../types";
 import { authedFetch, getStartAndEndDate } from "../utils";
@@ -23,38 +23,59 @@ export type GetOverviewBucketedResponse = {
 
 export function useGetOverviewBucketed({
   periodTime,
-  site,
+  site: propSite,
   bucket = "hour",
+  dynamicFilters = [],
   props,
 }: {
   periodTime?: PeriodTime;
   site?: number | string;
   bucket?: TimeBucket;
+  dynamicFilters?: Filter[];
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
-  const { time, previousTime, filters } = useStore();
+  const {
+    time,
+    previousTime,
+    filters: globalFilters,
+    site: storeSite,
+  } = useStore();
+  const siteToUse = propSite !== undefined ? propSite : storeSite;
 
   const timeToUse = periodTime === "previous" ? previousTime : time;
 
   const { startDate, endDate } = getStartAndEndDate(timeToUse);
 
+  const combinedFilters = [...globalFilters, ...dynamicFilters];
+
   return useQuery({
-    queryKey: ["overview-bucketed", timeToUse, bucket, site, filters],
+    queryKey: [
+      "overview-bucketed",
+      timeToUse,
+      bucket,
+      siteToUse,
+      combinedFilters,
+    ],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/overview-bucketed/${site}`, {
+      return authedFetch(`${BACKEND_URL}/overview-bucketed/${siteToUse}`, {
         startDate,
         endDate,
         timeZone,
         bucket,
-        filters,
+        filters: combinedFilters,
       }).then((res) => res.json());
     },
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
-      const prevQueryKey = query.queryKey as [string, string, string];
-      const [, , prevSite] = prevQueryKey;
+      const [, , , prevSite] = query.queryKey as [
+        string,
+        any,
+        TimeBucket,
+        string | number,
+        Filter[]
+      ];
 
-      if (prevSite === site) {
+      if (prevSite === siteToUse) {
         return query.state.data;
       }
       return undefined;
@@ -68,9 +89,10 @@ export function useGetOverviewBucketedPastMinutes({
   pastMinutes = 24 * 60,
   pastMinutesStart,
   pastMinutesEnd,
-  site,
+  site: propSite,
   bucket = "hour",
   refetchInterval,
+  dynamicFilters = [],
   props,
 }: {
   pastMinutes?: number;
@@ -79,11 +101,14 @@ export function useGetOverviewBucketedPastMinutes({
   site?: number | string;
   bucket?: TimeBucket;
   refetchInterval?: number;
+  dynamicFilters?: Filter[];
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
-  const { filters } = useStore();
+  const { filters: globalFilters, site: storeSite } = useStore();
+  const siteToUse = propSite !== undefined ? propSite : storeSite;
 
-  // Determine if we're using a specific range or just pastMinutes
+  const combinedFilters = [...globalFilters, ...dynamicFilters];
+
   const useRange =
     pastMinutesStart !== undefined && pastMinutesEnd !== undefined;
 
@@ -93,37 +118,47 @@ export function useGetOverviewBucketedPastMinutes({
           "overview-bucketed-past-minutes-range",
           pastMinutesStart,
           pastMinutesEnd,
-          site,
+          siteToUse,
           bucket,
-          filters,
+          combinedFilters,
         ]
-      : ["overview-bucketed-past-minutes", pastMinutes, site, bucket, filters],
+      : [
+          "overview-bucketed-past-minutes",
+          pastMinutes,
+          siteToUse,
+          bucket,
+          combinedFilters,
+        ],
     queryFn: () => {
       return authedFetch(
-        `${BACKEND_URL}/overview-bucketed/${site}`,
+        `${BACKEND_URL}/overview-bucketed/${siteToUse}`,
         useRange
           ? {
               timeZone,
               bucket,
               pastMinutesStart,
               pastMinutesEnd,
-              filters,
+              filters: combinedFilters,
             }
           : {
               timeZone,
               bucket,
               pastMinutes,
-              filters,
+              filters: combinedFilters,
             }
       ).then((res) => res.json());
     },
     refetchInterval,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
-      const prevQueryKey = query.queryKey as [string, string, string];
-      const [, , prevSite] = prevQueryKey;
-
-      if (prevSite === site) {
+      const [, , prevSite] = query.queryKey as [
+        string,
+        any,
+        string | number,
+        TimeBucket,
+        Filter[]
+      ];
+      if (prevSite === siteToUse) {
         return query.state.data;
       }
       return undefined;
@@ -138,49 +173,57 @@ export function useGetOverviewBucketedPastMinutes({
  */
 export function useGetOverviewBucketedPreviousPastMinutes({
   pastMinutes = 24 * 60,
-  site,
+  site: propSite,
   bucket = "hour",
   refetchInterval,
+  dynamicFilters = [],
   props,
 }: {
   pastMinutes?: number;
   site?: number | string;
   bucket?: TimeBucket;
   refetchInterval?: number;
+  dynamicFilters?: Filter[];
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
-  const { filters } = useStore();
+  const { filters: globalFilters, site: storeSite } = useStore();
+  const siteToUse = propSite !== undefined ? propSite : storeSite;
 
-  // For the previous period, we use the pastMinutesStart/End approach
-  // If pastMinutes is 24 * 60 (24 hours), then we fetch 24-48 hour data
-  const pastMinutesStart = pastMinutes * 2; // e.g., 48 hours ago
-  const pastMinutesEnd = pastMinutes; // e.g., 24 hours ago
+  const combinedFilters = [...globalFilters, ...dynamicFilters];
+
+  const pastMinutesStartVal = pastMinutes * 2;
+  const pastMinutesEndVal = pastMinutes;
 
   return useQuery({
     queryKey: [
       "overview-bucketed-previous-past-minutes",
-      pastMinutesStart,
-      pastMinutesEnd,
-      site,
+      pastMinutesStartVal,
+      pastMinutesEndVal,
+      siteToUse,
       bucket,
-      filters,
+      combinedFilters,
     ],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/overview-bucketed/${site}`, {
+      return authedFetch(`${BACKEND_URL}/overview-bucketed/${siteToUse}`, {
         timeZone,
         bucket,
-        pastMinutesStart,
-        pastMinutesEnd,
-        filters,
+        pastMinutesStart: pastMinutesStartVal,
+        pastMinutesEnd: pastMinutesEndVal,
+        filters: combinedFilters,
       }).then((res) => res.json());
     },
     refetchInterval,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
-      const prevQueryKey = query.queryKey as [string, string, string];
-      const [, , prevSite] = prevQueryKey;
-
-      if (prevSite === site) {
+      const [, , , prevSite] = query.queryKey as [
+        string,
+        number,
+        number,
+        string | number,
+        TimeBucket,
+        Filter[]
+      ];
+      if (prevSite === siteToUse) {
         return query.state.data;
       }
       return undefined;

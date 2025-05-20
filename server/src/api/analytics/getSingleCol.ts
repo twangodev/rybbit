@@ -21,6 +21,7 @@ interface GenericRequest {
     filters: string;
     parameter: FilterParameter;
     limit?: number;
+    offset?: number;
   };
 }
 
@@ -37,9 +38,38 @@ type GetSingleColResponse = {
   time_on_page_seconds?: number; // avg time on this page when it was an entry/exit
 }[];
 
-const getQuery = (request: FastifyRequest<GenericRequest>) => {
-  const { startDate, endDate, timeZone, filters, parameter, limit, minutes } =
-    request.query;
+// This type represents a single item in the array returned *within* the data property
+type SingleColItem = {
+  value: string;
+  title?: string;
+  pathname?: string;
+  count: number;
+  percentage: number;
+  pageviews?: number;
+  pageviews_percentage?: number;
+  time_on_page_seconds?: number;
+};
+
+// This is the structure the API will now send
+type GetSingleColPaginatedResponse = {
+  data: SingleColItem[];
+  totalCount: number;
+};
+
+const getQuery = (
+  request: FastifyRequest<GenericRequest>,
+  isCountQuery: boolean = false
+) => {
+  const {
+    startDate,
+    endDate,
+    timeZone,
+    filters,
+    parameter,
+    limit,
+    offset,
+    minutes,
+  } = request.query;
 
   const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(
@@ -50,29 +80,49 @@ const getQuery = (request: FastifyRequest<GenericRequest>) => {
         }
   );
 
-  // Validate and sanitize the limit parameter
   let validatedLimit: number | null = null;
-  if (limit !== undefined) {
+  if (!isCountQuery && limit !== undefined) {
     const parsedLimit = parseInt(String(limit), 10);
     if (!isNaN(parsedLimit) && parsedLimit > 0) {
       validatedLimit = parsedLimit;
     }
   }
-  const limitStatement = validatedLimit
-    ? `LIMIT ${validatedLimit}`
-    : "LIMIT 100"; // Default limit
+  const limitStatement =
+    !isCountQuery && validatedLimit
+      ? `LIMIT ${validatedLimit}`
+      : isCountQuery
+        ? ""
+        : "LIMIT 100";
 
-  const percentageStatement = `ROUND(
-          COUNT(distinct(session_id)) * 100.0 / SUM(COUNT(distinct(session_id))) OVER (),
-          2
-      ) as percentage`;
+  let validatedOffset: number | null = null;
+  if (!isCountQuery && offset !== undefined) {
+    const parsedOffset = parseInt(String(offset), 10);
+    if (!isNaN(parsedOffset) && parsedOffset >= 0) {
+      validatedOffset = parsedOffset;
+    }
+  }
+  const offsetStatement =
+    !isCountQuery && validatedOffset ? `OFFSET ${validatedOffset}` : "";
 
   if (parameter === "event_name") {
+    if (isCountQuery) {
+      return `
+      SELECT COUNT(DISTINCT event_name) as totalCount
+      FROM events
+      WHERE
+        site_id = {siteId:Int32}
+        AND event_name IS NOT NULL 
+        AND event_name <> ''
+        ${filterStatement}
+        ${timeStatement}
+        AND type = 'custom_event';
+      `;
+    }
     return `
     SELECT
       event_name as value,
       COUNT(*) as count,
-      ${percentageStatement}
+      ROUND(COUNT(distinct(session_id)) * 100.0 / SUM(COUNT(distinct(session_id))) OVER (), 2) as percentage
     FROM events
     WHERE
       site_id = {siteId:Int32}
@@ -82,73 +132,166 @@ const getQuery = (request: FastifyRequest<GenericRequest>) => {
       ${timeStatement}
       AND type = 'custom_event'
     GROUP BY event_name ORDER BY count desc
-    ${limitStatement};
+    ${limitStatement}
+    ${offsetStatement};
   `;
+  }
+
+  if (parameter === "page_title") {
+    const corePageTitleLogic = `
+      SELECT
+          page_title as value,
+          argMax(pathname, timestamp) as pathname,
+          COUNT(DISTINCT session_id) as unique_sessions
+      FROM events
+      WHERE
+          site_id = {siteId:Int32}
+          AND page_title IS NOT NULL 
+          AND page_title <> ''
+          AND type = 'pageview'
+          ${filterStatement}
+          ${timeStatement}
+      GROUP BY page_title
+    `;
+
+    if (isCountQuery) {
+      return `SELECT COUNT(*) as totalCount FROM (${corePageTitleLogic});`;
+    }
+
+    return `
+      WITH TitleStats AS (
+        ${corePageTitleLogic}
+      )
+      SELECT
+          value,       -- This is page_title
+          pathname,    -- This is the representative pathname
+          unique_sessions as count,
+          ROUND(
+              unique_sessions * 100.0 / SUM(unique_sessions) OVER (), 
+              2
+          ) as percentage
+      FROM TitleStats
+      ORDER BY count DESC
+      ${limitStatement}
+      ${offsetStatement};
+    `;
   }
 
   if (parameter === "exit_page" || parameter === "entry_page") {
     const isEntry = parameter === "entry_page";
     const orderDirection = isEntry ? "ASC" : "DESC";
-    const rowNumFilter = isEntry ? "row_num = 1" : "row_num = 1"; // Need argMax logic instead if last row needed reliably
+    const rowNumFilter = isEntry ? "row_num = 1" : "row_num = 1";
 
-    // For exit page, row_number() might not be the most robust if events aren't perfectly ordered.
-    // argMax(timestamp) per session might be better but makes getting the time_diff harder.
-    // Sticking with row_number for now, assuming reasonable ordering.
+    const baseCteQuery = `
+      RelevantEvents AS (
+          SELECT *
+          FROM events
+          WHERE
+              site_id = {siteId:Int32}
+              AND type = 'pageview'
+              ${filterStatement}
+              ${timeStatement}
+      ),
+      EventTimes AS (
+          SELECT
+              session_id,
+              pathname,
+              timestamp,
+              leadInFrame(timestamp) OVER (PARTITION BY session_id ORDER BY timestamp ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) as next_timestamp,
+              row_number() OVER (PARTITION BY session_id ORDER BY timestamp ${orderDirection}) as row_num
+          FROM RelevantEvents
+      ),
+      PageDurations AS (
+          SELECT
+              session_id,
+              pathname,
+              timestamp,
+              next_timestamp,
+              row_num,
+              if(isNull(next_timestamp), 0, dateDiff('second', timestamp, next_timestamp)) as time_diff_seconds
+          FROM EventTimes
+      ),
+      FilteredDurations AS (
+          SELECT *
+          FROM PageDurations
+          WHERE ${rowNumFilter}
+      ),
+      PathStats AS (
+          SELECT
+              pathname,
+              count(DISTINCT session_id) as unique_sessions,
+              count() as visits,
+              avg(if(time_diff_seconds < 0, 0, if(time_diff_seconds > 1800, 1800, time_diff_seconds))) as avg_time_on_page_seconds
+          FROM FilteredDurations
+          WHERE pathname IS NOT NULL AND pathname <> ''
+          GROUP BY pathname
+      )
+    `;
+
+    if (isCountQuery) {
+      return `
+      WITH ${baseCteQuery}
+      SELECT COUNT(DISTINCT pathname) as totalCount FROM PathStats;
+      `;
+    }
 
     return `
-    WITH RelevantEvents AS (
-        -- Select all pageview events matching filters and time range
-        SELECT *
-        FROM events
-        WHERE
+    WITH ${baseCteQuery}
+    SELECT
+        pathname as value, 
+        unique_sessions as count,
+        round((unique_sessions / sum(unique_sessions) OVER ()) * 100, 2) as percentage,
+        visits as pageviews,
+        round((visits / sum(visits) OVER ()) * 100, 2) as pageviews_percentage,
+        avg_time_on_page_seconds as time_on_page_seconds
+    FROM PathStats
+    ORDER BY unique_sessions DESC
+    ${limitStatement}
+    ${offsetStatement};`;
+  }
+
+  if (parameter === "pathname") {
+    const baseCteQuery = `
+      EventTimes AS (
+          SELECT
+              session_id,
+              pathname,
+              timestamp,
+              leadInFrame(timestamp) OVER (PARTITION BY session_id ORDER BY timestamp ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) as next_timestamp
+          FROM events
+          WHERE 
             site_id = {siteId:Int32}
             AND type = 'pageview'
             ${filterStatement}
             ${timeStatement}
-    ),
-    EventTimes AS (
-        -- Calculate next timestamp within each session for duration calculation
-        SELECT
-            session_id,
-            pathname,
-            timestamp,
-            leadInFrame(timestamp) OVER (PARTITION BY session_id ORDER BY timestamp ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) as next_timestamp,
-            -- Assign row number to identify first/last event per session
-            row_number() OVER (PARTITION BY session_id ORDER BY timestamp ${orderDirection}) as row_num
-        FROM RelevantEvents
-    ),
-    PageDurations AS (
-        -- Calculate duration for each pageview and keep row number
-        SELECT
-            session_id,
-            pathname,
-            timestamp,
-            next_timestamp,
-            row_num,
-            if(isNull(next_timestamp), 0, dateDiff('second', timestamp, next_timestamp)) as time_diff_seconds
-        FROM EventTimes
-    ),
-    FilteredDurations AS (
-        -- Filter durations to only include the entry or exit event
-        SELECT *
-        FROM PageDurations
-        WHERE ${rowNumFilter}
-    ),
-    PathStats AS (
-        -- Aggregate stats for the filtered entry/exit pages
-        SELECT
-            pathname,
-            -- Count distinct sessions where this path was entry/exit
-            count(DISTINCT session_id) as unique_sessions,
-            -- Count pageviews for this path when it was entry/exit (should be same as unique_sessions here)
-            count() as visits,
-            -- Calculate average time spent on this page when it was the entry/exit page
-            avg(if(time_diff_seconds < 0, 0, if(time_diff_seconds > 1800, 1800, time_diff_seconds))) as avg_time_on_page_seconds
-        FROM FilteredDurations
-        WHERE pathname IS NOT NULL AND pathname <> ''
-        GROUP BY pathname
-    )
-    -- Final selection with percentages
+      ),
+      PageDurations AS (
+          SELECT
+              session_id,
+              pathname,
+              timestamp,
+              next_timestamp,
+              if(isNull(next_timestamp), 0, dateDiff('second', timestamp, next_timestamp)) as time_diff_seconds
+          FROM EventTimes
+      ),
+      PathStats AS (
+          SELECT
+              pathname,
+              count() as visits,
+              count(DISTINCT session_id) as unique_sessions,
+              avg(if(time_diff_seconds < 0, 0, if(time_diff_seconds > 1800, 1800, time_diff_seconds))) as avg_time_on_page_seconds
+          FROM PageDurations
+          GROUP BY pathname
+      )
+    `;
+    if (isCountQuery) {
+      return `
+      WITH ${baseCteQuery}
+      SELECT COUNT(DISTINCT pathname) as totalCount FROM PathStats;
+      `;
+    }
+    return `
+    WITH ${baseCteQuery}
     SELECT
         pathname as value,
         unique_sessions as count,
@@ -158,73 +301,39 @@ const getQuery = (request: FastifyRequest<GenericRequest>) => {
         avg_time_on_page_seconds as time_on_page_seconds
     FROM PathStats
     ORDER BY unique_sessions DESC
-    ${limitStatement};`;
+    ${limitStatement}
+    ${offsetStatement};
+    `;
   }
 
-  if (parameter === "pathname") {
+  // Default case for other parameters
+  const sqlParam = getSqlParam(parameter);
+  if (isCountQuery) {
     return `
-    WITH EventTimes AS (
-        SELECT
-            session_id,
-            pathname,
-            page_title,
-            timestamp,
-            leadInFrame(timestamp) OVER (PARTITION BY session_id ORDER BY timestamp ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) as next_timestamp
-        FROM events
-        WHERE 
-          site_id = {siteId:Int32}
-          AND type = 'pageview'
-          ${filterStatement}
-          ${timeStatement}
-    ),
-    PageDurations AS (
-        SELECT
-            session_id,
-            pathname,
-            page_title,
-            timestamp,
-            next_timestamp,
-            if(isNull(next_timestamp), 0, dateDiff('second', timestamp, next_timestamp)) as time_diff_seconds
-        FROM EventTimes
-    ),
-    PathStats AS (
-        SELECT
-            pathname,
-            page_title,
-            count() as visits,
-            count(DISTINCT session_id) as unique_sessions,
-            avg(if(time_diff_seconds < 0, 0, if(time_diff_seconds > 1800, 1800, time_diff_seconds))) as avg_time_on_page_seconds
-        FROM PageDurations
-        GROUP BY pathname, page_title
-    )
-    SELECT
-        pathname as value,
-        page_title as title,
-        unique_sessions as count,
-        round((unique_sessions / sum(unique_sessions) OVER ()) * 100, 2) as percentage,
-        visits as pageviews,
-        round((visits / sum(visits) OVER ()) * 100, 2) as pageviews_percentage,
-        avg_time_on_page_seconds as time_on_page_seconds
-    FROM PathStats
-    ORDER BY unique_sessions DESC
-    ${limitStatement};
+    SELECT COUNT(DISTINCT ${sqlParam}) as totalCount
+    FROM events
+    WHERE
+        site_id = {siteId:Int32}
+        AND ${sqlParam} IS NOT NULL
+        AND ${sqlParam} <> ''
+        ${filterStatement}
+        ${timeStatement};
     `;
   }
 
   return `
     WITH PageStats AS (
       SELECT
-        ${getSqlParam(parameter)} as value,
+        ${sqlParam} as value,
         COUNT(distinct(session_id)) as unique_sessions,
         COUNT() as pageviews
       FROM events
       WHERE
           site_id = {siteId:Int32}
-          AND ${getSqlParam(parameter)} IS NOT NULL
-          AND ${getSqlParam(parameter)} <> ''
+          AND ${sqlParam} IS NOT NULL
+          AND ${sqlParam} <> ''
           ${filterStatement}
           ${timeStatement}
-          // AND type = 'pageview'
       GROUP BY value
     )
     SELECT
@@ -235,7 +344,8 @@ const getQuery = (request: FastifyRequest<GenericRequest>) => {
       round((pageviews / sum(pageviews) OVER ()) * 100, 2) as pageviews_percentage
     FROM PageStats
     ORDER BY count desc
-    ${limitStatement};
+    ${limitStatement}
+    ${offsetStatement};
   `;
 };
 
@@ -243,7 +353,7 @@ export async function getSingleCol(
   req: FastifyRequest<GenericRequest>,
   res: FastifyReply
 ) {
-  const { parameter } = req.query;
+  const { parameter, offset, limit } = req.query;
   const site = req.params.site;
 
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
@@ -251,23 +361,45 @@ export async function getSingleCol(
     return res.status(403).send({ error: "Forbidden" });
   }
 
-  const query = getQuery(req);
+  const isPaginatedRequest = offset !== undefined;
+
+  const dataQuery = getQuery(req, false);
 
   try {
-    const result = await clickhouse.query({
-      query,
+    const dataResult = await clickhouse.query({
+      query: dataQuery,
       format: "JSONEachRow",
       query_params: {
         siteId: Number(site),
       },
     });
+    const items = await processResults<SingleColItem>(dataResult);
 
-    const data = await processResults<GetSingleColResponse[number]>(result);
-    return res.send({ data });
+    if (isPaginatedRequest) {
+      const countQuery = getQuery(req, true);
+      const countResult = await clickhouse.query({
+        query: countQuery,
+        format: "JSONEachRow",
+        query_params: {
+          siteId: Number(site),
+        },
+      });
+      const countData = await processResults<{ totalCount: number }>(
+        countResult
+      );
+      const totalCount = countData.length > 0 ? countData[0].totalCount : 0;
+
+      return res.send({ data: { data: items, totalCount } });
+    } else {
+      return res.send({ data: items });
+    }
   } catch (error) {
     console.error(`Error fetching ${parameter}:`, error);
-    // Add query to error log for easier debugging
-    console.error("Failed query:", query);
+    console.error("Failed dataQuery:", dataQuery);
+    if (isPaginatedRequest) {
+      const countQuery = getQuery(req, true);
+      console.error("Failed countQuery:", countQuery);
+    }
     return res.status(500).send({ error: `Failed to fetch ${parameter}` });
   }
 }
