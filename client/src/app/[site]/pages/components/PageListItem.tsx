@@ -36,8 +36,8 @@ export function PageListItem({
 
   // Create a pathname filter for this specific page
   const pageSpecificFilter: Filter = {
-    parameter: "pathname",
-    value: [pageData.value],
+    parameter: "page_title",
+    value: [pageData.title ?? ""],
     type: "equals",
   };
 
