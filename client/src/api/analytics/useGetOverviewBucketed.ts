@@ -23,24 +23,18 @@ export type GetOverviewBucketedResponse = {
 
 export function useGetOverviewBucketed({
   periodTime,
-  site: propSite,
+  site,
   bucket = "hour",
   dynamicFilters = [],
   props,
 }: {
   periodTime?: PeriodTime;
-  site?: number | string;
+  site: number | string;
   bucket?: TimeBucket;
   dynamicFilters?: Filter[];
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
-  const {
-    time,
-    previousTime,
-    filters: globalFilters,
-    site: storeSite,
-  } = useStore();
-  const siteToUse = propSite !== undefined ? propSite : storeSite;
+  const { time, previousTime, filters: globalFilters } = useStore();
 
   const timeToUse = periodTime === "previous" ? previousTime : time;
 
@@ -49,15 +43,9 @@ export function useGetOverviewBucketed({
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
   return useQuery({
-    queryKey: [
-      "overview-bucketed",
-      timeToUse,
-      bucket,
-      siteToUse,
-      combinedFilters,
-    ],
+    queryKey: ["overview-bucketed", timeToUse, bucket, site, combinedFilters],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/overview-bucketed/${siteToUse}`, {
+      return authedFetch(`${BACKEND_URL}/overview-bucketed/${site}`, {
         startDate,
         endDate,
         timeZone,
@@ -75,7 +63,7 @@ export function useGetOverviewBucketed({
         Filter[]
       ];
 
-      if (prevSite === siteToUse) {
+      if (prevSite === site) {
         return query.state.data;
       }
       return undefined;
@@ -89,7 +77,7 @@ export function useGetOverviewBucketedPastMinutes({
   pastMinutes = 24 * 60,
   pastMinutesStart,
   pastMinutesEnd,
-  site: propSite,
+  site,
   bucket = "hour",
   refetchInterval,
   dynamicFilters = [],
@@ -98,14 +86,13 @@ export function useGetOverviewBucketedPastMinutes({
   pastMinutes?: number;
   pastMinutesStart?: number;
   pastMinutesEnd?: number;
-  site?: number | string;
+  site: number | string;
   bucket?: TimeBucket;
   refetchInterval?: number;
   dynamicFilters?: Filter[];
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
-  const { filters: globalFilters, site: storeSite } = useStore();
-  const siteToUse = propSite !== undefined ? propSite : storeSite;
+  const { filters: globalFilters } = useStore();
 
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
@@ -118,20 +105,20 @@ export function useGetOverviewBucketedPastMinutes({
           "overview-bucketed-past-minutes-range",
           pastMinutesStart,
           pastMinutesEnd,
-          siteToUse,
+          site,
           bucket,
           combinedFilters,
         ]
       : [
           "overview-bucketed-past-minutes",
           pastMinutes,
-          siteToUse,
+          site,
           bucket,
           combinedFilters,
         ],
     queryFn: () => {
       return authedFetch(
-        `${BACKEND_URL}/overview-bucketed/${siteToUse}`,
+        `${BACKEND_URL}/overview-bucketed/${site}`,
         useRange
           ? {
               timeZone,
@@ -158,7 +145,7 @@ export function useGetOverviewBucketedPastMinutes({
         TimeBucket,
         Filter[]
       ];
-      if (prevSite === siteToUse) {
+      if (prevSite === site) {
         return query.state.data;
       }
       return undefined;
@@ -173,21 +160,20 @@ export function useGetOverviewBucketedPastMinutes({
  */
 export function useGetOverviewBucketedPreviousPastMinutes({
   pastMinutes = 24 * 60,
-  site: propSite,
+  site,
   bucket = "hour",
   refetchInterval,
   dynamicFilters = [],
   props,
 }: {
   pastMinutes?: number;
-  site?: number | string;
+  site: number | string;
   bucket?: TimeBucket;
   refetchInterval?: number;
   dynamicFilters?: Filter[];
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
-  const { filters: globalFilters, site: storeSite } = useStore();
-  const siteToUse = propSite !== undefined ? propSite : storeSite;
+  const { filters: globalFilters } = useStore();
 
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
@@ -199,12 +185,12 @@ export function useGetOverviewBucketedPreviousPastMinutes({
       "overview-bucketed-previous-past-minutes",
       pastMinutesStartVal,
       pastMinutesEndVal,
-      siteToUse,
+      site,
       bucket,
       combinedFilters,
     ],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/overview-bucketed/${siteToUse}`, {
+      return authedFetch(`${BACKEND_URL}/overview-bucketed/${site}`, {
         timeZone,
         bucket,
         pastMinutesStart: pastMinutesStartVal,
@@ -223,7 +209,7 @@ export function useGetOverviewBucketedPreviousPastMinutes({
         TimeBucket,
         Filter[]
       ];
-      if (prevSite === siteToUse) {
+      if (prevSite === site) {
         return query.state.data;
       }
       return undefined;
