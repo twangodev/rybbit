@@ -9,7 +9,7 @@ import {
   processResults,
 } from "./utils.js";
 
-interface GenericRequest {
+interface GetSingleColRequest {
   Params: {
     site: string;
   };
@@ -21,7 +21,7 @@ interface GenericRequest {
     filters: string;
     parameter: FilterParameter;
     limit?: number;
-    offset?: number;
+    page?: number;
   };
 }
 
@@ -57,7 +57,7 @@ type GetSingleColPaginatedResponse = {
 };
 
 const getQuery = (
-  request: FastifyRequest<GenericRequest>,
+  request: FastifyRequest<GetSingleColRequest>,
   isCountQuery: boolean = false
 ) => {
   const {
@@ -67,7 +67,7 @@ const getQuery = (
     filters,
     parameter,
     limit,
-    offset,
+    page,
     minutes,
   } = request.query;
 
@@ -95,10 +95,11 @@ const getQuery = (
         : "LIMIT 100";
 
   let validatedOffset: number | null = null;
-  if (!isCountQuery && offset !== undefined) {
-    const parsedOffset = parseInt(String(offset), 10);
-    if (!isNaN(parsedOffset) && parsedOffset >= 0) {
-      validatedOffset = parsedOffset;
+  if (!isCountQuery && page !== undefined) {
+    const parsedPage = parseInt(String(page), 10);
+    if (!isNaN(parsedPage) && parsedPage >= 1) {
+      const pageOffset = (parsedPage - 1) * (validatedLimit || 100);
+      validatedOffset = pageOffset;
     }
   }
   const offsetStatement =
@@ -350,10 +351,10 @@ const getQuery = (
 };
 
 export async function getSingleCol(
-  req: FastifyRequest<GenericRequest>,
+  req: FastifyRequest<GetSingleColRequest>,
   res: FastifyReply
 ) {
-  const { parameter, offset, limit } = req.query;
+  const { parameter, page, limit } = req.query;
   const site = req.params.site;
 
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
@@ -361,7 +362,7 @@ export async function getSingleCol(
     return res.status(403).send({ error: "Forbidden" });
   }
 
-  const isPaginatedRequest = offset !== undefined;
+  const isPaginatedRequest = page !== undefined;
 
   const dataQuery = getQuery(req, false);
 
@@ -375,24 +376,18 @@ export async function getSingleCol(
     });
     const items = await processResults<SingleColItem>(dataResult);
 
-    if (isPaginatedRequest) {
-      const countQuery = getQuery(req, true);
-      const countResult = await clickhouse.query({
-        query: countQuery,
-        format: "JSONEachRow",
-        query_params: {
-          siteId: Number(site),
-        },
-      });
-      const countData = await processResults<{ totalCount: number }>(
-        countResult
-      );
-      const totalCount = countData.length > 0 ? countData[0].totalCount : 0;
+    const countQuery = getQuery(req, true);
+    const countResult = await clickhouse.query({
+      query: countQuery,
+      format: "JSONEachRow",
+      query_params: {
+        siteId: Number(site),
+      },
+    });
+    const countData = await processResults<{ totalCount: number }>(countResult);
+    const totalCount = countData.length > 0 ? countData[0].totalCount : 0;
 
-      return res.send({ data: { data: items, totalCount } });
-    } else {
-      return res.send({ data: items });
-    }
+    return res.send({ data: { data: items, totalCount } });
   } catch (error) {
     console.error(`Error fetching ${parameter}:`, error);
     console.error("Failed dataQuery:", dataQuery);

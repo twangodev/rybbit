@@ -1,13 +1,15 @@
 "use client";
 
-import { ReactNode, useMemo } from "react";
-import {
-  SingleColResponse,
-  useSingleCol,
-} from "../../../../../api/analytics/useSingleCol";
-import { FilterParameter } from "../../../../../lib/store";
-import { BaseStandardSection } from "./BaseStandardSection";
+import { Button } from "@/components/ui/button";
+import { AlertCircle, Info, RefreshCcw } from "lucide-react";
+import { ReactNode } from "react";
+import { usePaginatedSingleCol } from "../../../../../api/analytics/usePaginatedSingleCol";
+import { SingleColResponse } from "../../../../../api/analytics/useSingleCol";
 import { CardLoader } from "../../../../../components/ui/card";
+import { FilterParameter } from "../../../../../lib/store";
+import { BaseStandardSectionDialog } from "./BaseStandardSectionDialog";
+import { Row } from "./Row";
+import { Skeleton } from "./Skeleton";
 
 export function StandardSection({
   title,
@@ -32,30 +34,25 @@ export function StandardSection({
   expanded: boolean;
   close: () => void;
 }) {
-  const { data, isLoading, isFetching, error, refetch } = useSingleCol({
+  const {
+    data: paginatedResponse,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+  } = usePaginatedSingleCol({
     parameter: filterParameter,
+    limit: 10,
+    page: 1,
   });
 
-  // const {
-  //   data: previousData,
-  //   isLoading: previousIsLoading,
-  //   isFetching: previousIsFetching,
-  // } = useSingleCol({
-  //   parameter: filterParameter,
-  //   periodTime: "previous",
-  // });
+  console.log(paginatedResponse);
 
-  // Create combined loading state
-  const loading = isLoading;
-  // const loading = isLoading || previousIsLoading;
+  const itemsForDisplay = paginatedResponse?.data;
 
-  // For potential additional features that use previous data
-  // const previousDataMap = useMemo(() => {
-  //   return previousData?.data?.reduce((acc, curr) => {
-  //     acc[getKey(curr)] = curr;
-  //     return acc;
-  //   }, {} as Record<string, SingleColResponse>);
-  // }, [previousData, getKey]);
+  const ratio = itemsForDisplay?.[0]?.percentage
+    ? 100 / itemsForDisplay[0].percentage
+    : 1;
 
   return (
     <>
@@ -64,22 +61,77 @@ export function StandardSection({
           <CardLoader />
         </div>
       )}
-      <BaseStandardSection
-        title={title}
-        data={data}
-        isLoading={loading}
-        error={error}
-        refetch={refetch}
-        getKey={getKey}
-        getLabel={getLabel}
-        getValue={getValue}
-        getFilterLabel={getFilterLabel}
-        getLink={getLink}
-        countLabel={countLabel}
-        filterParameter={filterParameter}
-        expanded={expanded}
-        close={close}
-      />
+      <div className="flex flex-col gap-2">
+        {isLoading ? (
+          <Skeleton />
+        ) : error ? (
+          <div className="py-6 flex-1 flex flex-col items-center justify-center gap-3 transition-all">
+            <AlertCircle className="text-amber-400 w-8 h-8" />
+            <div className="text-center">
+              <div className="text-neutral-100 font-medium mb-1">
+                Failed to load data
+              </div>
+              <div className="text-sm text-neutral-400 max-w-md mx-auto mb-3">
+                {error.message || "An error occurred while fetching data"}
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              className="bg-transparent hover:bg-neutral-800 border-neutral-700 text-neutral-300 hover:text-neutral-100"
+              onClick={() => refetch()}
+            >
+              <RefreshCcw className="w-3 h-3" /> Try Again
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-col gap-2">
+            <div className="flex flex-row gap-2 justify-between pr-1 text-xs text-neutral-400">
+              <div>{title}</div>
+              <div>{countLabel || "Sessions"}</div>
+            </div>
+            {itemsForDisplay?.length ? (
+              itemsForDisplay
+                .slice(0, 10)
+                .map((e) => (
+                  <Row
+                    key={getKey(e)}
+                    e={e}
+                    ratio={ratio}
+                    getKey={getKey}
+                    getLabel={getLabel}
+                    getValue={getValue}
+                    getLink={getLink}
+                    filterParameter={filterParameter}
+                  />
+                ))
+            ) : (
+              <div className="text-neutral-300 w-full text-center mt-6 flex flex-row gap-2 items-center justify-center">
+                <Info className="w-5 h-5" />
+                No Data
+              </div>
+            )}
+          </div>
+        )}
+        {!isLoading && !error && itemsForDisplay?.length ? (
+          <div className="flex flex-row gap-2 justify-between items-center">
+            <BaseStandardSectionDialog
+              title={title}
+              data={itemsForDisplay}
+              ratio={ratio}
+              getKey={getKey}
+              getLabel={getLabel}
+              getValue={getValue}
+              getFilterLabel={getFilterLabel}
+              getLink={getLink}
+              countLabel={countLabel}
+              filterParameter={filterParameter}
+              expanded={expanded}
+              close={close}
+            />
+          </div>
+        ) : null}
+      </div>
     </>
   );
 }

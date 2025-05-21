@@ -26,7 +26,7 @@ export type PageTitlesStandardResponse = PageTitleItem[];
 
 type UseGetPageTitlesOptions = {
   limit?: number;
-  offset?: number;
+  page?: number;
   useFilters?: boolean;
   // No specific 'parameter' needed as this hook is for page_titles
 };
@@ -34,7 +34,7 @@ type UseGetPageTitlesOptions = {
 // Hook for paginated fetching (e.g., for a dedicated "All Page Titles" screen)
 export function useGetPageTitlesPaginated({
   limit = 10,
-  offset = 0,
+  page = 1,
   useFilters = true,
 }: UseGetPageTitlesOptions): UseQueryResult<
   APIResponse<PageTitlesPaginatedResponse>
@@ -51,7 +51,7 @@ export function useGetPageTitlesPaginated({
         timeZone: timeZone,
         minutes: 24 * 60, // 24 hours in minutes
         limit,
-        offset,
+        page,
         filters: useFilters ? filters : undefined,
       }
     : {
@@ -59,7 +59,7 @@ export function useGetPageTitlesPaginated({
         ...getStartAndEndDate(time),
         timeZone: timeZone,
         limit,
-        offset,
+        page,
         filters: useFilters ? filters : undefined,
       };
 
@@ -70,7 +70,7 @@ export function useGetPageTitlesPaginated({
       site,
       filters,
       limit,
-      offset,
+      page,
       isPast24HoursMode ? "past-minutes" : "date-range",
     ],
     queryFn: () => {

@@ -1,19 +1,17 @@
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { FilterParameter, useStore } from "@/lib/store";
-import { timeZone } from "@/lib/dateTimeUtils";
-import { APIResponse } from "@/api/types";
-import { BACKEND_URL } from "@/lib/const";
-import { getStartAndEndDate, authedFetch } from "@/api/utils";
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
+import { authedFetch, getStartAndEndDate } from "@/api/utils";
+import { BACKEND_URL } from "@/lib/const";
+import { timeZone } from "@/lib/dateTimeUtils";
+import { FilterParameter, useStore } from "@/lib/store";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 type UsePaginatedSingleColOptions = {
   parameter: FilterParameter;
   limit?: number;
-  offset?: number;
+  page?: number;
   useFilters?: boolean;
 };
 
-// Reverted: Backend will now return this structure inside APIResponse.data
 type PaginatedResponse = {
   data: SingleColResponse[];
   totalCount: number;
@@ -22,11 +20,9 @@ type PaginatedResponse = {
 export function usePaginatedSingleCol({
   parameter,
   limit = 10,
-  offset = 0,
+  page = 1,
   useFilters = true,
-}: UsePaginatedSingleColOptions): UseQueryResult<
-  APIResponse<PaginatedResponse> // Adjusted return type back
-> {
+}: UsePaginatedSingleColOptions): UseQueryResult<PaginatedResponse> {
   const { time, site, filters } = useStore();
 
   // Determine the query parameters based on mode
@@ -35,7 +31,7 @@ export function usePaginatedSingleCol({
     timeZone: timeZone,
     parameter,
     limit,
-    offset,
+    page,
     filters: useFilters ? filters : undefined,
   };
 
@@ -46,13 +42,13 @@ export function usePaginatedSingleCol({
       site,
       filters,
       limit,
-      offset,
+      page,
       "paginated-single-col",
     ], // More specific key
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/single-col/${site}`, queryParams).then(
-        (res) => res.json()
-      );
+      return authedFetch(`${BACKEND_URL}/single-col/${site}`, queryParams)
+        .then((res) => res.json())
+        .then(({ data }) => data);
     },
     staleTime: Infinity,
     placeholderData: (_, query: any) => {

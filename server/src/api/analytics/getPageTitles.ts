@@ -18,15 +18,15 @@ interface GetPageTitlesRequest {
     timeZone: string;
     filters: string;
     limit?: number;
-    offset?: number;
+    page?: number;
   };
 }
 
-// Represents a single item in the response
-type PageTitleItem = {
-  value: string; // The page_title itself
-  pathname: string; // A representative pathname for this title
-  count: number; // Unique sessions or pageviews for this title
+// This type represents a single item in the array
+export type PageTitleItem = {
+  value: string;
+  pathname: string;
+  count: number;
   percentage: number;
 };
 
@@ -40,7 +40,7 @@ const getPageTitlesQuery = (
   request: FastifyRequest<GetPageTitlesRequest>,
   isCountQuery: boolean = false
 ) => {
-  const { startDate, endDate, timeZone, filters, limit, offset, minutes } =
+  const { startDate, endDate, timeZone, filters, limit, page, minutes } =
     request.query;
 
   const filterStatement = getFilterStatement(filters);
@@ -68,10 +68,11 @@ const getPageTitlesQuery = (
         : "LIMIT 10";
 
   let validatedOffset: number | null = null;
-  if (!isCountQuery && offset !== undefined) {
-    const parsedOffset = parseInt(String(offset), 10);
-    if (!isNaN(parsedOffset) && parsedOffset >= 0) {
-      validatedOffset = parsedOffset;
+  if (!isCountQuery && page !== undefined) {
+    const parsedPage = parseInt(String(page), 10);
+    if (!isNaN(parsedPage) && parsedPage >= 1) {
+      const pageOffset = (parsedPage - 1) * (validatedLimit || 10);
+      validatedOffset = pageOffset;
     }
   }
   const offsetStatement =
@@ -97,18 +98,11 @@ const getPageTitlesQuery = (
   `;
 
   if (isCountQuery) {
-    return `
-      SELECT COUNT(*) as totalCount FROM (
-        ${coreLogic}
-      );
-    `;
+    return `SELECT COUNT(*) as totalCount FROM (${coreLogic})`;
   }
 
-  // For the data query, we calculate percentages after getting unique_sessions per title
   return `
-    WITH TitleStats AS (
-      ${coreLogic}
-    )
+    WITH PageTitleStats AS (${coreLogic})
     SELECT
         value,
         pathname,
@@ -117,10 +111,10 @@ const getPageTitlesQuery = (
             unique_sessions * 100.0 / SUM(unique_sessions) OVER (), 
             2
         ) as percentage
-    FROM TitleStats
+    FROM PageTitleStats
     ORDER BY count DESC
     ${limitStatement}
-    ${offsetStatement};
+    ${offsetStatement}
   `;
 };
 
@@ -129,14 +123,14 @@ export async function getPageTitles(
   res: FastifyReply
 ) {
   const site = req.params.site;
-  const { offset } = req.query;
+  const { page } = req.query;
 
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
   if (!userHasAccessToSite) {
     return res.status(403).send({ error: "Forbidden" });
   }
 
-  const isPaginatedRequest = offset !== undefined; // True if offset is present
+  const isPaginatedRequest = page !== undefined; // True if page is present
 
   const dataQuery = getPageTitlesQuery(req, false);
 

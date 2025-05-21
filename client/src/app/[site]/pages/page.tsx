@@ -31,8 +31,8 @@ export default function Pages() {
     return null;
   }
 
-  // Calculate offset based on current page
-  const offset = pagination.pageIndex * pagination.pageSize;
+  // Get page number (1-based) from pageIndex (0-based)
+  const pageNumber = pagination.pageIndex + 1;
 
   const {
     data: apiResponse,
@@ -43,7 +43,7 @@ export default function Pages() {
     isFetching,
   } = useGetPageTitlesPaginated({
     limit: pagination.pageSize,
-    offset: offset,
+    page: pageNumber,
   });
 
   const pagesDataArray: PageTitleItem[] | undefined = apiResponse?.data?.data;
@@ -80,7 +80,7 @@ export default function Pages() {
       } else if (
         pagesDataArray &&
         pagesDataArray.length === 0 &&
-        offset === 0
+        pagination.pageIndex === 0
       ) {
         // Fallback if totalCount is somehow undefined but we have an empty array on page 1
         setTotalPages(0);
@@ -108,7 +108,6 @@ export default function Pages() {
     isFetching,
     pagination.pageIndex,
     pagination.pageSize,
-    offset,
   ]);
 
   return (
