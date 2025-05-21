@@ -12,5 +12,6 @@
   <session_log remove="remove"/>
   <part_log remove="remove"/>
   <latency_log remove="remove"/>
+  <!-- for some reason this doesn't work -->
   <processors_profile_log remove="remove"/>
 </clickhouse>

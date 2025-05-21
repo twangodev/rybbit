@@ -73,16 +73,16 @@ const server = Fastify({
   trustProxy: true,
 });
 
-server.register(cors, {
-  origin: (origin, callback) => {
-    if (!origin || allowList.includes(normalizeOrigin(origin))) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"), false);
-    }
-  },
-  credentials: true,
-});
+// server.register(cors, {
+//   origin: (origin, callback) => {
+//     if (!origin || allowList.includes(normalizeOrigin(origin))) {
+//       callback(null, true);
+//     } else {
+//       callback(new Error("Not allowed by CORS"), false);
+//     }
+//   },
+//   credentials: true,
+// });
 
 // Serve static files
 server.register(fastifyStatic, {
