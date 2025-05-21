@@ -1,26 +1,22 @@
 "use client";
 
-import { useMeasure, useWindowSize } from "@uidotdev/usehooks";
-import { Countries } from "../main/components/sections/Countries";
-import { Events } from "../main/components/sections/Events";
-import { Pages } from "../main/components/sections/Pages";
-import { Referrers } from "../main/components/sections/Referrers";
-import { RealtimeChart } from "./RealtimeChart/RealtimeChart";
-import { World } from "./RealtimeGlobe/RealtimeGlobe";
-import { RealtimeEvents } from "./RealtimeEvents/RealtimeEvents";
+import NumberFlow from "@number-flow/react";
+import { useMeasure } from "@uidotdev/usehooks";
+import { useAtom } from "jotai";
 import { useGetLiveUsercount } from "../../../api/analytics/useLiveUserCount";
+import { MobileSidebar } from "../../../components/MobileSidebar";
 import {
   Select,
-  SelectTrigger,
-  SelectItem,
   SelectContent,
+  SelectItem,
+  SelectTrigger,
   SelectValue,
 } from "../../../components/ui/select";
-import { useAtom } from "jotai";
-import { minutesAtom, MinutesType } from "./realtimeStore";
-import NumberFlow from "@number-flow/react";
-import { MobileSidebar } from "../../../components/MobileSidebar";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
+import { RealtimeChart } from "./RealtimeChart/RealtimeChart";
+import { RealtimeEvents } from "./RealtimeEvents/RealtimeEvents";
+import { World } from "./RealtimeGlobe/RealtimeGlobe";
+import { minutesAtom, MinutesType } from "./realtimeStore";
 
 export default function RealtimePage() {
   useSetPageTitle("Rybbit · Realtime");
@@ -31,10 +27,7 @@ export default function RealtimePage() {
   const { data } = useGetLiveUsercount(Number(minutes));
 
   return (
-    <div
-      className="relative overflow-hidden"
-      ref={ref}
-    >
+    <div className="relative overflow-hidden" ref={ref}>
       <World width={width ?? 0} />
 
       <div className="absolute top-2 left-2 md:top-4 md:left-4 flex flex-row gap-2 items-start">

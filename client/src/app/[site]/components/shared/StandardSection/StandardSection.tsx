@@ -34,21 +34,15 @@ export function StandardSection({
   expanded: boolean;
   close: () => void;
 }) {
-  const {
-    data: paginatedResponse,
-    isLoading,
-    isFetching,
-    error,
-    refetch,
-  } = usePaginatedSingleCol({
-    parameter: filterParameter,
-    limit: 10,
-    page: 1,
-  });
+  const { data, isLoading, isFetching, error, refetch } = usePaginatedSingleCol(
+    {
+      parameter: filterParameter,
+      limit: 100,
+      page: 1,
+    }
+  );
 
-  console.log(paginatedResponse);
-
-  const itemsForDisplay = paginatedResponse?.data;
+  const itemsForDisplay = data?.data;
 
   const ratio = itemsForDisplay?.[0]?.percentage
     ? 100 / itemsForDisplay[0].percentage
@@ -117,7 +111,6 @@ export function StandardSection({
           <div className="flex flex-row gap-2 justify-between items-center">
             <BaseStandardSectionDialog
               title={title}
-              data={itemsForDisplay}
               ratio={ratio}
               getKey={getKey}
               getLabel={getLabel}

@@ -13,21 +13,22 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { useDebounce } from "@uidotdev/usehooks";
+import { useDebounce, useIntersectionObserver } from "@uidotdev/usehooks";
 import {
   ChevronDown,
   ChevronUp,
+  Loader2,
   Search,
   SquareArrowOutUpRight,
 } from "lucide-react";
-import { ReactNode, useMemo, useState } from "react";
+import { ReactNode, useEffect, useMemo, useState } from "react";
+import { useInfiniteSingleCol } from "../../../../../api/analytics/useInfiniteSingleCol";
 import { SingleColResponse } from "../../../../../api/analytics/useSingleCol";
 import { addFilter, FilterParameter } from "../../../../../lib/store";
 import { cn, formatSecondsAsMinutesAndSeconds } from "../../../../../lib/utils";
 
 interface BaseStandardSectionDialogProps {
   title: string;
-  data?: SingleColResponse[];
   ratio: number;
   getKey: (item: SingleColResponse) => string;
   getLabel: (item: SingleColResponse) => ReactNode;
@@ -44,7 +45,6 @@ const columnHelper = createColumnHelper<SingleColResponse>();
 
 export function BaseStandardSectionDialog({
   title,
-  data,
   ratio,
   getKey,
   getLabel,
@@ -56,31 +56,56 @@ export function BaseStandardSectionDialog({
   expanded,
   close,
 }: BaseStandardSectionDialogProps) {
+  const {
+    data,
+    isLoading,
+    isFetching,
+    error,
+    refetch,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useInfiniteSingleCol({
+    parameter: filterParameter,
+    limit: 100,
+  });
+
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebounce(searchTerm, 200);
   const [sorting, setSorting] = useState<SortingState>([
     { id: "count", desc: true },
   ]);
 
-  if (!data || data.length === 0) return null;
+  // Use the intersection observer hook
+  const [ref, entry] = useIntersectionObserver({
+    threshold: 0,
+    root: null,
+    rootMargin: "0px 0px 200px 0px", // Load more when user is 200px from the bottom
+  });
 
-  const labelFnToUse = getFilterLabel || getValue;
+  // Flatten the pages data
+  const allItems = useMemo(() => {
+    if (!data) return [];
+    return data.pages.flatMap((page) => page.data);
+  }, [data]);
 
   // Filter data based on search term
-  const filteredData = useMemo(
-    () =>
-      data.filter((item) => {
-        const label =
-          typeof labelFnToUse(item) === "string"
-            ? (labelFnToUse(item) as string)
-            : labelFnToUse(item);
+  const filteredData = useMemo(() => {
+    if (!allItems) return [];
 
-        return String(label)
-          .toLowerCase()
-          .includes(debouncedSearchTerm.toLowerCase());
-      }),
-    [data, labelFnToUse, debouncedSearchTerm]
-  );
+    const labelFnToUse = getFilterLabel || getValue;
+
+    return allItems.filter((item: SingleColResponse) => {
+      const label =
+        typeof labelFnToUse(item) === "string"
+          ? (labelFnToUse(item) as string)
+          : labelFnToUse(item);
+
+      return String(label)
+        .toLowerCase()
+        .includes(debouncedSearchTerm.toLowerCase());
+    });
+  }, [allItems, getFilterLabel, getValue, debouncedSearchTerm]);
 
   const columns = useMemo(() => {
     const cols = [
@@ -122,49 +147,71 @@ export function BaseStandardSectionDialog({
       }),
     ];
 
-    const hasPageviews =
-      data?.[0]?.pageviews !== undefined &&
-      data?.[0]?.pageviews_percentage !== undefined;
-    if (hasPageviews) {
-      cols.push(
-        columnHelper.accessor("pageviews", {
-          header: "Pageviews",
-          cell: (info) => (
-            <div className="flex flex-row gap-1 items-center sm:justify-end">
-              {info.getValue()?.toLocaleString()}
-            </div>
-          ),
-        }) as any
-      );
-      cols.push(
-        columnHelper.accessor("pageviews_percentage", {
-          header: "Pageviews %",
-          cell: (info) => (
-            <div className="flex flex-row gap-1 items-center sm:justify-end">
-              {info.getValue()?.toFixed(1)}%
-            </div>
-          ),
-        }) as any
-      );
+    // Only check for additional columns if we have data
+    if (filteredData.length > 0) {
+      const hasPageviews =
+        filteredData[0]?.pageviews !== undefined &&
+        filteredData[0]?.pageviews_percentage !== undefined;
+      if (hasPageviews) {
+        cols.push(
+          columnHelper.accessor("pageviews", {
+            header: "Pageviews",
+            cell: (info) => (
+              <div className="flex flex-row gap-1 items-center sm:justify-end">
+                {info.getValue()?.toLocaleString()}
+              </div>
+            ),
+          }) as any
+        );
+        cols.push(
+          columnHelper.accessor("pageviews_percentage", {
+            header: "Pageviews %",
+            cell: (info) => (
+              <div className="flex flex-row gap-1 items-center sm:justify-end">
+                {info.getValue()?.toFixed(1)}%
+              </div>
+            ),
+          }) as any
+        );
+      }
+
+      const hasDuration = filteredData[0]?.time_on_page_seconds !== undefined;
+      if (hasDuration) {
+        cols.push(
+          columnHelper.accessor("time_on_page_seconds", {
+            header: "Duration",
+            cell: (info) => (
+              <div className="text-right">
+                {formatSecondsAsMinutesAndSeconds(
+                  Math.round(info.getValue() ?? 0)
+                )}
+              </div>
+            ),
+          }) as any
+        );
+      }
     }
 
-    const hasDuration = data?.[0]?.time_on_page_seconds !== undefined;
-    if (hasDuration) {
-      cols.push(
-        columnHelper.accessor("time_on_page_seconds", {
-          header: "Duration",
-          cell: (info) => (
-            <div className="text-right">
-              {formatSecondsAsMinutesAndSeconds(
-                Math.round(info.getValue() ?? 0)
-              )}
-            </div>
-          ),
-        }) as any
-      );
-    }
     return cols;
-  }, []);
+  }, [filteredData, title, getLabel, getLink]);
+
+  // Fetch next page when intersection observer detects the target is visible
+  useEffect(() => {
+    if (
+      entry?.isIntersecting &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isLoading
+    ) {
+      fetchNextPage();
+    }
+  }, [
+    entry?.isIntersecting,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  ]);
 
   // Set up table instance
   const table = useReactTable({
@@ -180,28 +227,36 @@ export function BaseStandardSectionDialog({
     sortDescFirst: true,
   });
 
+  if (isLoading || !data) {
+    return (
+      <Dialog open={expanded} onOpenChange={close}>
+        <DialogContent className="max-w-[1000px] w-[calc(100vw-2rem)] p-2 sm:p-4">
+          <div className="flex justify-center items-center h-40">
+            <Loader2 className="h-8 w-8 animate-spin text-neutral-400" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+  const totalCount = data.pages[0]?.totalCount || 0;
+
   return (
     <Dialog open={expanded} onOpenChange={close}>
-      {/* <DialogTrigger asChild>
-        <Button variant="default" size="sm">
-          <Expand className="w-4 h-4" /> Expand
-        </Button>
-      </DialogTrigger> */}
       <DialogContent className="max-w-[1000px] w-[calc(100vw-2rem)] p-2 sm:p-4">
         <DialogHeader>
           <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
+        <div className="relative">
+          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-400" />
+          <Input
+            type="text"
+            placeholder={`Filter ${allItems.length} items...`}
+            className="pl-9 bg-neutral-900 border-neutral-700 text-xs"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
         <div className="flex flex-col gap-2 overflow-x-auto">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-400" />
-            <Input
-              type="text"
-              placeholder={`Filter ${data.length} items...`}
-              className="pl-9 bg-neutral-900 border-neutral-700 text-xs"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
           <div className="max-h-[80vh] overflow-y-auto">
             <table className="w-full text-xs text-left min-w-max">
               <thead className="bg-neutral-900 text-neutral-400 sticky top-0 z-10">
@@ -267,15 +322,7 @@ export function BaseStandardSectionDialog({
                             cellIndex !== 0 && "text-right"
                           )}
                         >
-                          {cellIndex === 0 && (
-                            <div
-                            // className="absolute h-0.5 bottom-0 bg-dataviz opacity-90"
-                            // className="absolute inset-0 bg-dataviz py-2 opacity-30 rounded-md h-6 mt-1"
-                            // style={{
-                            //   width: `${row.original.percentage * ratio}%`,
-                            // }}
-                            ></div>
-                          )}
+                          {cellIndex === 0 && <div></div>}
                           <span className="relative z-0">
                             {flexRender(
                               cell.column.columnDef.cell,
@@ -289,6 +336,23 @@ export function BaseStandardSectionDialog({
                 })}
               </tbody>
             </table>
+
+            {/* Infinite scroll loading indicator and observer anchor */}
+            {filteredData.length > 0 && (
+              <div ref={ref} className="py-4 flex justify-center">
+                {isFetchingNextPage && (
+                  <div className="flex items-center gap-2 text-neutral-400 text-xs">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Loading more...
+                  </div>
+                )}
+                {!hasNextPage && !isFetchingNextPage && (
+                  <div className="text-neutral-500 text-xs">
+                    All items loaded
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
       </DialogContent>

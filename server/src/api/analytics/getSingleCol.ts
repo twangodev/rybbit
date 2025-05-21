@@ -354,7 +354,7 @@ export async function getSingleCol(
   req: FastifyRequest<GetSingleColRequest>,
   res: FastifyReply
 ) {
-  const { parameter, page, limit } = req.query;
+  const { parameter, page } = req.query;
   const site = req.params.site;
 
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
