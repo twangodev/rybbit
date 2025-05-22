@@ -27,6 +27,7 @@ import {
   getPaginationRowModel,
 } from "@tanstack/react-table";
 import { SiteTablePagination } from "./SiteTablePagination";
+import Link from "next/link";
 
 export function Sites() {
   const { data: sites, isLoading, isError } = useAdminSites();
@@ -73,7 +74,17 @@ export function Sites() {
             )}
           </Button>
         ),
-        cell: ({ row }) => <div>{row.getValue("siteId")}</div>,
+        cell: ({ row }) => (
+          <div>
+            <Link
+              href={`/${row.getValue("siteId")}`}
+              target="_blank"
+              className="hover:underline"
+            >
+              {row.getValue("siteId")}
+            </Link>
+          </div>
+        ),
       },
       {
         accessorKey: "domain",
@@ -93,7 +104,15 @@ export function Sites() {
           </Button>
         ),
         cell: ({ row }) => (
-          <div className="font-medium">{row.getValue("domain")}</div>
+          <div className="font-medium">
+            <Link
+              href={`https://${row.original.domain}`}
+              target="_blank"
+              className="hover:underline"
+            >
+              {row.getValue("domain")}
+            </Link>
+          </div>
         ),
       },
       {
