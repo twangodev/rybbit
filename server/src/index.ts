@@ -60,6 +60,7 @@ import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
 import { getConfig } from "./api/getConfig.js";
 import { getPageTitles } from "./api/analytics/getPageTitles.js";
 import { getAdminSites } from "./api/admin/getAdminSites.js";
+import { getAdminUsers } from "./api/admin/getAdminUsers.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -259,6 +260,7 @@ if (IS_CLOUD) {
 
   // Admin Routes
   server.get("/admin/sites", getAdminSites);
+  server.get("/admin/users", getAdminUsers);
 }
 
 server.post("/track", trackEvent);

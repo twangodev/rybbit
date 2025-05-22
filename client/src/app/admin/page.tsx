@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { StandardPage } from "@/components/StandardPage";
 import { Users } from "./components/users/Users";
 import { Sites } from "./components/sites/Sites";
+import { OrgUsersList } from "./components/users/OrgUsersList";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
@@ -60,12 +61,17 @@ export default function AdminPage() {
       <Tabs defaultValue="users" value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="mb-4">
           <TabsTrigger value="users">Users</TabsTrigger>
+          <TabsTrigger value="org-users">Organization Owners</TabsTrigger>
           <TabsTrigger value="sites">Sites</TabsTrigger>
           <TabsTrigger value="settings">Settings</TabsTrigger>
         </TabsList>
 
         <TabsContent value="users">
           <Users />
+        </TabsContent>
+
+        <TabsContent value="org-users">
+          <OrgUsersList />
         </TabsContent>
 
         <TabsContent value="sites">

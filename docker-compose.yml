@@ -80,7 +80,6 @@ services:
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BASE_URL=${BASE_URL}
       - DISABLE_SIGNUP=${DISABLE_SIGNUP}
-      - RESEND_API_KEY=${RESEND_API_KEY}
     depends_on:
       clickhouse:
         condition: service_healthy
