@@ -73,18 +73,25 @@ function getTimeStatementFill(
         )
       ) STEP INTERVAL ${bucketIntervalMap[validatedBucket]}`;
   }
-  // For specific past minutes range
+  // For specific past minutes range - convert to exact timestamps for better performance
   if (params.pastMinutesRange) {
     const { start, end } = params.pastMinutesRange;
+
+    // Calculate exact timestamps in JavaScript to avoid runtime ClickHouse calculations
+    const now = new Date();
+    const startTimestamp = new Date(now.getTime() - start * 60 * 1000);
+    const endTimestamp = new Date(now.getTime() - end * 60 * 1000);
+
+    // Format as YYYY-MM-DD HH:MM:SS without milliseconds for ClickHouse
+    const startIso = startTimestamp
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
+    const endIso = endTimestamp.toISOString().slice(0, 19).replace("T", " ");
+
     return ` WITH FILL 
-      FROM ${
-        TimeBucketToFn[validatedBucket]
-      }(toDateTime(now() - INTERVAL ${SqlString.escape(start)} MINUTE))
-      TO ${
-        TimeBucketToFn[validatedBucket]
-      }(toDateTime(now() - INTERVAL ${SqlString.escape(
-        end
-      )} MINUTE)) + INTERVAL 1 ${
+      FROM ${TimeBucketToFn[validatedBucket]}(toDateTime(${SqlString.escape(startIso)}))
+      TO ${TimeBucketToFn[validatedBucket]}(toDateTime(${SqlString.escape(endIso)})) + INTERVAL 1 ${
         validatedBucket === "minute"
           ? "MINUTE"
           : validatedBucket === "five_minutes"

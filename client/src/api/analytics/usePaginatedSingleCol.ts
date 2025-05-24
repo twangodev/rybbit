@@ -25,15 +25,30 @@ export function usePaginatedSingleCol({
 }: UsePaginatedSingleColOptions): UseQueryResult<PaginatedResponse> {
   const { time, site, filters } = useStore();
 
+  // Check if we're using last-24-hours mode
+  const isPast24HoursMode = time.mode === "last-24-hours";
+
   // Determine the query parameters based on mode
-  const queryParams = {
-    ...getStartAndEndDate(time),
-    timeZone: timeZone,
-    parameter,
-    limit,
-    page,
-    filters: useFilters ? filters : undefined,
-  };
+  const queryParams = isPast24HoursMode
+    ? {
+        // Past minutes approach for last-24-hours mode
+        timeZone: timeZone,
+        pastMinutesStart: 24 * 60, // 24 hours ago
+        pastMinutesEnd: 0, // now
+        parameter,
+        limit,
+        page,
+        filters: useFilters ? filters : undefined,
+      }
+    : {
+        // Regular date-based approach
+        ...getStartAndEndDate(time),
+        timeZone: timeZone,
+        parameter,
+        limit,
+        page,
+        filters: useFilters ? filters : undefined,
+      };
 
   return useQuery({
     queryKey: [
@@ -43,8 +58,8 @@ export function usePaginatedSingleCol({
       filters,
       limit,
       page,
-      "paginated-single-col",
-    ], // More specific key
+      isPast24HoursMode ? "past-minutes" : "date-range",
+    ],
     queryFn: () => {
       return authedFetch(`${BACKEND_URL}/single-col/${site}`, queryParams)
         .then((res) => res.json())

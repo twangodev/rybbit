@@ -52,14 +52,23 @@ export function getTimeStatement({
       )`;
   }
 
-  // Handle specific range of past minutes
+  // Handle specific range of past minutes - convert to exact timestamps for better performance
   if (sanitized.pastMinutesRange) {
     const { start, end } = sanitized.pastMinutesRange;
-    return `AND timestamp > now() - interval ${SqlString.escape(
-      start
-    )} minute AND timestamp <= now() - interval ${SqlString.escape(
-      end
-    )} minute`;
+
+    // Calculate exact timestamps in JavaScript to avoid runtime ClickHouse calculations
+    const now = new Date();
+    const startTimestamp = new Date(now.getTime() - start * 60 * 1000);
+    const endTimestamp = new Date(now.getTime() - end * 60 * 1000);
+
+    // Format as YYYY-MM-DD HH:MM:SS without milliseconds for ClickHouse
+    const startIso = startTimestamp
+      .toISOString()
+      .slice(0, 19)
+      .replace("T", " ");
+    const endIso = endTimestamp.toISOString().slice(0, 19).replace("T", " ");
+
+    return `AND timestamp > toDateTime(${SqlString.escape(startIso)}) AND timestamp <= toDateTime(${SqlString.escape(endIso)})`;
   }
 
   // If no valid time parameters were provided, return empty string

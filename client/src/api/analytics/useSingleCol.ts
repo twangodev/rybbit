@@ -37,11 +37,12 @@ export function useSingleCol({
   // Determine the query parameters based on mode
   const queryParams = isPast24HoursMode
     ? {
-        // Past minutes approach
+        // Past minutes approach using pastMinutesStart/pastMinutesEnd
         timeZone: timeZone,
         parameter,
         limit,
-        minutes: periodTime === "previous" ? 48 * 60 : 24 * 60,
+        pastMinutesStart: periodTime === "previous" ? 48 * 60 : 24 * 60,
+        pastMinutesEnd: periodTime === "previous" ? 24 * 60 : 0,
         filters: useFilters ? filters : undefined,
       }
     : {
@@ -88,22 +89,32 @@ export function useSingleCol({
 export function useSingleColRealtime({
   parameter,
   limit = 1000,
-  minutes = 30,
+  pastMinutesStart = 30,
+  pastMinutesEnd = 0,
 }: {
   parameter: FilterParameter;
   limit?: number;
-  minutes?: number;
+  pastMinutesStart?: number;
+  pastMinutesEnd?: number;
 }): UseQueryResult<APIResponse<SingleColResponse[]>> {
   const { site } = useStore();
 
   return useQuery({
-    queryKey: [parameter, site, limit, minutes, "realtime"],
+    queryKey: [
+      parameter,
+      site,
+      limit,
+      pastMinutesStart,
+      pastMinutesEnd,
+      "realtime",
+    ],
     queryFn: () => {
       return authedFetch(`${BACKEND_URL}/single-col/${site}`, {
         timeZone,
         parameter,
         limit,
-        minutes,
+        pastMinutesStart,
+        pastMinutesEnd,
       }).then((res) => res.json());
     },
     staleTime: Infinity,
