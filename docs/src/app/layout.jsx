@@ -18,6 +18,7 @@ const tilt_wrap = Tilt_Warp({
 export const metadata = {
   metadataBase: new URL("https://rybbit.io"),
   title: {
+    default: "Rybbit - Next-gen Web Analytics",
     template: "%s - Rybbit",
   },
   description:
@@ -32,8 +33,31 @@ export const metadata = {
     "msapplication-TileImage": "/ms-icon-144x144.png",
     "msapplication-TileColor": "#fff",
   },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://rybbit.io",
+    siteName: "Rybbit",
+    title: "Rybbit - Next-gen Web Analytics",
+    description:
+      "Open source, lightweight, cookieless web & product analytics for everyone — GDPR/CCPA compliant.",
+    images: [
+      {
+        url: "/opengraph-image",
+        width: 1200,
+        height: 630,
+        alt: "Rybbit - Next-gen Web Analytics",
+      },
+    ],
+  },
   twitter: {
-    site: "https://rybbit.io",
+    card: "summary_large_image",
+    site: "@rybbit_io",
+    creator: "@rybbit_io",
+    title: "Rybbit - Next-gen Web Analytics",
+    description:
+      "Open source, lightweight, cookieless web & product analytics for everyone — GDPR/CCPA compliant.",
+    images: ["/opengraph-image"],
   },
 };
 
