@@ -31,7 +31,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     referrer: z.string().max(2048).optional(),
     event_name: z.string().max(256).optional(),
     properties: z.string().max(2048).optional(),
-    user_id: z.string().max(255).optional(), // Add custom user ID field
+    user_id: z.string().max(255).optional(),
   }),
   z.object({
     type: z.literal("custom_event"),
@@ -60,7 +60,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
         { message: "Properties must be a valid JSON string" }
       )
       .optional(), // Optional but must be valid JSON if present
-    user_id: z.string().max(255).optional(), // Add custom user ID field
+    user_id: z.string().max(255).optional(),
   }),
 ]);
 
