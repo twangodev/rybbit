@@ -10,6 +10,9 @@
       pageview: () => {},
       event: () => {},
       trackOutbound: () => {},
+      identify: () => {},
+      clearUserId: () => {},
+      getUserId: () => null,
     };
     return;
   }
@@ -61,6 +64,19 @@
     }
   } catch (e) {
     console.error("Error parsing data-mask-patterns:", e);
+  }
+
+  // Add user ID management
+  let customUserId = null;
+
+  // Load stored user ID from localStorage on script initialization
+  try {
+    const storedUserId = localStorage.getItem("rybbit-user-id");
+    if (storedUserId) {
+      customUserId = storedUserId;
+    }
+  } catch (e) {
+    // localStorage not available, ignore
   }
 
   // Helper function to convert wildcard pattern to regex
@@ -166,6 +182,8 @@
         eventType === "custom_event" || eventType === "outbound"
           ? JSON.stringify(properties)
           : undefined,
+      // Add custom user ID if available
+      user_id: customUserId,
     };
 
     fetch(`${ANALYTICS_HOST}/track`, {
@@ -226,6 +244,32 @@
     event: (name, properties = {}) => track("custom_event", name, properties),
     trackOutbound: (url, text = "", target = "_self") =>
       track("outbound", "", { url, text, target }),
+
+    // New methods for user identification
+    identify: (userId) => {
+      if (typeof userId !== "string" || userId.trim() === "") {
+        console.error("User ID must be a non-empty string");
+        return;
+      }
+      customUserId = userId.trim();
+      try {
+        localStorage.setItem("rybbit-user-id", customUserId);
+      } catch (e) {
+        // localStorage not available, user ID will only persist for session
+        console.warn("Could not persist user ID to localStorage");
+      }
+    },
+
+    clearUserId: () => {
+      customUserId = null;
+      try {
+        localStorage.removeItem("rybbit-user-id");
+      } catch (e) {
+        // localStorage not available, ignore
+      }
+    },
+
+    getUserId: () => customUserId,
   };
 
   if (autoTrackPageview) {

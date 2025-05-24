@@ -32,6 +32,42 @@ Tracks a pageview. Useful when `data-track-spa` is set to `"false"` or when you 
 window.rybbit.pageview();
 ```
 
+### `window.rybbit.identify(userId)`
+
+Sets a custom user ID for tracking logged-in users across devices and sessions.
+
+*   `userId` (String): The unique identifier for the user. This will be stored in localStorage and persist across browser sessions. **Note: Custom user IDs are stored exactly as provided without any hashing or modification.**
+
+```javascript
+// Identify a user when they log in
+window.rybbit.identify("user_12345");
+
+// All subsequent events and pageviews will be associated with this user ID
+```
+
+### `window.rybbit.clearUserId()`
+
+Clears the stored user ID. Useful when a user logs out.
+
+```javascript
+// Clear user identification when user logs out
+window.rybbit.clearUserId();
+```
+
+### `window.rybbit.getUserId()`
+
+Returns the currently set user ID, or `null` if none is set.
+
+```javascript
+// Check if a user is identified
+const currentUserId = window.rybbit.getUserId();
+if (currentUserId) {
+  console.log('Current user:', currentUserId);
+} else {
+  console.log('No user identified');
+}
+```
+
 {/* ### `window.rybbit.trackOutbound(url, text, target)`
 
 Manually tracks outbound link clicks. Useful for programmatic navigation or custom link handling.
@@ -44,6 +80,43 @@ Manually tracks outbound link clicks. Useful for programmatic navigation or cust
 // Track a programmatic navigation to an external site
 window.rybbit.trackOutbound("https://example.com", "Example Site", "_blank");
 ``` */}
+
+## User Identification Example
+
+Here's a typical workflow for user identification:
+
+```javascript
+// When user logs in
+function handleLogin(userData) {
+  // Set user identification
+  window.rybbit.identify(userData.id);
+  
+  // Track login event
+  window.rybbit.event("User Login", {
+    method: "email",
+    plan: userData.plan
+  });
+}
+
+// When user logs out
+function handleLogout() {
+  // Track logout event
+  window.rybbit.event("User Logout");
+  
+  // Clear user identification
+  window.rybbit.clearUserId();
+}
+
+// Check identification status
+function checkUserStatus() {
+  const userId = window.rybbit.getUserId();
+  if (userId) {
+    console.log("User is identified:", userId);
+  } else {
+    console.log("Anonymous user");
+  }
+}
+```
 
 ## TypeScript Support
 
@@ -62,6 +135,23 @@ interface Rybbit {
      * @param properties Optional properties for the event
      */
     event: (name: string, properties?: Record<string, any>) => void;
+
+    /**
+     * Sets a custom user ID for tracking logged-in users
+     * @param userId The user ID to set (will be stored in localStorage)
+     */
+    identify: (userId: string) => void;
+
+    /**
+     * Clears the stored user ID
+     */
+    clearUserId: () => void;
+
+    /**
+     * Gets the currently set user ID
+     * @returns The current user ID or null if not set
+     */
+    getUserId: () => string | null;
 }
 
 declare global {
