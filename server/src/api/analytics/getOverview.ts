@@ -22,21 +22,17 @@ const getQuery = ({
   endDate,
   timeZone,
   filters,
-  pastMinutes,
   pastMinutesRange,
 }: {
   startDate: string;
   endDate: string;
   timeZone: string;
   filters: string;
-  pastMinutes?: number;
   pastMinutesRange?: { start: number; end: number };
 }) => {
   const timeParams = pastMinutesRange
     ? { pastMinutesRange }
-    : pastMinutes
-      ? { pastMinutes }
-      : { date: { startDate, endDate, timeZone } };
+    : { date: { startDate, endDate, timeZone } };
 
   const filterStatement = getFilterStatement(filters);
 
@@ -96,7 +92,6 @@ export interface GenericRequest {
     timeZone: string;
     filters: string;
     parameter: FilterParameter;
-    pastMinutes?: number;
     pastMinutesStart?: number;
     pastMinutesEnd?: number;
     limit?: number;
@@ -112,7 +107,6 @@ export async function getOverview(
     endDate,
     timeZone,
     filters,
-    pastMinutes,
     pastMinutesStart,
     pastMinutesEnd,
   } = req.query;
@@ -132,7 +126,6 @@ export async function getOverview(
     endDate,
     timeZone,
     filters,
-    pastMinutes: Number(pastMinutes),
     pastMinutesRange: pastMinutesRange,
   });
 

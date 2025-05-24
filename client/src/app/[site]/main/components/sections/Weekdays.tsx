@@ -34,7 +34,7 @@ import {
   shortDayNames,
   longDayNames,
   hourLabels,
-  formatLocalTime
+  formatLocalTime,
 } from "../../../../../lib/dateTimeUtils";
 
 export function Weekdays() {
@@ -58,7 +58,8 @@ export function Weekdays() {
     isFetching: isPast24HoursFetching,
     error: past24HoursError,
   } = useGetOverviewBucketedPastMinutes({
-    pastMinutes: 24 * 60,
+    pastMinutesStart: 24 * 60,
+    pastMinutesEnd: 0,
     site,
     bucket: "hour",
     props: {
@@ -281,7 +282,8 @@ export function Weekdays() {
                             </TooltipTrigger>
                             <TooltipContent className="flex flex-col gap-1 p-2">
                               <div className="font-medium text-sm">
-                                {longDayNames[day]} {formatLocalTime(hour, 0)} - {formatLocalTime(hour, 59)}
+                                {longDayNames[day]} {formatLocalTime(hour, 0)} -{" "}
+                                {formatLocalTime(hour, 59)}
                               </div>
                               <div className="flex items-center gap-2">
                                 <span className="font-semibold">

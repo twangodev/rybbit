@@ -71,7 +71,8 @@ export function MainSection() {
     isFetching: isPastMinutesFetching,
     error: pastMinutesError,
   } = useGetOverviewBucketedPastMinutes({
-    pastMinutes: 24 * 60,
+    pastMinutesStart: 24 * 60,
+    pastMinutesEnd: 0,
     site,
     bucket,
     props: {
@@ -84,7 +85,8 @@ export function MainSection() {
     isFetching: isPastMinutesPreviousFetching,
     error: pastMinutesPreviousError,
   } = useGetOverviewBucketedPreviousPastMinutes({
-    pastMinutes: 24 * 60,
+    pastMinutesStart: 48 * 60,
+    pastMinutesEnd: 24 * 60,
     site,
     bucket,
     props: {

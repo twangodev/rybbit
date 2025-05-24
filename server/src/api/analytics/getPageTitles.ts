@@ -14,7 +14,8 @@ interface GetPageTitlesRequest {
   Querystring: {
     startDate: string;
     endDate: string;
-    minutes: number;
+    pastMinutesStart?: number;
+    pastMinutesEnd?: number;
     timeZone: string;
     filters: string;
     limit?: number;
@@ -40,13 +41,28 @@ const getPageTitlesQuery = (
   request: FastifyRequest<GetPageTitlesRequest>,
   isCountQuery: boolean = false
 ) => {
-  const { startDate, endDate, timeZone, filters, limit, page, minutes } =
-    request.query;
+  const {
+    startDate,
+    endDate,
+    timeZone,
+    filters,
+    limit,
+    page,
+    pastMinutesStart,
+    pastMinutesEnd,
+  } = request.query;
 
   const filterStatement = getFilterStatement(filters);
+
+  // Handle specific past minutes range if provided
+  const pastMinutesRange =
+    pastMinutesStart && pastMinutesEnd
+      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
+      : undefined;
+
   const timeStatement = getTimeStatement(
-    minutes
-      ? { pastMinutes: Number(minutes) }
+    pastMinutesRange
+      ? { pastMinutesRange }
       : {
           date: { startDate, endDate, timeZone },
         }

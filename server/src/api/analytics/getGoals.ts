@@ -48,7 +48,6 @@ export async function getGoals(
       pageSize?: string;
       sort?: string;
       order?: "asc" | "desc";
-      minutes?: string;
       pastMinutesStart?: string;
       pastMinutesEnd?: string;
     };
@@ -65,7 +64,6 @@ export async function getGoals(
     pageSize = "10",
     sort = "createdAt",
     order = "desc",
-    minutes,
     pastMinutesStart,
     pastMinutesEnd,
   } = request.query;
@@ -165,11 +163,9 @@ export async function getGoals(
     // Set up time parameters
     const timeParams = pastMinutesRange
       ? { pastMinutesRange }
-      : minutes
-      ? { pastMinutes: Number(minutes) }
       : startDate || endDate
-      ? { date: { startDate, endDate, timeZone } }
-      : {};
+        ? { date: { startDate, endDate, timeZone } }
+        : {};
 
     const timeStatement = getTimeStatement(timeParams);
 
@@ -292,9 +288,8 @@ export async function getGoals(
       format: "JSONEachRow",
     });
 
-    const conversionData = await processResults<Record<string, number>>(
-      conversionResult
-    );
+    const conversionData =
+      await processResults<Record<string, number>>(conversionResult);
 
     // If we didn't get any results, use zeros
     const conversions = conversionData[0] || {};

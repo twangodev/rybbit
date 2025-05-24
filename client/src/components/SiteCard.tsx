@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useGetOverviewWithInView } from "../api/analytics/useGetOverviewWithInView";
-import { useGetOverviewBucketedWithInView } from "../api/analytics/useGetOverviewBucketedWithInView";
+import { useGetOverviewPastMinutes } from "../api/analytics/useGetOverview";
+import { useGetOverviewBucketedPastMinutes } from "../api/analytics/useGetOverviewBucketed";
 import { useInView } from "../hooks/useInView";
 import { Favicon } from "./Favicon";
 import { SiteSessionChart } from "./SiteSessionChart";
@@ -26,21 +26,24 @@ export function SiteCard({ siteId, domain }: SiteCardProps) {
   // Track if we've ever loaded data successfully
   const hasLoadedData = useRef(false);
 
-  const { data, isLoading, isSuccess } = useGetOverviewBucketedWithInView({
-    pastMinutes: 24 * 60,
+  const { data, isLoading, isSuccess } = useGetOverviewBucketedPastMinutes({
+    pastMinutesStart: 24 * 60,
+    pastMinutesEnd: 0,
     site: siteId,
     bucket: "hour",
-    isInView,
+    props: {
+      enabled: isInView,
+    },
   });
 
   const {
     data: overviewData,
     isLoading: isOverviewLoading,
     isSuccess: isOverviewSuccess,
-  } = useGetOverviewWithInView({
-    pastMinutes: 24 * 60,
+  } = useGetOverviewPastMinutes({
     site: siteId,
-    isInView,
+    pastMinutesStart: 24 * 60,
+    pastMinutesEnd: 0,
   });
 
   // Update the hasLoadedData ref when data loads successfully

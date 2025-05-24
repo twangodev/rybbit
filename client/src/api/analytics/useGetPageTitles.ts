@@ -49,7 +49,8 @@ export function useGetPageTitlesPaginated({
     ? {
         // Past minutes approach for last-24-hours mode
         timeZone: timeZone,
-        minutes: 24 * 60, // 24 hours in minutes
+        pastMinutesStart: 24 * 60, // 24 hours ago
+        pastMinutesEnd: 0, // now
         limit,
         page,
         filters: useFilters ? filters : undefined,

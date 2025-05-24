@@ -9,10 +9,11 @@ export function RealtimeChart() {
   const { site } = useStore();
 
   const { data, isLoading } = useGetOverviewBucketedPastMinutes({
-    pastMinutes: 30,
+    pastMinutesStart: 30,
+    pastMinutesEnd: 0,
     site,
     bucket: "minute",
-    refetchInterval: 5000,
+    refetchInterval: 10000,
   });
 
   const chartData = useMemo(() => {

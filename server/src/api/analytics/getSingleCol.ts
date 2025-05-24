@@ -16,7 +16,8 @@ interface GetSingleColRequest {
   Querystring: {
     startDate: string;
     endDate: string;
-    minutes: number;
+    pastMinutesStart?: number;
+    pastMinutesEnd?: number;
     timeZone: string;
     filters: string;
     parameter: FilterParameter;
@@ -68,13 +69,21 @@ const getQuery = (
     parameter,
     limit,
     page,
-    minutes,
+    pastMinutesStart,
+    pastMinutesEnd,
   } = request.query;
 
   const filterStatement = getFilterStatement(filters);
+
+  // Handle specific past minutes range if provided
+  const pastMinutesRange =
+    pastMinutesStart && pastMinutesEnd
+      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
+      : undefined;
+
   const timeStatement = getTimeStatement(
-    minutes
-      ? { pastMinutes: Number(minutes) }
+    pastMinutesRange
+      ? { pastMinutesRange }
       : {
           date: { startDate, endDate, timeZone },
         }

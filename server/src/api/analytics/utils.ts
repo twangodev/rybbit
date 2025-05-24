@@ -9,8 +9,6 @@ import SqlString from "sqlstring";
 
 export function getTimeStatement({
   date,
-  pastMinutes,
-  minutes,
   pastMinutesRange,
 }: {
   date?: {
@@ -19,17 +17,11 @@ export function getTimeStatement({
     timeZone?: string;
     table?: "events" | "sessions";
   };
-  pastMinutes?: number;
-  minutes?: number; // Alternative name for pastMinutes for compatibility
   pastMinutesRange?: { start: number; end: number };
 }) {
-  // For backward compatibility, support both minutes and pastMinutes
-  const actualPastMinutes = pastMinutes || minutes;
-
   // Sanitize inputs with Zod
   const sanitized = validateTimeStatementParams({
     date,
-    pastMinutes: actualPastMinutes,
     pastMinutesRange,
   });
 
@@ -48,8 +40,8 @@ export function getTimeStatement({
       )
       AND timestamp < if(
         toDate(${SqlString.escape(endDate)}) = toDate(now(), ${SqlString.escape(
-      timeZone
-    )}),
+          timeZone
+        )}),
         now(),
         toTimeZone(
           toStartOfDay(toDateTime(${SqlString.escape(
@@ -67,14 +59,6 @@ export function getTimeStatement({
       start
     )} minute AND timestamp <= now() - interval ${SqlString.escape(
       end
-    )} minute`;
-  }
-
-  // Handle standard past minutes
-  if (sanitized.pastMinutes) {
-    // Use SqlString.escape for pastMinutes (it handles numbers)
-    return `AND timestamp > now() - interval ${SqlString.escape(
-      sanitized.pastMinutes
     )} minute`;
   }
 

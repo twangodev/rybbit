@@ -55,10 +55,17 @@ export function PageListItem({
   // Past minutes data for sparklines
   const { data: pastMinutesData, isLoading: isLoadingPastMinutes } =
     useGetOverviewBucketedPastMinutes({
-      pastMinutes: 24 * 60,
+      pastMinutesStart: 24 * 60,
+      pastMinutesEnd: 0,
       site,
       bucket,
-      dynamicFilters: [pageSpecificFilter],
+      dynamicFilters: [
+        {
+          parameter: "pathname",
+          type: "equals",
+          value: [pageData.value],
+        },
+      ],
       props: {
         enabled: isPast24HoursMode,
       },

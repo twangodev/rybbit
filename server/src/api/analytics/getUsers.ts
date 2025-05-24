@@ -36,7 +36,6 @@ export interface GetUsersRequest {
     pageSize?: string;
     sortBy?: string;
     sortOrder?: string;
-    minutes?: string;
     pastMinutesStart?: string;
     pastMinutesEnd?: string;
   };
@@ -55,7 +54,6 @@ export async function getUsers(
     pageSize = "20",
     sortBy = "last_seen",
     sortOrder = "desc",
-    minutes,
     pastMinutesStart,
     pastMinutesEnd,
   } = req.query;
@@ -90,11 +88,9 @@ export async function getUsers(
   // Set up time parameters
   const timeParams = pastMinutesRange
     ? { pastMinutesRange }
-    : minutes
-    ? { pastMinutes: Number(minutes) }
     : startDate && endDate
-    ? { date: { startDate, endDate, timeZone } }
-    : {};
+      ? { date: { startDate, endDate, timeZone } }
+      : {};
 
   // Generate filter statement and time statement
   const filterStatement = getFilterStatement(filters);

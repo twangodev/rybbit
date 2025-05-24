@@ -12,8 +12,9 @@ export function getQueryTimeParams(time: Time): string {
 
   // Handle last-24-hours mode differently
   if (time.mode === "last-24-hours") {
-    // Use minutes parameter instead of date range
-    params.append("minutes", "1440"); // 24 hours * 60 minutes
+    // Use pastMinutesStart/pastMinutesEnd parameters instead of date range
+    params.append("pastMinutesStart", "1440"); // 24 hours ago (24 * 60 minutes)
+    params.append("pastMinutesEnd", "0"); // now
     params.append("timeZone", timeZone);
     return params.toString();
   }

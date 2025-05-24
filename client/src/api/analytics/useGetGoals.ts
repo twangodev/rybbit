@@ -45,7 +45,8 @@ export function useGetGoals({
   sort = "createdAt",
   order = "desc",
   enabled = true,
-  minutes,
+  pastMinutesStart,
+  pastMinutesEnd,
 }: {
   startDate?: string;
   endDate?: string;
@@ -54,7 +55,8 @@ export function useGetGoals({
   sort?: "goalId" | "name" | "goalType" | "createdAt";
   order?: "asc" | "desc";
   enabled?: boolean;
-  minutes?: number;
+  pastMinutesStart?: number;
+  pastMinutesEnd?: number;
 }) {
   const { site, time } = useStore();
   const filteredFilters = getFilteredFilters(GOALS_PAGE_FILTERS);
@@ -62,9 +64,13 @@ export function useGetGoals({
   // If startDate and endDate are not provided, use time from store
   let timeParams: Record<string, string> = {};
 
-  if (minutes) {
-    // If minutes is explicitly provided, use it
-    timeParams = { minutes: minutes.toString(), timeZone };
+  if (pastMinutesStart !== undefined && pastMinutesEnd !== undefined) {
+    // If past minutes range is explicitly provided, use it
+    timeParams = {
+      pastMinutesStart: pastMinutesStart.toString(),
+      pastMinutesEnd: pastMinutesEnd.toString(),
+      timeZone,
+    };
   } else if (!startDate || !endDate) {
     // Otherwise get time parameters from the store's time
     // This will handle last-24-hours mode automatically
@@ -104,14 +110,16 @@ export function useGetGoals({
  * Hook to get goals data for the past X minutes
  */
 export function useGetGoalsPastMinutes({
-  minutes = 24 * 60,
+  pastMinutesStart = 24 * 60,
+  pastMinutesEnd = 0,
   page = 1,
   pageSize = 10,
   sort = "createdAt",
   order = "desc",
   enabled = true,
 }: {
-  minutes?: number;
+  pastMinutesStart?: number;
+  pastMinutesEnd?: number;
   page?: number;
   pageSize?: number;
   sort?: "goalId" | "name" | "goalType" | "createdAt";
@@ -119,7 +127,8 @@ export function useGetGoalsPastMinutes({
   enabled?: boolean;
 }) {
   return useGetGoals({
-    minutes,
+    pastMinutesStart,
+    pastMinutesEnd,
     page,
     pageSize,
     sort,

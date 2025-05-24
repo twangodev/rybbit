@@ -74,7 +74,6 @@ export function useGetOverviewBucketed({
 }
 
 export function useGetOverviewBucketedPastMinutes({
-  pastMinutes = 24 * 60,
   pastMinutesStart,
   pastMinutesEnd,
   site,
@@ -83,9 +82,8 @@ export function useGetOverviewBucketedPastMinutes({
   dynamicFilters = [],
   props,
 }: {
-  pastMinutes?: number;
-  pastMinutesStart?: number;
-  pastMinutesEnd?: number;
+  pastMinutesStart: number;
+  pastMinutesEnd: number;
   site: number | string;
   bucket?: TimeBucket;
   refetchInterval?: number;
@@ -96,44 +94,23 @@ export function useGetOverviewBucketedPastMinutes({
 
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
-  const useRange =
-    pastMinutesStart !== undefined && pastMinutesEnd !== undefined;
-
   return useQuery({
-    queryKey: useRange
-      ? [
-          "overview-bucketed-past-minutes-range",
-          pastMinutesStart,
-          pastMinutesEnd,
-          site,
-          bucket,
-          combinedFilters,
-        ]
-      : [
-          "overview-bucketed-past-minutes",
-          pastMinutes,
-          site,
-          bucket,
-          combinedFilters,
-        ],
+    queryKey: [
+      "overview-bucketed-past-minutes-range",
+      pastMinutesStart,
+      pastMinutesEnd,
+      site,
+      bucket,
+      combinedFilters,
+    ],
     queryFn: () => {
-      return authedFetch(
-        `${BACKEND_URL}/overview-bucketed/${site}`,
-        useRange
-          ? {
-              timeZone,
-              bucket,
-              pastMinutesStart,
-              pastMinutesEnd,
-              filters: combinedFilters,
-            }
-          : {
-              timeZone,
-              bucket,
-              pastMinutes,
-              filters: combinedFilters,
-            }
-      ).then((res) => res.json());
+      return authedFetch(`${BACKEND_URL}/overview-bucketed/${site}`, {
+        timeZone,
+        bucket,
+        pastMinutesStart,
+        pastMinutesEnd,
+        filters: combinedFilters,
+      }).then((res) => res.json());
     },
     refetchInterval,
     placeholderData: (_, query: any) => {
@@ -159,14 +136,16 @@ export function useGetOverviewBucketedPastMinutes({
  * Hook to get previous time period data for comparison with last-24-hours mode
  */
 export function useGetOverviewBucketedPreviousPastMinutes({
-  pastMinutes = 24 * 60,
+  pastMinutesStart,
+  pastMinutesEnd,
   site,
   bucket = "hour",
   refetchInterval,
   dynamicFilters = [],
   props,
 }: {
-  pastMinutes?: number;
+  pastMinutesStart: number;
+  pastMinutesEnd: number;
   site: number | string;
   bucket?: TimeBucket;
   refetchInterval?: number;
@@ -177,14 +156,11 @@ export function useGetOverviewBucketedPreviousPastMinutes({
 
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
-  const pastMinutesStartVal = pastMinutes * 2;
-  const pastMinutesEndVal = pastMinutes;
-
   return useQuery({
     queryKey: [
       "overview-bucketed-previous-past-minutes",
-      pastMinutesStartVal,
-      pastMinutesEndVal,
+      pastMinutesStart,
+      pastMinutesEnd,
       site,
       bucket,
       combinedFilters,
@@ -193,8 +169,8 @@ export function useGetOverviewBucketedPreviousPastMinutes({
       return authedFetch(`${BACKEND_URL}/overview-bucketed/${site}`, {
         timeZone,
         bucket,
-        pastMinutesStart: pastMinutesStartVal,
-        pastMinutesEnd: pastMinutesEndVal,
+        pastMinutesStart,
+        pastMinutesEnd,
         filters: combinedFilters,
       }).then((res) => res.json());
     },

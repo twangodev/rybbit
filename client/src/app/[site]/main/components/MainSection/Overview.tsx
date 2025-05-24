@@ -93,7 +93,8 @@ const Stat = ({
 
   // Past minutes data for sparklines
   const { data: pastMinutesData } = useGetOverviewBucketedPastMinutes({
-    pastMinutes: 24 * 60,
+    pastMinutesStart: 24 * 60,
+    pastMinutesEnd: 0,
     site,
     bucket,
     props: {
@@ -199,7 +200,8 @@ export function Overview() {
     error: pastMinutesOverviewError,
   } = useGetOverviewPastMinutes({
     site,
-    pastMinutes: 24 * 60,
+    pastMinutesStart: 24 * 60,
+    pastMinutesEnd: 0,
   });
 
   // Past minutes-based queries for previous period

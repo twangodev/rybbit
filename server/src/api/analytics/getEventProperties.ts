@@ -23,7 +23,8 @@ export interface GetEventPropertiesRequest {
     timeZone: string;
     eventName: string;
     filters?: string;
-    minutes?: string;
+    pastMinutesStart?: string;
+    pastMinutesEnd?: string;
   };
 }
 
@@ -31,8 +32,15 @@ export async function getEventProperties(
   req: FastifyRequest<GetEventPropertiesRequest>,
   res: FastifyReply
 ) {
-  const { startDate, endDate, timeZone, eventName, filters, minutes } =
-    req.query;
+  const {
+    startDate,
+    endDate,
+    timeZone,
+    eventName,
+    filters,
+    pastMinutesStart,
+    pastMinutesEnd,
+  } = req.query;
   const site = req.params.site;
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
   if (!userHasAccessToSite) {
@@ -43,9 +51,15 @@ export async function getEventProperties(
     return res.status(400).send({ error: "Event name is required" });
   }
 
+  // Handle specific past minutes range if provided
+  const pastMinutesRange =
+    pastMinutesStart && pastMinutesEnd
+      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
+      : undefined;
+
   const timeStatement = getTimeStatement(
-    minutes
-      ? { pastMinutes: Number(minutes) }
+    pastMinutesRange
+      ? { pastMinutesRange }
       : { date: { startDate, endDate, timeZone } }
   );
 
@@ -80,9 +94,8 @@ export async function getEventProperties(
       },
     });
 
-    const data = await processResults<GetEventPropertiesResponse[number]>(
-      result
-    );
+    const data =
+      await processResults<GetEventPropertiesResponse[number]>(result);
     return res.send({ data });
   } catch (error) {
     console.error("Generated Query:", query);

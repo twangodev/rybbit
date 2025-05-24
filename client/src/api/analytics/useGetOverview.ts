@@ -51,27 +51,18 @@ export function useGetOverview({
 }
 
 export function useGetOverviewPastMinutes({
-  pastMinutes,
   pastMinutesStart,
   pastMinutesEnd,
   site,
 }: {
-  pastMinutes?: number;
-  pastMinutesStart?: number;
-  pastMinutesEnd?: number;
+  pastMinutesStart: number;
+  pastMinutesEnd: number;
   site?: number | string;
 }) {
   return useQuery({
-    queryKey: [
-      "overview-past-minutes",
-      pastMinutes,
-      pastMinutesStart,
-      pastMinutesEnd,
-      site,
-    ],
+    queryKey: ["overview-past-minutes", pastMinutesStart, pastMinutesEnd, site],
     queryFn: () => {
       return authedFetch(`${BACKEND_URL}/overview/${site}`, {
-        pastMinutes,
         timeZone,
         pastMinutesStart,
         pastMinutesEnd,

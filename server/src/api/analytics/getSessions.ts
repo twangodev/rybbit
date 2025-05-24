@@ -44,7 +44,6 @@ export interface GetSessionsRequest {
     filters: string;
     page: number;
     userId?: string;
-    minutes?: string;
     pastMinutesStart?: string;
     pastMinutesEnd?: string;
   };
@@ -61,7 +60,6 @@ export async function getSessions(
     filters,
     page,
     userId,
-    minutes,
     pastMinutesStart,
     pastMinutesEnd,
   } = req.query;
@@ -82,11 +80,9 @@ export async function getSessions(
   // Set up time parameters
   const timeParams = pastMinutesRange
     ? { pastMinutesRange }
-    : minutes
-    ? { pastMinutes: Number(minutes) }
     : startDate && endDate
-    ? { date: { startDate, endDate, timeZone } }
-    : {};
+      ? { date: { startDate, endDate, timeZone } }
+      : {};
 
   const timeStatement = getTimeStatement(timeParams);
 

@@ -88,12 +88,11 @@ const fillDateParamsSchema = z.object({
 
 /**
  * Schema for parameters to getTimeStatement() function
- * Either date, pastMinutes, or pastMinutesRange must be provided
+ * Either date or pastMinutesRange must be provided
  */
 const timeStatementParamsSchema = z
   .object({
     date: fillDateParamsSchema.optional(),
-    pastMinutes: z.number().nonnegative().optional(),
     pastMinutesRange: z
       .object({
         start: z.number().nonnegative(),
@@ -105,29 +104,24 @@ const timeStatementParamsSchema = z
       }),
   })
   .refine(
-    (data) =>
-      data.date !== undefined ||
-      data.pastMinutes !== undefined ||
-      data.pastMinutesRange !== undefined,
+    (data) => data.date !== undefined || data.pastMinutesRange !== undefined,
     {
-      message: "Either date, pastMinutes, or pastMinutesRange must be provided",
+      message: "Either date or pastMinutesRange must be provided",
     }
   )
   // Set default empty objects if schema validation fails
   .catch({
     date: undefined,
-    pastMinutes: undefined,
     pastMinutesRange: undefined,
   });
 
 /**
  * Schema for parameters to getTimeStatementFill() function
- * Either date, pastMinutes, or pastMinutesRange must be provided
+ * Either date or pastMinutesRange must be provided
  */
 const timeStatementFillParamsSchema = z
   .object({
     date: fillDateParamsSchema.optional(),
-    pastMinutes: z.number().nonnegative().optional(),
     pastMinutesRange: z
       .object({
         start: z.number().nonnegative(),
@@ -139,12 +133,9 @@ const timeStatementFillParamsSchema = z
       }),
   })
   .refine(
-    (data) =>
-      data.date !== undefined ||
-      data.pastMinutes !== undefined ||
-      data.pastMinutesRange !== undefined,
+    (data) => data.date !== undefined || data.pastMinutesRange !== undefined,
     {
-      message: "Either date, pastMinutes, or pastMinutesRange must be provided",
+      message: "Either date or pastMinutesRange must be provided",
     }
   );
 
