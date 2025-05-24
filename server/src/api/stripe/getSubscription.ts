@@ -4,10 +4,9 @@ import Stripe from "stripe";
 import { db } from "../../db/postgres/postgres.js";
 import { user as userSchema } from "../../db/postgres/schema.js";
 import {
+  DEFAULT_EVENT_LIMIT,
   getStripePrices,
   StripePlan,
-  TRIAL_DURATION_DAYS,
-  TRIAL_EVENT_LIMIT,
 } from "../../lib/const.js";
 import { stripe } from "../../lib/stripe.js";
 
@@ -102,39 +101,38 @@ export async function getSubscriptionInner(userId: string) {
 
   // If we get here, the user has no active paid subscription
   // Check if they're in the trial period
-  const createdAt = new Date(user.createdAt);
-  const now = new Date();
-  const trialEndDate = new Date(createdAt);
-  trialEndDate.setDate(trialEndDate.getDate() + TRIAL_DURATION_DAYS);
+  // const createdAt = new Date(user.createdAt);
+  // const now = new Date();
+  // const trialEndDate = new Date(createdAt);
+  // trialEndDate.setDate(trialEndDate.getDate() + TRIAL_DURATION_DAYS);
 
-  const isInTrialPeriod = now < trialEndDate;
+  // const isInTrialPeriod = now < trialEndDate;
 
-  if (isInTrialPeriod) {
-    // User is in trial period
-    return {
-      id: null,
-      planName: "trial",
-      status: "trialing",
-      currentPeriodEnd: trialEndDate,
-      currentPeriodStart: createdAt,
-      eventLimit: TRIAL_EVENT_LIMIT,
-      monthlyEventCount: user.monthlyEventCount,
-      interval: "month",
-      isTrial: true,
-      trialDaysRemaining: Math.ceil(
-        (trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-      ),
-    };
-  }
+  // if (isInTrialPeriod) {
+  //   // User is in trial period
+  //   return {
+  //     id: null,
+  //     planName: "trial",
+  //     status: "trialing",
+  //     currentPeriodEnd: trialEndDate,
+  //     currentPeriodStart: createdAt,
+  //     eventLimit: TRIAL_EVENT_LIMIT,
+  //     monthlyEventCount: user.monthlyEventCount,
+  //     interval: "month",
+  //     isTrial: true,
+  //     trialDaysRemaining: Math.ceil(
+  //       (trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
+  //     ),
+  //   };
+  // }
 
-  // User has no subscription and trial has ended - return null
   return {
     id: null,
     planName: "free",
-    status: "expired",
+    status: "free",
     currentPeriodEnd: null,
     currentPeriodStart: null,
-    eventLimit: 0,
+    eventLimit: DEFAULT_EVENT_LIMIT,
     monthlyEventCount: user.monthlyEventCount,
     isTrial: false,
     trialDaysRemaining: 0,
