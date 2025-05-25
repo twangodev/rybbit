@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, AppWindow, Building2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { addSite, useGetSites } from "../../api/admin/sites";
+import { useStripeSubscription } from "../settings/subscription/utils/useStripeSubscription";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import {
   Dialog,
@@ -24,6 +25,11 @@ import {
 } from "../../components/ui/select";
 import { Switch } from "../../components/ui/switch";
 import { authClient } from "../../lib/auth";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../../components/ui/tooltip";
 
 /**
  * A simple domain validation function:
@@ -46,8 +52,14 @@ export function AddSite({
 }) {
   const { data: sites, refetch } = useGetSites();
   const { data: organizations } = authClient.useListOrganizations();
+  const { data: subscription } = useStripeSubscription();
 
   const existingSites = sites?.map((site) => site.domain);
+
+  // Disable if user is on free plan and has 3+ sites
+  const isDisabledDueToLimit =
+    subscription?.status !== "active" && (sites?.length || 0) >= 3;
+  const finalDisabled = disabled || isDisabledDueToLimit;
 
   const [open, setOpen] = useState(false);
   const [domain, setDomain] = useState("");
@@ -107,6 +119,23 @@ export function AddSite({
     }
   };
 
+  // Show upgrade message if disabled due to limit
+  if (isDisabledDueToLimit) {
+    return (
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <span>
+            <Button disabled title="Upgrade to Pro to add more websites">
+              <Plus className="h-4 w-4" />
+              Add Website
+            </Button>
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>Upgrade to Pro to add more websites</TooltipContent>
+      </Tooltip>
+    );
+  }
+
   return (
     <div>
       <Dialog
@@ -120,7 +149,7 @@ export function AddSite({
       >
         <DialogTrigger asChild>
           {trigger || (
-            <Button disabled={disabled}>
+            <Button disabled={finalDisabled}>
               <Plus className="h-4 w-4" />
               Add Website
             </Button>

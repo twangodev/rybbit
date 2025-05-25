@@ -48,8 +48,7 @@ export function UsageBanners() {
             </AlertTitle>
             <div className="mb-2 text-sm">
               <strong>{formatNumber(site.monthlyEventCount || 0)}</strong>{" "}
-              events used (limit:{" "}
-              <strong>{formatNumber(site.eventLimit || 20000)}</strong>)
+              events used of <strong>{formatNumber(site.eventLimit)}</strong>
             </div>
 
             {site.isOwner ? (
@@ -57,7 +56,7 @@ export function UsageBanners() {
                 <AlertDescription className="text-sm">
                   Upgrade your plan to continue collecting analytics.
                 </AlertDescription>
-                <Button variant="default" asChild>
+                <Button variant="success" asChild size="sm">
                   <Link href="/subscribe">
                     Upgrade Plan <ArrowRight className="ml-1 h-3 w-3" />
                   </Link>
@@ -87,8 +86,7 @@ export function UsageBanners() {
             </AlertTitle>
             <div className="mb-2 text-sm text-amber-700 dark:text-amber-400">
               <strong>{formatNumber(site.monthlyEventCount || 0)}</strong>{" "}
-              events used ({Math.round(usagePercentage)}% of your{" "}
-              <strong>{formatNumber(site.eventLimit || 20000)}</strong> limit)
+              events used of <strong>{formatNumber(site.eventLimit)}</strong>
             </div>
 
             {site.isOwner ? (
@@ -96,10 +94,7 @@ export function UsageBanners() {
                 <AlertDescription className="text-sm text-amber-700 dark:text-amber-400">
                   Consider upgrading your plan to avoid interruptions.
                 </AlertDescription>
-                <Button
-                  className="bg-white hover:bg-white/90 text-neutral-100 border-white/20 hover:border-white/30 py-1 h-auto text-sm"
-                  asChild
-                >
+                <Button asChild variant="success" size="sm">
                   <Link href="/subscribe">
                     Upgrade Plan <ArrowRight className="ml-1 h-3 w-3" />
                   </Link>
