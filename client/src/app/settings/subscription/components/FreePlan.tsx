@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowRight, PackageOpen } from "lucide-react";
+import { AlertTriangle, ArrowRight, PackageOpen, XCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
   Alert,
@@ -30,29 +30,39 @@ export function FreePlan() {
   // Calculate percentage of limit used
   const percentageUsed = Math.min((currentUsage / limit) * 100, 100);
   const isNearLimit = percentageUsed > 80;
+  const isLimitExceeded = currentUsage >= limit;
 
   return (
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle className="flex items-center">
-            Free Plan <PackageOpen className="ml-2 h-5 w-5 text-gray-500" />
-          </CardTitle>
+          <CardTitle className="flex items-center">Free Plan</CardTitle>
           <CardDescription>
             You are on the Free plan with up to 10,000 events per month.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-6 p-2">
-            {isNearLimit && (
-              <Alert className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
-                <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-400" />
-                <AlertTitle>Approaching Limit</AlertTitle>
+          <div className="space-y-6">
+            {isLimitExceeded ? (
+              <Alert className="bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800">
+                <AlertTriangle className="h-4 w-4 text-red-500 dark:text-red-400" />
+                <AlertTitle>Event Limit Exceeded</AlertTitle>
                 <AlertDescription>
-                  You are approaching your monthly event limit. Consider
-                  upgrading to a paid plan for higher limits.
+                  You have exceeded your monthly event limit. Please upgrade to
+                  a Pro plan to continue collecting analytics.
                 </AlertDescription>
               </Alert>
+            ) : (
+              isNearLimit && (
+                <Alert className="bg-amber-50 dark:bg-amber-900/20 border-amber-200 dark:border-amber-800">
+                  <AlertTriangle className="h-4 w-4 text-amber-500 dark:text-amber-400" />
+                  <AlertTitle>Approaching Limit</AlertTitle>
+                  <AlertDescription>
+                    You are approaching your monthly event limit. Consider
+                    upgrading to a paid plan for higher limits.
+                  </AlertDescription>
+                </Alert>
+              )
             )}
 
             <div className="space-y-2">
