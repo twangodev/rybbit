@@ -103,8 +103,8 @@ export function PricingSection() {
                   <div className="flex justify-between mb-3 items-center">
                     <div>
                       <h3 className="font-semibold mb-2">Free</h3>
-                      <div className="text-2xl font-bold text-emerald-400">
-                        10K
+                      <div className="text-3xl font-semibold text-neutral-200">
+                        3,000
                       </div>
                       <p className="text-neutral-400 text-sm">events/month</p>
                     </div>

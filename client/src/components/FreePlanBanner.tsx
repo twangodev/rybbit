@@ -2,6 +2,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useStripeSubscription } from "../app/settings/subscription/utils/useStripeSubscription";
 import { Button } from "./ui/button";
+import { DEFAULT_EVENT_LIMIT } from "../app/settings/subscription/utils/constants";
 
 export function FreePlanBanner() {
   const { data: subscription } = useStripeSubscription();
@@ -18,7 +19,7 @@ export function FreePlanBanner() {
 
   // Active trial banner - slightly more visible but still minimal
   if (subscription.planName === "free") {
-    const eventLimit = subscription.eventLimit || 100000;
+    const eventLimit = subscription.eventLimit || DEFAULT_EVENT_LIMIT;
     const eventsUsed = subscription.monthlyEventCount || 0;
 
     return (

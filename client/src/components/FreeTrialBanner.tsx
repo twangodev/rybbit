@@ -3,6 +3,7 @@ import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 import { useStripeSubscription } from "../app/settings/subscription/utils/useStripeSubscription";
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { DEFAULT_EVENT_LIMIT } from "../app/settings/subscription/utils/constants";
 
 export function FreeTrialBanner() {
   const { data: subscription } = useStripeSubscription();
@@ -20,7 +21,7 @@ export function FreeTrialBanner() {
   // Active trial banner - slightly more visible but still minimal
   if (subscription.isTrial) {
     const daysRemaining = subscription.trialDaysRemaining || 0;
-    const eventLimit = subscription.eventLimit || 100000;
+    const eventLimit = subscription.eventLimit || DEFAULT_EVENT_LIMIT;
     const eventsUsed = subscription.monthlyEventCount || 0;
 
     return (

@@ -49,7 +49,7 @@ export function FreePlan() {
         <CardHeader>
           <CardTitle className="flex items-center">Free Plan</CardTitle>
           <CardDescription>
-            You are on the Free plan with up to 10,000 events per month.
+            You are on the Free plan with up to 3,000 events per month.
           </CardDescription>
         </CardHeader>
         <CardContent>
