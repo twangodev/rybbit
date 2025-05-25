@@ -30,6 +30,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "../../components/ui/tooltip";
+import { IS_CLOUD } from "../../lib/const";
 
 /**
  * A simple domain validation function:
@@ -58,7 +59,7 @@ export function AddSite({
 
   // Disable if user is on free plan and has 3+ sites
   const isDisabledDueToLimit =
-    subscription?.status !== "active" && (sites?.length || 0) >= 3;
+    subscription?.status !== "active" && (sites?.length || 0) >= 3 && IS_CLOUD;
   const finalDisabled = disabled || isDisabledDueToLimit;
 
   const [open, setOpen] = useState(false);
