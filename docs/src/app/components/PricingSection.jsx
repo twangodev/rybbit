@@ -96,10 +96,10 @@ export function PricingSection() {
         {/* Two card layout */}
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto justify-center items-start">
           {/* Free Plan Card */}
-          <div className="w-full lg:w-70 flex-shrink-0 h-[666px]">
+          <div className="w-full lg:w-70 flex-shrink-0 md:h-[666px] h-full">
             <div className="bg-neutral-800/30 rounded-xl border border-neutral-700 overflow-hidden backdrop-blur-sm shadow-lg h-full">
               <div className="p-6">
-                <div className="mb-[74px]">
+                <div className="md:mb-[74px] mb-6">
                   <div className="flex justify-between mb-3 items-center">
                     <div>
                       <h3 className="font-semibold mb-2">Free</h3>
@@ -125,7 +125,7 @@ export function PricingSection() {
                     Start for free
                   </button>
                 </Link>
-                <div className="space-y-3 my-6">
+                <div className="space-y-3 mt-6 mb-3">
                   {FREE_FEATURES.map((item, i) => (
                     <div key={i} className="flex items-center">
                       {item.included ? (
