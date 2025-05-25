@@ -9,6 +9,7 @@ import {
   StripePlan,
 } from "../../lib/const.js";
 import { stripe } from "../../lib/stripe.js";
+import { DateTime } from "luxon";
 
 // Function to find plan details by price ID
 function findPlanDetails(priceId: string): StripePlan | undefined {
@@ -17,6 +18,14 @@ function findPlanDetails(priceId: string): StripePlan | undefined {
       plan.priceId === priceId ||
       (plan.annualDiscountPriceId && plan.annualDiscountPriceId === priceId)
   );
+}
+
+function getStartOfMonth() {
+  return DateTime.now().startOf("month").toJSDate();
+}
+
+function getStartOfNextMonth() {
+  return DateTime.now().startOf("month").plus({ months: 1 }).toJSDate();
 }
 
 export async function getSubscriptionInner(userId: string) {
@@ -130,11 +139,10 @@ export async function getSubscriptionInner(userId: string) {
     id: null,
     planName: "free",
     status: "free",
-    currentPeriodEnd: null,
-    currentPeriodStart: null,
+    currentPeriodEnd: getStartOfNextMonth(),
+    currentPeriodStart: getStartOfMonth(),
     eventLimit: DEFAULT_EVENT_LIMIT,
     monthlyEventCount: user.monthlyEventCount,
-    isTrial: false,
     trialDaysRemaining: 0,
   };
 }
