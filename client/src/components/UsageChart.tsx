@@ -32,7 +32,7 @@ export function UsageChart({
     enabled: !!organizationId,
   });
 
-  const maxTicks = Math.round((width ?? Infinity) / 75);
+  const maxTicks = Math.round((width ?? Infinity) / 200);
 
   const formattedData =
     data?.data
@@ -64,7 +64,7 @@ export function UsageChart({
 
   if (isLoading) {
     return (
-      <div className="h-64 flex items-center justify-center">
+      <div className="h-48 flex items-center justify-center">
         <div className="text-sm text-muted-foreground">
           Loading usage data...
         </div>
@@ -74,7 +74,7 @@ export function UsageChart({
 
   if (error) {
     return (
-      <div className="h-64 flex items-center justify-center">
+      <div className="h-48 flex items-center justify-center">
         <div className="text-sm text-muted-foreground">
           Failed to load usage data
         </div>
@@ -83,11 +83,11 @@ export function UsageChart({
   }
 
   return (
-    <div className="h-64">
+    <div className="h-48">
       <ResponsiveLine
         data={chartData}
         theme={nivoTheme}
-        margin={{ top: 10, right: 10, bottom: 25, left: 50 }}
+        margin={{ top: 10, right: 10, bottom: 25, left: 35 }}
         xScale={{
           type: "time",
           format: "%Y-%m-%d",
