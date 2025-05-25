@@ -24,6 +24,7 @@ const PRO_FEATURES = [
   "Unlimited team members",
   "Real-time analytics",
   "Custom events",
+  "Sessions",
   "Funnels",
   "Goals",
   "User flows",
@@ -95,10 +96,10 @@ export function PricingSection() {
         {/* Two card layout */}
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto justify-center items-start">
           {/* Free Plan Card */}
-          <div className="w-full lg:w-70 flex-shrink-0">
-            <div className="bg-neutral-800/30 rounded-xl border border-neutral-700 overflow-hidden backdrop-blur-sm shadow-lg">
+          <div className="w-full lg:w-70 flex-shrink-0 h-[666px]">
+            <div className="bg-neutral-800/30 rounded-xl border border-neutral-700 overflow-hidden backdrop-blur-sm shadow-lg h-full">
               <div className="p-6">
-                <div className="mb-6">
+                <div className="mb-[74px]">
                   <div className="flex justify-between mb-3 items-center">
                     <div>
                       <h3 className="font-semibold mb-2">Free</h3>
@@ -116,7 +117,15 @@ export function PricingSection() {
                   </div>
                 </div>
 
-                <div className="space-y-3 mb-6">
+                <Link
+                  href="https://app.rybbit.io/signup"
+                  className="w-full block"
+                >
+                  <button className="w-full bg-neutral-700 hover:bg-neutral-600 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer">
+                    Start for free
+                  </button>
+                </Link>
+                <div className="space-y-3 my-6">
                   {FREE_FEATURES.map((item, i) => (
                     <div key={i} className="flex items-center">
                       {item.included ? (
@@ -134,15 +143,6 @@ export function PricingSection() {
                     </div>
                   ))}
                 </div>
-
-                <Link
-                  href="https://app.rybbit.io/signup"
-                  className="w-full block"
-                >
-                  <button className="w-full bg-neutral-700 hover:bg-neutral-600 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer">
-                    Start for free
-                  </button>
-                </Link>
               </div>
             </div>
           </div>
@@ -255,15 +255,6 @@ export function PricingSection() {
                   </div>
                 </div>
 
-                <div className="space-y-4 mb-6">
-                  {PRO_FEATURES.map((feature, i) => (
-                    <div key={i} className="flex items-center">
-                      <Check className="h-4 w-4 text-emerald-400 mr-3 shrink-0" />
-                      <span>{feature}</span>
-                    </div>
-                  ))}
-                </div>
-
                 {prices.custom ? (
                   <Link
                     href="https://www.rybbit.io/contact"
@@ -283,6 +274,14 @@ export function PricingSection() {
                     </button>
                   </Link>
                 )}
+                <div className="space-y-4 my-6">
+                  {PRO_FEATURES.map((feature, i) => (
+                    <div key={i} className="flex items-center">
+                      <Check className="h-4 w-4 text-emerald-400 mr-3 shrink-0" />
+                      <span>{feature}</span>
+                    </div>
+                  ))}
+                </div>
 
                 <p className="text-center text-sm text-neutral-400 mt-4">
                   {prices.custom
