@@ -59,22 +59,18 @@ export default function Subscribe() {
         {organizationId && (
           <div className="max-w-lg mx-auto mt-6">
             <div className="bg-blue-900/20 rounded-xl border border-blue-800 p-6">
-              <div className="flex items-center gap-2 mb-4">
-                <TrendingUp className="h-5 w-5 text-blue-400" />
-                <h3 className="font-semibold text-lg">
-                  Your Usage (Last 30 Days)
-                </h3>
-              </div>
-
-              <div className="mb-6">
-                <div className="bg-blue-950/50 p-4 rounded-lg inline-block">
-                  <p className="text-sm text-neutral-300 mb-1">Total Events</p>
-                  <p className="text-3xl font-bold text-blue-300">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-blue-400" />
+                  <h3 className="font-semibold text-lg">
+                    Your Usage (Last 30 Days)
+                  </h3>
+                </div>
+                <div className="text-right">
+                  <p className="text-2xl font-bold text-blue-300">
                     {totalEvents.toLocaleString()}
                   </p>
-                  <p className="text-xs text-neutral-400 mt-1">
-                    Events tracked in the past 30 days
-                  </p>
+                  <p className="text-xs text-neutral-400">total events</p>
                 </div>
               </div>
 

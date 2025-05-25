@@ -203,8 +203,8 @@ export function ProPlan() {
 
             {organizationId && (
               <div className="space-y-2">
-                <h3 className="font-medium mb-2">
-                  Usage Over Time (Last 30 Days)
+                <h3 className="font-medium text-sm text-neutral-400 mb-2">
+                  Last 30 Days
                 </h3>
                 <UsageChart
                   organizationId={organizationId}
