@@ -1,5 +1,6 @@
-import { AlertTriangle, ArrowRight, PackageOpen, XCircle } from "lucide-react";
+import { AlertTriangle, ArrowRight, PackageOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { DateTime } from "luxon";
 import {
   Alert,
   AlertDescription,
@@ -15,12 +16,22 @@ import {
   CardTitle,
 } from "../../../../components/ui/card";
 import { Progress } from "../../../../components/ui/progress";
+import { useUserOrganizations } from "../../../../api/admin/organizations";
 import { DEFAULT_EVENT_LIMIT } from "../utils/constants";
 import { useStripeSubscription } from "../utils/useStripeSubscription";
+import { UsageChart } from "../../../../components/UsageChart";
 
 export function FreePlan() {
   const { data: subscription } = useStripeSubscription();
+  const { data: organizations } = useUserOrganizations();
   const router = useRouter();
+
+  // Get the first organization (assuming user is part of one organization for now)
+  const organizationId = organizations?.[0]?.id;
+
+  // Get last 30 days of data for the chart
+  const endDate = DateTime.now().toISODate();
+  const startDate = DateTime.now().minus({ days: 30 }).toISODate();
 
   if (!subscription) return null;
 
@@ -84,6 +95,19 @@ export function FreePlan() {
                 </div>
               </div>
             </div>
+
+            {organizationId && (
+              <div className="space-y-2">
+                <h3 className="font-medium mb-2">
+                  Usage Over Time (Last 30 Days)
+                </h3>
+                <UsageChart
+                  organizationId={organizationId}
+                  startDate={startDate}
+                  endDate={endDate}
+                />
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter>
