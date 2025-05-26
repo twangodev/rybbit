@@ -19,21 +19,45 @@ export const metadata = {
   metadataBase: new URL("https://rybbit.io"),
   title: {
     template: "%s - Rybbit",
+    default: "Rybbit - The Modern Google Analytics Replacement",
   },
   description:
     "Next-gen, open source, lightweight, cookieless web & product analytics for everyone.",
   // description: 'Next-gen, open source, lightweight, cookieless web & product analytics for everyone — GDPR/CCPA compliant.',
   applicationName: "Rybbit",
   generator: "Next.js",
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://rybbit.io",
+    siteName: "Rybbit",
+    title: "Rybbit - The Modern Google Analytics Replacement",
+    description:
+      "Next-gen, open source, lightweight, cookieless web & product analytics for everyone.",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Rybbit - The Modern Google Analytics Replacement",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    site: "@rybbit_io",
+    creator: "@rybbit_io",
+    title: "Rybbit - The Modern Google Analytics Replacement",
+    description:
+      "Next-gen, open source, lightweight, cookieless web & product analytics for everyone.",
+    images: ["/opengraph-image.png"],
+  },
   appleWebApp: {
     title: "Rybbit",
   },
   other: {
     "msapplication-TileImage": "/ms-icon-144x144.png",
     "msapplication-TileColor": "#fff",
-  },
-  twitter: {
-    site: "https://rybbit.io",
   },
 };
 
