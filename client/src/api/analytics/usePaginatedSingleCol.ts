@@ -2,7 +2,7 @@ import { SingleColResponse } from "@/api/analytics/useSingleCol";
 import { authedFetch, getStartAndEndDate } from "@/api/utils";
 import { BACKEND_URL } from "@/lib/const";
 import { timeZone } from "@/lib/dateTimeUtils";
-import { FilterParameter, useStore } from "@/lib/store";
+import { Filter, FilterParameter, useStore } from "@/lib/store";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 type UsePaginatedSingleColOptions = {
@@ -10,6 +10,8 @@ type UsePaginatedSingleColOptions = {
   limit?: number;
   page?: number;
   useFilters?: boolean;
+  enabled?: boolean;
+  additionalFilters?: Filter[];
 };
 
 type PaginatedResponse = {
@@ -22,6 +24,8 @@ export function usePaginatedSingleCol({
   limit = 10,
   page = 1,
   useFilters = true,
+  enabled = true,
+  additionalFilters = [],
 }: UsePaginatedSingleColOptions): UseQueryResult<PaginatedResponse> {
   const { time, site, filters } = useStore();
 
@@ -38,7 +42,7 @@ export function usePaginatedSingleCol({
         parameter,
         limit,
         page,
-        filters: useFilters ? filters : undefined,
+        filters: useFilters ? [...filters, ...additionalFilters] : undefined,
       }
     : {
         // Regular date-based approach
@@ -47,7 +51,7 @@ export function usePaginatedSingleCol({
         parameter,
         limit,
         page,
-        filters: useFilters ? filters : undefined,
+        filters: useFilters ? [...filters, ...additionalFilters] : undefined,
       };
 
   return useQuery({
@@ -59,6 +63,7 @@ export function usePaginatedSingleCol({
       limit,
       page,
       isPast24HoursMode ? "past-minutes" : "date-range",
+      additionalFilters,
     ],
     queryFn: () => {
       return authedFetch(`${BACKEND_URL}/single-col/${site}`, queryParams)
@@ -76,5 +81,6 @@ export function usePaginatedSingleCol({
       }
       return undefined;
     },
+    enabled,
   });
 }

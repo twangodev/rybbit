@@ -14,7 +14,13 @@ import { Browser } from "../../../components/shared/icons/Browser";
 import { OperatingSystem } from "../../../components/shared/icons/OperatingSystem";
 import { Button } from "../../../../../components/ui/button";
 
-type Tab = "devices" | "browsers" | "os" | "dimensions";
+type Tab =
+  | "devices"
+  | "browsers"
+  | "os"
+  | "dimensions"
+  | "browser_versions"
+  | "os_versions";
 
 export function Devices() {
   const [tab, setTab] = useState<Tab>("browsers");
@@ -76,8 +82,18 @@ export function Devices() {
                   {e.value || "Other"}
                 </div>
               )}
+              getSubrowLabel={(e) => {
+                const justBrowser = e.value.split(" ").slice(0, -1).join(" ");
+                return (
+                  <div className="flex gap-2 items-center">
+                    <Browser browser={justBrowser || "Other"} />
+                    {e.value || "Other"}
+                  </div>
+                );
+              }}
               expanded={expanded}
               close={close}
+              hasSubrow={true}
             />
           </TabsContent>
           <TabsContent value="os">
@@ -91,9 +107,19 @@ export function Devices() {
                   {e.value || "Other"}
                 </div>
               )}
+              getSubrowLabel={(e) => {
+                const justOS = e.value.split(" ").slice(0, -1).join(" ");
+                return (
+                  <div className="flex gap-2 items-center">
+                    <OperatingSystem os={justOS || "Other"} />
+                    {e.value || "Other"}
+                  </div>
+                );
+              }}
               filterParameter="operating_system"
               expanded={expanded}
               close={close}
+              hasSubrow={true}
             />
           </TabsContent>
           <TabsContent value="dimensions">

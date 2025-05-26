@@ -9,7 +9,6 @@ import {
   Link,
   LogIn,
   LogOut,
-  MapPin,
   MapPinHouse,
   MapPinned,
   Maximize,
@@ -18,7 +17,6 @@ import {
   Puzzle,
   Radio,
   Search,
-  Share2,
   TabletSmartphone,
   Tag,
   Target,
@@ -97,8 +95,18 @@ export const FilterOptions: {
     icon: <Brain className="h-4 w-4" />,
   },
   {
+    label: "Operating System Version",
+    value: "operating_system_version",
+    icon: <Brain className="h-4 w-4" />,
+  },
+  {
     label: "Browser",
     value: "browser",
+    icon: <AppWindow className="h-4 w-4" />,
+  },
+  {
+    label: "Browser Version",
+    value: "browser_version",
     icon: <AppWindow className="h-4 w-4" />,
   },
   {

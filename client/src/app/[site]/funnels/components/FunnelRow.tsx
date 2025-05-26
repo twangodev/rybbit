@@ -179,7 +179,13 @@ export function FunnelRow({ funnel }: FunnelRowProps) {
                         {getParameterNameLabel(filter.parameter)}
                       </span>
                       <span
-                        className={cn("mx-1", filter.type === "not_equals" || filter.type === "not_contains" ? "text-red-400" : "text-emerald-400")}
+                        className={cn(
+                          "mx-1",
+                          filter.type === "not_equals" ||
+                            filter.type === "not_contains"
+                            ? "text-red-400"
+                            : "text-emerald-400"
+                        )}
                       >
                         {filterTypeToLabel(filter.type)}
                       </span>
@@ -223,7 +229,11 @@ export function FunnelRow({ funnel }: FunnelRowProps) {
             </Button>
 
             <Button variant="ghost" size="icon" onClick={handleExpand}>
-              {expanded ? <ChevronUp /> : <ChevronDown />}
+              {expanded ? (
+                <ChevronUp strokeWidth={3} />
+              ) : (
+                <ChevronDown strokeWidth={3} />
+              )}
             </Button>
           </div>
         </div>

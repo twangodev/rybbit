@@ -203,9 +203,9 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
           {/* Expand/Collapse icon */}
           <div className="ml-2 flex-shrink-0 hidden md:flex">
             {expanded ? (
-              <ChevronDown className="w-4 h-4 text-gray-400" />
+              <ChevronDown className="w-4 h-4 text-gray-400" strokeWidth={3} />
             ) : (
-              <ChevronRight className="w-4 h-4 text-gray-400" />
+              <ChevronRight className="w-4 h-4 text-gray-400" strokeWidth={3} />
             )}
           </div>
         </div>

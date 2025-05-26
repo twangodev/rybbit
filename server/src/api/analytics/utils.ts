@@ -130,6 +130,12 @@ export const getSqlParam = (parameter: FilterParameter) => {
   if (parameter === "city") {
     return "concat(toString(region), '-', toString(city))";
   }
+  if (parameter === "browser_version") {
+    return "concat(toString(browser), ' ', toString(browser_version))";
+  }
+  if (parameter === "operating_system_version") {
+    return "concat(toString(operating_system), ' ', toString(operating_system_version))";
+  }
   return filterParamSchema.parse(parameter);
 };
 

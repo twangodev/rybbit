@@ -45,7 +45,9 @@ export type FilterParameter =
   // derivative parameters
   | "entry_page"
   | "exit_page"
-  | "dimensions";
+  | "dimensions"
+  | "browser_version"
+  | "operating_system_version";
 
 export const SESSION_PAGE_FILTERS: FilterParameter[] = [
   "browser",

@@ -197,6 +197,8 @@ export const filterParamSchema = z.enum([
   "entry_page",
   "exit_page",
   "dimensions",
+  "browser_version",
+  "operating_system_version",
 ]);
 
 /**

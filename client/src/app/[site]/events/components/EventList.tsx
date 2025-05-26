@@ -164,9 +164,15 @@ export function EventList({
               >
                 <div className="font-medium truncate max-w-[70%] flex items-center gap-1">
                   {isExpanded ? (
-                    <ChevronDown className="h-4 w-4 text-neutral-400" />
+                    <ChevronDown
+                      className="h-4 w-4 text-neutral-400 hover:text-neutral-100"
+                      strokeWidth={3}
+                    />
                   ) : (
-                    <ChevronRight className="h-4 w-4 text-neutral-400" />
+                    <ChevronRight
+                      className="h-4 w-4 text-neutral-400 hover:text-neutral-100"
+                      strokeWidth={3}
+                    />
                   )}
                   {event.eventName}
                 </div>

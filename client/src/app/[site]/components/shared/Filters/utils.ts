@@ -45,6 +45,10 @@ export function getParameterNameLabel(parameter: FilterParameter) {
       return "UTM Term";
     case "utm_content":
       return "UTM Content";
+    case "browser_version":
+      return "Browser Version";
+    case "operating_system_version":
+      return "OS Version";
     default:
       return parameter;
   }

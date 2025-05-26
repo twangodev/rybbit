@@ -22,6 +22,8 @@ export function StandardSection({
   filterParameter,
   expanded,
   close,
+  hasSubrow,
+  getSubrowLabel,
 }: {
   title: string;
   getKey: (item: SingleColResponse) => string;
@@ -33,6 +35,8 @@ export function StandardSection({
   filterParameter: FilterParameter;
   expanded: boolean;
   close: () => void;
+  hasSubrow?: boolean;
+  getSubrowLabel?: (item: SingleColResponse) => ReactNode;
 }) {
   const { data, isLoading, isFetching, error, refetch } = usePaginatedSingleCol(
     {
@@ -55,7 +59,7 @@ export function StandardSection({
           <CardLoader />
         </div>
       )}
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-2 max-h-[344px] overflow-y-auto">
         {isLoading ? (
           <Skeleton />
         ) : error ? (
@@ -97,6 +101,8 @@ export function StandardSection({
                     getValue={getValue}
                     getLink={getLink}
                     filterParameter={filterParameter}
+                    getSubrowLabel={getSubrowLabel}
+                    hasSubrow={hasSubrow}
                   />
                 ))
             ) : (
