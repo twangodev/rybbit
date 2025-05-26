@@ -84,7 +84,9 @@ server {
 For a detailed step-by-step guide on setting up Nginx with SSL certificates using Certbot, see our [Nginx Setup Guide](/docs/self-hosting-nginx).
 
 ## Docker Compose setup with NPM, without exposing ports
-_this setup assumes you have NPM docker up and running and are capable of creating SSL certs for your local hosts. Ideally, also use Technitium to create a DNS entry_
+_this setup assumes you have [NPM docker](https://nginxproxymanager.com) up and running and are capable of creating SSL certs for your local hosts. Ideally, also use Technitium to create a DNS entry_
+
+Note, of course you can use any othert proxy of your choice, sa long you can somehow put it on the same network as Rybbit Docker and edit location rules.
 
 1. Create a `docker-compose.yml` file in your project folder with these contents:
 ```
