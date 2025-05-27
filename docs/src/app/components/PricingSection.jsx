@@ -1,7 +1,7 @@
 "use client";
 
 import { Slider } from "@/components/ui/slider";
-import { Check, X } from "lucide-react";
+import { Check, X, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "../../lib/utils";
@@ -283,10 +283,15 @@ export function PricingSection() {
                   ))}
                 </div>
 
-                <p className="text-center text-sm text-neutral-400 mt-4">
-                  {prices.custom
-                    ? "Email us at hello@rybbit.io for custom pricing"
-                    : "We don't ask for your credit card"}
+                <p className="text-center text-sm text-neutral-400 mt-4 flex items-center justify-center gap-2">
+                  {prices.custom ? (
+                    "Email us at hello@rybbit.io for custom pricing"
+                  ) : (
+                    <>
+                      <CheckCircle className="w-3 h-3" />
+                      We don't ask for your credit card
+                    </>
+                  )}
                 </p>
               </div>
             </div>

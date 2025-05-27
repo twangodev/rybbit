@@ -6,6 +6,7 @@ import {
 } from "@/components/ui/accordion";
 import { Tilt_Warp } from "next/font/google";
 import Link from "next/link";
+import { CheckCircle } from "lucide-react";
 import { cn } from "../lib/utils";
 import { AdvancedFilters } from "./components/Cards/AdvancedFilters";
 import { EventTracking } from "./components/Cards/EventTracking";
@@ -381,8 +382,7 @@ export default function IndexPage() {
                 It's time to switch to analytics that's made for you
               </h2>
               <p className="text-base md:text-xl text-neutral-300 mb-6 md:mb-10 max-w-3xl mx-auto">
-                Try out 14 day free trial. We won't even ask for your credit
-                card at all.
+                The first 3,000 events a month are free
               </p>
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8 w-full sm:w-auto">
@@ -402,20 +402,7 @@ export default function IndexPage() {
               </div>
 
               <p className="text-neutral-400 text-xs md:text-sm flex items-center justify-center gap-2">
-                <svg
-                  className="w-3 h-3 md:w-4 md:h-4"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-                  ></path>
-                </svg>
+                <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
                 We don't ask for your credit card
               </p>
             </div>

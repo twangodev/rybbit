@@ -2,6 +2,7 @@ import { MDXRemote } from "next-mdx-remote/rsc";
 import { getPostBySlug, getAllPosts } from "../../../lib/blog";
 import { notFound } from "next/navigation";
 import Link from "next/link";
+import { ArrowLeft, Calendar, User } from "lucide-react";
 import "../blog.css";
 import "../code-highlight.css";
 import {
@@ -46,23 +47,20 @@ export default async function BlogPostPage({ params }) {
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-10">
+      <div className="mb-6">
+        <Link
+          href="/blog"
+          className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+        >
+          <ArrowLeft size={20} />
+          Back to all posts
+        </Link>
+      </div>
+
       <div className="mb-8">
         <h1 className="text-4xl font-bold mb-4">{post.frontMatter.title}</h1>
         <div className="text-neutral-400 mb-5 flex items-center">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className="h-4 w-4 mr-2"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-            />
-          </svg>
+          <Calendar className="h-4 w-4 mr-2" />
           {new Date(post.frontMatter.date).toLocaleDateString("en-US", {
             year: "numeric",
             month: "long",
@@ -72,20 +70,7 @@ export default async function BlogPostPage({ params }) {
             <>
               <span className="mx-2">•</span>
               <span className="flex items-center">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-4 w-4 mr-2"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                  />
-                </svg>
+                <User className="h-4 w-4 mr-2" />
                 {post.frontMatter.author}
               </span>
             </>
@@ -114,20 +99,7 @@ export default async function BlogPostPage({ params }) {
           href="/blog"
           className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
         >
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <path d="m12 19-7-7 7-7" />
-            <path d="M19 12H5" />
-          </svg>
+          <ArrowLeft size={20} />
           Back to all posts
         </Link>
       </div>
