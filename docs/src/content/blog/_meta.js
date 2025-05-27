@@ -1,5 +1,4 @@
 export default {
-  "getting-started": "Getting Started with FrogStats",
-  "advanced-analytics": "Advanced Analytics",
-  "privacy-first-analytics": "Privacy-First Analytics",
+  "5k-stars":
+    "How my open source SaaS got 5,000 Github stars in 9 days with zero marketing effort",
 };
