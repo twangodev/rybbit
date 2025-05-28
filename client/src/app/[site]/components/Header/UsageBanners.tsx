@@ -9,7 +9,7 @@ import {
 import { Button } from "../../../../components/ui/button";
 
 export function UsageBanners() {
-  const site = useCurrentSite();
+  const { site, subscription } = useCurrentSite();
 
   if (!site) return null;
 
@@ -20,17 +20,17 @@ export function UsageBanners() {
 
   // Calculate usage percentage
   const getUsagePercentage = () => {
-    if (!site.eventLimit || !site.monthlyEventCount) return 0;
-    return (site.monthlyEventCount / site.eventLimit) * 100;
+    if (!subscription?.eventLimit || !subscription.monthlyEventCount) return 0;
+    return (subscription.monthlyEventCount / subscription.eventLimit) * 100;
   };
 
   const usagePercentage = getUsagePercentage();
-  const isNearLimit = usagePercentage >= 90 && !site.overMonthlyLimit;
+  const isNearLimit = usagePercentage >= 90 && !subscription?.overMonthlyLimit;
 
   if (
-    site.monthlyEventCount &&
-    site.eventLimit &&
-    site.monthlyEventCount > site.eventLimit
+    subscription?.monthlyEventCount &&
+    subscription?.eventLimit &&
+    subscription.monthlyEventCount > subscription.eventLimit
   ) {
     return (
       <Alert variant="destructive" className="p-4 mt-4">
@@ -41,8 +41,11 @@ export function UsageBanners() {
               Event Limit Exceeded
             </AlertTitle>
             <div className="mb-2 text-sm">
-              <strong>{formatNumber(site.monthlyEventCount || 0)}</strong>{" "}
-              events used of <strong>{formatNumber(site.eventLimit)}</strong>
+              <strong>
+                {formatNumber(subscription.monthlyEventCount || 0)}
+              </strong>{" "}
+              events used of{" "}
+              <strong>{formatNumber(subscription.eventLimit)}</strong>
             </div>
 
             {site.isOwner ? (
@@ -79,8 +82,11 @@ export function UsageBanners() {
               Approaching Event Limit
             </AlertTitle>
             <div className="mb-2 text-sm text-amber-700 dark:text-amber-400">
-              <strong>{formatNumber(site.monthlyEventCount || 0)}</strong>{" "}
-              events used of <strong>{formatNumber(site.eventLimit)}</strong>
+              <strong>
+                {formatNumber(subscription?.monthlyEventCount || 0)}
+              </strong>{" "}
+              events used of{" "}
+              <strong>{formatNumber(subscription?.eventLimit || 0)}</strong>
             </div>
 
             {site.isOwner ? (

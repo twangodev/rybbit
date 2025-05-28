@@ -1,7 +1,6 @@
 import { Building, Plus } from "lucide-react";
 import { useState } from "react";
 import { useUserOrganizations } from "../api/admin/organizations";
-import { useGetSites } from "../api/admin/sites";
 import { CreateOrganizationDialog } from "./CreateOrganizationDialog";
 import { Button } from "./ui/button";
 import { Card, CardDescription, CardTitle } from "./ui/card";
@@ -12,12 +11,10 @@ export function NoOrganization({
   message?: string;
 }) {
   const [createOrgDialogOpen, setCreateOrgDialogOpen] = useState(false);
-  const { refetch: refetchSites } = useGetSites();
   const { refetch: refetchOrganizations } = useUserOrganizations();
 
   const handleOrganizationCreated = () => {
     refetchOrganizations();
-    refetchSites();
   };
   return (
     <div className="w-full ">

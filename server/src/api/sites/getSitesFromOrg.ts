@@ -111,7 +111,7 @@ export async function getSitesFromOrg(
       // Self-hosted version has unlimited events
       eventLimit = Infinity;
     } else if (ownerId) {
-      subscription = await getSubscriptionInner(ownerId);
+      subscription = await getSubscriptionInner(organizationId);
       monthlyEventCount = subscription?.monthlyEventCount || 0;
       eventLimit = subscription?.eventLimit || DEFAULT_EVENT_LIMIT;
     }

@@ -3,6 +3,7 @@ import { BACKEND_URL } from "../../lib/const";
 import { useStore } from "../../lib/store";
 import { authedFetchWithError } from "../utils";
 import { usePathname } from "next/navigation";
+import { authClient } from "../../lib/auth";
 
 export type SiteResponse = {
   siteId: number;
@@ -220,8 +221,14 @@ export function changeSiteBlockBots(siteId: number, blockBots: boolean) {
 }
 
 export const useCurrentSite = () => {
-  const { data: sites } = useGetSites();
+  const { data: activeOrganization } = authClient.useActiveOrganization();
+  const { data: sites } = useGetSitesFromOrg(activeOrganization?.id);
   const pathname = usePathname();
 
-  return sites?.find((site) => site.siteId === Number(pathname.split("/")[1]));
+  return {
+    site: sites?.sites.find(
+      (site) => site.siteId === Number(pathname.split("/")[1])
+    ),
+    subscription: sites?.subscription,
+  };
 };

@@ -88,7 +88,7 @@ export async function getSites(req: FastifyRequest, reply: FastifyReply) {
           }
         }
 
-        const subscription = await getSubscriptionInner(ownerId);
+        const subscription = await getSubscriptionInner(site.organizationId);
 
         const monthlyEventCount = subscription?.monthlyEventCount || 0;
         const eventLimit = subscription?.eventLimit || DEFAULT_EVENT_LIMIT;
