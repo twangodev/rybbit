@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { AlertCircle, AppWindow, Building2, Plus } from "lucide-react";
 import { useEffect, useState } from "react";
 import { addSite, useGetSites } from "../../api/admin/sites";
-import { useStripeSubscription } from "../settings/subscription/utils/useStripeSubscription";
+import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 import { Alert, AlertDescription, AlertTitle } from "../../components/ui/alert";
 import {
   Dialog,

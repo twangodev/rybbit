@@ -1,11 +1,7 @@
 import { AlertTriangle, ArrowRight } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "../../../../components/ui/alert";
-import { Button } from "../../../../components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -13,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../../../components/ui/card";
+} from "../ui/card";
 
 interface ExpiredTrialPlanProps {
   message?: string;

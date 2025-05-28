@@ -1,12 +1,8 @@
 import { AlertTriangle, ArrowRight, PackageOpen } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { DateTime } from "luxon";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "../../../../components/ui/alert";
-import { Button } from "../../../../components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -14,11 +10,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../../../components/ui/card";
-import { Progress } from "../../../../components/ui/progress";
-import { DEFAULT_EVENT_LIMIT } from "../utils/constants";
-import { useStripeSubscription } from "../utils/useStripeSubscription";
-import { UsageChart } from "../../../../components/UsageChart";
+} from "../ui/card";
+import { Progress } from "../ui/progress";
+import { DEFAULT_EVENT_LIMIT } from "../../lib/subscription/constants";
+import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
+import { UsageChart } from "../UsageChart";
 import { authClient } from "@/lib/auth";
 
 export function FreePlan() {

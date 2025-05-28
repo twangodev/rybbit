@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 import { DateTime } from "luxon";
 import { TrendingUp } from "lucide-react";
 import { StandardPage } from "../../components/StandardPage";
-import { useStripeSubscription } from "../settings/subscription/utils/useStripeSubscription";
+import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 import { useGetOrgEventCount } from "../../api/analytics/useGetOrgEventCount";
 import { UsageChart } from "../../components/UsageChart";
 import { PricingHeader } from "./components/PricingHeader";

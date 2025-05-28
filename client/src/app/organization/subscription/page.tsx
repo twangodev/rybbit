@@ -7,13 +7,13 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProPlan } from "../../settings/subscription/components/ProPlan";
-import { useStripeSubscription } from "../../settings/subscription/utils/useStripeSubscription";
+import { ProPlan } from "../../../components/subscription/ProPlan";
+import { useStripeSubscription } from "../../../lib/subscription/useStripeSubscription";
 import { NoOrganization } from "../../../components/NoOrganization";
-import { TrialPlan } from "../../settings/subscription/components/TrialPlan";
-import { ExpiredTrialPlan } from "../../settings/subscription/components/ExpiredTrialPlan";
+import { TrialPlan } from "../../../components/subscription/TrialPlan";
+import { ExpiredTrialPlan } from "../../../components/subscription/ExpiredTrialPlan";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
-import { FreePlan } from "../../settings/subscription/components/FreePlan";
+import { FreePlan } from "../../../components/subscription/FreePlan";
 import { Building } from "lucide-react";
 import { authClient } from "@/lib/auth";
 

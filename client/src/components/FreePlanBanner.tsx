@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useCurrentSite } from "../api/admin/sites";
-import { DEFAULT_EVENT_LIMIT } from "../app/settings/subscription/utils/constants";
+import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
 import { Button } from "./ui/button";
 
 export function FreePlanBanner() {

@@ -1,11 +1,7 @@
 import { ArrowRight, Clock } from "lucide-react";
 import { useRouter } from "next/navigation";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "../../../../components/ui/alert";
-import { Button } from "../../../../components/ui/button";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { Button } from "../ui/button";
 import {
   Card,
   CardContent,
@@ -13,11 +9,11 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "../../../../components/ui/card";
-import { Progress } from "../../../../components/ui/progress";
-import { TRIAL_EVENT_LIMIT } from "../utils/constants";
-import { formatDate } from "../utils/planUtils";
-import { useStripeSubscription } from "../utils/useStripeSubscription";
+} from "../ui/card";
+import { Progress } from "../ui/progress";
+import { TRIAL_EVENT_LIMIT } from "../../lib/subscription/constants";
+import { formatDate } from "../../lib/subscription/planUtils";
+import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 
 export function TrialPlan() {
   const {

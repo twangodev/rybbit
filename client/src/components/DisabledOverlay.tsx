@@ -1,10 +1,9 @@
 import { ArrowRight, Crown } from "lucide-react";
 import Link from "next/link";
 import React, { ReactNode } from "react";
-import { useStripeSubscription } from "../app/settings/subscription/utils/useStripeSubscription";
-import { Button } from "./ui/button";
 import { useCurrentSite } from "../api/admin/sites";
-import { DEFAULT_EVENT_LIMIT } from "../app/settings/subscription/utils/constants";
+import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
+import { Button } from "./ui/button";
 
 interface DisabledOverlayProps {
   children: ReactNode;

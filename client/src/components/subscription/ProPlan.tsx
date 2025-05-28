@@ -2,15 +2,15 @@ import { Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DateTime } from "luxon";
-import { Alert } from "../../../../components/ui/alert";
-import { Button } from "../../../../components/ui/button";
-import { Card, CardContent } from "../../../../components/ui/card";
-import { Progress } from "../../../../components/ui/progress";
-import { BACKEND_URL } from "../../../../lib/const";
-import { getStripePrices } from "../../../../lib/stripe";
-import { formatDate } from "../utils/planUtils";
-import { useStripeSubscription } from "../utils/useStripeSubscription";
-import { UsageChart } from "../../../../components/UsageChart";
+import { Alert } from "../ui/alert";
+import { Button } from "../ui/button";
+import { Card, CardContent } from "../ui/card";
+import { Progress } from "../ui/progress";
+import { BACKEND_URL } from "../../lib/const";
+import { getStripePrices } from "../../lib/stripe";
+import { formatDate } from "../../lib/subscription/planUtils";
+import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
+import { UsageChart } from "../UsageChart";
 import { authClient } from "@/lib/auth";
 
 export function ProPlan() {

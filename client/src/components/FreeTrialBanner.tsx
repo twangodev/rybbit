@@ -1,9 +1,9 @@
 import { AlertTriangle, ArrowRight, Clock } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
-import { useStripeSubscription } from "../app/settings/subscription/utils/useStripeSubscription";
+import { useStripeSubscription } from "../lib/subscription/useStripeSubscription";
 import Link from "next/link";
 import { Button } from "./ui/button";
-import { DEFAULT_EVENT_LIMIT } from "../app/settings/subscription/utils/constants";
+import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
 
 export function FreeTrialBanner() {
   const { data: subscription } = useStripeSubscription();
