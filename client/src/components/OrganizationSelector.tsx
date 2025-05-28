@@ -8,9 +8,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { useUserOrganizations } from "../api/admin/organizations";
 
 export function OrganizationSelector() {
-  const { data: organizations } = authClient.useListOrganizations();
+  const { data: organizations } = useUserOrganizations();
   const { data: activeOrganization, isPending } =
     authClient.useActiveOrganization();
 

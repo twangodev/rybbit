@@ -46,7 +46,6 @@ export function AddSite({
 }) {
   const { data: activeOrganization } = authClient.useActiveOrganization();
   const { data: sites, refetch } = useGetSitesFromOrg(activeOrganization?.id);
-  const { data: organizations } = authClient.useListOrganizations();
   const { data: subscription } = useStripeSubscription();
 
   // Disable if user is on free plan and has 3+ sites

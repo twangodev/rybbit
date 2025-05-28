@@ -13,7 +13,7 @@ import "./globals.css";
 import Script from "next/script";
 import { useStopImpersonation } from "@/hooks/useStopImpersonation";
 import { ReactScan } from "./ReactScan";
-import { authClient } from "../lib/auth";
+import { OrganizationInitializer } from "../components/OrganizationInitializer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -82,22 +82,6 @@ export default function RootLayout({
     }
   }, [isPending, user, pathname, isCheckingPublic, isPublicSite]);
 
-  const { data: organizations } = authClient.useListOrganizations();
-  const { data: activeOrganization, isPending: isPendingActiveOrganization } =
-    authClient.useActiveOrganization();
-
-  useEffect(() => {
-    if (
-      !isPendingActiveOrganization &&
-      !activeOrganization &&
-      organizations?.length
-    ) {
-      authClient.organization.setActive({
-        organizationId: organizations?.[0]?.id,
-      });
-    }
-  }, [isPendingActiveOrganization, activeOrganization, organizations]);
-
   return (
     <html lang="en" className="dark">
       <ReactScan />
@@ -108,7 +92,10 @@ export default function RootLayout({
             inter.className
           )}
         >
-          <QueryProvider>{children}</QueryProvider>
+          <QueryProvider>
+            <OrganizationInitializer />
+            {children}
+          </QueryProvider>
           <Toaster />
         </body>
       </TooltipProvider>
