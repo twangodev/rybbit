@@ -7,8 +7,6 @@ import { Button } from "./ui/button";
 export function FreePlanBanner() {
   const { site, subscription } = useCurrentSite();
 
-  console.info(site, subscription);
-
   if (!site) return null;
 
   // Format numbers with commas
