@@ -39,15 +39,11 @@ export function OrganizationSelector() {
     return (
       <Select disabled>
         <SelectTrigger className="w-full">
-          <SelectValue
-            placeholder={isPending ? "Loading..." : "Select an organization"}
-          />
+          <SelectValue placeholder={"Loading..."} />
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="placeholder" disabled>
-            {isPending
-              ? "Loading organizations..."
-              : "No organization selected"}
+            {"Loading organizations..."}
           </SelectItem>
         </SelectContent>
       </Select>
