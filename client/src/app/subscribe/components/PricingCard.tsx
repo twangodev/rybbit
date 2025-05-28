@@ -61,7 +61,7 @@ export function PricingCard({ stripePrices, isLoggedIn }: PricingCardProps) {
     try {
       // Use NEXT_PUBLIC_BACKEND_URL if available, otherwise use relative path for same-origin requests
       const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/settings/subscription?session_id={CHECKOUT_SESSION_ID}`;
+      const successUrl = `${baseUrl}/organization/subscription?session_id={CHECKOUT_SESSION_ID}`;
       const cancelUrl = `${baseUrl}/subscribe`;
 
       const response = await fetch(

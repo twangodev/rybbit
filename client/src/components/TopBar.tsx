@@ -40,8 +40,11 @@ export function TopBar() {
               {session?.user.name}
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <Link href="/settings/account" passHref>
-                <DropdownMenuItem>Settings</DropdownMenuItem>
+              <Link href="/account" passHref>
+                <DropdownMenuItem>Account</DropdownMenuItem>
+              </Link>
+              <Link href="/organization/members" passHref>
+                <DropdownMenuItem>Organization</DropdownMenuItem>
               </Link>
               <DropdownMenuItem
                 onClick={async () => {

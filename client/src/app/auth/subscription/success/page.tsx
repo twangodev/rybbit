@@ -14,7 +14,7 @@ export default function StripeSuccessPage() {
     // Add a small delay to ensure the page has fully loaded before redirecting
     const redirectTimer = setTimeout(() => {
       // Redirect to the subscription settings page
-      router.push("/settings/subscription");
+      router.push("/organization/subscription");
     }, 1000);
 
     // Clean up the timer if the component unmounts

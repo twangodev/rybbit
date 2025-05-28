@@ -38,6 +38,8 @@ export async function middleware(request: NextRequest) {
       "reset-password",
       "auth",
       "admin",
+      "organization",
+      "account",
       "_next",
       "api",
     ];
