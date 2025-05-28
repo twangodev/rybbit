@@ -16,30 +16,21 @@ import {
 } from "../../../components/ui/table";
 import { authClient } from "../../../lib/auth";
 
-// Import the separated dialog components
 import { useOrganizationMembers } from "../../../api/admin/auth";
-import {
-  useOrganizationInvitations,
-  UserOrganization,
-  useUserOrganizations,
-} from "../../../api/admin/organizations";
+import { useOrganizationInvitations } from "../../../api/admin/organizations";
 import { NoOrganization } from "../../../components/NoOrganization";
 import { InviteMemberDialog } from "./components/InviteMemberDialog";
-// import { DeleteOrganizationDialog } from "./components/DeleteOrganizationDialog";
-// import { EditOrganizationDialog } from "./components/EditOrganizationDialog";
-// import { RemoveMemberDialog } from "./components/RemoveMemberDialog";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { EditOrganizationDialog } from "./components/EditOrganizationDialog";
 import { DeleteOrganizationDialog } from "./components/DeleteOrganizationDialog";
 import { RemoveMemberDialog } from "./components/RemoveMemberDialog";
 import { Invitations } from "./components/Invitations";
-// import { Invitations } from "./components/Invitations";
 
 // Types for our component
 export type Organization = {
   id: string;
   name: string;
-  createdAt: string;
+  createdAt: Date;
   slug: string;
 };
 
@@ -58,7 +49,16 @@ export type Member = {
 };
 
 // Organization Component with Members Table
-function Organization({ org }: { org: UserOrganization }) {
+function Organization({
+  org,
+}: {
+  org: {
+    id: string;
+    name: string;
+    slug: string;
+    createdAt: Date;
+  };
+}) {
   const { data: members, refetch } = useOrganizationMembers(org.id);
   const { refetch: refetchInvitations } = useOrganizationInvitations(org.id);
   const { data } = authClient.useSession();
@@ -162,27 +162,26 @@ function Organization({ org }: { org: UserOrganization }) {
 // Main Organizations component
 export default function MembersPage() {
   useSetPageTitle("Rybbit · Organization Members");
-  const { data, isLoading } = useUserOrganizations();
+  const { data: activeOrganization, isPending } =
+    authClient.useActiveOrganization();
 
-  if (isLoading) {
+  if (isPending) {
     return (
       <div className="flex justify-center py-8">
-        <div className="animate-pulse">Loading organizations...</div>
+        <div className="animate-pulse">Loading organization...</div>
       </div>
     );
   }
 
-  if (!data?.length) {
+  if (!activeOrganization) {
     return (
-      <NoOrganization message="You need to create or be added to an organization before you can manage your organizations." />
+      <NoOrganization message="You need to create or be added to an organization before you can manage members." />
     );
   }
 
   return (
     <div className="flex flex-col gap-6">
-      {data?.map((organization) => (
-        <Organization key={organization.id} org={organization} />
-      ))}
+      <Organization key={activeOrganization.id} org={activeOrganization} />
     </div>
   );
 }
