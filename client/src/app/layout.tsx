@@ -13,6 +13,7 @@ import "./globals.css";
 import Script from "next/script";
 import { useStopImpersonation } from "@/hooks/useStopImpersonation";
 import { ReactScan } from "./ReactScan";
+import { authClient } from "../lib/auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -80,6 +81,22 @@ export default function RootLayout({
       redirect("/login");
     }
   }, [isPending, user, pathname, isCheckingPublic, isPublicSite]);
+
+  const { data: organizations } = authClient.useListOrganizations();
+  const { data: activeOrganization, isPending: isPendingActiveOrganization } =
+    authClient.useActiveOrganization();
+
+  useEffect(() => {
+    if (
+      !isPendingActiveOrganization &&
+      !activeOrganization &&
+      organizations?.length
+    ) {
+      authClient.organization.setActive({
+        organizationId: organizations?.[0]?.id,
+      });
+    }
+  }, [isPendingActiveOrganization, activeOrganization, organizations]);
 
   return (
     <html lang="en" className="dark">

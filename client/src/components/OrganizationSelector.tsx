@@ -7,20 +7,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useEffect } from "react";
 
 export function OrganizationSelector() {
   const { data: organizations } = authClient.useListOrganizations();
   const { data: activeOrganization, isPending } =
     authClient.useActiveOrganization();
-
-  useEffect(() => {
-    if (!isPending && !activeOrganization) {
-      authClient.organization.setActive({
-        organizationId: organizations?.[0]?.id,
-      });
-    }
-  }, [isPending, activeOrganization, organizations]);
 
   if (!activeOrganization) {
     return null;
