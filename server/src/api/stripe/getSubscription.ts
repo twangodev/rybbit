@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import Stripe from "stripe";
 import { db } from "../../db/postgres/postgres.js";
-import { user as userSchema } from "../../db/postgres/schema.js";
+import { organization } from "../../db/postgres/schema.js";
 import {
   DEFAULT_EVENT_LIMIT,
   getStripePrices,
@@ -28,31 +28,31 @@ function getStartOfNextMonth() {
   return DateTime.now().startOf("month").plus({ months: 1 }).toJSDate();
 }
 
-export async function getSubscriptionInner(userId: string) {
-  // 1. Find the user and their Stripe Customer ID
-  const userResult = await db
+export async function getSubscriptionInner(organizationId: string) {
+  // 1. Find the organization and their Stripe Customer ID
+  const orgResult = await db
     .select({
-      stripeCustomerId: userSchema.stripeCustomerId,
-      monthlyEventCount: userSchema.monthlyEventCount,
-      createdAt: userSchema.createdAt,
+      stripeCustomerId: organization.stripeCustomerId,
+      monthlyEventCount: organization.monthlyEventCount,
+      createdAt: organization.createdAt,
     })
-    .from(userSchema)
-    .where(eq(userSchema.id, userId))
+    .from(organization)
+    .where(eq(organization.id, organizationId))
     .limit(1);
 
-  const user = userResult[0];
+  const org = orgResult[0];
 
-  if (!user) {
+  if (!org) {
     return null;
   }
 
-  // Check if user has an active Stripe subscription
-  if (user.stripeCustomerId) {
+  // Check if organization has an active Stripe subscription
+  if (org.stripeCustomerId) {
     // 2. List active subscriptions for the customer from Stripe
     const subscriptions = await (stripe as Stripe).subscriptions.list({
-      customer: user.stripeCustomerId,
+      customer: org.stripeCustomerId,
       status: "active", // Only fetch active subscriptions
-      limit: 1, // Users should only have one active subscription in this model
+      limit: 1, // Organizations should only have one active subscription
       expand: ["data.plan.product"], // Expand to get product details if needed
     });
 
@@ -84,7 +84,7 @@ export async function getSubscriptionInner(userId: string) {
           ),
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
           eventLimit: 0, // Unknown limit
-          monthlyEventCount: user.monthlyEventCount,
+          monthlyEventCount: org.monthlyEventCount || 0,
           interval: subscriptionItem.price.recurring?.interval ?? "unknown",
         };
       }
@@ -100,7 +100,7 @@ export async function getSubscriptionInner(userId: string) {
         currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
         eventLimit: planDetails.limits.events,
-        monthlyEventCount: user.monthlyEventCount,
+        monthlyEventCount: org.monthlyEventCount || 0,
         interval: subscriptionItem.price.recurring?.interval ?? "unknown",
       };
 
@@ -108,33 +108,7 @@ export async function getSubscriptionInner(userId: string) {
     }
   }
 
-  // If we get here, the user has no active paid subscription
-  // Check if they're in the trial period
-  // const createdAt = new Date(user.createdAt);
-  // const now = new Date();
-  // const trialEndDate = new Date(createdAt);
-  // trialEndDate.setDate(trialEndDate.getDate() + TRIAL_DURATION_DAYS);
-
-  // const isInTrialPeriod = now < trialEndDate;
-
-  // if (isInTrialPeriod) {
-  //   // User is in trial period
-  //   return {
-  //     id: null,
-  //     planName: "trial",
-  //     status: "trialing",
-  //     currentPeriodEnd: trialEndDate,
-  //     currentPeriodStart: createdAt,
-  //     eventLimit: TRIAL_EVENT_LIMIT,
-  //     monthlyEventCount: user.monthlyEventCount,
-  //     interval: "month",
-  //     isTrial: true,
-  //     trialDaysRemaining: Math.ceil(
-  //       (trialEndDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24)
-  //     ),
-  //   };
-  // }
-
+  // If we get here, the organization has no active paid subscription
   return {
     id: null,
     planName: "free",
@@ -142,23 +116,32 @@ export async function getSubscriptionInner(userId: string) {
     currentPeriodEnd: getStartOfNextMonth(),
     currentPeriodStart: getStartOfMonth(),
     eventLimit: DEFAULT_EVENT_LIMIT,
-    monthlyEventCount: user.monthlyEventCount,
+    monthlyEventCount: org.monthlyEventCount || 0,
     trialDaysRemaining: 0,
   };
 }
 
 export async function getSubscription(
-  request: FastifyRequest,
+  request: FastifyRequest<{
+    Querystring: {
+      organizationId: string;
+    };
+  }>,
   reply: FastifyReply
 ) {
   const userId = request.user?.id;
+  const { organizationId } = request.query;
 
   if (!userId) {
     return reply.status(401).send({ error: "Unauthorized" });
   }
 
+  if (!organizationId) {
+    return reply.status(400).send({ error: "Organization ID is required" });
+  }
+
   try {
-    const responseData = await getSubscriptionInner(userId);
+    const responseData = await getSubscriptionInner(organizationId);
     return reply.send(responseData);
   } catch (error: any) {
     console.error("Get Subscription Error:", error);

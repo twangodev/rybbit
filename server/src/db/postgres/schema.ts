@@ -158,6 +158,9 @@ export const organization = pgTable(
     logo: text(),
     createdAt: timestamp({ mode: "string" }).notNull(),
     metadata: text(),
+    stripeCustomerId: text(),
+    monthlyEventCount: integer().default(0),
+    overMonthlyLimit: boolean().default(false),
   },
   (table) => [unique("organization_slug_unique").on(table.slug)]
 );

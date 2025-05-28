@@ -1,6 +1,6 @@
 import { Check } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
-import { useGetSite, useGetSites } from "../../../../api/admin/sites";
+import { useGetSite, useGetSitesFromOrg } from "../../../../api/admin/sites";
 import { Favicon } from "../../../../components/Favicon";
 import {
   DropdownMenu,
@@ -8,20 +8,22 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../../../components/ui/dropdown-menu";
-import { resetStore, useStore } from "../../../../lib/store";
+import { authClient } from "../../../../lib/auth";
+import { resetStore } from "../../../../lib/store";
 import { userStore } from "../../../../lib/userStore";
 import { cn } from "../../../../lib/utils";
 
 function SiteSelectorContent() {
-  const { data: sites } = useGetSites();
-  const stuff = useStore();
+  const { data: activeOrganization } = authClient.useActiveOrganization();
+  const { data: sites } = useGetSitesFromOrg(activeOrganization?.id);
+
   const pathname = usePathname();
   const router = useRouter();
   const currentSiteId = Number(pathname.split("/")[1]);
 
   return (
     <DropdownMenuContent align="start">
-      {sites?.map((site) => {
+      {sites?.sites?.map((site) => {
         const isSelected = site.siteId === currentSiteId;
         return (
           <DropdownMenuItem

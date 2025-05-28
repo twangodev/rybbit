@@ -1,10 +1,10 @@
-import { and, eq, inArray } from "drizzle-orm";
+import { eq, inArray, isNotNull } from "drizzle-orm";
 import { DateTime } from "luxon";
 import Stripe from "stripe";
 import { processResults } from "../api/analytics/utils.js";
 import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { db } from "../db/postgres/postgres.js";
-import { member, sites, user } from "../db/postgres/schema.js";
+import { organization, sites } from "../db/postgres/schema.js";
 import {
   getStripePrices,
   StripePlan,
@@ -23,47 +23,39 @@ function getStartOfMonth(): string {
 }
 
 /**
- * Gets all site IDs for organizations owned by a user
+ * Gets all site IDs for an organization
  */
-async function getSiteIdsForUser(userId: string): Promise<number[]> {
+async function getSiteIdsForOrganization(
+  organizationId: string
+): Promise<number[]> {
   try {
-    // Find the organizations this user is an owner of
-    const userOrgs = await db
-      .select({ organizationId: member.organizationId })
-      .from(member)
-      .where(and(eq(member.userId, userId), eq(member.role, "owner")));
-
-    if (!userOrgs.length) {
-      return [];
-    }
-
-    const orgIds = userOrgs.map((org) => org.organizationId);
-
-    // Get all sites for these organizations
     const siteRecords = await db
       .select({ siteId: sites.siteId })
       .from(sites)
-      .where(inArray(sites.organizationId, orgIds));
+      .where(eq(sites.organizationId, organizationId));
 
     return siteRecords.map((record) => record.siteId);
   } catch (error) {
-    console.error(`Error getting sites for user ${userId}:`, error);
+    console.error(
+      `Error getting sites for organization ${organizationId}:`,
+      error
+    );
     return [];
   }
 }
 
 /**
- * Gets event limit and billing period start date for a user based on their Stripe subscription.
- * Fetches directly from Stripe if the user has a stripeCustomerId.
+ * Gets event limit and billing period start date for an organization based on their Stripe subscription.
+ * Fetches directly from Stripe if the organization has a stripeCustomerId.
  * @returns [eventLimit, periodStartDate]
  */
-async function getUserSubscriptionInfo(userData: {
+async function getOrganizationSubscriptionInfo(orgData: {
   id: string;
   stripeCustomerId: string | null;
   createdAt: string;
-  email: string;
+  name: string;
 }): Promise<[number, string | null]> {
-  if (!userData.stripeCustomerId) {
+  if (!orgData.stripeCustomerId) {
     // No Stripe customer ID, use default limit and start of current month
     return [DEFAULT_EVENT_LIMIT, getStartOfMonth()];
   }
@@ -71,7 +63,7 @@ async function getUserSubscriptionInfo(userData: {
   try {
     // Fetch active subscriptions for the customer from Stripe
     const subscriptions = await (stripe as Stripe).subscriptions.list({
-      customer: userData.stripeCustomerId,
+      customer: orgData.stripeCustomerId,
       status: "active",
       limit: 1,
     });
@@ -87,7 +79,7 @@ async function getUserSubscriptionInfo(userData: {
 
     if (!priceId) {
       console.error(
-        `Subscription item price ID not found for user ${userData.id}, sub ${subscription.id}`
+        `Subscription item price ID not found for organization ${orgData.id}, sub ${subscription.id}`
       );
       return [DEFAULT_EVENT_LIMIT, getStartOfMonth()];
     }
@@ -120,11 +112,11 @@ async function getUserSubscriptionInfo(userData: {
       if (subscriptionStartDate >= currentMonth) {
         periodStart = subscriptionStartDate.toISODate() as string;
         console.log(
-          `[Monthly Usage Checker] User ${userData.email} subscribed during current month on ${periodStart}. Using subscription start date for counting.`
+          `[Monthly Usage Checker] Organization ${orgData.name} subscribed during current month on ${periodStart}. Using subscription start date for counting.`
         );
       } else {
         console.log(
-          `[Monthly Usage Checker] User ${userData.email} subscription started before current month. Using month start for counting.`
+          `[Monthly Usage Checker] Organization ${orgData.name} subscription started before current month. Using month start for counting.`
         );
       }
     }
@@ -132,13 +124,13 @@ async function getUserSubscriptionInfo(userData: {
     // Include subscription info for logging purposes
     const interval = subscriptionItem.price.recurring?.interval || "unknown";
     console.log(
-      `[Monthly Usage Checker] User ${userData.email} has a ${interval} subscription.`
+      `[Monthly Usage Checker] Organization ${orgData.name} has a ${interval} subscription.`
     );
 
     return [eventLimit, periodStart];
   } catch (error: any) {
     console.error(
-      `Error fetching Stripe subscription info for user ${userData.email}:`,
+      `Error fetching Stripe subscription info for organization ${orgData.name}:`,
       error
     );
     // Fallback to default limit and current month start on Stripe API error
@@ -182,37 +174,37 @@ async function getMonthlyPageviews(
 }
 
 /**
- * Updates monthly event usage for all users
+ * Updates monthly event usage for all organizations
  */
 export async function updateUsersMonthlyUsage() {
   console.log(
-    "[Monthly Usage Checker] Starting check of monthly event usage..."
+    "[Monthly Usage Checker] Starting check of monthly event usage for organizations..."
   );
 
   try {
-    // Get all users with their Stripe customer ID
-    const users = await db
+    // Get all organizations (both with and without Stripe customer IDs)
+    const organizations = await db
       .select({
-        id: user.id,
-        email: user.email,
-        stripeCustomerId: user.stripeCustomerId,
-        createdAt: user.createdAt,
+        id: organization.id,
+        name: organization.name,
+        stripeCustomerId: organization.stripeCustomerId,
+        createdAt: organization.createdAt,
       })
-      .from(user);
+      .from(organization);
 
-    for (const userData of users) {
+    for (const orgData of organizations) {
       try {
-        // Get site IDs for organizations owned by this user
-        const siteIds = await getSiteIdsForUser(userData.id);
+        // Get site IDs for this organization
+        const siteIds = await getSiteIdsForOrganization(orgData.id);
 
-        // If user has no sites, continue to next user
+        // If organization has no sites, continue to next organization
         if (!siteIds.length) {
           continue;
         }
 
-        // Get user's subscription information (limit and period start)
+        // Get organization's subscription information (limit and period start)
         const [eventLimit, periodStart] =
-          await getUserSubscriptionInfo(userData);
+          await getOrganizationSubscriptionInfo(orgData);
 
         // Get monthly pageview count from ClickHouse using the billing period start date
         const pageviewCount = await getMonthlyPageviews(siteIds, periodStart);
@@ -220,22 +212,22 @@ export async function updateUsersMonthlyUsage() {
         // Check if over limit and update global set
         const isOverLimit = pageviewCount > eventLimit;
 
-        // Update user's monthlyEventCount and overMonthlyLimit fields
+        // Update organization's monthlyEventCount and overMonthlyLimit fields
         await db
-          .update(user)
+          .update(organization)
           .set({
             monthlyEventCount: pageviewCount,
             overMonthlyLimit: isOverLimit,
           })
-          .where(eq(user.id, userData.id));
+          .where(eq(organization.id, orgData.id));
 
-        // If over the limit, add all this user's sites to the global set
+        // If over the limit, add all this organization's sites to the global set
         if (isOverLimit) {
           for (const siteId of siteIds) {
             sitesOverLimit.add(siteId);
           }
           console.log(
-            `[Monthly Usage Checker] User ${userData.email} is over limit. Added ${siteIds.length} sites to blocked list.`
+            `[Monthly Usage Checker] Organization ${orgData.name} is over limit. Added ${siteIds.length} sites to blocked list.`
           );
         } else {
           for (const siteId of siteIds) {
@@ -249,13 +241,13 @@ export async function updateUsersMonthlyUsage() {
           : "this month";
 
         console.log(
-          `[Monthly Usage Checker] Updated user ${
-            userData.email
+          `[Monthly Usage Checker] Updated organization ${
+            orgData.name
           }: ${pageviewCount.toLocaleString()} events, limit ${eventLimit.toLocaleString()}, ${periodInfo}`
         );
       } catch (error) {
         console.error(
-          `[Monthly Usage Checker] Error processing user ${userData.id}:`,
+          `[Monthly Usage Checker] Error processing organization ${orgData.id}:`,
           error
         );
       }

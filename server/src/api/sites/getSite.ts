@@ -46,8 +46,10 @@ export async function getSite(
       createdAt: site.createdAt,
       updatedAt: site.updatedAt,
       createdBy: site.createdBy,
+      organizationId: site.organizationId,
       saltUserIds: site.saltUserIds,
       public: site.public,
+      blockBots: site.blockBots,
       isOwner: isOwner,
     });
   } catch (error) {

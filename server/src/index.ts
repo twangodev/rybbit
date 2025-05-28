@@ -62,6 +62,8 @@ import { getPageTitles } from "./api/analytics/getPageTitles.js";
 import { getAdminSites } from "./api/admin/getAdminSites.js";
 import { getAdminUsers } from "./api/admin/getAdminUsers.js";
 import { getOrgEventCount } from "./api/analytics/getOrgEventCount.js";
+import { getSitesFromOrg } from "./api/sites/getSitesFromOrg.js";
+import { migrateUserSubscriptionsToOrganizations } from "./db/postgres/migration.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -240,6 +242,7 @@ server.post("/change-site-salt", changeSiteSalt);
 server.post("/change-site-block-bots", changeSiteBlockBots);
 server.post("/delete-site/:id", deleteSite);
 server.get("/get-sites", getSites);
+server.get("/get-sites-from-org/:organizationId", getSitesFromOrg);
 server.get("/get-site/:id", getSite);
 server.post("/create-account", createAccount);
 server.get(
@@ -266,10 +269,11 @@ if (IS_CLOUD) {
 }
 
 server.post("/track", trackEvent);
-server.get("/health", { logLevel: 'silent' }, (_, reply) => reply.send("OK"));
+server.get("/health", { logLevel: "silent" }, (_, reply) => reply.send("OK"));
 
 const start = async () => {
   try {
+    // await migrateUserSubscriptionsToOrganizations();
     console.info("Starting server...");
     // Initialize the database
     await Promise.all([initializeClickhouse()]);

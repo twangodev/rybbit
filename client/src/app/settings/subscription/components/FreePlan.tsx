@@ -16,18 +16,18 @@ import {
   CardTitle,
 } from "../../../../components/ui/card";
 import { Progress } from "../../../../components/ui/progress";
-import { useUserOrganizations } from "../../../../api/admin/organizations";
 import { DEFAULT_EVENT_LIMIT } from "../utils/constants";
 import { useStripeSubscription } from "../utils/useStripeSubscription";
 import { UsageChart } from "../../../../components/UsageChart";
+import { authClient } from "@/lib/auth";
 
 export function FreePlan() {
   const { data: subscription } = useStripeSubscription();
-  const { data: organizations } = useUserOrganizations();
+  const { data: activeOrg } = authClient.useActiveOrganization();
   const router = useRouter();
 
-  // Get the first organization (assuming user is part of one organization for now)
-  const organizationId = organizations?.[0]?.id;
+  // Get the active organization ID
+  const organizationId = activeOrg?.id;
 
   // Get last 30 days of data for the chart
   const endDate = DateTime.now().toISODate();

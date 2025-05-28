@@ -9,35 +9,39 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { ProPlan } from "./components/ProPlan";
 import { useStripeSubscription } from "./utils/useStripeSubscription";
-import { useUserOrganizations } from "../../../api/admin/organizations";
 import { NoOrganization } from "../../../components/NoOrganization";
 import { TrialPlan } from "./components/TrialPlan";
 import { ExpiredTrialPlan } from "./components/ExpiredTrialPlan";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { FreePlan } from "./components/FreePlan";
 import { Building } from "lucide-react";
+import { authClient } from "@/lib/auth";
 
 export default function SubscriptionPage() {
   useSetPageTitle("Rybbit · Subscription");
   const { data: activeSubscription, isLoading: isLoadingSubscription } =
     useStripeSubscription();
 
-  const { data: organizations, isLoading: isLoadingOrganizations } =
-    useUserOrganizations();
+  const { data: activeOrg } = authClient.useActiveOrganization();
+  const { data: session } = authClient.useSession();
 
-  const hasOrganization = !!organizations?.length;
+  // Check if the current user is an owner by looking at the members in the active organization
+  const currentUserMember = activeOrg?.members?.find(
+    (member) => member.userId === session?.user?.id
+  );
+  const isOwner = currentUserMember?.role === "owner";
 
-  const isLoading = isLoadingSubscription || isLoadingOrganizations;
+  const isLoading = isLoadingSubscription;
 
   // Determine which plan to display
   const renderPlanComponent = () => {
-    if (!hasOrganization) {
+    if (!activeOrg) {
       return (
-        <NoOrganization message="You need to be part of an organization to manage your subscription." />
+        <NoOrganization message="You need to select an organization to manage your subscription." />
       );
     }
 
-    if (organizations[0].role !== "owner") {
+    if (!isOwner) {
       return (
         <Card className="p-6 flex flex-col items-center text-center w-full">
           <div className="mx-auto w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-4">

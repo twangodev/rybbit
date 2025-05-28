@@ -1,12 +1,13 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { stripe } from "../../lib/stripe.js";
 import { db } from "../../db/postgres/postgres.js";
-import { user as userSchema } from "../../db/postgres/schema.js";
-import { eq } from "drizzle-orm";
+import { organization, member } from "../../db/postgres/schema.js";
+import { eq, and } from "drizzle-orm";
 import Stripe from "stripe";
 
 interface PortalRequestBody {
   returnUrl: string;
+  organizationId: string;
   flowType?:
     | "subscription_update"
     | "subscription_cancel"
@@ -17,40 +18,60 @@ export async function createPortalSession(
   request: FastifyRequest<{ Body: PortalRequestBody }>,
   reply: FastifyReply
 ) {
-  const { returnUrl, flowType } = request.body;
+  const { returnUrl, organizationId, flowType } = request.body;
   const userId = request.user?.id;
 
   if (!userId) {
     return reply.status(401).send({ error: "Unauthorized" });
   }
 
-  if (!returnUrl) {
-    return reply
-      .status(400)
-      .send({ error: "Missing required parameter: returnUrl" });
+  if (!returnUrl || !organizationId) {
+    return reply.status(400).send({
+      error: "Missing required parameters: returnUrl, organizationId",
+    });
   }
 
   try {
-    // 1. Find the user in your database
-    const userResult = await db
+    // 1. Verify user has permission to manage billing for this organization
+    const memberResult = await db
       .select({
-        stripeCustomerId: userSchema.stripeCustomerId,
+        role: member.role,
       })
-      .from(userSchema)
-      .where(eq(userSchema.id, userId))
+      .from(member)
+      .where(
+        and(
+          eq(member.userId, userId),
+          eq(member.organizationId, organizationId)
+        )
+      )
       .limit(1);
 
-    const user = userResult[0];
-
-    if (!user || !user.stripeCustomerId) {
-      return reply
-        .status(404)
-        .send({ error: "User or Stripe customer ID not found" });
+    if (!memberResult.length || memberResult[0].role !== "owner") {
+      return reply.status(403).send({
+        error: "Only organization owners can manage billing",
+      });
     }
 
-    // 2. Create a Stripe Billing Portal Session, with optional direct flow
+    // 2. Find the organization and its Stripe customer ID
+    const orgResult = await db
+      .select({
+        stripeCustomerId: organization.stripeCustomerId,
+      })
+      .from(organization)
+      .where(eq(organization.id, organizationId))
+      .limit(1);
+
+    const org = orgResult[0];
+
+    if (!org || !org.stripeCustomerId) {
+      return reply
+        .status(404)
+        .send({ error: "Organization or Stripe customer ID not found" });
+    }
+
+    // 3. Create a Stripe Billing Portal Session, with optional direct flow
     const sessionConfig: Stripe.BillingPortal.SessionCreateParams = {
-      customer: user.stripeCustomerId,
+      customer: org.stripeCustomerId,
       return_url: returnUrl, // The user will be redirected here after managing their billing
     };
 
@@ -59,7 +80,7 @@ export async function createPortalSession(
       if (flowType === "subscription_update") {
         // For subscription_update flow, we need to fetch the subscription ID first
         const subscriptions = await (stripe as Stripe).subscriptions.list({
-          customer: user.stripeCustomerId,
+          customer: org.stripeCustomerId,
           status: "active",
           limit: 1,
         });
@@ -81,7 +102,7 @@ export async function createPortalSession(
       } else if (flowType === "subscription_cancel") {
         // For subscription_cancel flow, we need to fetch the subscription ID first
         const subscriptions = await (stripe as Stripe).subscriptions.list({
-          customer: user.stripeCustomerId,
+          customer: org.stripeCustomerId,
           status: "active",
           limit: 1,
         });
@@ -111,7 +132,7 @@ export async function createPortalSession(
       stripe as Stripe
     ).billingPortal.sessions.create(sessionConfig);
 
-    // 3. Return the Billing Portal Session URL
+    // 4. Return the Billing Portal Session URL
     return reply.send({ portalUrl: portalSession.url });
   } catch (error: any) {
     console.error("Stripe Portal Session Error:", error);

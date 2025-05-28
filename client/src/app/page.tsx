@@ -3,24 +3,30 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useUserOrganizations } from "../api/admin/organizations";
-import { useGetSites } from "../api/admin/sites";
+import { useGetSitesFromOrg } from "../api/admin/sites";
 import { CreateOrganizationDialog } from "../components/CreateOrganizationDialog";
 import { NoOrganization } from "../components/NoOrganization";
+import { OrganizationSelector } from "../components/OrganizationSelector";
 import { SiteCard } from "../components/SiteCard";
 import { StandardPage } from "../components/StandardPage";
 import { Button } from "../components/ui/button";
 import { Card, CardDescription, CardTitle } from "../components/ui/card";
 import { useSetPageTitle } from "../hooks/useSetPageTitle";
+import { authClient } from "../lib/auth";
 import { AddSite } from "./components/AddSite";
 
 export default function Home() {
   useSetPageTitle("Rybbit · Home");
 
+  const { data: activeOrganization, isPending } =
+    authClient.useActiveOrganization();
+
   const {
     data: sites,
     refetch: refetchSites,
     isLoading: isLoadingSites,
-  } = useGetSites();
+  } = useGetSitesFromOrg(activeOrganization?.id);
+
   const {
     data: userOrganizationsData,
     isLoading: isLoadingOrganizations,
@@ -47,7 +53,10 @@ export default function Home() {
   return (
     <StandardPage>
       <div className="flex justify-between items-center my-4">
-        <div className="text-2xl font-bold">{sites?.length} Websites</div>
+        <div>
+          <OrganizationSelector />
+        </div>
+        {/* <div className="text-2xl font-bold">{sites?.length} Websites</div> */}
         <AddSite disabled={hasNoOrganizations || disabled} />
       </div>
       {/* Organization required message */}
@@ -56,7 +65,7 @@ export default function Home() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         {/* Sites list */}
 
-        {sites?.map((site) => {
+        {sites?.sites?.map((site) => {
           return (
             <SiteCard
               key={site.siteId}
@@ -68,7 +77,7 @@ export default function Home() {
 
         {/* No websites message */}
         {!hasNoOrganizations &&
-          (!sites || sites.length === 0) &&
+          (!sites?.sites || sites?.sites?.length === 0) &&
           !isLoadingOrganizations &&
           !isLoadingSites && (
             <Card className="col-span-full p-6 flex flex-col items-center text-center">

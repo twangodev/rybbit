@@ -4,6 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { BACKEND_URL } from "@/lib/const";
+import { authClient } from "@/lib/auth";
 import {
   EVENT_TIERS,
   PRO_FEATURES,
@@ -21,6 +22,7 @@ export function PricingCard({ stripePrices, isLoggedIn }: PricingCardProps) {
   const [eventLimitIndex, setEventLimitIndex] = useState<number>(0); // Default to 100k (index 0)
   const [isAnnual, setIsAnnual] = useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const { data: activeOrg } = authClient.useActiveOrganization();
 
   const eventLimit = EVENT_TIERS[eventLimitIndex];
 
@@ -35,6 +37,12 @@ export function PricingCard({ stripePrices, isLoggedIn }: PricingCardProps) {
     // Check if user is logged in directly
     if (!isLoggedIn) {
       toast.error("Please log in to subscribe.");
+      return;
+    }
+
+    // Check if user has an active organization
+    if (!activeOrg) {
+      toast.error("Please select an organization to subscribe.");
       return;
     }
 
@@ -68,6 +76,7 @@ export function PricingCard({ stripePrices, isLoggedIn }: PricingCardProps) {
             priceId: selectedTierPrice.priceId,
             successUrl: successUrl,
             cancelUrl: cancelUrl,
+            organizationId: activeOrg.id,
           }),
         }
       );

@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { stripe } from "../../lib/stripe.js";
 import { db } from "../../db/postgres/postgres.js";
-import { user as userSchema } from "../../db/postgres/schema.js";
+import { organization } from "../../db/postgres/schema.js";
 import { eq } from "drizzle-orm";
 import Stripe from "stripe";
 import dotenv from "dotenv";
@@ -48,60 +48,41 @@ export async function handleWebhook(
       // If the checkout session was for a subscription
       if (session.mode === "subscription" && session.customer) {
         const stripeCustomerId = session.customer as string;
-        const userId = session.metadata?.userId; // Retrieve userId from metadata if you set it
+        const organizationId = session.metadata?.organizationId; // Retrieve organizationId from metadata
 
-        if (stripeCustomerId) {
+        if (stripeCustomerId && organizationId) {
           try {
-            // Check if user already has this customer ID
-            const existingUser = await db
-              .select({ id: userSchema.id })
-              .from(userSchema)
-              .where(eq(userSchema.stripeCustomerId, stripeCustomerId))
+            // Check if organization already has this customer ID
+            const existingOrg = await db
+              .select({ id: organization.id })
+              .from(organization)
+              .where(eq(organization.stripeCustomerId, stripeCustomerId))
               .limit(1);
 
-            // If no user has this ID, update the user linked via metadata (if available)
-            // Or update based on email if metadata is not reliable
-            if (existingUser.length === 0) {
-              let userToUpdateId: string | null = null;
-
-              if (userId) {
-                userToUpdateId = userId;
-              } else if (session.customer_details?.email) {
-                // Fallback: Find user by email (ensure email is unique in your DB)
-                const userByEmail = await db
-                  .select({ id: userSchema.id })
-                  .from(userSchema)
-                  .where(eq(userSchema.email, session.customer_details.email))
-                  .limit(1);
-                if (userByEmail.length > 0) {
-                  userToUpdateId = userByEmail[0].id;
-                }
-              }
-
-              if (userToUpdateId) {
-                console.log(
-                  `Updating user ${userToUpdateId} with Stripe customer ID ${stripeCustomerId}`
-                );
-                await db
-                  .update(userSchema)
-                  .set({ stripeCustomerId: stripeCustomerId })
-                  .where(eq(userSchema.id, userToUpdateId));
-              } else {
-                console.error(
-                  `Could not find user to associate with Stripe customer ID ${stripeCustomerId} from checkout session ${session.id}`
-                );
-              }
+            // If the organization doesn't have the customer ID yet, update it
+            if (existingOrg.length === 0) {
+              console.log(
+                `Updating organization ${organizationId} with Stripe customer ID ${stripeCustomerId}`
+              );
+              await db
+                .update(organization)
+                .set({ stripeCustomerId: stripeCustomerId })
+                .where(eq(organization.id, organizationId));
             } else {
               console.log(
-                `User ${existingUser[0].id} already has Stripe customer ID ${stripeCustomerId}`
+                `Organization ${existingOrg[0].id} already has Stripe customer ID ${stripeCustomerId}`
               );
             }
           } catch (dbError: any) {
             console.error(
-              `Database error updating user with Stripe customer ID: ${dbError.message}`
+              `Database error updating organization with Stripe customer ID: ${dbError.message}`
             );
             // Decide if you should still return 200 to Stripe or signal an error
           }
+        } else {
+          console.error(
+            `Missing required metadata in checkout session ${session.id}. Customer ID: ${stripeCustomerId}, Organization ID: ${organizationId}`
+          );
         }
       }
       break;

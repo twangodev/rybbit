@@ -33,18 +33,17 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import {
+  changeSiteBlockBots,
   changeSiteDomain,
   changeSitePublic,
   changeSiteSalt,
-  changeSiteBlockBots,
   deleteSite,
-  GetSitesResponse,
   SiteResponse,
   useGetSite,
-  useGetSites,
+  useGetSitesFromOrg,
 } from "@/api/admin/sites";
-import { ScriptBuilder } from "./ScriptBuilder";
 import { useUserOrganizations } from "../../api/admin/organizations";
+import { ScriptBuilder } from "./ScriptBuilder";
 
 export function SiteSettings({
   siteId,
@@ -66,10 +65,10 @@ export function SiteSettingsInner({
   siteMetadata,
   trigger,
 }: {
-  siteMetadata: SiteResponse | GetSitesResponse[number];
+  siteMetadata: SiteResponse;
   trigger?: React.ReactNode;
 }) {
-  const { refetch } = useGetSites();
+  const { refetch } = useGetSitesFromOrg(siteMetadata?.organizationId ?? "");
   const { data: userOrganizationsData } = useUserOrganizations();
   const disabled =
     !userOrganizationsData?.[0]?.role ||
@@ -83,7 +82,7 @@ export function SiteSettingsInner({
   const [isSalting, setIsSalting] = useState(siteMetadata.saltUserIds || false);
   const [isChangingSalt, setIsChangingSalt] = useState(false);
   const [isBlockingBots, setIsBlockingBots] = useState(
-    siteMetadata.blockBots === undefined ? true : siteMetadata.blockBots
+    siteMetadata.blockBots || false
   );
   const [isChangingBlockBots, setIsChangingBlockBots] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
