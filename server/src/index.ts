@@ -196,6 +196,11 @@ server.addHook("onRequest", async (request, reply) => {
   }
 });
 
+// Add this with your other routes, around line 273
+server.get("/api/script.js", async (request, reply) => {
+  return reply.sendFile("script.js");
+});
+
 // Analytics
 
 // This endpoint gets called a lot so we don't want to log it
