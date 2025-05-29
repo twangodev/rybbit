@@ -117,11 +117,10 @@ server.register(
 );
 
 const PUBLIC_ROUTES: string[] = [
-  "/health",
-  "/track",
-  "/script",
-  "/config",
-  "/auth",
+  "/api/health",
+  "/api/track",
+  "/api/script.js", // Updated script route
+  "/api/config",
   "/api/auth",
   "/api/auth/callback/google",
   "/api/auth/callback/github",
@@ -150,15 +149,26 @@ const ANALYTICS_ROUTES = [
   "/api/journeys/",
   "/api/goals/",
   "/api/goal/",
-  "/api/api/analytics/events/names/",
-  "/api/api/analytics/events/properties/",
+  "/api/analytics/events/names/",
+  "/api/analytics/events/properties/",
   "/api/events/",
   "/api/get-site",
 ];
 
-// Check if a route is an analytics route
+// Create lists of routes without the /api prefix for backward compatibility
+const PUBLIC_ROUTES_NO_API = PUBLIC_ROUTES.map((route) =>
+  route.replace("/api", "")
+).filter((route) => route !== "");
+const ANALYTICS_ROUTES_NO_API = ANALYTICS_ROUTES.map((route) =>
+  route.replace("/api", "")
+).filter((route) => route !== "");
+
+// Check if a route is an analytics route (with or without /api prefix)
 const isAnalyticsRoute = (path: string) => {
-  return ANALYTICS_ROUTES.some((route) => path.startsWith(route));
+  return (
+    ANALYTICS_ROUTES.some((route) => path.startsWith(route)) ||
+    ANALYTICS_ROUTES_NO_API.some((route) => path.startsWith(route))
+  );
 };
 
 server.addHook("onRequest", async (request, reply) => {
@@ -166,14 +176,31 @@ server.addHook("onRequest", async (request, reply) => {
 
   if (!url) return;
 
-  // Bypass auth for health check and tracking
-  if (PUBLIC_ROUTES.some((route) => url.includes(route))) {
+  let processedUrl = url;
+
+  // Check if the URL is missing the /api prefix and prepend if it matches a known API route
+  if (!url.startsWith("/api")) {
+    const isPublicRouteNoApi = PUBLIC_ROUTES_NO_API.some((route) =>
+      url.startsWith(route)
+    );
+    const isAnalyticsRouteNoApi = ANALYTICS_ROUTES_NO_API.some((route) =>
+      url.startsWith(route)
+    );
+
+    if (isPublicRouteNoApi || isAnalyticsRouteNoApi) {
+      processedUrl = `/api${url}`;
+      request.raw.url = processedUrl; // Modify the raw request URL
+    }
+  }
+
+  // Bypass auth for public routes (now including the prepended /api)
+  if (PUBLIC_ROUTES.some((route) => processedUrl.includes(route))) {
     return;
   }
 
-  // Check if it's an analytics route and get site ID
-  if (isAnalyticsRoute(url)) {
-    const siteId = extractSiteId(url);
+  // Check if it's an analytics route and get site ID (now including the prepended /api)
+  if (isAnalyticsRoute(processedUrl)) {
+    const siteId = extractSiteId(processedUrl);
 
     if (siteId && (await isSitePublic(siteId))) {
       // Skip auth check for public sites
