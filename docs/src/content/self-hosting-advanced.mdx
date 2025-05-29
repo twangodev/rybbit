@@ -63,7 +63,7 @@ server {
 
     # API requests - adjust port if you customized it
     location /api/ {
-        proxy_pass http://localhost:3001/;  # or your custom port
+        proxy_pass http://localhost:3001;  # or your custom port
         proxy_set_header Host $host;
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -202,11 +202,10 @@ HOST_CLIENT_PORT=3002
 Hint: In the Custom Location add a custom rule:
 ```
 location /api/ {
-    rewrite ^/api(/.*)$ $1 break;
     proxy_pass http://rybbit_backend:3001;
 }
 ```
-_note, this might not be necessary anymore, check https://github.com/rybbit-io/rybbit/issues/135_
+_Note: Path rewriting is no longer needed as the backend now expects requests with the `/api/` prefix._
 
 7. run `docker compose up -d` (or separately pull and up)
 

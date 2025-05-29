@@ -126,7 +126,7 @@ export let auth: AuthType | null = betterAuth({
 
 export function initAuth(allowedOrigins: string[]) {
   auth = betterAuth({
-    basePath: "/auth",
+    basePath: "/api/auth",
     database: drizzleAdapter(db, {
       provider: "pg",
       schema: {
