@@ -250,7 +250,7 @@ server.post("/api/delete-site/:id", deleteSite);
 server.get("/api/get-sites-from-org/:organizationId", getSitesFromOrg);
 server.get("/api/get-site/:id", getSite);
 server.get(
-  "/list-organization-members/:organizationId",
+  "/api/list-organization-members/:organizationId",
   listOrganizationMembers
 );
 server.get("/api/user/organizations", getUserOrganizations);
