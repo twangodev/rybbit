@@ -11,6 +11,8 @@ type UseGetPerformanceByPathOptions = {
   useFilters?: boolean;
   enabled?: boolean;
   additionalFilters?: Filter[];
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
 };
 
 // Import the correct type from backend
@@ -68,6 +70,8 @@ export function useGetPerformanceByPath({
   useFilters = true,
   enabled = true,
   additionalFilters = [],
+  sortBy,
+  sortOrder,
 }: UseGetPerformanceByPathOptions): UseQueryResult<PaginatedPerformanceResponse> {
   const { time, filters, selectedPercentile } = useStore();
 
@@ -85,6 +89,8 @@ export function useGetPerformanceByPath({
         page,
         percentile: selectedPercentile,
         filters: useFilters ? [...filters, ...additionalFilters] : undefined,
+        sortBy,
+        sortOrder,
       }
     : {
         // Regular date-based approach
@@ -94,6 +100,8 @@ export function useGetPerformanceByPath({
         page,
         percentile: selectedPercentile,
         filters: useFilters ? [...filters, ...additionalFilters] : undefined,
+        sortBy,
+        sortOrder,
       };
 
   return useQuery({
@@ -107,6 +115,8 @@ export function useGetPerformanceByPath({
       page,
       isPast24HoursMode ? "past-minutes" : "date-range",
       additionalFilters,
+      sortBy,
+      sortOrder,
     ],
     queryFn: () => {
       return authedFetch(

@@ -81,7 +81,13 @@ export async function processResults<T>(
   const data: T[] = await results.json();
   for (const row of data) {
     for (const key in row) {
-      if (!isNaN(Number(row[key])) && row[key] !== "") {
+      // Only convert to number if the value is not null/undefined and is a valid number
+      if (
+        row[key] !== null &&
+        row[key] !== undefined &&
+        row[key] !== "" &&
+        !isNaN(Number(row[key]))
+      ) {
         row[key] = Number(row[key]) as any;
       }
     }

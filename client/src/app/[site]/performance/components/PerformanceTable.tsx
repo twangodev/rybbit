@@ -10,14 +10,22 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import {
+  createColumnHelper,
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table";
+import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
 import { PerformanceMetric, useStore } from "../../../../lib/store";
 import {
   useGetPerformanceByPath,
   PerformanceByPathItem,
 } from "../../../../api/analytics/useGetPerformanceByPath";
+import { TablePagination } from "../../../../components/pagination";
 
 // Performance metric thresholds for color coding
 const getMetricColor = (metric: PerformanceMetric, value: number): string => {
@@ -83,33 +91,158 @@ const MetricCell = ({
   );
 };
 
+const columnHelper = createColumnHelper<PerformanceByPathItem>();
+
 export function PerformanceTable() {
-  const { site } = useStore();
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 10;
+  const { site, selectedPercentile } = useStore();
+  const [pagination, setPagination] = useState({
+    pageIndex: 0,
+    pageSize: 10,
+  });
+
+  const [sorting, setSorting] = useState<SortingState>([
+    { id: "event_count", desc: true },
+  ]);
 
   const { data: performanceData, isLoading } = useGetPerformanceByPath({
     site,
-    page: currentPage,
-    limit: pageSize,
+    page: pagination.pageIndex + 1, // API expects 1-based page numbers
+    limit: pagination.pageSize,
+    sortBy: sorting[0]?.id || "event_count",
+    sortOrder: sorting[0]?.desc ? "desc" : "asc",
   });
 
   const paths = performanceData?.data ?? [];
-  const totalPages = Math.ceil((performanceData?.totalCount ?? 0) / pageSize);
+  const totalCount = performanceData?.totalCount ?? 0;
+  const totalPages = Math.ceil(totalCount / pagination.pageSize);
 
-  const handlePreviousPage = () => {
-    setCurrentPage((prev) => Math.max(1, prev - 1));
+  // Create columns based on selected percentile
+  const columns = useMemo(
+    () => [
+      columnHelper.accessor("pathname", {
+        header: "Path",
+        cell: (info) => (
+          <div className="font-medium text-white max-w-[300px] truncate">
+            {info.getValue() || "/"}
+          </div>
+        ),
+      }),
+      columnHelper.accessor(
+        `lcp_${selectedPercentile}` as keyof PerformanceByPathItem,
+        {
+          header: "LCP",
+          cell: (info) => (
+            <div className="text-center">
+              <MetricCell metric="lcp" value={info.getValue() as number} />
+            </div>
+          ),
+        }
+      ),
+      columnHelper.accessor(
+        `cls_${selectedPercentile}` as keyof PerformanceByPathItem,
+        {
+          header: "CLS",
+          cell: (info) => (
+            <div className="text-center">
+              <MetricCell metric="cls" value={info.getValue() as number} />
+            </div>
+          ),
+        }
+      ),
+      columnHelper.accessor(
+        `inp_${selectedPercentile}` as keyof PerformanceByPathItem,
+        {
+          header: "INP",
+          cell: (info) => (
+            <div className="text-center">
+              <MetricCell metric="inp" value={info.getValue() as number} />
+            </div>
+          ),
+        }
+      ),
+      columnHelper.accessor(
+        `fcp_${selectedPercentile}` as keyof PerformanceByPathItem,
+        {
+          header: "FCP",
+          cell: (info) => (
+            <div className="text-center">
+              <MetricCell metric="fcp" value={info.getValue() as number} />
+            </div>
+          ),
+        }
+      ),
+      columnHelper.accessor(
+        `ttfb_${selectedPercentile}` as keyof PerformanceByPathItem,
+        {
+          header: "TTFB",
+          cell: (info) => (
+            <div className="text-center">
+              <MetricCell metric="ttfb" value={info.getValue() as number} />
+            </div>
+          ),
+        }
+      ),
+      columnHelper.accessor("event_count", {
+        header: "Events",
+        cell: (info) => (
+          <div className="text-center text-neutral-300">
+            {info.getValue()?.toLocaleString() ?? 0}
+          </div>
+        ),
+      }),
+    ],
+    [selectedPercentile]
+  );
+
+  const table = useReactTable({
+    data: paths,
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    onSortingChange: (updater) => {
+      setSorting(updater);
+      // Reset to first page when sorting changes
+      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+    },
+    state: {
+      sorting,
+    },
+    // Disable client-side sorting since we're doing server-side sorting
+    enableSortingRemoval: false,
+    manualSorting: true,
+  });
+
+  // Create pagination controller that matches the interface
+  const paginationController = {
+    getState: () => ({ pagination }),
+    getCanPreviousPage: () => pagination.pageIndex > 0,
+    getCanNextPage: () => pagination.pageIndex < totalPages - 1,
+    getPageCount: () => totalPages,
+    setPageIndex: (index: number) =>
+      setPagination((prev) => ({ ...prev, pageIndex: index })),
+    previousPage: () =>
+      setPagination((prev) => ({
+        ...prev,
+        pageIndex: Math.max(0, prev.pageIndex - 1),
+      })),
+    nextPage: () =>
+      setPagination((prev) => ({
+        ...prev,
+        pageIndex: Math.min(totalPages - 1, prev.pageIndex + 1),
+      })),
   };
 
-  const handleNextPage = () => {
-    setCurrentPage((prev) => Math.min(totalPages, prev + 1));
+  // Transform data to match expected format
+  const paginationData = {
+    items: paths,
+    total: totalCount,
   };
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="text-lg font-semibold">
-          Performance by Path
+          Performance by Path ({selectedPercentile.toUpperCase()})
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -124,65 +257,67 @@ export function PerformanceTable() {
             <div className="rounded-md border border-neutral-800">
               <Table>
                 <TableHeader>
-                  <TableRow className="border-neutral-800">
-                    <TableHead className="text-neutral-300">Path</TableHead>
-                    <TableHead className="text-neutral-300 text-center">
-                      LCP
-                    </TableHead>
-                    <TableHead className="text-neutral-300 text-center">
-                      CLS
-                    </TableHead>
-                    <TableHead className="text-neutral-300 text-center">
-                      INP
-                    </TableHead>
-                    <TableHead className="text-neutral-300 text-center">
-                      FCP
-                    </TableHead>
-                    <TableHead className="text-neutral-300 text-center">
-                      TTFB
-                    </TableHead>
-                    <TableHead className="text-neutral-300 text-center">
-                      Events
-                    </TableHead>
-                  </TableRow>
+                  {table.getHeaderGroups().map((headerGroup) => (
+                    <TableRow
+                      key={headerGroup.id}
+                      className="border-neutral-800"
+                    >
+                      {headerGroup.headers.map((header) => (
+                        <TableHead
+                          key={header.id}
+                          className={`text-neutral-300 ${
+                            header.column.getCanSort()
+                              ? "cursor-pointer hover:text-white transition-colors select-none"
+                              : ""
+                          }`}
+                          onClick={header.column.getToggleSortingHandler()}
+                        >
+                          <div className="flex items-center justify-center gap-1">
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                            {header.column.getCanSort() && (
+                              <div className="flex flex-col">
+                                {header.column.getIsSorted() === "asc" ? (
+                                  <ChevronUp className="h-3 w-3 text-blue-400" />
+                                ) : header.column.getIsSorted() === "desc" ? (
+                                  <ChevronDown className="h-3 w-3 text-blue-400" />
+                                ) : (
+                                  <ChevronsUpDown className="h-3 w-3 text-neutral-600" />
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </TableHead>
+                      ))}
+                    </TableRow>
+                  ))}
                 </TableHeader>
                 <TableBody>
-                  {paths.length === 0 ? (
+                  {table.getRowModel().rows.length === 0 ? (
                     <TableRow>
                       <TableCell
-                        colSpan={7}
+                        colSpan={columns.length}
                         className="text-center text-neutral-500 py-8"
                       >
                         No performance data available
                       </TableCell>
                     </TableRow>
                   ) : (
-                    paths.map((path: PerformanceByPathItem, index: number) => (
+                    table.getRowModel().rows.map((row) => (
                       <TableRow
-                        key={index}
+                        key={row.id}
                         className="border-neutral-800 hover:bg-neutral-900/50"
                       >
-                        <TableCell className="font-medium text-white max-w-[300px] truncate">
-                          {path.pathname || "/"}
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <MetricCell metric="lcp" value={path.lcp_avg} />
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <MetricCell metric="cls" value={path.cls_avg} />
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <MetricCell metric="inp" value={path.inp_avg} />
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <MetricCell metric="fcp" value={path.fcp_avg} />
-                        </TableCell>
-                        <TableCell className="text-center">
-                          <MetricCell metric="ttfb" value={path.ttfb_avg} />
-                        </TableCell>
-                        <TableCell className="text-center text-neutral-300">
-                          {path.event_count?.toLocaleString() ?? 0}
-                        </TableCell>
+                        {row.getVisibleCells().map((cell) => (
+                          <TableCell key={cell.id}>
+                            {flexRender(
+                              cell.column.columnDef.cell,
+                              cell.getContext()
+                            )}
+                          </TableCell>
+                        ))}
                       </TableRow>
                     ))
                   )}
@@ -191,38 +326,15 @@ export function PerformanceTable() {
             </div>
 
             {totalPages > 1 && (
-              <div className="flex items-center justify-between mt-4">
-                <div className="text-sm text-neutral-400">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={handlePreviousPage}
-                    disabled={currentPage === 1}
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-2 text-sm rounded-md border transition-colors",
-                      currentPage === 1
-                        ? "border-neutral-800 text-neutral-500 cursor-not-allowed"
-                        : "border-neutral-700 text-neutral-300 hover:bg-neutral-800"
-                    )}
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                    Previous
-                  </button>
-                  <button
-                    onClick={handleNextPage}
-                    disabled={currentPage === totalPages}
-                    className={cn(
-                      "flex items-center gap-1 px-3 py-2 text-sm rounded-md border transition-colors",
-                      currentPage === totalPages
-                        ? "border-neutral-800 text-neutral-500 cursor-not-allowed"
-                        : "border-neutral-700 text-neutral-300 hover:bg-neutral-800"
-                    )}
-                  >
-                    Next
-                    <ChevronRight className="w-4 h-4" />
-                  </button>
-                </div>
+              <div className="mt-4">
+                <TablePagination
+                  table={paginationController}
+                  data={paginationData}
+                  pagination={pagination}
+                  setPagination={setPagination}
+                  isLoading={isLoading}
+                  itemName="paths"
+                />
               </div>
             )}
           </>

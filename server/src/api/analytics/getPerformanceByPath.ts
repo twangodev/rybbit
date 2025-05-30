@@ -21,6 +21,8 @@ interface GetPerformanceByPathRequest {
     filters: string;
     limit?: number;
     page?: number;
+    sortBy?: string;
+    sortOrder?: "asc" | "desc";
   };
 }
 
@@ -43,6 +45,8 @@ const getQuery = (
     page,
     pastMinutesStart,
     pastMinutesEnd,
+    sortBy,
+    sortOrder,
   } = request.query;
 
   const filterStatement = getFilterStatement(filters);
@@ -86,36 +90,73 @@ const getQuery = (
   const offsetStatement =
     !isCountQuery && validatedOffset ? `OFFSET ${validatedOffset}` : "";
 
+  // Handle sorting
+  const validSortColumns = [
+    "pathname",
+    "event_count",
+    "lcp_avg",
+    "lcp_p50",
+    "lcp_p75",
+    "lcp_p90",
+    "lcp_p99",
+    "cls_avg",
+    "cls_p50",
+    "cls_p75",
+    "cls_p90",
+    "cls_p99",
+    "inp_avg",
+    "inp_p50",
+    "inp_p75",
+    "inp_p90",
+    "inp_p99",
+    "fcp_avg",
+    "fcp_p50",
+    "fcp_p75",
+    "fcp_p90",
+    "fcp_p99",
+    "ttfb_avg",
+    "ttfb_p50",
+    "ttfb_p75",
+    "ttfb_p90",
+    "ttfb_p99",
+  ];
+  const validSortBy =
+    sortBy && validSortColumns.includes(sortBy) ? sortBy : "event_count";
+  const validSortOrder = sortOrder === "asc" ? "ASC" : "DESC";
+  const orderByStatement = !isCountQuery
+    ? `ORDER BY ${validSortBy} ${validSortOrder} NULLS LAST`
+    : "";
+
   const baseCteQuery = `
     PerformanceStats AS (
         SELECT
             pathname,
             COUNT(*) as event_count,
-            avg(lcp) as lcp_avg,
-            quantile(0.5)(lcp) as lcp_p50,
-            quantile(0.75)(lcp) as lcp_p75,
-            quantile(0.9)(lcp) as lcp_p90,
-            quantile(0.99)(lcp) as lcp_p99,
-            avg(cls) as cls_avg,
-            quantile(0.5)(cls) as cls_p50,
-            quantile(0.75)(cls) as cls_p75,
-            quantile(0.9)(cls) as cls_p90,
-            quantile(0.99)(cls) as cls_p99,
-            avg(inp) as inp_avg,
-            quantile(0.5)(inp) as inp_p50,
-            quantile(0.75)(inp) as inp_p75,
-            quantile(0.9)(inp) as inp_p90,
-            quantile(0.99)(inp) as inp_p99,
-            avg(fcp) as fcp_avg,
-            quantile(0.5)(fcp) as fcp_p50,
-            quantile(0.75)(fcp) as fcp_p75,
-            quantile(0.9)(fcp) as fcp_p90,
-            quantile(0.99)(fcp) as fcp_p99,
-            avg(ttfb) as ttfb_avg,
-            quantile(0.5)(ttfb) as ttfb_p50,
-            quantile(0.75)(ttfb) as ttfb_p75,
-            quantile(0.9)(ttfb) as ttfb_p90,
-            quantile(0.99)(ttfb) as ttfb_p99
+            avgIf(lcp, lcp IS NOT NULL) as lcp_avg,
+            quantileIf(0.5)(lcp, lcp IS NOT NULL) as lcp_p50,
+            quantileIf(0.75)(lcp, lcp IS NOT NULL) as lcp_p75,
+            quantileIf(0.9)(lcp, lcp IS NOT NULL) as lcp_p90,
+            quantileIf(0.99)(lcp, lcp IS NOT NULL) as lcp_p99,
+            avgIf(cls, cls IS NOT NULL) as cls_avg,
+            quantileIf(0.5)(cls, cls IS NOT NULL) as cls_p50,
+            quantileIf(0.75)(cls, cls IS NOT NULL) as cls_p75,
+            quantileIf(0.9)(cls, cls IS NOT NULL) as cls_p90,
+            quantileIf(0.99)(cls, cls IS NOT NULL) as cls_p99,
+            avgIf(inp, inp IS NOT NULL) as inp_avg,
+            quantileIf(0.5)(inp, inp IS NOT NULL) as inp_p50,
+            quantileIf(0.75)(inp, inp IS NOT NULL) as inp_p75,
+            quantileIf(0.9)(inp, inp IS NOT NULL) as inp_p90,
+            quantileIf(0.99)(inp, inp IS NOT NULL) as inp_p99,
+            avgIf(fcp, fcp IS NOT NULL) as fcp_avg,
+            quantileIf(0.5)(fcp, fcp IS NOT NULL) as fcp_p50,
+            quantileIf(0.75)(fcp, fcp IS NOT NULL) as fcp_p75,
+            quantileIf(0.9)(fcp, fcp IS NOT NULL) as fcp_p90,
+            quantileIf(0.99)(fcp, fcp IS NOT NULL) as fcp_p99,
+            avgIf(ttfb, ttfb IS NOT NULL) as ttfb_avg,
+            quantileIf(0.5)(ttfb, ttfb IS NOT NULL) as ttfb_p50,
+            quantileIf(0.75)(ttfb, ttfb IS NOT NULL) as ttfb_p75,
+            quantileIf(0.9)(ttfb, ttfb IS NOT NULL) as ttfb_p90,
+            quantileIf(0.99)(ttfb, ttfb IS NOT NULL) as ttfb_p99
         FROM events
         WHERE 
           site_id = {siteId:Int32}
@@ -166,7 +207,7 @@ const getQuery = (
       ttfb_p90,
       ttfb_p99
   FROM PerformanceStats
-  ORDER BY event_count DESC
+  ${orderByStatement}
   ${limitStatement}
   ${offsetStatement};
   `;
