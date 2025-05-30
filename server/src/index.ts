@@ -155,22 +155,6 @@ const ANALYTICS_ROUTES = [
   "/api/get-site",
 ];
 
-// Create lists of routes without the /api prefix for backward compatibility
-const PUBLIC_ROUTES_NO_API = PUBLIC_ROUTES.map((route) =>
-  route.replace("/api", "")
-).filter((route) => route !== "");
-const ANALYTICS_ROUTES_NO_API = ANALYTICS_ROUTES.map((route) =>
-  route.replace("/api", "")
-).filter((route) => route !== "");
-
-// Check if a route is an analytics route (with or without /api prefix)
-const isAnalyticsRoute = (path: string) => {
-  return (
-    ANALYTICS_ROUTES.some((route) => path.startsWith(route)) ||
-    ANALYTICS_ROUTES_NO_API.some((route) => path.startsWith(route))
-  );
-};
-
 server.addHook("onRequest", async (request, reply) => {
   const { url } = request.raw;
 
@@ -180,17 +164,8 @@ server.addHook("onRequest", async (request, reply) => {
 
   // Check if the URL is missing the /api prefix and prepend if it matches a known API route
   if (!url.startsWith("/api")) {
-    const isPublicRouteNoApi = PUBLIC_ROUTES_NO_API.some((route) =>
-      url.startsWith(route)
-    );
-    const isAnalyticsRouteNoApi = ANALYTICS_ROUTES_NO_API.some((route) =>
-      url.startsWith(route)
-    );
-
-    if (isPublicRouteNoApi || isAnalyticsRouteNoApi) {
-      processedUrl = `/api${url}`;
-      request.raw.url = processedUrl; // Modify the raw request URL
-    }
+    processedUrl = `/api${url}`;
+    request.raw.url = processedUrl; // Modify the raw request URL
   }
 
   // Bypass auth for public routes (now including the prepended /api)
@@ -199,7 +174,7 @@ server.addHook("onRequest", async (request, reply) => {
   }
 
   // Check if it's an analytics route and get site ID (now including the prepended /api)
-  if (isAnalyticsRoute(processedUrl)) {
+  if (ANALYTICS_ROUTES.some((route) => processedUrl.startsWith(route))) {
     const siteId = extractSiteId(processedUrl);
 
     if (siteId && (await isSitePublic(siteId))) {
