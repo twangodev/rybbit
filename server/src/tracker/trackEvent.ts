@@ -76,12 +76,12 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     event_name: z.string().max(256).optional(),
     properties: z.string().max(2048).optional(),
     user_id: z.string().max(255).optional(),
-    // Performance metrics
-    lcp: z.number().positive().optional(),
-    cls: z.number().min(0).optional(),
-    inp: z.number().positive().optional(),
-    fcp: z.number().positive().optional(),
-    ttfb: z.number().positive().optional(),
+    // Performance metrics (can be null if not collected)
+    lcp: z.number().positive().nullable().optional(),
+    cls: z.number().min(0).nullable().optional(),
+    inp: z.number().positive().nullable().optional(),
+    fcp: z.number().positive().nullable().optional(),
+    ttfb: z.number().positive().nullable().optional(),
   }),
 ]);
 
