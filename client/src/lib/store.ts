@@ -21,6 +21,10 @@ export type StatType =
   | "bounce_rate"
   | "session_duration";
 
+export type PerformanceMetric = "lcp" | "cls" | "inp" | "fcp" | "ttfb";
+
+export type PercentileLevel = "p50" | "p75" | "p90" | "p99";
+
 export type FilterType = "equals" | "not_equals" | "contains" | "not_contains";
 
 export type FilterParameter =
@@ -144,6 +148,11 @@ type Store = {
   setSelectedStat: (stat: StatType) => void;
   filters: Filter[];
   setFilters: (filters: Filter[]) => void;
+  // Performance-specific state
+  selectedPercentile: PercentileLevel;
+  setSelectedPercentile: (percentile: PercentileLevel) => void;
+  selectedPerformanceMetric: PerformanceMetric;
+  setSelectedPerformanceMetric: (metric: PerformanceMetric) => void;
 };
 
 export const useStore = create<Store>((set) => ({
@@ -266,6 +275,13 @@ export const useStore = create<Store>((set) => ({
   setSelectedStat: (stat) => set({ selectedStat: stat }),
   filters: [],
   setFilters: (filters) => set({ filters }),
+  // Performance-specific state
+  selectedPercentile: "p90",
+  setSelectedPercentile: (percentile) =>
+    set({ selectedPercentile: percentile }),
+  selectedPerformanceMetric: "lcp",
+  setSelectedPerformanceMetric: (metric) =>
+    set({ selectedPerformanceMetric: metric }),
 }));
 
 export const resetStore = () => {

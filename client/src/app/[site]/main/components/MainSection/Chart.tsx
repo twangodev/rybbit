@@ -1,7 +1,12 @@
 "use client";
 import { nivoTheme } from "@/lib/nivo";
 import { StatType, TimeBucket, useStore } from "@/lib/store";
-import { LineCustomSvgLayer, LineCustomSvgLayerProps, LineSeries, ResponsiveLine } from "@nivo/line";
+import {
+  LineCustomSvgLayer,
+  LineCustomSvgLayerProps,
+  LineSeries,
+  ResponsiveLine,
+} from "@nivo/line";
 import { useWindowSize } from "@uidotdev/usehooks";
 import { DateTime } from "luxon";
 import { GetOverviewBucketedResponse } from "../../../../../api/analytics/useGetOverviewBucketed";
@@ -177,8 +182,10 @@ export function Chart({
     (time.mode === "month" && time.month !== currentMonthStr) || // do not display in month mode if month is not current
     (time.mode === "day" && time.day !== currentDayStr) || // do not display in day mode if day is not current
     (time.mode === "range" && time.endDate !== currentDayStr) || // do not display in range mode if end date is not current day
-    (time.mode === "day" && (bucket === "minute" || bucket === "five_minutes")) || // do not display in day mode if bucket is minute or five_minutes
-    (time.mode === "last-24-hours" && (bucket === "minute" || bucket === "five_minutes")); // do not display in last-24-hours mode if bucket is minute or five_minutes
+    (time.mode === "day" &&
+      (bucket === "minute" || bucket === "five_minutes")) || // do not display in day mode if bucket is minute or five_minutes
+    (time.mode === "last-24-hours" &&
+      (bucket === "minute" || bucket === "five_minutes")); // do not display in last-24-hours mode if bucket is minute or five_minutes
   const displayDashed = formattedData.length >= 2 && !shouldNotDisplay;
 
   const baseGradient = {
@@ -245,13 +252,21 @@ export function Chart({
     return series.map(({ id, data, color }) => (
       <path
         key={id}
-        d={lineGenerator(data.map(d => ({ x: xScale(d.data.x), y: yScale(d.data.y) })))!}
+        d={
+          lineGenerator(
+            data.map((d) => ({ x: xScale(d.data.x), y: yScale(d.data.y) }))
+          )!
+        }
         fill="none"
         stroke={color}
-        style={id === "dashedData" ? { strokeDasharray: "3, 6", strokeWidth: 3 } : { strokeWidth: 2 }}
+        style={
+          id === "dashedData"
+            ? { strokeDasharray: "3, 6", strokeWidth: 3 }
+            : { strokeWidth: 2 }
+        }
       />
-    ))
-  }
+    ));
+  };
 
   return (
     <ResponsiveLine
@@ -292,7 +307,7 @@ export function Chart({
         ),
         format: (value) => {
           const dt = DateTime.fromJSDate(value).setLocale(userLocale);
-          if (time.mode === "day" || time.mode === "last-24-hours" ) {
+          if (time.mode === "day" || time.mode === "last-24-hours") {
             return dt.toFormat(hour12 ? "ha" : "HH:mm");
           }
           return dt.toFormat(hour12 ? "MMM d" : "dd MMM");
@@ -374,7 +389,13 @@ export function Chart({
 }
 
 const formatDateTime = (dt: DateTime, bucket: TimeBucket) => {
-  const showMinutes = ["minute", "five_minutes", "ten_minutes", "fifteen_minutes", "hour"].includes(bucket);
+  const showMinutes = [
+    "minute",
+    "five_minutes",
+    "ten_minutes",
+    "fifteen_minutes",
+    "hour",
+  ].includes(bucket);
   const options: Intl.DateTimeFormatOptions = {
     month: "short",
     day: "numeric",

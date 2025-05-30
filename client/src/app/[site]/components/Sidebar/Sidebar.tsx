@@ -2,6 +2,7 @@
 import { Funnel, Target } from "@phosphor-icons/react/dist/ssr";
 import {
   Earth,
+  Gauge,
   LayoutDashboard,
   LayoutGrid,
   Map,
@@ -113,6 +114,12 @@ export function Sidebar() {
           active={isActiveTab("events")}
           href={getTabPath("events")}
           icon={<MousePointerClick className="w-4 h-4" />}
+        />
+        <SidebarLink
+          label="Performance"
+          active={isActiveTab("performance")}
+          href={getTabPath("performance")}
+          icon={<Gauge className="w-4 h-4" />}
         />
         {/* <SidebarLink
           label="Reports"
