@@ -16,6 +16,12 @@ type TotalPayload = TrackingPayload & {
   type?: string;
   event_name?: string;
   properties?: string;
+  // Performance metrics
+  lcp?: number;
+  cls?: number;
+  inp?: number;
+  fcp?: number;
+  ttfb?: number;
 };
 
 const getParsedProperties = (properties: string | undefined) => {
@@ -114,6 +120,12 @@ class PageviewQueue {
         event_name: pv.event_name || "",
         props: getParsedProperties(pv.properties),
         url_parameters: allUrlParams,
+        // Performance metrics (only included for performance events)
+        lcp: pv.lcp || null,
+        cls: pv.cls || null,
+        inp: pv.inp || null,
+        fcp: pv.fcp || null,
+        ttfb: pv.ttfb || null,
       };
     });
 

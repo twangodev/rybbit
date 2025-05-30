@@ -62,6 +62,27 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
       .optional(), // Optional but must be valid JSON if present
     user_id: z.string().max(255).optional(),
   }),
+  z.object({
+    type: z.literal("performance"),
+    site_id: z.string().min(1),
+    hostname: z.string().max(253).optional(),
+    pathname: z.string().max(2048).optional(),
+    querystring: z.string().max(2048).optional(),
+    screenWidth: z.number().int().positive().optional(),
+    screenHeight: z.number().int().positive().optional(),
+    language: z.string().max(35).optional(),
+    page_title: z.string().max(512).optional(),
+    referrer: z.string().max(2048).optional(),
+    event_name: z.string().max(256).optional(),
+    properties: z.string().max(2048).optional(),
+    user_id: z.string().max(255).optional(),
+    // Performance metrics
+    lcp: z.number().positive().optional(),
+    cls: z.number().min(0).optional(),
+    inp: z.number().positive().optional(),
+    fcp: z.number().positive().optional(),
+    ttfb: z.number().positive().optional(),
+  }),
 ]);
 
 // Update session for both pageviews and events
