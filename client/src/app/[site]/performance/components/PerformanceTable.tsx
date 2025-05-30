@@ -62,11 +62,15 @@ const formatMetricValue = (
   if (metric === "cls") {
     return value.toFixed(3);
   }
+  if (value >= 1000) {
+    return (value / 1000).toFixed(2);
+  }
   return Math.round(value).toString();
 };
 
-const getMetricUnit = (metric: PerformanceMetric): string => {
+const getMetricUnit = (metric: PerformanceMetric, value: number): string => {
   if (metric === "cls") return "";
+  if (value >= 1000) return "s";
   return "ms";
 };
 
@@ -85,7 +89,7 @@ const MetricCell = ({
     <span className={getMetricColor(metric, value)}>
       {formatMetricValue(metric, value)}
       <span className="text-xs ml-1 text-neutral-400">
-        {getMetricUnit(metric)}
+        {getMetricUnit(metric, value)}
       </span>
     </span>
   );

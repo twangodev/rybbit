@@ -7,6 +7,7 @@ import { DateTime } from "luxon";
 import { PerformanceMetric, useStore } from "../../../../lib/store";
 import { useGetPerformanceTimeSeries } from "../../../../api/analytics/useGetPerformanceTimeSeries";
 import { userLocale, hour12 } from "../../../../lib/dateTimeUtils";
+import { nivoTheme } from "@/lib/nivo";
 
 const METRIC_LABELS: Record<PerformanceMetric, string> = {
   lcp: "Largest Contentful Paint",
@@ -16,8 +17,9 @@ const METRIC_LABELS: Record<PerformanceMetric, string> = {
   ttfb: "Time to First Byte",
 };
 
-const getMetricUnit = (metric: PerformanceMetric): string => {
+const getMetricUnit = (metric: PerformanceMetric, value: number): string => {
   if (metric === "cls") return "";
+  if (value >= 1000) return "s";
   return "ms";
 };
 
@@ -27,6 +29,9 @@ const formatMetricValue = (
 ): string => {
   if (metric === "cls") {
     return value.toFixed(3);
+  }
+  if (value >= 1000) {
+    return (value / 1000).toFixed(2);
   }
   return Math.round(value).toString();
 };
@@ -105,7 +110,7 @@ export function PerformanceChart() {
     return `${formatMetricValue(
       selectedPerformanceMetric,
       value
-    )}${getMetricUnit(selectedPerformanceMetric)}`;
+    )}${getMetricUnit(selectedPerformanceMetric, value)}`;
   };
 
   return (
@@ -135,139 +140,84 @@ export function PerformanceChart() {
           <div className="h-[300px] w-full">
             <ResponsiveLine
               data={data}
-              margin={{ top: 20, right: 20, bottom: 60, left: 80 }}
+              theme={nivoTheme}
+              margin={{ top: 10, right: 10, bottom: 25, left: 35 }}
               xScale={{
                 type: "time",
                 format: "%Y-%m-%d %H:%M:%S",
                 precision: "second",
                 useUTC: true,
               }}
-              xFormat="time:%Y-%m-%d %H:%M:%S"
               yScale={{
                 type: "linear",
-                min: "auto",
-                max: "auto",
+                min: 0,
                 stacked: false,
                 reverse: false,
               }}
+              enableGridX={false}
+              enableGridY={true}
+              gridYValues={5}
               axisTop={null}
               axisRight={null}
               axisBottom={{
+                tickSize: 0,
+                tickPadding: 10,
+                tickRotation: 0,
+                truncateTickAt: 0,
                 format: formatXAxisValue,
-                tickSize: 5,
-                tickPadding: 5,
-                tickRotation: -45,
-                legend: "Time",
-                legendOffset: 50,
-                legendPosition: "middle",
               }}
               axisLeft={{
-                tickSize: 5,
-                tickPadding: 5,
+                tickSize: 0,
+                tickPadding: 10,
                 tickRotation: 0,
-                legend: `${
-                  METRIC_LABELS[selectedPerformanceMetric]
-                } (${getMetricUnit(selectedPerformanceMetric)})`,
-                legendOffset: -60,
-                legendPosition: "middle",
+                truncateTickAt: 0,
+                tickValues: 5,
                 format: (value) =>
                   formatMetricValue(selectedPerformanceMetric, value),
               }}
               colors={[getMetricColor(selectedPerformanceMetric)]}
-              pointSize={4}
-              pointColor={{ theme: "background" }}
-              pointBorderWidth={2}
-              pointBorderColor={{ from: "serieColor" }}
-              pointLabelYOffset={-12}
-              enableArea={true}
-              areaOpacity={0.1}
+              enableTouchCrosshair={true}
+              enablePoints={false}
               useMesh={true}
+              animate={false}
               enableSlices="x"
-              theme={{
-                background: "transparent",
-                text: {
-                  fontSize: 12,
-                  fill: "#a1a1aa",
-                },
-                axis: {
-                  domain: {
-                    line: {
-                      stroke: "#404040",
-                      strokeWidth: 1,
-                    },
-                  },
-                  legend: {
-                    text: {
-                      fontSize: 12,
-                      fill: "#a1a1aa",
-                    },
-                  },
-                  ticks: {
-                    line: {
-                      stroke: "#404040",
-                      strokeWidth: 1,
-                    },
-                    text: {
-                      fontSize: 11,
-                      fill: "#a1a1aa",
-                    },
-                  },
-                },
-                grid: {
-                  line: {
-                    stroke: "#262626",
-                    strokeWidth: 1,
-                  },
-                },
-                crosshair: {
-                  line: {
-                    stroke: "#a1a1aa",
-                    strokeWidth: 1,
-                    strokeOpacity: 0.35,
-                  },
-                },
-                tooltip: {
-                  container: {
-                    background: "#171717",
-                    color: "#a1a1aa",
-                    fontSize: 12,
-                    borderRadius: "6px",
-                    boxShadow: "0 4px 6px -1px rgba(0, 0, 0, 0.1)",
-                    border: "1px solid #404040",
-                  },
-                },
-              }}
-              tooltip={({ point }) => {
-                // Safely format the date with validation
-                const formatTooltipDate = (dateValue: any): string => {
-                  if (!dateValue) {
-                    return "Invalid date";
-                  }
+              enableArea={true}
+              areaBaselineValue={0}
+              areaOpacity={0.3}
+              sliceTooltip={({ slice }: any) => {
+                const currentY = Number(slice.points[0].data.yFormatted);
+                const currentTime = DateTime.fromJSDate(
+                  new Date(slice.points[0].data.x)
+                );
 
-                  try {
-                    const dt = DateTime.fromJSDate(new Date(dateValue));
-                    if (!dt.isValid) {
-                      return "Invalid date";
+                const formatDateTime = (dt: DateTime) => {
+                  const options: Intl.DateTimeFormatOptions = {
+                    month: "short",
+                    day: "numeric",
+                    hour: "numeric",
+                    hour12: hour12,
+                  };
+                  if (
+                    bucket === "hour" ||
+                    bucket === "minute" ||
+                    bucket === "five_minutes" ||
+                    bucket === "ten_minutes" ||
+                    bucket === "fifteen_minutes"
+                  ) {
+                    if (!hour12) {
+                      options.minute = "numeric";
                     }
-                    return dt.toLocaleString(DateTime.DATETIME_MED);
-                  } catch (error) {
-                    console.warn(
-                      "Error formatting tooltip date:",
-                      dateValue,
-                      error
-                    );
-                    return "Invalid date";
                   }
+                  return new Intl.DateTimeFormat(userLocale, options).format(
+                    dt.toJSDate()
+                  );
                 };
 
                 return (
-                  <div className="bg-neutral-900 border border-neutral-700 rounded-lg p-3 shadow-lg">
-                    <div className="text-sm font-medium text-white">
-                      {formatTooltipDate(point.data.x)}
-                    </div>
-                    <div className="text-sm text-neutral-300">
-                      {METRIC_LABELS[selectedPerformanceMetric]}:{" "}
-                      {formatTooltipValue(Number(point.data.y))}
+                  <div className="text-sm bg-neutral-900 p-2 rounded-md">
+                    <div className="flex justify-between text-sm w-36">
+                      <div>{formatDateTime(currentTime)}</div>
+                      <div>{formatTooltipValue(currentY)}</div>
                     </div>
                   </div>
                 );
