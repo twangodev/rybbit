@@ -1,7 +1,7 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { PercentileLevel, useStore } from "../../../../lib/store";
+import { PercentileLevel, usePerformanceStore } from "../performanceStore";
 
 const PERCENTILE_OPTIONS: { value: PercentileLevel; label: string }[] = [
   { value: "p50", label: "P50" },
@@ -11,7 +11,7 @@ const PERCENTILE_OPTIONS: { value: PercentileLevel; label: string }[] = [
 ];
 
 export function PercentileSelector() {
-  const { selectedPercentile, setSelectedPercentile } = useStore();
+  const { selectedPercentile, setSelectedPercentile } = usePerformanceStore();
 
   return (
     <div className="flex items-center space-x-1 bg-neutral-800 rounded-lg p-1">

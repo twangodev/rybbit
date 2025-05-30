@@ -2,6 +2,7 @@ import { authedFetch, getStartAndEndDate } from "../utils";
 import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { Filter, useStore } from "../../lib/store";
+import { usePerformanceStore } from "../../app/[site]/performance/performanceStore";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 type UseGetPerformanceByPathOptions = {
@@ -73,7 +74,8 @@ export function useGetPerformanceByPath({
   sortBy,
   sortOrder,
 }: UseGetPerformanceByPathOptions): UseQueryResult<PaginatedPerformanceResponse> {
-  const { time, filters, selectedPercentile } = useStore();
+  const { time, filters } = useStore();
+  const { selectedPercentile } = usePerformanceStore();
 
   // Check if we're using last-24-hours mode
   const isPast24HoursMode = time.mode === "last-24-hours";

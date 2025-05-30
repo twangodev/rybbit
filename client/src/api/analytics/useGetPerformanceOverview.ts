@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "../../lib/store";
+import { usePerformanceStore } from "../../app/[site]/performance/performanceStore";
 import { authedFetch, getStartAndEndDate } from "../utils";
 import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
@@ -30,7 +31,8 @@ export function useGetPerformanceOverview({
   periodTime?: PeriodTime;
   site?: number | string;
 }) {
-  const { time, previousTime, filters, selectedPercentile } = useStore();
+  const { time, previousTime, filters } = useStore();
+  const { selectedPercentile } = usePerformanceStore();
   const timeToUse = periodTime === "previous" ? previousTime : time;
   const { startDate, endDate } = getStartAndEndDate(timeToUse);
 

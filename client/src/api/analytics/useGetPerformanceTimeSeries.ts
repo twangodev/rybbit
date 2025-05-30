@@ -5,6 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { BACKEND_URL } from "../../lib/const";
 import { Filter, TimeBucket, useStore } from "../../lib/store";
+import { usePerformanceStore } from "../../app/[site]/performance/performanceStore";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { APIResponse } from "../types";
 import { authedFetch, getStartAndEndDate } from "../utils";
@@ -13,11 +14,27 @@ type PeriodTime = "current" | "previous";
 
 export type GetPerformanceTimeSeriesResponse = {
   time: string;
-  lcp: number;
-  cls: number;
-  inp: number;
-  fcp: number;
-  ttfb: number;
+  event_count: number;
+  lcp_p50: number | null;
+  lcp_p75: number | null;
+  lcp_p90: number | null;
+  lcp_p99: number | null;
+  cls_p50: number | null;
+  cls_p75: number | null;
+  cls_p90: number | null;
+  cls_p99: number | null;
+  inp_p50: number | null;
+  inp_p75: number | null;
+  inp_p90: number | null;
+  inp_p99: number | null;
+  fcp_p50: number | null;
+  fcp_p75: number | null;
+  fcp_p90: number | null;
+  fcp_p99: number | null;
+  ttfb_p50: number | null;
+  ttfb_p75: number | null;
+  ttfb_p90: number | null;
+  ttfb_p99: number | null;
 }[];
 
 export function useGetPerformanceTimeSeries({
@@ -40,9 +57,8 @@ export function useGetPerformanceTimeSeries({
     previousTime,
     filters: globalFilters,
     bucket: storeBucket,
-    selectedPerformanceMetric,
-    selectedPercentile,
   } = useStore();
+  const { selectedPerformanceMetric } = usePerformanceStore();
 
   const timeToUse = periodTime === "previous" ? previousTime : time;
   const bucketToUse = bucket || storeBucket;
@@ -59,7 +75,6 @@ export function useGetPerformanceTimeSeries({
       site,
       combinedFilters,
       selectedPerformanceMetric,
-      selectedPercentile,
     ],
     queryFn: () => {
       return authedFetch(`${BACKEND_URL}/performance/time-series/${site}`, {
@@ -68,8 +83,6 @@ export function useGetPerformanceTimeSeries({
         timeZone,
         bucket: bucketToUse,
         filters: combinedFilters,
-        metric: selectedPerformanceMetric,
-        percentile: selectedPercentile,
       }).then((res) => res.json());
     },
     placeholderData: (_, query: any) => {
@@ -80,7 +93,6 @@ export function useGetPerformanceTimeSeries({
         TimeBucket,
         string | number,
         Filter[],
-        string,
         string
       ];
 

@@ -20,73 +20,34 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
-import { PerformanceMetric, useStore } from "../../../../lib/store";
+import { useStore } from "../../../../lib/store";
+import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import {
   useGetPerformanceByPath,
   PerformanceByPathItem,
 } from "../../../../api/analytics/useGetPerformanceByPath";
 import { TablePagination } from "../../../../components/pagination";
-
-// Performance metric thresholds for color coding
-const getMetricColor = (metric: PerformanceMetric, value: number): string => {
-  switch (metric) {
-    case "lcp":
-      if (value <= 2500) return "text-green-400";
-      if (value <= 4000) return "text-yellow-400";
-      return "text-red-400";
-    case "cls":
-      if (value <= 0.1) return "text-green-400";
-      if (value <= 0.25) return "text-yellow-400";
-      return "text-red-400";
-    case "inp":
-      if (value <= 200) return "text-green-400";
-      if (value <= 500) return "text-yellow-400";
-      return "text-red-400";
-    case "fcp":
-      if (value <= 1800) return "text-green-400";
-      if (value <= 3000) return "text-yellow-400";
-      return "text-red-400";
-    case "ttfb":
-      if (value <= 800) return "text-green-400";
-      if (value <= 1800) return "text-yellow-400";
-      return "text-red-400";
-    default:
-      return "text-white";
-  }
-};
-
-const formatMetricValue = (
-  metric: PerformanceMetric,
-  value: number
-): string => {
-  if (metric === "cls") {
-    return value.toFixed(3);
-  }
-  if (value >= 1000) {
-    return (value / 1000).toFixed(2);
-  }
-  return Math.round(value).toString();
-};
-
-const getMetricUnit = (metric: PerformanceMetric, value: number): string => {
-  if (metric === "cls") return "";
-  if (value >= 1000) return "s";
-  return "ms";
-};
+import {
+  getMetricColor,
+  formatMetricValue,
+  getMetricUnit,
+} from "../utils/performanceUtils";
 
 const MetricCell = ({
   metric,
   value,
+  percentile,
 }: {
   metric: PerformanceMetric;
   value: number | null | undefined;
+  percentile: string;
 }) => {
   if (value === null || value === undefined) {
     return <span className="text-neutral-500">-</span>;
   }
 
   return (
-    <span className={getMetricColor(metric, value)}>
+    <span className={getMetricColor(metric, value, percentile as any)}>
       {formatMetricValue(metric, value)}
       <span className="text-xs ml-1 text-neutral-400">
         {getMetricUnit(metric, value)}
@@ -98,7 +59,8 @@ const MetricCell = ({
 const columnHelper = createColumnHelper<PerformanceByPathItem>();
 
 export function PerformanceTable() {
-  const { site, selectedPercentile } = useStore();
+  const { site } = useStore();
+  const { selectedPercentile } = usePerformanceStore();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -137,7 +99,11 @@ export function PerformanceTable() {
           header: "LCP",
           cell: (info) => (
             <div className="text-center">
-              <MetricCell metric="lcp" value={info.getValue() as number} />
+              <MetricCell
+                metric="lcp"
+                value={info.getValue() as number}
+                percentile={selectedPercentile}
+              />
             </div>
           ),
         }
@@ -148,7 +114,11 @@ export function PerformanceTable() {
           header: "CLS",
           cell: (info) => (
             <div className="text-center">
-              <MetricCell metric="cls" value={info.getValue() as number} />
+              <MetricCell
+                metric="cls"
+                value={info.getValue() as number}
+                percentile={selectedPercentile}
+              />
             </div>
           ),
         }
@@ -159,7 +129,11 @@ export function PerformanceTable() {
           header: "INP",
           cell: (info) => (
             <div className="text-center">
-              <MetricCell metric="inp" value={info.getValue() as number} />
+              <MetricCell
+                metric="inp"
+                value={info.getValue() as number}
+                percentile={selectedPercentile}
+              />
             </div>
           ),
         }
@@ -170,7 +144,11 @@ export function PerformanceTable() {
           header: "FCP",
           cell: (info) => (
             <div className="text-center">
-              <MetricCell metric="fcp" value={info.getValue() as number} />
+              <MetricCell
+                metric="fcp"
+                value={info.getValue() as number}
+                percentile={selectedPercentile}
+              />
             </div>
           ),
         }
@@ -181,7 +159,11 @@ export function PerformanceTable() {
           header: "TTFB",
           cell: (info) => (
             <div className="text-center">
-              <MetricCell metric="ttfb" value={info.getValue() as number} />
+              <MetricCell
+                metric="ttfb"
+                value={info.getValue() as number}
+                percentile={selectedPercentile}
+              />
             </div>
           ),
         }

@@ -68,6 +68,12 @@ export function Sidebar() {
           icon={<Earth className="w-4 h-4" />}
         />
         <SidebarLink
+          label="Performance"
+          active={isActiveTab("performance")}
+          href={getTabPath("performance")}
+          icon={<Gauge className="w-4 h-4" />}
+        />
+        <SidebarLink
           label="Map"
           active={isActiveTab("map")}
           href={getTabPath("map")}
@@ -114,12 +120,6 @@ export function Sidebar() {
           active={isActiveTab("events")}
           href={getTabPath("events")}
           icon={<MousePointerClick className="w-4 h-4" />}
-        />
-        <SidebarLink
-          label="Performance"
-          active={isActiveTab("performance")}
-          href={getTabPath("performance")}
-          icon={<Gauge className="w-4 h-4" />}
         />
         {/* <SidebarLink
           label="Reports"

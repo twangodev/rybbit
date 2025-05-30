@@ -4,9 +4,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import NumberFlow from "@number-flow/react";
 import { TrendingDown, TrendingUp } from "lucide-react";
-import { PerformanceMetric, useStore } from "../../../../lib/store";
+import { useStore } from "../../../../lib/store";
+import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import { useGetPerformanceOverview } from "../../../../api/analytics/useGetPerformanceOverview";
 import { PercentileSelector } from "./PercentileSelector";
+import {
+  getMetricColor,
+  formatMetricValue,
+  getMetricUnit,
+  METRIC_LABELS_SHORT,
+} from "../utils/performanceUtils";
 
 const ChangePercentage = ({
   current,
@@ -46,61 +53,6 @@ const ChangePercentage = ({
   );
 };
 
-// Performance metric thresholds for color coding
-const getMetricColor = (metric: PerformanceMetric, value: number): string => {
-  switch (metric) {
-    case "lcp":
-      if (value <= 2500) return "text-green-400";
-      if (value <= 4000) return "text-yellow-400";
-      return "text-red-400";
-    case "cls":
-      if (value <= 0.1) return "text-green-400";
-      if (value <= 0.25) return "text-yellow-400";
-      return "text-red-400";
-    case "inp":
-      if (value <= 200) return "text-green-400";
-      if (value <= 500) return "text-yellow-400";
-      return "text-red-400";
-    case "fcp":
-      if (value <= 1800) return "text-green-400";
-      if (value <= 3000) return "text-yellow-400";
-      return "text-red-400";
-    case "ttfb":
-      if (value <= 800) return "text-green-400";
-      if (value <= 1800) return "text-yellow-400";
-      return "text-red-400";
-    default:
-      return "text-white";
-  }
-};
-
-const formatMetricValue = (
-  metric: PerformanceMetric,
-  value: number
-): string => {
-  if (metric === "cls") {
-    return value.toFixed(3);
-  }
-  if (value >= 1000) {
-    return (value / 1000).toFixed(2);
-  }
-  return Math.round(value).toString();
-};
-
-const getMetricUnit = (metric: PerformanceMetric, value: number): string => {
-  if (metric === "cls") return "";
-  if (value >= 1000) return "s";
-  return "ms";
-};
-
-const METRIC_LABELS: Record<PerformanceMetric, string> = {
-  lcp: "LCP",
-  cls: "CLS",
-  inp: "INP",
-  fcp: "FCP",
-  ttfb: "TTFB",
-};
-
 const Stat = ({
   title,
   id,
@@ -114,8 +66,11 @@ const Stat = ({
   previous: number;
   isLoading: boolean;
 }) => {
-  const { selectedPerformanceMetric, setSelectedPerformanceMetric } =
-    useStore();
+  const {
+    selectedPerformanceMetric,
+    setSelectedPerformanceMetric,
+    selectedPercentile,
+  } = usePerformanceStore();
 
   return (
     <div
@@ -135,7 +90,7 @@ const Stat = ({
             </>
           ) : (
             <>
-              <span className={getMetricColor(id, value)}>
+              <span className={getMetricColor(id, value, selectedPercentile)}>
                 <NumberFlow
                   respectMotionPreference={false}
                   value={Number(formatMetricValue(id, value))}
@@ -153,7 +108,8 @@ const Stat = ({
 };
 
 export function PerformanceOverview() {
-  const { site, selectedPercentile } = useStore();
+  const { site } = useStore();
+  const { selectedPercentile } = usePerformanceStore();
 
   const { data: overviewData, isLoading: isOverviewLoading } =
     useGetPerformanceOverview({ site });
@@ -177,7 +133,7 @@ export function PerformanceOverview() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold">Performance Metrics</h2>
+        <h2 className="text-lg font-semibold">Web Vitals</h2>
         <PercentileSelector />
       </div>
 

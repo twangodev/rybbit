@@ -7,73 +7,57 @@ import { DateTime } from "luxon";
 import { Tilt_Warp } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { PerformanceMetric, useStore } from "../../../../lib/store";
+import { useState } from "react";
+import { useStore } from "../../../../lib/store";
+import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import { useGetPerformanceTimeSeries } from "../../../../api/analytics/useGetPerformanceTimeSeries";
 import { userLocale, hour12 } from "../../../../lib/dateTimeUtils";
 import { nivoTheme } from "@/lib/nivo";
 import { authClient } from "../../../../lib/auth";
 import { cn } from "../../../../lib/utils";
 import { BucketSelection } from "../../../../components/BucketSelection";
-
-const METRIC_LABELS: Record<PerformanceMetric, string> = {
-  lcp: "Largest Contentful Paint",
-  cls: "Cumulative Layout Shift",
-  inp: "Interaction to Next Paint",
-  fcp: "First Contentful Paint",
-  ttfb: "Time to First Byte",
-};
+import {
+  formatMetricValue,
+  getMetricUnit,
+  getMetricChartColor,
+  METRIC_LABELS,
+  getPerformanceThresholds,
+} from "../utils/performanceUtils";
 
 const tilt_wrap = Tilt_Warp({
   subsets: ["latin"],
   weight: "400",
 });
 
-const getMetricUnit = (metric: PerformanceMetric, value: number): string => {
-  if (metric === "cls") return "";
-  if (value >= 1000) return "s";
-  return "ms";
-};
-
-const formatMetricValue = (
-  metric: PerformanceMetric,
-  value: number
-): string => {
-  if (metric === "cls") {
-    return value.toFixed(3);
-  }
-  if (value >= 1000) {
-    return (value / 1000).toFixed(2);
-  }
-  return Math.round(value).toString();
-};
-
-// Performance metric thresholds for color coding
-const getMetricColor = (metric: PerformanceMetric): string => {
-  switch (metric) {
-    case "lcp":
-      return "#3b82f6"; // blue
-    case "cls":
-      return "#10b981"; // emerald
-    case "inp":
-      return "#f59e0b"; // amber
-    case "fcp":
-      return "#8b5cf6"; // violet
-    case "ttfb":
-      return "#ef4444"; // red
-    default:
-      return "#6b7280"; // gray
-  }
-};
-
 export function PerformanceChart() {
   const session = authClient.useSession();
-  const { site, selectedPerformanceMetric, bucket } = useStore();
+  const { site, bucket } = useStore();
+  const { selectedPerformanceMetric, selectedPercentile } =
+    usePerformanceStore();
+
+  // State for toggling percentile visibility
+  const [visiblePercentiles, setVisiblePercentiles] = useState<Set<string>>(
+    new Set(["P50", "P75", "P90", "P99"])
+  );
+
+  const togglePercentile = (percentile: string) => {
+    setVisiblePercentiles((prev) => {
+      const newSet = new Set(prev);
+      if (newSet.has(percentile)) {
+        newSet.delete(percentile);
+      } else {
+        newSet.add(percentile);
+      }
+      return newSet;
+    });
+  };
 
   const { data: timeSeriesData, isLoading } = useGetPerformanceTimeSeries({
     site,
   });
 
-  const chartData =
+  // Transform data to show all percentiles as separate lines
+  const processedData =
     timeSeriesData?.data
       ?.map((item: any) => {
         // Parse timestamp properly using luxon (same as Chart.tsx)
@@ -84,40 +68,131 @@ export function PerformanceChart() {
           return null;
         }
 
-        // Get the p75 percentile value for the selected metric
-        // Note: Using p75 as a good balance between median (p50) and outliers (p90/p99)
-        // The API returns percentile data like: lcp_p50, lcp_p75, lcp_p90, lcp_p99
-        const metricValue = item[`${selectedPerformanceMetric}_p75`] ?? 0;
-
         return {
-          x: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
-          y: metricValue,
+          time: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
+          p50: item[`${selectedPerformanceMetric}_p50`] ?? null,
+          p75: item[`${selectedPerformanceMetric}_p75`] ?? null,
+          p90: item[`${selectedPerformanceMetric}_p90`] ?? null,
+          p99: item[`${selectedPerformanceMetric}_p99`] ?? null,
         };
       })
       .filter((e) => e !== null) ?? [];
 
+  // Create separate data series for each percentile - using shades of amber
+  const percentileColors = {
+    p50: "#fde68a", // light amber
+    p75: "#fbbf24", // medium amber
+    p90: "#f59e0b", // amber
+    p99: "#d97706", // dark amber
+  };
+
   const data = [
     {
-      id: selectedPerformanceMetric,
-      color: getMetricColor(selectedPerformanceMetric),
-      data: chartData,
+      id: "P50",
+      color: percentileColors.p50,
+      data: processedData
+        .map((item) => ({
+          x: item.time,
+          y: item.p50,
+        }))
+        .filter((point) => point.y !== null),
     },
-  ];
+    {
+      id: "P75",
+      color: percentileColors.p75,
+      data: processedData
+        .map((item) => ({
+          x: item.time,
+          y: item.p75,
+        }))
+        .filter((point) => point.y !== null),
+    },
+    {
+      id: "P90",
+      color: percentileColors.p90,
+      data: processedData
+        .map((item) => ({
+          x: item.time,
+          y: item.p90,
+        }))
+        .filter((point) => point.y !== null),
+    },
+    {
+      id: "P99",
+      color: percentileColors.p99,
+      data: processedData
+        .map((item) => ({
+          x: item.time,
+          y: item.p99,
+        }))
+        .filter((point) => point.y !== null),
+    },
+  ].filter(
+    (series) => series.data.length > 0 && visiblePercentiles.has(series.id)
+  );
 
-  // Gradient definitions for the chart area
+  // Gradient definitions for each percentile line
   const chartPropsDefs = [
     {
-      id: selectedPerformanceMetric,
+      id: "P50",
       type: "linearGradient",
       colors: [
         {
           offset: 0,
-          color: getMetricColor(selectedPerformanceMetric),
-          opacity: 1,
+          color: percentileColors.p50,
+          opacity: 0.3,
         },
         {
           offset: 100,
-          color: getMetricColor(selectedPerformanceMetric),
+          color: percentileColors.p50,
+          opacity: 0,
+        },
+      ],
+    },
+    {
+      id: "P75",
+      type: "linearGradient",
+      colors: [
+        {
+          offset: 0,
+          color: percentileColors.p75,
+          opacity: 0.3,
+        },
+        {
+          offset: 100,
+          color: percentileColors.p75,
+          opacity: 0,
+        },
+      ],
+    },
+    {
+      id: "P90",
+      type: "linearGradient",
+      colors: [
+        {
+          offset: 0,
+          color: percentileColors.p90,
+          opacity: 0.3,
+        },
+        {
+          offset: 100,
+          color: percentileColors.p90,
+          opacity: 0,
+        },
+      ],
+    },
+    {
+      id: "P99",
+      type: "linearGradient",
+      colors: [
+        {
+          offset: 0,
+          color: percentileColors.p99,
+          opacity: 0.3,
+        },
+        {
+          offset: 100,
+          color: percentileColors.p99,
           opacity: 0,
         },
       ],
@@ -126,12 +201,10 @@ export function PerformanceChart() {
 
   // Fill configuration to apply gradients
   const chartPropsFill = [
-    {
-      id: selectedPerformanceMetric,
-      match: {
-        id: selectedPerformanceMetric,
-      },
-    },
+    { id: "P50", match: { id: "P50" } },
+    { id: "P75", match: { id: "P75" } },
+    { id: "P90", match: { id: "P90" } },
+    { id: "P99", match: { id: "P99" } },
   ];
 
   const formatXAxisValue = (value: any) => {
@@ -155,6 +228,59 @@ export function PerformanceChart() {
     )}${getMetricUnit(selectedPerformanceMetric, value)}`;
   };
 
+  // Get performance thresholds for the current metric and percentile
+  const thresholds = getPerformanceThresholds(
+    selectedPerformanceMetric,
+    selectedPercentile
+  );
+
+  // Create markers for performance thresholds
+  const markers = thresholds
+    ? [
+        {
+          axis: "y" as const,
+          value: thresholds.good,
+          lineStyle: {
+            stroke: "#10b981", // green
+            strokeWidth: 2,
+            strokeDasharray: "4 4",
+          },
+          legend: `Good (≤${formatMetricValue(
+            selectedPerformanceMetric,
+            thresholds.good
+          )}${getMetricUnit(selectedPerformanceMetric, thresholds.good)})`,
+          legendPosition: "top-left" as const,
+          legendOrientation: "horizontal" as const,
+          textStyle: {
+            fill: "#10b981",
+            fontSize: 11,
+          },
+        },
+        {
+          axis: "y" as const,
+          value: thresholds.needs_improvement,
+          lineStyle: {
+            stroke: "#f59e0b", // yellow/amber
+            strokeWidth: 2,
+            strokeDasharray: "4 4",
+          },
+          legend: `Needs Improvement (≤${formatMetricValue(
+            selectedPerformanceMetric,
+            thresholds.needs_improvement
+          )}${getMetricUnit(
+            selectedPerformanceMetric,
+            thresholds.needs_improvement
+          )})`,
+          legendPosition: "top-left" as const,
+          legendOrientation: "horizontal" as const,
+          textStyle: {
+            fill: "#f59e0b",
+            fontSize: 11,
+          },
+        },
+      ]
+    : [];
+
   return (
     <Card>
       <CardContent className="p-2 md:p-4 py-3 w-full">
@@ -171,16 +297,51 @@ export function PerformanceChart() {
               rybbit.io
             </Link>
           </div>
-          <span className="text-sm text-neutral-200">
-            {METRIC_LABELS[selectedPerformanceMetric]}
-          </span>
+          <div className="flex items-center space-x-4">
+            <span className="text-sm text-neutral-200">
+              {METRIC_LABELS[selectedPerformanceMetric]}
+            </span>
+            <div className="flex items-center space-x-2">
+              {(["P50", "P75", "P90", "P99"] as const).map((percentile) => {
+                const colors = {
+                  P50: "#fde68a", // light amber
+                  P75: "#fbbf24", // medium amber
+                  P90: "#f59e0b", // amber
+                  P99: "#d97706", // dark amber
+                };
+                const isVisible = visiblePercentiles.has(percentile);
+
+                return (
+                  <button
+                    key={percentile}
+                    onClick={() => togglePercentile(percentile)}
+                    className={cn(
+                      "flex items-center space-x-1.5 px-2 py-1 rounded text-xs font-medium transition-all",
+                      isVisible
+                        ? "bg-neutral-800 text-white"
+                        : "bg-neutral-900 text-neutral-500 hover:text-neutral-400"
+                    )}
+                  >
+                    <div
+                      className={cn(
+                        "w-3 h-3 rounded-sm transition-opacity",
+                        isVisible ? "opacity-100" : "opacity-30"
+                      )}
+                      style={{ backgroundColor: colors[percentile] }}
+                    />
+                    <span>{percentile}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
           <BucketSelection />
         </div>
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="w-full h-[300px] rounded-md" />
           </div>
-        ) : chartData.length === 0 ? (
+        ) : data.length === 0 ? (
           <div className="h-[300px] w-full flex items-center justify-center">
             <div className="text-center text-neutral-500">
               <p className="text-lg font-medium">
@@ -196,7 +357,7 @@ export function PerformanceChart() {
             <ResponsiveLine
               data={data}
               theme={nivoTheme}
-              margin={{ top: 10, right: 10, bottom: 25, left: 35 }}
+              margin={{ top: 10, right: 20, bottom: 25, left: 40 }}
               xScale={{
                 type: "time",
                 format: "%Y-%m-%d %H:%M:%S",
@@ -230,19 +391,15 @@ export function PerformanceChart() {
                 format: (value) =>
                   formatMetricValue(selectedPerformanceMetric, value),
               }}
-              colors={[getMetricColor(selectedPerformanceMetric)]}
+              colors={(d) => d.color}
               enableTouchCrosshair={true}
               enablePoints={false}
               useMesh={true}
               animate={false}
               enableSlices="x"
-              enableArea={true}
-              areaBaselineValue={0}
-              areaOpacity={0.3}
-              defs={chartPropsDefs}
-              fill={chartPropsFill}
+              enableArea={false}
+              markers={markers}
               sliceTooltip={({ slice }: any) => {
-                const currentY = Number(slice.points[0].data.yFormatted);
                 const currentTime = DateTime.fromJSDate(
                   new Date(slice.points[0].data.x)
                 );
@@ -271,10 +428,33 @@ export function PerformanceChart() {
                 };
 
                 return (
-                  <div className="text-sm bg-neutral-900 p-2 rounded-md">
-                    <div className="flex justify-between text-sm w-36">
-                      <div>{formatDateTime(currentTime)}</div>
-                      <div>{formatTooltipValue(currentY)}</div>
+                  <div className="text-sm bg-neutral-900 p-3 rounded-md min-w-[220px] border border-neutral-700">
+                    <div className="text-neutral-300 mb-3 font-medium text-center">
+                      {METRIC_LABELS[selectedPerformanceMetric]}
+                    </div>
+                    <div className="text-neutral-400 mb-2 text-xs text-center">
+                      {formatDateTime(currentTime)}
+                    </div>
+                    <div className="space-y-2">
+                      {slice.points.map((point: any) => (
+                        <div
+                          key={point.serieId}
+                          className="flex justify-between items-center"
+                        >
+                          <div className="flex items-center gap-2">
+                            <div
+                              className="w-3 h-3 rounded-full"
+                              style={{ backgroundColor: point.serieColor }}
+                            />
+                            <span className="text-neutral-200 font-medium">
+                              {point.serieId}
+                            </span>
+                          </div>
+                          <span className="text-white font-semibold">
+                            {formatTooltipValue(Number(point.data.yFormatted))}
+                          </span>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 );
