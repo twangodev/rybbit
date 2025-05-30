@@ -4,10 +4,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ResponsiveLine } from "@nivo/line";
 import { DateTime } from "luxon";
+import { Tilt_Warp } from "next/font/google";
+import Image from "next/image";
+import Link from "next/link";
 import { PerformanceMetric, useStore } from "../../../../lib/store";
 import { useGetPerformanceTimeSeries } from "../../../../api/analytics/useGetPerformanceTimeSeries";
 import { userLocale, hour12 } from "../../../../lib/dateTimeUtils";
 import { nivoTheme } from "@/lib/nivo";
+import { authClient } from "../../../../lib/auth";
+import { cn } from "../../../../lib/utils";
+import { BucketSelection } from "../../../../components/BucketSelection";
 
 const METRIC_LABELS: Record<PerformanceMetric, string> = {
   lcp: "Largest Contentful Paint",
@@ -16,6 +22,11 @@ const METRIC_LABELS: Record<PerformanceMetric, string> = {
   fcp: "First Contentful Paint",
   ttfb: "Time to First Byte",
 };
+
+const tilt_wrap = Tilt_Warp({
+  subsets: ["latin"],
+  weight: "400",
+});
 
 const getMetricUnit = (metric: PerformanceMetric, value: number): string => {
   if (metric === "cls") return "";
@@ -55,6 +66,7 @@ const getMetricColor = (metric: PerformanceMetric): string => {
 };
 
 export function PerformanceChart() {
+  const session = authClient.useSession();
   const { site, selectedPerformanceMetric, bucket } = useStore();
 
   const { data: timeSeriesData, isLoading } = useGetPerformanceTimeSeries({
@@ -92,6 +104,36 @@ export function PerformanceChart() {
     },
   ];
 
+  // Gradient definitions for the chart area
+  const chartPropsDefs = [
+    {
+      id: selectedPerformanceMetric,
+      type: "linearGradient",
+      colors: [
+        {
+          offset: 0,
+          color: getMetricColor(selectedPerformanceMetric),
+          opacity: 1,
+        },
+        {
+          offset: 100,
+          color: getMetricColor(selectedPerformanceMetric),
+          opacity: 0,
+        },
+      ],
+    },
+  ];
+
+  // Fill configuration to apply gradients
+  const chartPropsFill = [
+    {
+      id: selectedPerformanceMetric,
+      match: {
+        id: selectedPerformanceMetric,
+      },
+    },
+  ];
+
   const formatXAxisValue = (value: any) => {
     const dt = DateTime.fromJSDate(value).setLocale(userLocale);
     if (
@@ -115,12 +157,25 @@ export function PerformanceChart() {
 
   return (
     <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          {METRIC_LABELS[selectedPerformanceMetric]} Over Time
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+      <CardContent className="p-2 md:p-4 py-3 w-full">
+        <div className="flex items-center justify-between px-2 md:px-0">
+          <div className="flex items-center space-x-4">
+            <Link
+              href={session.data ? "/" : "https://rybbit.io"}
+              className={cn(
+                "text-lg font-semibold flex items-center gap-1.5 opacity-75",
+                tilt_wrap.className
+              )}
+            >
+              <Image src="/rybbit.png" alt="Rybbit" width={20} height={20} />
+              rybbit.io
+            </Link>
+          </div>
+          <span className="text-sm text-neutral-200">
+            {METRIC_LABELS[selectedPerformanceMetric]}
+          </span>
+          <BucketSelection />
+        </div>
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="w-full h-[300px] rounded-md" />
@@ -184,6 +239,8 @@ export function PerformanceChart() {
               enableArea={true}
               areaBaselineValue={0}
               areaOpacity={0.3}
+              defs={chartPropsDefs}
+              fill={chartPropsFill}
               sliceTooltip={({ slice }: any) => {
                 const currentY = Number(slice.points[0].data.yFormatted);
                 const currentTime = DateTime.fromJSDate(
