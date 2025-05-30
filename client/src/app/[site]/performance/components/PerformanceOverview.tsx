@@ -114,8 +114,6 @@ export function PerformanceOverview() {
   const { data: overviewData, isLoading: isOverviewLoading } =
     useGetPerformanceOverview({ site });
 
-  console.info("OVERVIEW DATA", JSON.stringify(overviewData, null, 2));
-
   const { data: overviewDataPrevious, isLoading: isOverviewLoadingPrevious } =
     useGetPerformanceOverview({ site, periodTime: "previous" });
 

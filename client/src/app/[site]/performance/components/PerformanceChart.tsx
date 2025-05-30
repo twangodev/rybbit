@@ -428,33 +428,33 @@ export function PerformanceChart() {
                 };
 
                 return (
-                  <div className="text-sm bg-neutral-900 p-3 rounded-md min-w-[220px] border border-neutral-700">
-                    <div className="text-neutral-300 mb-3 font-medium text-center">
-                      {METRIC_LABELS[selectedPerformanceMetric]}
-                    </div>
-                    <div className="text-neutral-400 mb-2 text-xs text-center">
-                      {formatDateTime(currentTime)}
-                    </div>
-                    <div className="space-y-2">
-                      {slice.points.map((point: any) => (
-                        <div
-                          key={point.serieId}
-                          className="flex justify-between items-center"
-                        >
-                          <div className="flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: point.serieColor }}
-                            />
-                            <span className="text-neutral-200 font-medium">
+                  <div className="text-sm bg-neutral-900 p-3 rounded-md min-w-[150px] border border-neutral-750">
+                    {formatDateTime(currentTime)}
+                    <div className="space-y-2 mt-2">
+                      {slice.points.map((point: any) => {
+                        return (
+                          <div
+                            key={point.seriesId}
+                            className="flex justify-between items-center"
+                          >
+                            <div className="flex items-center gap-2">
+                              <div
+                                className="w-3 h-3 rounded-full"
+                                style={{ backgroundColor: point.seriesColor }}
+                              />
+                              <span className="text-neutral-200 font-medium">
+                                {point.seriesId}
+                              </span>
+                            </div>
+                            <span className="text-white">
                               {point.serieId}
+                              {formatTooltipValue(
+                                Number(point.data.yFormatted)
+                              )}
                             </span>
                           </div>
-                          <span className="text-white font-semibold">
-                            {formatTooltipValue(Number(point.data.yFormatted))}
-                          </span>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 );
