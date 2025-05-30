@@ -319,7 +319,7 @@
           if (!webVitalsSent) {
             sendWebVitals();
           }
-        }, 10000); // 10 second timeout
+        }, 20000);
 
         // Also send on page unload to capture any remaining metrics
         window.addEventListener("beforeunload", () => {
