@@ -12,7 +12,7 @@ http:// {
     # Enable compression
     encode zstd gzip
 
-    handle_path /api/* {
+    handle /api/* {
         reverse_proxy backend:3001
     }
 

@@ -3,17 +3,25 @@ import Image from "next/image";
 
 const OS_TO_LOGO: Record<string, string> = {
   Windows: "Windows.svg",
+  "Windows Phone": "Windows.svg",
   Android: "Android.svg",
   android: "Android.svg",
   Linux: "Tux.svg",
   macOS: "macOS.svg",
   iOS: "Apple.svg",
   "Chrome OS": "Chrome.svg",
+  "Chromecast Linux": "Chrome.svg",
+  "Chromecast Fuchsia": "Chrome.svg",
   Ubuntu: "Ubuntu.svg",
   HarmonyOS: "HarmonyOS.svg",
   OpenHarmony: "OpenHarmony.png",
   PlayStation: "PlayStation.svg",
   Tizen: "Tizen.png",
+  Symbian: "Symbian.svg",
+  Debian: "Debian.svg",
+  Fedora: "Fedora.svg",
+  Nintendo: "Nintendo.svg",
+  Xbox: "Xbox.svg",
 };
 
 export function OperatingSystem({ os = "" }: { os?: string }) {

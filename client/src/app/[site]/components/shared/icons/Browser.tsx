@@ -1,3 +1,4 @@
+import { m } from "framer-motion";
 import { Compass } from "lucide-react";
 import Image from "next/image";
 
@@ -9,7 +10,9 @@ const BROWSER_TO_LOGO: Record<string, string> = {
   Chromium: "Chromium.svg",
   GSA: "Chromium.svg",
   Firefox: "Firefox.svg",
+  "Firefox Focus": "Firefox.svg",
   "Mobile Firefox": "Firefox.svg",
+  Mozilla: "Firefox.svg",
   Safari: "Safari.svg",
   "Mobile Safari": "Safari.svg",
   Edge: "Edge.svg",
@@ -49,6 +52,17 @@ const BROWSER_TO_LOGO: Record<string, string> = {
   IE: "IE.svg",
   Quark: "Quark.svg",
   "MIUI Browser": "Miui.png",
+  Brave: "Brave.svg",
+  Debian: "Debian.svg",
+  Ecosia: "Ecosia.svg",
+  Electron: "Electron.svg",
+  LibreWolf: "LibreWolf.svg",
+  LinkedIn: "LinkedIn.svg",
+  SeaMonkey: "SeaMonkey.svg",
+  Snapchat: "Snapchat.svg",
+  TikTok: "TikTok.svg",
+  Twitter: "Twitter.svg",
+  Waterfox: "Waterfox.svg",
 };
 
 export function Browser({ browser }: { browser: string }) {
