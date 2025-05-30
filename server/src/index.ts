@@ -162,12 +162,6 @@ server.addHook("onRequest", async (request, reply) => {
 
   let processedUrl = url;
 
-  // Check if the URL is missing the /api prefix and prepend if it matches a known API route
-  if (!url.startsWith("/api")) {
-    processedUrl = `/api${url}`;
-    request.raw.url = processedUrl; // Modify the raw request URL
-  }
-
   // Bypass auth for public routes (now including the prepended /api)
   if (PUBLIC_ROUTES.some((route) => processedUrl.includes(route))) {
     return;
