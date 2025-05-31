@@ -21,6 +21,7 @@ import { authClient } from "../../../../lib/auth";
 import { cn } from "../../../../lib/utils";
 import LiveUserCount from "./LiveUserCount";
 import { SiteSelector } from "./SiteSelector";
+import { IS_CLOUD } from "../../../../lib/const";
 
 export function Sidebar() {
   const session = authClient.useSession();
@@ -67,12 +68,14 @@ export function Sidebar() {
           href={getTabPath("realtime")}
           icon={<Earth className="w-4 h-4" />}
         />
-        <SidebarLink
-          label="Performance"
-          active={isActiveTab("performance")}
-          href={getTabPath("performance")}
-          icon={<Gauge className="w-4 h-4" />}
-        />
+        {IS_CLOUD && (
+          <SidebarLink
+            label="Performance"
+            active={isActiveTab("performance")}
+            href={getTabPath("performance")}
+            icon={<Gauge className="w-4 h-4" />}
+          />
+        )}
         <SidebarLink
           label="Map"
           active={isActiveTab("map")}
