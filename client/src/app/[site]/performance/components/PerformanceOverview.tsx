@@ -1,9 +1,15 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import NumberFlow from "@number-flow/react";
-import { TrendingDown, TrendingUp } from "lucide-react";
+import { HelpCircle, TrendingDown, TrendingUp } from "lucide-react";
 import { useStore } from "../../../../lib/store";
 import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import { useGetPerformanceOverview } from "../../../../api/analytics/useGetPerformanceOverview";
@@ -72,6 +78,53 @@ const Stat = ({
     selectedPercentile,
   } = usePerformanceStore();
 
+  // Metric explanations with importance and structured content
+  const getMetricInfo = (metric: PerformanceMetric) => {
+    switch (metric) {
+      case "lcp":
+        return {
+          importance: "Core Web Vital",
+          description:
+            "Measures loading performance. LCP marks the time when the largest content element becomes visible in the viewport.",
+          threshold: "Good LCP scores are 2.5 seconds or faster.",
+        };
+      case "cls":
+        return {
+          importance: "Core Web Vital",
+          description:
+            "Measures visual stability. CLS quantifies how much visible content shifts during page load.",
+          threshold: "Good CLS scores are 0.1 or less.",
+        };
+      case "inp":
+        return {
+          importance: "Core Web Vital",
+          description:
+            "Measures interactivity. INP assesses responsiveness by measuring the time from user interaction to the next paint.",
+          threshold: "Good INP scores are 200ms or faster.",
+        };
+      case "fcp":
+        return {
+          importance: "Supporting Metric",
+          description:
+            "Measures perceived loading speed. FCP marks when the first content element becomes visible.",
+          threshold: "Good FCP scores are 1.8 seconds or faster.",
+        };
+      case "ttfb":
+        return {
+          importance: "Supporting Metric",
+          description:
+            "Measures server response time. TTFB is the time from request start to when the first byte is received.",
+          threshold: "Good TTFB scores are 800ms or faster.",
+        };
+      default:
+        return {
+          importance: "Web Vital",
+          description: "Web Vitals metric for measuring website performance.",
+          threshold: "Check Google's Web Vitals documentation for thresholds.",
+        };
+    }
+  };
+
   return (
     <div
       className={cn(
@@ -81,7 +134,41 @@ const Stat = ({
       onClick={() => setSelectedPerformanceMetric(id)}
     >
       <div className="flex flex-col px-3 py-2">
-        <div className="text-sm font-medium text-muted-foreground">{title}</div>
+        <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+          {title}
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-3 w-3 text-neutral-300 hover:text-neutral-100 cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent side="top" className="max-w-xs p-3">
+                {(() => {
+                  const metricInfo = getMetricInfo(id);
+                  return (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-neutral-400 uppercase tracking-wide">
+                          {metricInfo.importance}
+                        </span>
+                        {metricInfo.importance === "Core Web Vital" && (
+                          <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                        )}
+                      </div>
+                      <p className="text-sm text-neutral-200 leading-relaxed">
+                        {metricInfo.description}
+                      </p>
+                      <div className="pt-1 border-t border-neutral-700">
+                        <p className="text-xs text-neutral-400 italic">
+                          {metricInfo.threshold}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <div className="text-2xl font-medium flex gap-2 items-center justify-between">
           {isLoading ? (
             <>
