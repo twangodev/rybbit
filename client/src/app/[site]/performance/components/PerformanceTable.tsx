@@ -330,11 +330,75 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
   return (
     <>
       {isLoading ? (
-        <div className="space-y-3">
-          {Array.from({ length: 5 }).map((_, i) => (
-            <Skeleton key={i} className="w-full h-12 rounded-md" />
-          ))}
-        </div>
+        <Table>
+          <TableHeader>
+            <TableRow className="border-neutral-800">
+              <TableHead className="text-neutral-300">
+                <Skeleton className="h-4 w-20" />
+              </TableHead>
+              <TableHead className="text-neutral-300 text-center">
+                <Skeleton className="h-4 w-8 mx-auto" />
+              </TableHead>
+              <TableHead className="text-neutral-300 text-center">
+                <Skeleton className="h-4 w-8 mx-auto" />
+              </TableHead>
+              <TableHead className="text-neutral-300 text-center">
+                <Skeleton className="h-4 w-8 mx-auto" />
+              </TableHead>
+              <TableHead className="text-neutral-300 text-center">
+                <Skeleton className="h-4 w-8 mx-auto" />
+              </TableHead>
+              <TableHead className="text-neutral-300 text-center">
+                <Skeleton className="h-4 w-10 mx-auto" />
+              </TableHead>
+              <TableHead className="text-neutral-300 text-center">
+                <Skeleton className="h-4 w-12 mx-auto" />
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {Array.from({ length: 10 }).map((_, i) => (
+              <TableRow key={i} className="border-neutral-800">
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />
+                    <Skeleton className="h-4 w-32" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-center">
+                    <Skeleton className="h-4 w-12 mx-auto" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-center">
+                    <Skeleton className="h-4 w-10 mx-auto" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-center">
+                    <Skeleton className="h-4 w-12 mx-auto" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-center">
+                    <Skeleton className="h-4 w-12 mx-auto" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-center">
+                    <Skeleton className="h-4 w-12 mx-auto" />
+                  </div>
+                </TableCell>
+                <TableCell>
+                  <div className="text-center">
+                    <Skeleton className="h-4 w-16 mx-auto" />
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
       ) : (
         <>
           <Table>
