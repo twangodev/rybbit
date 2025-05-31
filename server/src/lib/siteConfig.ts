@@ -7,6 +7,7 @@ interface SiteConfigData {
   saltUserIds: boolean;
   domain: string;
   blockBots: boolean;
+  apiKey: string;
 }
 
 class SiteConfig {
@@ -22,6 +23,7 @@ class SiteConfig {
           saltUserIds: sites.saltUserIds,
           domain: sites.domain,
           blockBots: sites.blockBots,
+          apiKey: sites.apiKey,
         })
         .from(sites);
 
@@ -35,6 +37,7 @@ class SiteConfig {
           saltUserIds: site.saltUserIds || false,
           domain: site.domain || "",
           blockBots: site.blockBots === undefined ? true : site.blockBots,
+          apiKey: site.apiKey,
         });
       }
 
@@ -83,6 +86,15 @@ class SiteConfig {
   }
 
   /**
+   * Get the API Key of a site
+   */
+  getSiteApiKey(siteId: string | number): string {
+    const numericSiteId = Number(siteId);
+    const config = this.siteConfigMap.get(numericSiteId);
+    return config?.apiKey || "";
+  }
+
+  /**
    * Update the public status of a site in the cache
    */
   updateSitePublicStatus(siteId: number, isPublic: boolean): void {
@@ -91,6 +103,7 @@ class SiteConfig {
       saltUserIds: false,
       domain: "",
       blockBots: true,
+      apiKey: "",
     };
     config.public = isPublic;
     this.siteConfigMap.set(siteId, config);
@@ -105,6 +118,7 @@ class SiteConfig {
       saltUserIds: false,
       domain: "",
       blockBots: true,
+      apiKey: "",
     };
     config.saltUserIds = saltUserIds;
     this.siteConfigMap.set(siteId, config);
@@ -119,6 +133,7 @@ class SiteConfig {
       saltUserIds: false,
       domain: "",
       blockBots: true,
+      apiKey: "",
     };
     config.blockBots = blockBots;
     this.siteConfigMap.set(siteId, config);
@@ -133,6 +148,7 @@ class SiteConfig {
       saltUserIds: false,
       domain: "",
       blockBots: true,
+      apiKey: "",
     };
     config.domain = domain;
     this.siteConfigMap.set(siteId, config);

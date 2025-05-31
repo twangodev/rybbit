@@ -155,6 +155,34 @@ const ANALYTICS_ROUTES = [
   "/api/get-site",
 ];
 
+server.addHook("preValidation", async (request, reply) => {
+  const { url, method } = request.raw;
+
+  if (url === "/track" && method === "POST") {
+    const apiKey = request.headers["x-api-key"] as string;
+
+    if (!apiKey) {
+      return;
+    }
+
+    let siteIdFromPayload: string | undefined;
+
+    if (request.body && typeof request.body === "object" && (request.body as any).site_id) {
+      siteIdFromPayload = String((request.body as any).site_id);
+    }
+
+    if (!siteIdFromPayload) {
+      return;
+    }
+
+    await siteConfig.ensureInitialized();
+    const expectedApiKey = siteConfig.getSiteApiKey(siteIdFromPayload);
+
+    request.isApiKeyAuthenticated = !!(expectedApiKey && apiKey === expectedApiKey);
+    request.providedApiKey = apiKey;
+  }
+});
+
 server.addHook("onRequest", async (request, reply) => {
   const { url } = request.raw;
 
@@ -274,7 +302,7 @@ server.get("/api/health", { logLevel: "silent" }, (_, reply) =>
 
 const start = async () => {
   try {
-    console.info("Starting server...");
+    console.log("Starting server...");
     // Initialize the database
     await Promise.all([initializeClickhouse()]);
     await loadAllowedDomains();
@@ -297,5 +325,7 @@ start();
 declare module "fastify" {
   interface FastifyRequest {
     user?: any; // Or define a more specific user type
+    isApiKeyAuthenticated?: boolean;
+    providedApiKey?: string;
   }
 }

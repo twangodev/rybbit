@@ -91,10 +91,7 @@ export async function updateSession(
   // Insert new session with Drizzle
   const insertData = {
     sessionId: payload.sessionId,
-    siteId:
-      typeof payload.site_id === "string"
-        ? parseInt(payload.site_id, 10)
-        : payload.site_id,
+    siteId: parseInt(payload.site_id, 10),
     userId: payload.userId,
     hostname: payload.hostname || null,
     startTime: new Date(payload.timestamp || Date.now()),
@@ -147,7 +144,7 @@ async function validateOrigin(siteId: string, requestOrigin?: string) {
   try {
     // If origin checking is disabled, return success
     if (DISABLE_ORIGIN_CHECK) {
-      console.info(
+      console.log(
         `[Tracking] Origin check disabled. Allowing request for site ${siteId} from origin: ${
           requestOrigin || "none"
         }`
@@ -159,8 +156,7 @@ async function validateOrigin(siteId: string, requestOrigin?: string) {
     await siteConfig.ensureInitialized();
 
     // Convert siteId to number
-    const numericSiteId =
-      typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
+    const numericSiteId = parseInt(siteId, 10);
 
     // Get the domain associated with this site
     const siteDomain = siteConfig.getSiteDomain(numericSiteId);
@@ -229,20 +225,38 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Use validated data
     const validatedPayload = validationResult.data;
 
-    // Validate that the request is coming from the expected origin
-    const originValidation = await validateOrigin(
-      validatedPayload.site_id,
-      request.headers.origin as string
-    );
+    const isApiKeyAuth = request.isApiKeyAuthenticated === true;
+    const providedApiKey = request.providedApiKey as string | undefined;
 
-    if (!originValidation.success) {
-      console.warn(
-        `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
+    if (providedApiKey && !isApiKeyAuth) { // An API key was given, but it was invalid for the site_id
+      console.error(
+        `[Tracking] Request rejected for site ${validatedPayload.site_id}: Invalid API Key provided.`
       );
       return reply.status(403).send({
         success: false,
-        error: originValidation.error,
+        error: "Invalid API key.",
       });
+    }
+
+    if (!isApiKeyAuth) { // If not authenticated by API key, perform origin validation (for Web SDK)
+      const originValidation = await validateOrigin(
+        validatedPayload.site_id,
+        request.headers.origin as string
+      );
+
+      if (!originValidation.success) {
+        console.error(
+          `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
+        );
+        return reply.status(403).send({
+          success: false,
+          error: originValidation.error,
+        });
+      }
+    } else {
+      console.log(
+        `[Tracking] Request for site ${validatedPayload.site_id} authenticated via API Key. Skipping Origin check.`
+      );
     }
 
     // Make sure the site config is loaded
