@@ -17,20 +17,38 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
-import { useMemo, useState } from "react";
+import {
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  Monitor,
+  Smartphone,
+  Tablet,
+  SquareArrowOutUpRight,
+} from "lucide-react";
+import { useMemo, useState, useCallback } from "react";
+import { useGetSite } from "../../../../api/admin/sites";
 import {
   PerformanceByDimensionItem,
   useGetPerformanceByDimension,
 } from "../../../../api/analytics/useGetPerformanceByDimension";
 import { TablePagination } from "../../../../components/pagination";
-import { useStore } from "../../../../lib/store";
+import {
+  useStore,
+  addFilter,
+  removeFilter,
+  FilterParameter,
+} from "../../../../lib/store";
 import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import {
   formatMetricValue,
   getMetricColor,
   getMetricUnit,
 } from "../utils/performanceUtils";
+import { CountryFlag } from "../../components/shared/icons/CountryFlag";
+import { Browser } from "../../components/shared/icons/Browser";
+import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
+import { getCountryName } from "../../../../lib/utils";
 
 const MetricCell = ({
   metric,
@@ -62,9 +80,36 @@ interface PerformanceTableProps {
   title: string;
 }
 
+// Custom hook for filter handling logic
+const useFilterToggle = () => {
+  const filters = useStore((state) => state.filters);
+
+  const toggleFilter = useCallback(
+    (parameter: FilterParameter, value: string) => {
+      const foundFilter = filters.find(
+        (f) => f.parameter === parameter && f.value.some((v) => v === value)
+      );
+      if (foundFilter) {
+        removeFilter(foundFilter);
+      } else {
+        addFilter({
+          parameter,
+          value: [value],
+          type: "equals",
+        });
+      }
+    },
+    [filters]
+  );
+
+  return toggleFilter;
+};
+
 export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
   const { site } = useStore();
+  const { data: siteMetadata } = useGetSite();
   const { selectedPercentile } = usePerformanceStore();
+  const toggleFilter = useFilterToggle();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 10,
@@ -103,11 +148,68 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
             : dimension === "operating_system"
             ? "Operating System"
             : dimension.charAt(0).toUpperCase() + dimension.slice(1),
-        cell: (info) => (
-          <div className="font-medium text-white max-w-[300px] truncate">
-            {info.getValue() || (dimension === "pathname" ? "/" : "Unknown")}
-          </div>
-        ),
+        cell: (info) => {
+          const value = info.getValue();
+          const displayValue =
+            value || (dimension === "pathname" ? "/" : "Unknown");
+
+          const handleClick = () => {
+            if (value) {
+              toggleFilter(dimension as FilterParameter, value);
+            }
+          };
+
+          return (
+            <div
+              className="text-white max-w-[300px] truncate flex items-center gap-2 cursor-pointer hover:underline"
+              onClick={handleClick}
+            >
+              {dimension === "country" && value ? (
+                <>
+                  <CountryFlag country={value} />
+                  {getCountryName(value) || value}
+                </>
+              ) : dimension === "device_type" ? (
+                <>
+                  {value === "Desktop" ? (
+                    <Monitor className="h-4 w-4" />
+                  ) : value === "Mobile" ? (
+                    <Smartphone className="h-4 w-4" />
+                  ) : value === "Tablet" ? (
+                    <Tablet className="h-4 w-4" />
+                  ) : null}
+                  {value || "Other"}
+                </>
+              ) : dimension === "browser" && value ? (
+                <>
+                  <Browser browser={value} />
+                  {value || "Other"}
+                </>
+              ) : dimension === "operating_system" ? (
+                <>
+                  <OperatingSystem os={value || "Other"} />
+                  {value || "Other"}
+                </>
+              ) : (
+                <>
+                  {displayValue}
+                  {dimension === "pathname" && value && (
+                    <a
+                      href={`https://${siteMetadata?.domain}${value}`}
+                      target="_blank"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <SquareArrowOutUpRight
+                        className="w-3 h-3 text-neutral-300 hover:text-neutral-100"
+                        strokeWidth={3}
+                      />
+                    </a>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        },
       }),
       columnHelper.accessor(`lcp_${selectedPercentile}`, {
         header: "LCP",
@@ -235,73 +337,71 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
         </div>
       ) : (
         <>
-          <div className="rounded-md border border-neutral-800">
-            <Table>
-              <TableHeader>
-                {table.getHeaderGroups().map((headerGroup) => (
-                  <TableRow key={headerGroup.id} className="border-neutral-800">
-                    {headerGroup.headers.map((header) => (
-                      <TableHead
-                        key={header.id}
-                        className={`text-neutral-300 ${
-                          header.column.getCanSort()
-                            ? "cursor-pointer hover:text-white transition-colors select-none"
-                            : ""
-                        }`}
-                        onClick={header.column.getToggleSortingHandler()}
-                      >
-                        <div className="flex items-center justify-center gap-1">
-                          {flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
-                          )}
-                          {header.column.getCanSort() && (
-                            <div className="flex flex-col">
-                              {header.column.getIsSorted() === "asc" ? (
-                                <ChevronUp className="h-3 w-3 text-blue-400" />
-                              ) : header.column.getIsSorted() === "desc" ? (
-                                <ChevronDown className="h-3 w-3 text-blue-400" />
-                              ) : (
-                                <ChevronsUpDown className="h-3 w-3 text-neutral-600" />
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </TableHead>
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id} className="border-neutral-800">
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      className={`text-neutral-300 ${
+                        header.column.getCanSort()
+                          ? "cursor-pointer hover:text-white transition-colors select-none"
+                          : ""
+                      }`}
+                      onClick={header.column.getToggleSortingHandler()}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        {flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                        {header.column.getCanSort() && (
+                          <div className="flex flex-col">
+                            {header.column.getIsSorted() === "asc" ? (
+                              <ChevronUp className="h-3 w-3 text-blue-400" />
+                            ) : header.column.getIsSorted() === "desc" ? (
+                              <ChevronDown className="h-3 w-3 text-blue-400" />
+                            ) : (
+                              <ChevronsUpDown className="h-3 w-3 text-neutral-600" />
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {table.getRowModel().rows.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-center text-neutral-500 py-8"
+                  >
+                    No performance data available
+                  </TableCell>
+                </TableRow>
+              ) : (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="border-neutral-800 hover:bg-neutral-900/50"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
                     ))}
                   </TableRow>
-                ))}
-              </TableHeader>
-              <TableBody>
-                {table.getRowModel().rows.length === 0 ? (
-                  <TableRow>
-                    <TableCell
-                      colSpan={columns.length}
-                      className="text-center text-neutral-500 py-8"
-                    >
-                      No performance data available
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  table.getRowModel().rows.map((row) => (
-                    <TableRow
-                      key={row.id}
-                      className="border-neutral-800 hover:bg-neutral-900/50"
-                    >
-                      {row.getVisibleCells().map((cell) => (
-                        <TableCell key={cell.id}>
-                          {flexRender(
-                            cell.column.columnDef.cell,
-                            cell.getContext()
-                          )}
-                        </TableCell>
-                      ))}
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+                ))
+              )}
+            </TableBody>
+          </Table>
 
           {totalPages > 1 && (
             <div className="mt-4">
