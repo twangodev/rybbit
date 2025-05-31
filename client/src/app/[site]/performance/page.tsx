@@ -3,7 +3,7 @@
 import { SubHeader } from "../components/SubHeader/SubHeader";
 import { PerformanceChart } from "./components/PerformanceChart";
 import { PerformanceOverview } from "./components/PerformanceOverview";
-import { PerformanceTable } from "./components/PerformanceTable";
+import { PerformanceByDimensions } from "./components/PerformanceByDimensions";
 
 export default function PerformancePage() {
   return (
@@ -13,7 +13,7 @@ export default function PerformancePage() {
       <div className="space-y-6">
         <PerformanceOverview />
         <PerformanceChart />
-        <PerformanceTable />
+        <PerformanceByDimensions />
       </div>
     </div>
   );

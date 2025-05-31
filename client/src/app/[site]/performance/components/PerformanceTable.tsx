@@ -1,6 +1,5 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Table,
@@ -10,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { useMemo, useState } from "react";
 import {
   createColumnHelper,
   flexRender,
@@ -19,17 +17,18 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import { ChevronUp, ChevronDown, ChevronsUpDown } from "lucide-react";
+import { ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
+import { useMemo, useState } from "react";
+import {
+  PerformanceByDimensionItem,
+  useGetPerformanceByDimension,
+} from "../../../../api/analytics/useGetPerformanceByDimension";
+import { TablePagination } from "../../../../components/pagination";
 import { useStore } from "../../../../lib/store";
 import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import {
-  useGetPerformanceByPath,
-  PerformanceByPathItem,
-} from "../../../../api/analytics/useGetPerformanceByPath";
-import { TablePagination } from "../../../../components/pagination";
-import {
-  getMetricColor,
   formatMetricValue,
+  getMetricColor,
   getMetricUnit,
 } from "../utils/performanceUtils";
 
@@ -56,9 +55,14 @@ const MetricCell = ({
   );
 };
 
-const columnHelper = createColumnHelper<PerformanceByPathItem>();
+const columnHelper = createColumnHelper<PerformanceByDimensionItem>();
 
-export function PerformanceTable() {
+interface PerformanceTableProps {
+  dimension: string;
+  title: string;
+}
+
+export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
   const { site } = useStore();
   const { selectedPercentile } = usePerformanceStore();
   const [pagination, setPagination] = useState({
@@ -70,8 +74,9 @@ export function PerformanceTable() {
     { id: "event_count", desc: true },
   ]);
 
-  const { data: performanceData, isLoading } = useGetPerformanceByPath({
+  const { data: performanceData, isLoading } = useGetPerformanceByDimension({
     site,
+    dimension,
     page: pagination.pageIndex + 1, // API expects 1-based page numbers
     limit: pagination.pageSize,
     sortBy: sorting[0]?.id || "event_count",
@@ -82,92 +87,88 @@ export function PerformanceTable() {
   const totalCount = performanceData?.totalCount ?? 0;
   const totalPages = Math.ceil(totalCount / pagination.pageSize);
 
-  // Create columns based on selected percentile
+  // Create columns based on selected percentile and dimension
   const columns = useMemo(
     () => [
-      columnHelper.accessor("pathname", {
-        header: "Path",
+      columnHelper.accessor(dimension, {
+        header:
+          dimension === "pathname"
+            ? "Path"
+            : dimension === "country"
+            ? "Country"
+            : dimension === "device_type"
+            ? "Device Type"
+            : dimension === "browser"
+            ? "Browser"
+            : dimension === "operating_system"
+            ? "Operating System"
+            : dimension.charAt(0).toUpperCase() + dimension.slice(1),
         cell: (info) => (
           <div className="font-medium text-white max-w-[300px] truncate">
-            {info.getValue() || "/"}
+            {info.getValue() || (dimension === "pathname" ? "/" : "Unknown")}
           </div>
         ),
       }),
-      columnHelper.accessor(
-        `lcp_${selectedPercentile}` as keyof PerformanceByPathItem,
-        {
-          header: "LCP",
-          cell: (info) => (
-            <div className="text-center">
-              <MetricCell
-                metric="lcp"
-                value={info.getValue() as number}
-                percentile={selectedPercentile}
-              />
-            </div>
-          ),
-        }
-      ),
-      columnHelper.accessor(
-        `cls_${selectedPercentile}` as keyof PerformanceByPathItem,
-        {
-          header: "CLS",
-          cell: (info) => (
-            <div className="text-center">
-              <MetricCell
-                metric="cls"
-                value={info.getValue() as number}
-                percentile={selectedPercentile}
-              />
-            </div>
-          ),
-        }
-      ),
-      columnHelper.accessor(
-        `inp_${selectedPercentile}` as keyof PerformanceByPathItem,
-        {
-          header: "INP",
-          cell: (info) => (
-            <div className="text-center">
-              <MetricCell
-                metric="inp"
-                value={info.getValue() as number}
-                percentile={selectedPercentile}
-              />
-            </div>
-          ),
-        }
-      ),
-      columnHelper.accessor(
-        `fcp_${selectedPercentile}` as keyof PerformanceByPathItem,
-        {
-          header: "FCP",
-          cell: (info) => (
-            <div className="text-center">
-              <MetricCell
-                metric="fcp"
-                value={info.getValue() as number}
-                percentile={selectedPercentile}
-              />
-            </div>
-          ),
-        }
-      ),
-      columnHelper.accessor(
-        `ttfb_${selectedPercentile}` as keyof PerformanceByPathItem,
-        {
-          header: "TTFB",
-          cell: (info) => (
-            <div className="text-center">
-              <MetricCell
-                metric="ttfb"
-                value={info.getValue() as number}
-                percentile={selectedPercentile}
-              />
-            </div>
-          ),
-        }
-      ),
+      columnHelper.accessor(`lcp_${selectedPercentile}`, {
+        header: "LCP",
+        cell: (info) => (
+          <div className="text-center">
+            <MetricCell
+              metric="lcp"
+              value={info.getValue() as number}
+              percentile={selectedPercentile}
+            />
+          </div>
+        ),
+      }),
+      columnHelper.accessor(`cls_${selectedPercentile}`, {
+        header: "CLS",
+        cell: (info) => (
+          <div className="text-center">
+            <MetricCell
+              metric="cls"
+              value={info.getValue() as number}
+              percentile={selectedPercentile}
+            />
+          </div>
+        ),
+      }),
+      columnHelper.accessor(`inp_${selectedPercentile}`, {
+        header: "INP",
+        cell: (info) => (
+          <div className="text-center">
+            <MetricCell
+              metric="inp"
+              value={info.getValue() as number}
+              percentile={selectedPercentile}
+            />
+          </div>
+        ),
+      }),
+      columnHelper.accessor(`fcp_${selectedPercentile}`, {
+        header: "FCP",
+        cell: (info) => (
+          <div className="text-center">
+            <MetricCell
+              metric="fcp"
+              value={info.getValue() as number}
+              percentile={selectedPercentile}
+            />
+          </div>
+        ),
+      }),
+      columnHelper.accessor(`ttfb_${selectedPercentile}`, {
+        header: "TTFB",
+        cell: (info) => (
+          <div className="text-center">
+            <MetricCell
+              metric="ttfb"
+              value={info.getValue() as number}
+              percentile={selectedPercentile}
+            />
+          </div>
+        ),
+      }),
       columnHelper.accessor("event_count", {
         header: "Events",
         cell: (info) => (
@@ -225,107 +226,97 @@ export function PerformanceTable() {
   };
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          Performance by Path ({selectedPercentile.toUpperCase()})
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {isLoading ? (
-          <div className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => (
-              <Skeleton key={i} className="w-full h-12 rounded-md" />
-            ))}
-          </div>
-        ) : (
-          <>
-            <div className="rounded-md border border-neutral-800">
-              <Table>
-                <TableHeader>
-                  {table.getHeaderGroups().map((headerGroup) => (
-                    <TableRow
-                      key={headerGroup.id}
-                      className="border-neutral-800"
+    <>
+      {isLoading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="w-full h-12 rounded-md" />
+          ))}
+        </div>
+      ) : (
+        <>
+          <div className="rounded-md border border-neutral-800">
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <TableRow key={headerGroup.id} className="border-neutral-800">
+                    {headerGroup.headers.map((header) => (
+                      <TableHead
+                        key={header.id}
+                        className={`text-neutral-300 ${
+                          header.column.getCanSort()
+                            ? "cursor-pointer hover:text-white transition-colors select-none"
+                            : ""
+                        }`}
+                        onClick={header.column.getToggleSortingHandler()}
+                      >
+                        <div className="flex items-center justify-center gap-1">
+                          {flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                          {header.column.getCanSort() && (
+                            <div className="flex flex-col">
+                              {header.column.getIsSorted() === "asc" ? (
+                                <ChevronUp className="h-3 w-3 text-blue-400" />
+                              ) : header.column.getIsSorted() === "desc" ? (
+                                <ChevronDown className="h-3 w-3 text-blue-400" />
+                              ) : (
+                                <ChevronsUpDown className="h-3 w-3 text-neutral-600" />
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      </TableHead>
+                    ))}
+                  </TableRow>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {table.getRowModel().rows.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={columns.length}
+                      className="text-center text-neutral-500 py-8"
                     >
-                      {headerGroup.headers.map((header) => (
-                        <TableHead
-                          key={header.id}
-                          className={`text-neutral-300 ${
-                            header.column.getCanSort()
-                              ? "cursor-pointer hover:text-white transition-colors select-none"
-                              : ""
-                          }`}
-                          onClick={header.column.getToggleSortingHandler()}
-                        >
-                          <div className="flex items-center justify-center gap-1">
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                            {header.column.getCanSort() && (
-                              <div className="flex flex-col">
-                                {header.column.getIsSorted() === "asc" ? (
-                                  <ChevronUp className="h-3 w-3 text-blue-400" />
-                                ) : header.column.getIsSorted() === "desc" ? (
-                                  <ChevronDown className="h-3 w-3 text-blue-400" />
-                                ) : (
-                                  <ChevronsUpDown className="h-3 w-3 text-neutral-600" />
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        </TableHead>
+                      No performance data available
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  table.getRowModel().rows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      className="border-neutral-800 hover:bg-neutral-900/50"
+                    >
+                      {row.getVisibleCells().map((cell) => (
+                        <TableCell key={cell.id}>
+                          {flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
+                        </TableCell>
                       ))}
                     </TableRow>
-                  ))}
-                </TableHeader>
-                <TableBody>
-                  {table.getRowModel().rows.length === 0 ? (
-                    <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="text-center text-neutral-500 py-8"
-                      >
-                        No performance data available
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    table.getRowModel().rows.map((row) => (
-                      <TableRow
-                        key={row.id}
-                        className="border-neutral-800 hover:bg-neutral-900/50"
-                      >
-                        {row.getVisibleCells().map((cell) => (
-                          <TableCell key={cell.id}>
-                            {flexRender(
-                              cell.column.columnDef.cell,
-                              cell.getContext()
-                            )}
-                          </TableCell>
-                        ))}
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
 
-            {totalPages > 1 && (
-              <div className="mt-4">
-                <TablePagination
-                  table={paginationController}
-                  data={paginationData}
-                  pagination={pagination}
-                  setPagination={setPagination}
-                  isLoading={isLoading}
-                  itemName="paths"
-                />
-              </div>
-            )}
-          </>
-        )}
-      </CardContent>
-    </Card>
+          {totalPages > 1 && (
+            <div className="mt-4">
+              <TablePagination
+                table={paginationController}
+                data={paginationData}
+                pagination={pagination}
+                setPagination={setPagination}
+                isLoading={isLoading}
+                itemName={dimension === "pathname" ? "paths" : dimension}
+              />
+            </div>
+          )}
+        </>
+      )}
+    </>
   );
 }
