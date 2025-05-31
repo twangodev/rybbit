@@ -1,27 +1,26 @@
 "use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { nivoTheme } from "@/lib/nivo";
 import { ResponsiveLine } from "@nivo/line";
 import { DateTime } from "luxon";
 import { Tilt_Warp } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { useStore } from "../../../../lib/store";
-import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import { useGetPerformanceTimeSeries } from "../../../../api/analytics/useGetPerformanceTimeSeries";
-import { userLocale, hour12 } from "../../../../lib/dateTimeUtils";
-import { nivoTheme } from "@/lib/nivo";
-import { authClient } from "../../../../lib/auth";
-import { cn } from "../../../../lib/utils";
 import { BucketSelection } from "../../../../components/BucketSelection";
+import { authClient } from "../../../../lib/auth";
+import { hour12, userLocale } from "../../../../lib/dateTimeUtils";
+import { useStore } from "../../../../lib/store";
+import { cn } from "../../../../lib/utils";
+import { usePerformanceStore } from "../performanceStore";
 import {
   formatMetricValue,
   getMetricUnit,
-  getMetricChartColor,
-  METRIC_LABELS,
   getPerformanceThresholds,
+  METRIC_LABELS,
 } from "../utils/performanceUtils";
 
 const tilt_wrap = Tilt_Warp({
@@ -78,12 +77,12 @@ export function PerformanceChart() {
       })
       .filter((e) => e !== null) ?? [];
 
-  // Create separate data series for each percentile - using shades of amber
+  // Create separate data series for each percentile - using shades of blue
   const percentileColors = {
-    p50: "#fde68a", // light amber
-    p75: "#fbbf24", // medium amber
-    p90: "#f59e0b", // amber
-    p99: "#d97706", // dark amber
+    p50: "hsl(var(--indigo-100))", // light blue
+    p75: "hsl(var(--indigo-300))", // medium blue
+    p90: "hsl(var(--indigo-400))", // blue
+    p99: "hsl(var(--indigo-500))", // dark blue
   };
 
   const data = [
@@ -228,11 +227,8 @@ export function PerformanceChart() {
     )}${getMetricUnit(selectedPerformanceMetric, value)}`;
   };
 
-  // Get performance thresholds for the current metric and percentile
-  const thresholds = getPerformanceThresholds(
-    selectedPerformanceMetric,
-    selectedPercentile
-  );
+  // Get performance thresholds for the current metric
+  const thresholds = getPerformanceThresholds(selectedPerformanceMetric);
 
   // Create markers for performance thresholds
   const markers = thresholds
@@ -241,9 +237,9 @@ export function PerformanceChart() {
           axis: "y" as const,
           value: thresholds.good,
           lineStyle: {
-            stroke: "#10b981", // green
-            strokeWidth: 2,
-            strokeDasharray: "4 4",
+            stroke: "hsl(var(--green-400))", // green
+            strokeWidth: 1,
+            strokeDasharray: "8 8",
           },
           legend: `Good (≤${formatMetricValue(
             selectedPerformanceMetric,
@@ -252,7 +248,7 @@ export function PerformanceChart() {
           legendPosition: "top-left" as const,
           legendOrientation: "horizontal" as const,
           textStyle: {
-            fill: "#10b981",
+            fill: "hsl(var(--green-400))",
             fontSize: 11,
           },
         },
@@ -260,9 +256,9 @@ export function PerformanceChart() {
           axis: "y" as const,
           value: thresholds.needs_improvement,
           lineStyle: {
-            stroke: "#f59e0b", // yellow/amber
-            strokeWidth: 2,
-            strokeDasharray: "4 4",
+            stroke: "hsl(var(--amber-400))", // yellow/amber
+            strokeWidth: 1,
+            strokeDasharray: "8 8",
           },
           legend: `Needs Improvement (≤${formatMetricValue(
             selectedPerformanceMetric,
@@ -274,7 +270,7 @@ export function PerformanceChart() {
           legendPosition: "top-left" as const,
           legendOrientation: "horizontal" as const,
           textStyle: {
-            fill: "#f59e0b",
+            fill: "hsl(var(--amber-400))",
             fontSize: 11,
           },
         },
@@ -304,10 +300,10 @@ export function PerformanceChart() {
             <div className="flex items-center space-x-2">
               {(["P50", "P75", "P90", "P99"] as const).map((percentile) => {
                 const colors = {
-                  P50: "#fde68a", // light amber
-                  P75: "#fbbf24", // medium amber
-                  P90: "#f59e0b", // amber
-                  P99: "#d97706", // dark amber
+                  P50: "hsl(var(--indigo-100))", // light blue
+                  P75: "hsl(var(--indigo-300))", // medium blue
+                  P90: "hsl(var(--indigo-400))", // blue
+                  P99: "hsl(var(--indigo-500))", // dark blue
                 };
                 const isVisible = visiblePercentiles.has(percentile);
 

@@ -90,7 +90,7 @@ const Stat = ({
             </>
           ) : (
             <>
-              <span className={getMetricColor(id, value, selectedPercentile)}>
+              <span className={getMetricColor(id, value)}>
                 <NumberFlow
                   respectMotionPreference={false}
                   value={Number(formatMetricValue(id, value))}

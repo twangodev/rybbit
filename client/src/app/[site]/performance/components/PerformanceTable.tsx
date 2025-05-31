@@ -64,7 +64,7 @@ const MetricCell = ({
   }
 
   return (
-    <span className={getMetricColor(metric, value, percentile as any)}>
+    <span className={getMetricColor(metric, value)}>
       {formatMetricValue(metric, value)}
       <span className="text-xs ml-1 text-neutral-400">
         {getMetricUnit(metric, value)}
