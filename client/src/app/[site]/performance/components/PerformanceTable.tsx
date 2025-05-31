@@ -49,6 +49,7 @@ import { CountryFlag } from "../../components/shared/icons/CountryFlag";
 import { Browser } from "../../components/shared/icons/Browser";
 import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
 import { getCountryName } from "../../../../lib/utils";
+import { MetricTooltip } from "./shared/MetricTooltip";
 
 const MetricCell = ({
   metric,
@@ -212,7 +213,12 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
         },
       }),
       columnHelper.accessor(`lcp_${selectedPercentile}`, {
-        header: "LCP",
+        header: () => (
+          <div className="flex items-center justify-center gap-1">
+            LCP
+            <MetricTooltip metric="lcp" />
+          </div>
+        ),
         cell: (info) => (
           <div className="text-center">
             <MetricCell
@@ -224,7 +230,12 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
         ),
       }),
       columnHelper.accessor(`cls_${selectedPercentile}`, {
-        header: "CLS",
+        header: () => (
+          <div className="flex items-center justify-center gap-1">
+            CLS
+            <MetricTooltip metric="cls" />
+          </div>
+        ),
         cell: (info) => (
           <div className="text-center">
             <MetricCell
@@ -236,7 +247,12 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
         ),
       }),
       columnHelper.accessor(`inp_${selectedPercentile}`, {
-        header: "INP",
+        header: () => (
+          <div className="flex items-center justify-center gap-1">
+            INP
+            <MetricTooltip metric="inp" />
+          </div>
+        ),
         cell: (info) => (
           <div className="text-center">
             <MetricCell
@@ -248,7 +264,12 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
         ),
       }),
       columnHelper.accessor(`fcp_${selectedPercentile}`, {
-        header: "FCP",
+        header: () => (
+          <div className="flex items-center justify-center gap-1">
+            FCP
+            <MetricTooltip metric="fcp" />
+          </div>
+        ),
         cell: (info) => (
           <div className="text-center">
             <MetricCell
@@ -260,7 +281,12 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
         ),
       }),
       columnHelper.accessor(`ttfb_${selectedPercentile}`, {
-        header: "TTFB",
+        header: () => (
+          <div className="flex items-center justify-center gap-1">
+            TTFB
+            <MetricTooltip metric="ttfb" />
+          </div>
+        ),
         cell: (info) => (
           <div className="text-center">
             <MetricCell
