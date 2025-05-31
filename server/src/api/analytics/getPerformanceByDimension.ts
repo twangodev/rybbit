@@ -26,9 +26,9 @@ interface GetPerformanceByDimensionRequest {
   };
 }
 
-// Generic type for any dimension
-type PerformanceByDimensionItem = {
-  [key: string]: any; // The dimension field
+// Generic type for performance by dimension
+export type PerformanceByDimensionItem = {
+  [key: string]: any; // The dimension field (pathname, country, etc.)
   event_count: number;
   lcp_avg: number | null;
   lcp_p50: number | null;
@@ -66,6 +66,7 @@ const getQuery = (
   request: FastifyRequest<GetPerformanceByDimensionRequest>,
   isCountQuery: boolean = false
 ) => {
+  const queryParams = request.query;
   const {
     startDate,
     endDate,
@@ -78,7 +79,7 @@ const getQuery = (
     sortBy,
     sortOrder,
     dimension,
-  } = request.query;
+  } = queryParams;
 
   // Validate dimension
   const validDimensions = [
@@ -87,7 +88,9 @@ const getQuery = (
     "device_type",
     "browser",
     "operating_system",
+    "region",
   ];
+
   if (!validDimensions.includes(dimension)) {
     throw new Error(`Invalid dimension: ${dimension}`);
   }
@@ -133,7 +136,7 @@ const getQuery = (
   const offsetStatement =
     !isCountQuery && validatedOffset ? `OFFSET ${validatedOffset}` : "";
 
-  // Handle sorting - include the dimension in valid sort columns
+  // Handle sorting
   const validSortColumns = [
     dimension,
     "event_count",
@@ -299,12 +302,12 @@ export async function getPerformanceByDimension(
     return res.send({ data: { data: items, totalCount } });
   } catch (error) {
     console.error("Error fetching performance by dimension:", error);
-    console.error("Failed dimension:", dimension);
+    console.error("Failed dataQuery for dimension:", dimension);
     if (isPaginatedRequest) {
-      console.error("Failed query for dimension:", dimension);
+      console.error("Failed countQuery for dimension:", dimension);
     }
     return res
       .status(500)
-      .send({ error: `Failed to fetch performance by ${dimension}` });
+      .send({ error: "Failed to fetch performance by dimension" });
   }
 }

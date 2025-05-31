@@ -112,7 +112,7 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
   const toggleFilter = useFilterToggle();
   const [pagination, setPagination] = useState({
     pageIndex: 0,
-    pageSize: 10,
+    pageSize: 25,
   });
 
   const [sorting, setSorting] = useState<SortingState>([

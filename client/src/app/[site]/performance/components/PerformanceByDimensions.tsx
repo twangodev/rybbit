@@ -9,10 +9,12 @@ import {
 } from "../../../../components/ui/basic-tabs";
 import { Card, CardContent } from "../../../../components/ui/card";
 import { PerformanceTable } from "./PerformanceTable";
+import { PerformanceMap } from "./PerformanceMap";
 
 type Tab =
   | "pathname"
   | "country"
+  | "map"
   | "device_type"
   | "browser"
   | "operating_system";
@@ -31,6 +33,7 @@ export function PerformanceByDimensions() {
           <TabsList>
             <TabsTrigger value="pathname">Pages</TabsTrigger>
             <TabsTrigger value="country">Countries</TabsTrigger>
+            <TabsTrigger value="map">Map</TabsTrigger>
             <TabsTrigger value="device_type">Devices</TabsTrigger>
             <TabsTrigger value="browser">Browsers</TabsTrigger>
             <TabsTrigger value="operating_system">
@@ -50,6 +53,10 @@ export function PerformanceByDimensions() {
               dimension="country"
               title="Performance by Country"
             />
+          </TabsContent>
+
+          <TabsContent value="map">
+            <PerformanceMap height="600px" />
           </TabsContent>
 
           <TabsContent value="device_type">
