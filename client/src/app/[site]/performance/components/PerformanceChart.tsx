@@ -1,6 +1,6 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardLoader } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { nivoTheme } from "@/lib/nivo";
 import { ResponsiveLine } from "@nivo/line";
@@ -51,7 +51,11 @@ export function PerformanceChart() {
     });
   };
 
-  const { data: timeSeriesData, isLoading } = useGetPerformanceTimeSeries({
+  const {
+    data: timeSeriesData,
+    isLoading,
+    isFetching,
+  } = useGetPerformanceTimeSeries({
     site,
   });
 
@@ -279,6 +283,7 @@ export function PerformanceChart() {
 
   return (
     <Card>
+      {isFetching && <CardLoader />}
       <CardContent className="p-2 md:p-4 py-3 w-full">
         <div className="flex items-center justify-between px-2 md:px-0">
           <div className="flex items-center space-x-4">

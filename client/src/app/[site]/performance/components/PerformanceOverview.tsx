@@ -4,16 +4,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import NumberFlow from "@number-flow/react";
 import { TrendingDown, TrendingUp } from "lucide-react";
+import { useGetPerformanceOverview } from "../../../../api/analytics/useGetPerformanceOverview";
+import { Card, CardContent, CardLoader } from "../../../../components/ui/card";
 import { useStore } from "../../../../lib/store";
 import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
-import { useGetPerformanceOverview } from "../../../../api/analytics/useGetPerformanceOverview";
-import { PercentileSelector } from "./PercentileSelector";
 import {
-  getMetricColor,
   formatMetricValue,
+  getMetricColor,
   getMetricUnit,
-  METRIC_LABELS_SHORT,
 } from "../utils/performanceUtils";
+import { PercentileSelector } from "./PercentileSelector";
 import { MetricTooltip } from "./shared/MetricTooltip";
 
 const ChangePercentage = ({
@@ -115,8 +115,11 @@ export function PerformanceOverview() {
   const { site } = useStore();
   const { selectedPercentile } = usePerformanceStore();
 
-  const { data: overviewData, isLoading: isOverviewLoading } =
-    useGetPerformanceOverview({ site });
+  const {
+    data: overviewData,
+    isLoading: isOverviewLoading,
+    isFetching,
+  } = useGetPerformanceOverview({ site });
 
   const { data: overviewDataPrevious, isLoading: isOverviewLoadingPrevious } =
     useGetPerformanceOverview({ site, periodTime: "previous" });
@@ -139,43 +142,48 @@ export function PerformanceOverview() {
         <PercentileSelector />
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0 items-center border border-neutral-800 rounded-lg overflow-hidden">
-        <Stat
-          title="Largest Contentful Paint"
-          id="lcp"
-          value={getMetricValue(currentData, "lcp")}
-          previous={getMetricValue(previousData, "lcp")}
-          isLoading={isLoading}
-        />
-        <Stat
-          title="Cumulative Layout Shift"
-          id="cls"
-          value={getMetricValue(currentData, "cls")}
-          previous={getMetricValue(previousData, "cls")}
-          isLoading={isLoading}
-        />
-        <Stat
-          title="Interaction to Next Paint"
-          id="inp"
-          value={getMetricValue(currentData, "inp")}
-          previous={getMetricValue(previousData, "inp")}
-          isLoading={isLoading}
-        />
-        <Stat
-          title="First Contentful Paint"
-          id="fcp"
-          value={getMetricValue(currentData, "fcp")}
-          previous={getMetricValue(previousData, "fcp")}
-          isLoading={isLoading}
-        />
-        <Stat
-          title="Time to First Byte"
-          id="ttfb"
-          value={getMetricValue(currentData, "ttfb")}
-          previous={getMetricValue(previousData, "ttfb")}
-          isLoading={isLoading}
-        />
-      </div>
+      <Card>
+        <CardContent className="p-0 w-full">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0 items-center 0 rounded-lg overflow-hidden">
+            <Stat
+              title="Largest Contentful Paint"
+              id="lcp"
+              value={getMetricValue(currentData, "lcp")}
+              previous={getMetricValue(previousData, "lcp")}
+              isLoading={isLoading}
+            />
+            <Stat
+              title="Cumulative Layout Shift"
+              id="cls"
+              value={getMetricValue(currentData, "cls")}
+              previous={getMetricValue(previousData, "cls")}
+              isLoading={isLoading}
+            />
+            <Stat
+              title="Interaction to Next Paint"
+              id="inp"
+              value={getMetricValue(currentData, "inp")}
+              previous={getMetricValue(previousData, "inp")}
+              isLoading={isLoading}
+            />
+            <Stat
+              title="First Contentful Paint"
+              id="fcp"
+              value={getMetricValue(currentData, "fcp")}
+              previous={getMetricValue(previousData, "fcp")}
+              isLoading={isLoading}
+            />
+            <Stat
+              title="Time to First Byte"
+              id="ttfb"
+              value={getMetricValue(currentData, "ttfb")}
+              previous={getMetricValue(previousData, "ttfb")}
+              isLoading={isLoading}
+            />
+          </div>
+        </CardContent>
+        {isFetching && <CardLoader />}
+      </Card>
     </div>
   );
 }

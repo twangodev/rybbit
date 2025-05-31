@@ -50,6 +50,7 @@ import { Browser } from "../../components/shared/icons/Browser";
 import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
 import { getCountryName } from "../../../../lib/utils";
 import { MetricTooltip } from "./shared/MetricTooltip";
+import { CardLoader } from "../../../../components/ui/card";
 
 const MetricCell = ({
   metric,
@@ -120,7 +121,11 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
     { id: "event_count", desc: true },
   ]);
 
-  const { data: performanceData, isLoading } = useGetPerformanceByDimension({
+  const {
+    data: performanceData,
+    isLoading,
+    isFetching,
+  } = useGetPerformanceByDimension({
     site,
     dimension,
     page: pagination.pageIndex + 1, // API expects 1-based page numbers
@@ -355,6 +360,11 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
 
   return (
     <>
+      {isFetching && (
+        <div className="absolute top-[-8px] left-0 w-full h-full">
+          <CardLoader />
+        </div>
+      )}
       {isLoading ? (
         <Table>
           <TableHeader>
