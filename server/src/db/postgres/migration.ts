@@ -1,6 +1,7 @@
+import crypto from "crypto";
 import { db } from "./postgres.js";
-import { user, organization, member } from "./schema.js";
-import { eq, and, isNotNull } from "drizzle-orm";
+import { user, organization, member, sites } from "./schema.js";
+import { eq, and, isNotNull, isNull } from "drizzle-orm";
 
 export async function migrateUserSubscriptionsToOrganizations() {
   console.log(
@@ -213,5 +214,44 @@ export async function rollbackOrganizationSubscriptions() {
   } catch (error) {
     console.error("❌ Rollback failed:", error);
     throw error;
+  }
+}
+
+export async function backfillKeys() {
+  console.log("Starting API key backfill process...");
+
+  try {
+    // 1. Find all sites that do not have an API key yet
+    const sitesToUpdate = await db
+      .select({ siteId: sites.siteId })
+      .from(sites)
+      .where(isNull(sites.apiKey));
+
+    if (sitesToUpdate.length === 0) {
+      console.log("All sites already have an API key. No action needed.");
+      return;
+    }
+
+    console.log(`Found ${sitesToUpdate.length} site(s) needing an API key.`);
+
+    // 2. Generate and update keys for each site
+    const updatePromises = sitesToUpdate.map(async (site) => {
+      const newApiKey = crypto.randomBytes(32).toString("hex");
+      console.log(`Generating key for siteId: ${site.siteId}...`);
+      await db
+        .update(sites)
+        .set({ apiKey: newApiKey })
+        .where(eq(sites.siteId, site.siteId));
+    });
+
+    await Promise.all(updatePromises);
+
+    console.log(`Successfully generated and stored API keys for ${sitesToUpdate.length} site(s).`);
+  } catch (error) {
+    console.error("An error occurred during the backfill process:", error);
+  } finally {
+    // If your DB connection doesn"t automatically close, you might need to end it here.
+    // For example: await db.end();
+    console.log("Backfill process finished.");
   }
 }

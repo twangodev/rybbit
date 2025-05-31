@@ -228,7 +228,8 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     const isApiKeyAuth = request.isApiKeyAuthenticated === true;
     const providedApiKey = request.providedApiKey as string | undefined;
 
-    if (providedApiKey && !isApiKeyAuth) { // An API key was given, but it was invalid for the site_id
+    // An API key was given, but it was invalid for the site_id
+    if (providedApiKey && !isApiKeyAuth) {
       console.error(
         `[Tracking] Request rejected for site ${validatedPayload.site_id}: Invalid API Key provided.`
       );
@@ -238,7 +239,8 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       });
     }
 
-    if (!isApiKeyAuth) { // If not authenticated by API key, perform origin validation (for Web SDK)
+    // If not authenticated by API key, perform origin validation
+    if (!isApiKeyAuth) {
       const originValidation = await validateOrigin(
         validatedPayload.site_id,
         request.headers.origin as string
