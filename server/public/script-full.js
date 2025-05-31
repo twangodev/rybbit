@@ -207,8 +207,9 @@
 
     // Try sendBeacon first (preferred for reliability)
     if (navigator.sendBeacon) {
-      // sendBeacon automatically handles CORS and credentials
-      const success = navigator.sendBeacon(url, data);
+      // Use Blob with proper content type for sendBeacon
+      const blob = new Blob([data], { type: "application/json" });
+      const success = navigator.sendBeacon(url, blob);
       if (success) return;
     }
 

@@ -88,6 +88,20 @@ server.register(cors, {
   credentials: true,
 });
 
+// Global JSON content type parser for all routes
+server.addContentTypeParser(
+  "application/json",
+  { parseAs: "string" },
+  (req, body, done) => {
+    try {
+      const json = JSON.parse(body as string);
+      done(null, json);
+    } catch (err) {
+      done(err as Error, undefined);
+    }
+  }
+);
+
 // Serve static files
 server.register(fastifyStatic, {
   root: join(__dirname, "../public"),
