@@ -202,13 +202,25 @@
 
   // Helper function to send tracking data
   const sendTrackingData = (payload) => {
-    fetch(`${ANALYTICS_HOST}/track`, {
+    const data = JSON.stringify(payload);
+    const url = `${ANALYTICS_HOST}/track`;
+
+    // Try sendBeacon first (preferred for reliability)
+    if (navigator.sendBeacon) {
+      // sendBeacon automatically handles CORS and credentials
+      const success = navigator.sendBeacon(url, data);
+      if (success) return;
+    }
+
+    // Fallback to fetch for older browsers or if sendBeacon fails
+    fetch(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload),
+      body: data,
       mode: "cors",
+      credentials: "include",
       keepalive: true,
     }).catch(console.error);
   };
