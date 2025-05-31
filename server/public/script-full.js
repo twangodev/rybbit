@@ -158,17 +158,8 @@
     }
   }
 
-  const track = (eventType = "pageview", eventName = "", properties = {}) => {
-    if (
-      eventType === "custom_event" &&
-      (!eventName || typeof eventName !== "string")
-    ) {
-      console.error(
-        "Event name is required and must be a string for custom events"
-      );
-      return;
-    }
-
+  // Helper function to create base payload with pattern matching
+  const createBasePayload = () => {
     const url = new URL(window.location.href);
     let pathname = url.pathname;
 
@@ -178,10 +169,12 @@
       pathname = url.hash.substring(1);
     }
 
+    // Check skip patterns
     if (findMatchingPattern(pathname, skipPatterns)) {
-      return;
+      return null; // Indicates tracking should be skipped
     }
 
+    // Apply mask patterns
     const maskMatch = findMatchingPattern(pathname, maskPatterns);
     if (maskMatch) {
       pathname = maskMatch;
@@ -197,12 +190,6 @@
       language: navigator.language,
       page_title: document.title,
       referrer: document.referrer,
-      type: eventType,
-      event_name: eventName,
-      properties:
-        eventType === "custom_event" || eventType === "outbound"
-          ? JSON.stringify(properties)
-          : undefined,
     };
 
     // Add custom user ID only if it's set
@@ -210,6 +197,11 @@
       payload.user_id = customUserId;
     }
 
+    return payload;
+  };
+
+  // Helper function to send tracking data
+  const sendTrackingData = (payload) => {
     fetch(`${ANALYTICS_HOST}/track`, {
       method: "POST",
       headers: {
@@ -219,6 +211,35 @@
       mode: "cors",
       keepalive: true,
     }).catch(console.error);
+  };
+
+  const track = (eventType = "pageview", eventName = "", properties = {}) => {
+    if (
+      eventType === "custom_event" &&
+      (!eventName || typeof eventName !== "string")
+    ) {
+      console.error(
+        "Event name is required and must be a string for custom events"
+      );
+      return;
+    }
+
+    const basePayload = createBasePayload();
+    if (!basePayload) {
+      return; // Skip tracking due to pattern match
+    }
+
+    const payload = {
+      ...basePayload,
+      type: eventType,
+      event_name: eventName,
+      properties:
+        eventType === "custom_event" || eventType === "outbound"
+          ? JSON.stringify(properties)
+          : undefined,
+    };
+
+    sendTrackingData(payload);
   };
 
   // Web vitals collection state
@@ -256,16 +277,13 @@
       webVitalsTimeout = null;
     }
 
+    const basePayload = createBasePayload();
+    if (!basePayload) {
+      return; // Skip web vitals tracking due to pattern match
+    }
+
     const payload = {
-      site_id: SITE_ID,
-      hostname: window.location.hostname,
-      pathname: window.location.pathname,
-      querystring: trackQuerystring ? window.location.search : "",
-      screenWidth: window.innerWidth,
-      screenHeight: window.innerHeight,
-      language: navigator.language,
-      page_title: document.title,
-      referrer: document.referrer,
+      ...basePayload,
       type: "performance",
       event_name: "web-vitals",
       // Include all collected metrics
@@ -276,20 +294,7 @@
       ttfb: webVitalsData.ttfb,
     };
 
-    // Add custom user ID only if it's set
-    if (customUserId) {
-      payload.user_id = customUserId;
-    }
-
-    fetch(`${ANALYTICS_HOST}/track`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(payload),
-      mode: "cors",
-      keepalive: true,
-    }).catch(console.error);
+    sendTrackingData(payload);
   };
 
   // Individual metric collectors

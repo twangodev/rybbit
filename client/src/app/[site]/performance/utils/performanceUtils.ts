@@ -1,5 +1,5 @@
 import { round } from "lodash";
-import { PerformanceMetric, PercentileLevel } from "../performanceStore";
+import { PerformanceMetric } from "../performanceStore";
 
 // Performance metric thresholds for color coding based on Web Vitals standards
 // These thresholds are consistent regardless of percentile level
