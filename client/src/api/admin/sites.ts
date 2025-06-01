@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
-import { useStore } from "../../lib/store";
+import { BACKEND_URL } from "@/lib/const";
+import { useStore } from "@/lib/store";
 import { authedFetchWithError } from "../utils";
 import { usePathname } from "next/navigation";
-import { authClient } from "../../lib/auth";
+import { authClient } from "@/lib/auth";
 
 export type SiteResponse = {
   siteId: number;
@@ -170,12 +170,32 @@ export function useGetSite(siteId?: string | number) {
       }
 
       // Use regular fetch instead of authedFetch to support public sites
-      const data = await authedFetchWithError<SiteResponse>(
+      return await authedFetchWithError<SiteResponse>(
         `${BACKEND_URL}/get-site/${siteIdToUse}`
       );
-      return data;
     },
     staleTime: 60000, // 1 minute
+    enabled: !!siteId,
+  });
+}
+
+export function useGetSiteApiKey(siteId?: string | number) {
+  const { site: storeSelectedSite } = useStore();
+
+  const siteIdToUse = siteId ?? storeSelectedSite;
+
+  return useQuery({
+    queryKey: ["get-site-api-key", siteIdToUse],
+    queryFn: async () => {
+      if (!siteIdToUse) {
+        return null;
+      }
+
+      return await authedFetchWithError<{ apiKey: string }>(
+        `${BACKEND_URL}/get-site-api-key/${siteIdToUse}`
+      )
+    },
+    staleTime: 60000,
     enabled: !!siteId,
   });
 }

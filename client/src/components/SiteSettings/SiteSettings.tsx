@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, Settings } from "lucide-react";
+import { AlertTriangle, Settings, Copy } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -40,9 +40,10 @@ import {
   deleteSite,
   SiteResponse,
   useGetSite,
+  useGetSiteApiKey,
   useGetSitesFromOrg,
 } from "@/api/admin/sites";
-import { useUserOrganizations } from "../../api/admin/organizations";
+import { useUserOrganizations } from "@/api/admin/organizations";
 import { ScriptBuilder } from "./ScriptBuilder";
 
 export function SiteSettings({
@@ -70,6 +71,7 @@ export function SiteSettingsInner({
 }) {
   const { refetch } = useGetSitesFromOrg(siteMetadata?.organizationId ?? "");
   const { data: userOrganizationsData } = useUserOrganizations();
+  const { data: apiKey } = useGetSiteApiKey(siteMetadata.siteId);
   const disabled =
     !userOrganizationsData?.[0]?.role ||
     userOrganizationsData?.[0]?.role === "member";
@@ -178,6 +180,13 @@ export function SiteSettingsInner({
     }
   };
 
+  const handleCopy = async () => {
+    if (apiKey) {
+      await navigator.clipboard.writeText(apiKey.apiKey);
+      toast.success("Copied to clipboard");
+    }
+  }
+
   if (!siteMetadata) {
     return null;
   }
@@ -280,6 +289,32 @@ export function SiteSettingsInner({
                 onCheckedChange={handleBlockBotsToggle}
               />
             </div>
+
+            {/* API Key Section */}
+            {!disabled && apiKey &&
+              (<div className="space-y-3">
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground">
+                    API Key
+                  </h4>
+                  <p className="text-xs text-muted-foreground">
+                    API key for this site
+                  </p>
+                </div>
+                <div className="flex space-x-2">
+                  <Input
+                    value={apiKey.apiKey}
+                    readOnly={true}
+                  />
+                  <Button
+                    onClick={handleCopy}
+                    variant="outline"
+                    size="icon"
+                  >
+                    <Copy className="h-4 w-4"/>
+                  </Button>
+                </div>
+            </div>)}
 
             {/* Domain Settings Section */}
             <div className="space-y-3">
