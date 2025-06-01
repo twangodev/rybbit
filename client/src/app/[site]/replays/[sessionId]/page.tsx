@@ -154,7 +154,7 @@ export default function ReplayPlayerPage() {
           playerInstanceRef.current
         );
         setIsPlayerReady(true);
-      } catch (error) {
+      } catch (error: any) {
         console.error(
           "[REPLAY DEBUG] Failed to initialize rrweb player:",
           error
