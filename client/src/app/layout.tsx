@@ -41,7 +41,7 @@ export default function RootLayout({
 }) {
   const { user, isPending } = userStore();
   const pathname = usePathname();
-  const [isCheckingPublic, setIsCheckingPublic] = useState(false);
+  const [isCheckingPublic, setIsCheckingPublic] = useState(true);
   const [isPublicSite, setIsPublicSite] = useState(false);
 
   // Use the hook to expose stopImpersonating globally
