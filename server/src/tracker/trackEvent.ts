@@ -231,11 +231,11 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // An API key was given, but it was invalid for the site_id
     if (providedApiKey && !isApiKeyAuth) {
       console.error(
-        `[Tracking] Request rejected for site ${validatedPayload.site_id}: Invalid API Key provided.`
+        `[Tracking] Request rejected for site ${validatedPayload.site_id}: Invalid API Key provided`
       );
       return reply.status(403).send({
         success: false,
-        error: "Invalid API key.",
+        error: "Invalid API key",
       });
     }
 
@@ -257,7 +257,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       }
     } else {
       console.log(
-        `[Tracking] Request for site ${validatedPayload.site_id} authenticated via API Key. Skipping Origin check.`
+        `[Tracking] Request for site ${validatedPayload.site_id} authenticated via API Key`
       );
     }
 
