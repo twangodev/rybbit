@@ -84,6 +84,10 @@ export default function RootLayout({
         isPublicSite,
         isCheckingPublic,
       });
+      // alert("redirecting to /login");
+      alert(
+        `isPublicSite: ${isPublicSite}, isCheckingPublic: ${isCheckingPublic}`
+      );
       redirect("/login");
     }
   }, [isPending, user, pathname, isCheckingPublic, isPublicSite]);
