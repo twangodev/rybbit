@@ -20,11 +20,27 @@ export async function ingestReplayEvents(
   reply: FastifyReply
 ) {
   try {
+    console.log("[REPLAY INGEST] Starting replay event ingestion");
+    console.log(
+      "[REPLAY INGEST] Request body:",
+      JSON.stringify(request.body, null, 2)
+    );
+
     // Validate the request body
     const validatedBody = replayEventSchema.parse(request.body);
+    console.log("[REPLAY INGEST] Validation successful");
 
     const { site_id, session_id, user_id, events, is_complete, timestamp } =
       validatedBody;
+
+    console.log("[REPLAY INGEST] Processing:", {
+      site_id,
+      session_id,
+      user_id,
+      events_count: events.length,
+      is_complete,
+      timestamp,
+    });
 
     // Compress events data for storage efficiency
     const eventsJson = JSON.stringify(events);
@@ -42,12 +58,18 @@ export async function ingestReplayEvents(
       is_complete: is_complete ? 1 : 0,
     }));
 
+    console.log(
+      "[REPLAY INGEST] Inserting",
+      eventRows.length,
+      "events into session_replay_events"
+    );
     if (eventRows.length > 0) {
       await clickhouse.insert({
         table: "session_replay_events",
         values: eventRows,
         format: "JSONEachRow",
       });
+      console.log("[REPLAY INGEST] Events insertion successful");
     }
 
     // Update or insert session metadata
@@ -65,15 +87,26 @@ export async function ingestReplayEvents(
       created_at: new Date().toISOString(),
     };
 
+    console.log(
+      "[REPLAY INGEST] Inserting metadata row:",
+      JSON.stringify(metadataRow, null, 2)
+    );
     await clickhouse.insert({
       table: "session_replay_metadata",
       values: [metadataRow],
       format: "JSONEachRow",
     });
+    console.log("[REPLAY INGEST] Metadata insertion successful");
 
+    console.log("[REPLAY INGEST] Ingestion completed successfully");
     reply.status(200).send({ success: true });
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error ingesting replay events:", error);
+    console.error("Error details:", {
+      message: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
 
     if (error instanceof z.ZodError) {
       reply.status(400).send({
@@ -83,6 +116,7 @@ export async function ingestReplayEvents(
     } else {
       reply.status(500).send({
         error: "Internal server error",
+        details: error.message,
       });
     }
   }
