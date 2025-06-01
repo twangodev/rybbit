@@ -20,7 +20,9 @@ import { DISABLE_ORIGIN_CHECK } from "./const.js";
 export const trackingPayloadSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("pageview"),
-    site_id: z.string().min(1),
+    site_id: z
+      .union([z.string().min(1), z.number().positive()])
+      .transform(String),
     hostname: z.string().max(253).optional(),
     pathname: z.string().max(2048).optional(),
     querystring: z.string().max(2048).optional(),
@@ -35,7 +37,9 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("custom_event"),
-    site_id: z.string().min(1),
+    site_id: z
+      .union([z.string().min(1), z.number().positive()])
+      .transform(String),
     hostname: z.string().max(253).optional(),
     pathname: z.string().max(2048).optional(),
     querystring: z.string().max(2048).optional(),
@@ -64,7 +68,9 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("performance"),
-    site_id: z.string().min(1),
+    site_id: z
+      .union([z.string().min(1), z.number().positive()])
+      .transform(String),
     hostname: z.string().max(253).optional(),
     pathname: z.string().max(2048).optional(),
     querystring: z.string().max(2048).optional(),
