@@ -109,3 +109,13 @@ Implemented a comprehensive Memory Bank system to maintain project context acros
   - Changed to: `${BACKEND_URL}/replay/sessions/${site}`
 - **Impact**: Replay sessions API requests now use correct URL path, eliminating route not found errors
 - **File Modified**: `client/src/api/analytics/useGetReplaySessions.ts` line 73
+
+[2025-05-31 22:48:04] - Changed default session replay sample rate from 10% to 100%
+
+- **Issue**: Session replay was only recording 10% of sessions by default, causing most sessions to be skipped
+- **Context**: User reported logs showing "Replay not started due to sample rate" with random: 0.4074, sampleRate: 0.1, result: false
+- **Solution**: Updated default replay sample rate from "0.1" to "1.0" in script-full.js
+- **Implementation**: Modified line 99 in `server/public/script-full.js` - changed fallback value from "0.1" to "1.0"
+- **Impact**: All sessions will now be recorded by default unless explicitly overridden with `data-replay-sample-rate` attribute
+- **Preserved Logic**: Kept parseFloat() and attribute reading logic intact, only changed the default fallback value
+- **File Modified**: `server/public/script-full.js` line 99

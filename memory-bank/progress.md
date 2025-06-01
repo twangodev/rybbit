@@ -109,3 +109,11 @@ This file tracks the project's progress using a task list format.
 - **Log Format**: Used consistent prefixes ([REPLAY], [REPLAY WARNING], [REPLAY ERROR]) with timestamps and context
 - **Impact**: Provides complete visibility into session replay lifecycle to debug "nothing seems to be happening" issues
 - **File Modified**: `server/public/script-full.js`
+
+2025-05-31 22:48:12 - Updated default session replay sample rate to 100%
+
+- **Task**: Changed default session replay sample rate from 10% to 100% in tracking script
+- **Implementation**: Modified `server/public/script-full.js` line 99 to change fallback value from "0.1" to "1.0"
+- **Impact**: Session replay will now record all sessions by default instead of just 10%
+- **Result**: Users will see session replay data for all sessions unless explicitly configured otherwise
+- **File Modified**: `server/public/script-full.js`

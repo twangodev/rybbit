@@ -96,7 +96,7 @@
 
   // Session replay configuration
   const replaySampleRate = parseFloat(
-    scriptTag.getAttribute("data-replay-sample-rate") || "0.1"
+    scriptTag.getAttribute("data-replay-sample-rate") || "1.0"
   );
   const replayMaxDuration = parseInt(
     scriptTag.getAttribute("data-replay-max-duration") || "300000"
