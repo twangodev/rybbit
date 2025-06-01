@@ -20,7 +20,7 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src =
-        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.4/dist/rrweb.min.js";
+        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.18/dist/rrweb.min.js";
       script.onload = () => resolve();
       script.onerror = () => reject(new Error("Failed to load rrweb library"));
       document.head.appendChild(script);
@@ -428,10 +428,10 @@
 
     const payloadSize = JSON.stringify(payload).length;
     console.log(
-      `[REPLAY] Sending ${events.length} events (${payloadSize} bytes) to ${ANALYTICS_HOST}/api/replay/ingest, isComplete: ${isComplete}`
+      `[REPLAY] Sending ${events.length} events (${payloadSize} bytes) to ${ANALYTICS_HOST}/replay/ingest, isComplete: ${isComplete}`
     );
 
-    fetch(`${ANALYTICS_HOST}/api/replay/ingest`, {
+    fetch(`${ANALYTICS_HOST}/replay/ingest`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
