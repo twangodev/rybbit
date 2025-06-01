@@ -126,11 +126,17 @@ export default async function RootLayout({ children }) {
           lightness: 51,
         }}
       />
-      <script src="https://app.rybbit.io/api/script.js" site-id="2" defer />
+      <script
+        src="https://app.rybbit.io/api/script.js"
+        site-id="2"
+        defer
+        data-enable-replay="true"
+      />
       <script
         src="https://demo.rybbit.io/api/script.js"
         data-site-id="21"
         defer
+        data-enable-replay="true"
       ></script>
       <body>
         <PostHogProvider>
