@@ -3,9 +3,13 @@ import { z } from "zod";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import SqlString from "sqlstring";
 
+// Validation schema for URL parameters
+const getSessionsParamsSchema = z.object({
+  site: z.string().transform(Number),
+});
+
 // Validation schema for query parameters
-const getSessionsSchema = z.object({
-  site_id: z.string().transform(Number),
+const getSessionsQuerySchema = z.object({
   page: z.string().transform(Number).default("1"),
   limit: z.string().transform(Number).default("20"),
   start_date: z.string().optional(),
@@ -18,8 +22,10 @@ export async function getReplaySessions(
   reply: FastifyReply
 ) {
   try {
-    const query = getSessionsSchema.parse(request.query);
-    const { site_id, page, limit, start_date, end_date, user_id } = query;
+    const params = getSessionsParamsSchema.parse(request.params);
+    const query = getSessionsQuerySchema.parse(request.query);
+    const { site: site_id } = params;
+    const { page, limit, start_date, end_date, user_id } = query;
 
     const offset = (page - 1) * limit;
 

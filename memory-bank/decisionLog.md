@@ -77,3 +77,19 @@ Implemented a comprehensive Memory Bank system to maintain project context acros
   4. Added explanatory comments about rrweb-player being a Svelte component that manages its own lifecycle
 - **Impact**: Eliminates TypeScript errors and potential runtime issues, relies on proper DOM cleanup which is sufficient for rrweb-player
 - **File Modified**: `client/src/app/[site]/replays/components/ReplayPlayer.tsx`
+
+[2025-05-31 22:30:47] - Fixed missing site_id parameter in replay sessions API request
+
+- **Issue**: The backend API `/api/replay/getSessions` was receiving `undefined` for the required `site_id` parameter, causing a Zod validation error
+- **Root Cause**: Mismatch between route definition and parameter parsing - route was defined as `/api/replay/sessions/:site` but function was trying to read `site_id` from query parameters instead of URL parameters
+- **Solution Applied**:
+  1. **Backend Fix**: Updated `server/src/api/replay/getSessions.ts` to properly parse URL parameters using separate schemas for params and query
+     - Added `getSessionsParamsSchema` for URL parameter validation (`site`)
+     - Modified `getSessionsQuerySchema` to remove `site_id` (now comes from URL params)
+     - Updated function to read `site` from `request.params` instead of `request.query`
+  2. **Frontend Fix**: Updated `client/src/api/analytics/useGetReplaySessions.ts` to use correct API endpoint path
+     - Changed URL from `/replay/sessions/${site}` to `/api/replay/sessions/${site}` (added missing `/api` prefix)
+- **Impact**: Replay sessions API now correctly receives site_id parameter, eliminating Zod validation errors and enabling proper session filtering
+- **Files Modified**:
+  - `server/src/api/replay/getSessions.ts` (parameter parsing logic)
+  - `client/src/api/analytics/useGetReplaySessions.ts` (API endpoint URL)

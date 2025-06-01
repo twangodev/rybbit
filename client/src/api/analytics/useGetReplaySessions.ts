@@ -69,7 +69,10 @@ export function useGetReplaySessions(options: GetReplaySessionsOptions = {}) {
         params.user_id = options.user_id;
       }
 
-      const url = buildUrl(`${BACKEND_URL}/replay/sessions/${site}`, params);
+      const url = buildUrl(
+        `${BACKEND_URL}/api/replay/sessions/${site}`,
+        params
+      );
       const response = await authedFetchWithError<ReplaySessionsResponse>(url);
       return response;
     },
