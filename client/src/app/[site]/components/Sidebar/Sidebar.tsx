@@ -43,9 +43,11 @@ export function Sidebar() {
 
   return (
     <div className="w-56 bg-neutral-900 border-r border-neutral-800 h-full flex-col">
-      <div className="p-3 border-b  border-neutral-800 flex flex-col gap-2">
-        <SiteSelector />
-      </div>
+      {site && (
+        <div className="p-3 border-b  border-neutral-800 flex flex-col gap-2">
+          <SiteSelector />
+        </div>
+      )}
       <div className="flex flex-col space-y-1 p-3 ">
         <LiveUserCount />
         <SidebarLink
