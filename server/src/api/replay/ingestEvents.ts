@@ -47,16 +47,34 @@ export async function ingestReplayEvents(
     const compressedSize = Buffer.byteLength(eventsJson, "utf8");
 
     // Insert events into ClickHouse
-    const eventRows = events.map((event, index) => ({
-      site_id,
-      session_id,
-      user_id: user_id || "",
-      timestamp: new Date(timestamp).toISOString(),
-      event_type: event.type || "unknown",
-      event_data: JSON.stringify(event),
-      sequence_number: event.timestamp || index,
-      is_complete: is_complete ? 1 : 0,
-    }));
+    const eventRows = events.map((event, index) => {
+      // Safely stringify event data, handling potential circular references
+      let eventDataString;
+      try {
+        eventDataString =
+          typeof event === "string" ? event : JSON.stringify(event);
+      } catch (error) {
+        console.warn(
+          "[REPLAY INGEST] Failed to stringify event, using fallback:",
+          error
+        );
+        eventDataString = JSON.stringify({
+          type: event.type || "unknown",
+          error: "stringify_failed",
+        });
+      }
+
+      return {
+        site_id,
+        session_id,
+        user_id: user_id || "",
+        timestamp: new Date(timestamp).toISOString(),
+        event_type: String(event.type || "unknown"),
+        event_data: eventDataString,
+        sequence_number: event.timestamp || index,
+        is_complete: is_complete ? 1 : 0,
+      };
+    });
 
     console.log(
       "[REPLAY INGEST] Inserting",
@@ -84,6 +102,23 @@ export async function ingestReplayEvents(
       compressed_size_bytes: compressedSize,
       page_url: request.headers.referer || "",
       user_agent: request.headers["user-agent"] || "",
+      // Add all the metadata columns with defaults to match the schema
+      country: "",
+      region: "",
+      city: "",
+      lat: 0,
+      lon: 0,
+      browser: "",
+      browser_version: "",
+      operating_system: "",
+      operating_system_version: "",
+      language: "",
+      screen_width: 0,
+      screen_height: 0,
+      device_type: "",
+      channel: "",
+      hostname: "",
+      referrer: request.headers.referer || "",
       created_at: new Date().toISOString(),
     };
 
