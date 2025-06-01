@@ -258,7 +258,7 @@ server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
 // Session Replay
 server.post("/api/replay/ingest", ingestReplayEvents);
 server.get("/api/replay/sessions/:site", getReplaySessions);
-server.get("/api/replay/session/:sessionId/:site", getReplaySession);
+server.get("/api/replay/session/:site/:sessionId", getReplaySession);
 
 // Administrative
 server.get("/api/config", getConfig);

@@ -74,25 +74,64 @@ export default function ReplayPlayerPage() {
   useEffect(() => {
     if (data && playerRef.current && !playerInstanceRef.current) {
       try {
+        console.log("[REPLAY DEBUG] Raw data from API:", data);
+        console.log("[REPLAY DEBUG] Raw events count:", data.events?.length);
+        console.log(
+          "[REPLAY DEBUG] First few raw events:",
+          data.events?.slice(0, 3)
+        );
+
         // Parse the event data from the API response
         const events = data.events
-          .map((event) => {
+          .map((event, index) => {
             try {
-              return {
-                ...JSON.parse(event.event_data),
-                timestamp: new Date(event.timestamp).getTime(),
-              };
+              // The API already parses the JSON, so event should be the parsed object
+              const parsedEvent =
+                typeof event === "string" ? JSON.parse(event) : event;
+              console.log(`[REPLAY DEBUG] Event ${index}:`, parsedEvent);
+
+              // Ensure the event has the required rrweb format
+              if (!parsedEvent.type || !parsedEvent.timestamp) {
+                console.warn(
+                  `[REPLAY DEBUG] Event ${index} missing required fields:`,
+                  parsedEvent
+                );
+                return null;
+              }
+
+              return parsedEvent;
             } catch (e) {
-              console.error("Failed to parse event data:", e);
+              console.error(
+                `[REPLAY DEBUG] Failed to parse event ${index}:`,
+                e,
+                event
+              );
               return null;
             }
           })
           .filter(Boolean);
 
+        console.log("[REPLAY DEBUG] Processed events count:", events.length);
+        console.log("[REPLAY DEBUG] First processed event:", events[0]);
+        console.log("[REPLAY DEBUG] Event types found:", [
+          ...new Set(events.map((e) => e.type)),
+        ]);
+
         if (events.length === 0) {
-          console.error("No valid events found");
+          console.error(
+            "[REPLAY DEBUG] No valid events found after processing"
+          );
           return;
         }
+
+        console.log("[REPLAY DEBUG] Initializing rrweb-player with config:", {
+          eventsCount: events.length,
+          width: 1024,
+          height: 768,
+          autoPlay: false,
+          speedOption: [0.5, 1, 2, 4, 8],
+          showController: true,
+        });
 
         // Initialize the rrweb player
         playerInstanceRef.current = new rrwebPlayer({
@@ -110,9 +149,17 @@ export default function ReplayPlayerPage() {
           },
         });
 
+        console.log(
+          "[REPLAY DEBUG] rrweb-player instance created:",
+          playerInstanceRef.current
+        );
         setIsPlayerReady(true);
       } catch (error) {
-        console.error("Failed to initialize rrweb player:", error);
+        console.error(
+          "[REPLAY DEBUG] Failed to initialize rrweb player:",
+          error
+        );
+        console.error("[REPLAY DEBUG] Error stack:", error.stack);
       }
     }
 

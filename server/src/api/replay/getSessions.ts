@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
+import { getTimeStatement } from "../analytics/utils.js";
 import SqlString from "sqlstring";
 
 // Validation schema for URL parameters
@@ -12,8 +13,9 @@ const getSessionsParamsSchema = z.object({
 const getSessionsQuerySchema = z.object({
   page: z.string().transform(Number).default("1"),
   limit: z.string().transform(Number).default("20"),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
+  timeZone: z.string().default("UTC"),
   user_id: z.string().optional(),
 });
 
@@ -25,28 +27,45 @@ export async function getReplaySessions(
     const params = getSessionsParamsSchema.parse(request.params);
     const query = getSessionsQuerySchema.parse(request.query);
     const { site: site_id } = params;
-    const { page, limit, start_date, end_date, user_id } = query;
+    const { page, limit, startDate, endDate, timeZone, user_id } = query;
+
+    console.log("[REPLAY SESSIONS] Query parameters:", {
+      site_id,
+      page,
+      limit,
+      startDate,
+      endDate,
+      timeZone,
+      user_id,
+    });
 
     const offset = (page - 1) * limit;
 
-    // Build WHERE conditions with proper escaping
-    let whereConditions = [`site_id = ${SqlString.escape(site_id)}`];
-
-    if (start_date) {
-      whereConditions.push(`start_time >= ${SqlString.escape(start_date)}`);
-    }
-
-    if (end_date) {
-      whereConditions.push(`start_time <= ${SqlString.escape(end_date)}`);
-    }
+    // Build WHERE conditions with proper type handling
+    let whereConditions = [`site_id = ${site_id}`];
 
     if (user_id) {
       whereConditions.push(`user_id = ${SqlString.escape(user_id)}`);
     }
 
+    // Use the proper time filtering logic from analytics utils
+    // Note: session_replay_metadata uses start_time instead of timestamp
+    let timeFilter = "";
+    if (startDate || endDate) {
+      timeFilter = getTimeStatement({
+        date: {
+          startDate,
+          endDate,
+          timeZone,
+        },
+      });
+      // Replace 'timestamp' with 'start_time' for session replay metadata table
+      timeFilter = timeFilter.replace(/timestamp/g, "start_time");
+    }
+
     const whereClause = whereConditions.join(" AND ");
 
-    // Get sessions with metadata
+    // Get sessions with metadata - using FINAL for ReplacingMergeTree
     const sessionsQuery = `
       SELECT
         session_id,
@@ -59,12 +78,14 @@ export async function getReplaySessions(
         page_url,
         user_agent,
         created_at
-      FROM session_replay_metadata
-      WHERE ${whereClause}
+      FROM session_replay_metadata FINAL
+      WHERE ${whereClause}${timeFilter}
       ORDER BY start_time DESC
-      LIMIT ${SqlString.escape(limit)}
-      OFFSET ${SqlString.escape(offset)}
+      LIMIT ${limit}
+      OFFSET ${offset}
     `;
+
+    console.log("[REPLAY SESSIONS] Executing query:", sessionsQuery);
 
     const sessions = await clickhouse.query({
       query: sessionsQuery,
@@ -72,13 +93,20 @@ export async function getReplaySessions(
     });
 
     const sessionData = await sessions.json();
+    console.log(
+      "[REPLAY SESSIONS] Query returned",
+      sessionData.length,
+      "sessions"
+    );
 
-    // Get total count for pagination
+    // Get total count for pagination - using FINAL for ReplacingMergeTree
     const countQuery = `
       SELECT count() as total
-      FROM session_replay_metadata
-      WHERE ${whereClause}
+      FROM session_replay_metadata FINAL
+      WHERE ${whereClause}${timeFilter}
     `;
+
+    console.log("[REPLAY SESSIONS] Executing count query:", countQuery);
 
     const countResult = await clickhouse.query({
       query: countQuery,
@@ -87,6 +115,7 @@ export async function getReplaySessions(
 
     const countData = (await countResult.json()) as Array<{ total: number }>;
     const total = countData[0]?.total || 0;
+    console.log("[REPLAY SESSIONS] Total count:", total);
 
     reply.status(200).send({
       sessions: sessionData,

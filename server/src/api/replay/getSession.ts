@@ -5,8 +5,8 @@ import SqlString from "sqlstring";
 
 // Validation schema for route parameters
 const getSessionSchema = z.object({
-  site_id: z.string().transform(Number),
-  session_id: z.string().uuid(),
+  site: z.string().transform(Number),
+  sessionId: z.string().uuid(),
 });
 
 export async function getReplaySession(
@@ -15,7 +15,7 @@ export async function getReplaySession(
 ) {
   try {
     const params = getSessionSchema.parse(request.params);
-    const { site_id, session_id } = params;
+    const { site: site_id, sessionId: session_id } = params;
 
     // Get session metadata
     const metadataQuery = `
@@ -88,15 +88,46 @@ export async function getReplaySession(
 
     // Parse event data and reconstruct the events array
     const events = eventsData
-      .map((row) => {
+      .map((row, index) => {
         try {
-          return JSON.parse(row.event_data);
+          if (row.event_data === undefined || row.event_data === null) {
+            console.log(
+              `[REPLAY API DEBUG] Event ${index} has null/undefined event_data`
+            );
+            return null;
+          }
+
+          const parsedEvent = JSON.parse(row.event_data);
+
+          // Log first few events for debugging
+          if (index < 3) {
+            console.log(
+              `[REPLAY API DEBUG] Event ${index} raw data:`,
+              row.event_data
+            );
+            console.log(
+              `[REPLAY API DEBUG] Event ${index} parsed:`,
+              parsedEvent
+            );
+          }
+
+          return parsedEvent;
         } catch (e) {
-          console.error("Error parsing event data:", e);
+          console.error(
+            `[REPLAY API DEBUG] Error parsing event ${index} data:`,
+            e,
+            row.event_data
+          );
           return null;
         }
       })
       .filter(Boolean);
+
+    console.log(`[REPLAY API DEBUG] Total events processed: ${events.length}`);
+    console.log(`[REPLAY API DEBUG] Event types found:`, [
+      ...new Set(events.map((e) => e.type)),
+    ]);
+    console.log(`[REPLAY API DEBUG] First event structure:`, events[0]);
 
     reply.status(200).send({
       metadata,

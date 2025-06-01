@@ -558,6 +558,8 @@
         maskTextSelector: maskSelectors.join(","),
         maskInputSelector: replayMaskInputs ? "input" : "",
         blockSelector: ".rybbit-no-record, [data-rybbit-no-record]",
+        checkoutEveryNms: 10 * 1000, // Take full DOM snapshot every 10 seconds
+        packFn: rrweb.pack, // Ensure proper event packing
         sampling: {
           mousemove: true,
           mouseInteraction: true,

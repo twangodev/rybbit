@@ -134,3 +134,14 @@ Implemented a comprehensive Memory Bank system to maintain project context acros
 - **Files Modified**:
   - `server/public/script-full.js` (lines 75-84)
   - `server/public/script.js` (minified equivalent)
+
+[2025-06-01 00:00:18] - **Session Replay Parameter Fix Completed**
+
+- **Problem**: Session replay individual session loading failed with "ZodError: Required parameters missing"
+- **Root Cause**: Parameter mismatch between frontend URL pattern `/{site}/{sessionId}` and backend route `/{sessionId}/{site}` with different parameter names
+- **Solution Applied**:
+  1. Updated backend route from `/api/replay/session/:sessionId/:site` to `/api/replay/session/:site/:sessionId`
+  2. Fixed Zod schema from `{site_id, session_id}` to `{site, sessionId}`
+  3. Updated parameter destructuring: `const { site: site_id, sessionId: session_id } = params;`
+- **Result**: Session replay now successfully loads 110+ events from ClickHouse and displays properly in frontend
+- **Files Modified**: `server/src/index.ts`, `server/src/api/replay/getSession.ts`
