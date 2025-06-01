@@ -124,10 +124,19 @@ export async function getUserHasAccessToSitePublic(
   req: FastifyRequest,
   siteId: string | number
 ) {
-  const [sites, isPublic] = await Promise.all([
-    getSitesUserHasAccessTo(req),
-    isSitePublic(siteId),
-  ]);
+  const startTime = performance.now();
+  const sites = await getSitesUserHasAccessTo(req);
+  const endTime = performance.now();
+  console.info(`getSitesUserHasAccessTo took ${endTime - startTime}ms`);
+  const startTime2 = performance.now();
+  const isPublic = await isSitePublic(siteId);
+  const endTime2 = performance.now();
+  console.info(`isSitePublic took ${endTime2 - startTime2}ms`);
+  // const [sites, isPublic] = await Promise.all([
+  //   getSitesUserHasAccessTo(req),
+  //   isSitePublic(siteId),
+  // ]);
+  console.info(`getUserHasAccessToSitePublic took ${endTime - startTime}ms`);
   return sites.some((site) => site.siteId === Number(siteId)) || isPublic;
 }
 
