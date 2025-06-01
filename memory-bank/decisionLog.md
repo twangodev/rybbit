@@ -93,3 +93,19 @@ Implemented a comprehensive Memory Bank system to maintain project context acros
 - **Files Modified**:
   - `server/src/api/replay/getSessions.ts` (parameter parsing logic)
   - `client/src/api/analytics/useGetReplaySessions.ts` (API endpoint URL)
+
+[2025-05-31 22:35:20] - Fixed double /api prefix in replay sessions API URL construction
+
+- **Issue**: Frontend was making requests to `/api/api/replay/sessions/1` instead of `/api/replay/sessions/1`, causing "Route not found" errors
+- **Root Cause**: The `useGetReplaySessions.ts` hook was incorrectly adding `/api` prefix to the URL when `BACKEND_URL` already includes `/api`
+- **Investigation**:
+  - Confirmed replay routes are properly registered in server (`/api/replay/sessions/:site` at line 260)
+  - Confirmed routes are included in `ANALYTICS_ROUTES` for public access (lines 168-169)
+  - Found that `BACKEND_URL` constant already includes `/api` suffix (lines 3-4 in const.ts)
+  - Discovered that all other analytics hooks correctly use `${BACKEND_URL}/endpoint` pattern without adding extra `/api`
+  - Found that `useGetReplaySession.ts` was already using the correct pattern
+- **Solution**: Removed the extra `/api` prefix from URL construction in `useGetReplaySessions.ts`
+  - Changed from: `${BACKEND_URL}/api/replay/sessions/${site}`
+  - Changed to: `${BACKEND_URL}/replay/sessions/${site}`
+- **Impact**: Replay sessions API requests now use correct URL path, eliminating route not found errors
+- **File Modified**: `client/src/api/analytics/useGetReplaySessions.ts` line 73
