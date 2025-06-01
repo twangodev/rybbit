@@ -92,3 +92,20 @@ This file tracks the project's progress using a task list format.
   - Added explanatory comments about rrweb-player lifecycle management
 - **Result**: Eliminates TypeScript errors and potential runtime issues, proper cleanup without calling non-existent methods
 - **File Updated**: `client/src/app/[site]/replays/components/ReplayPlayer.tsx`
+
+2025-05-31 22:42:00 - Added comprehensive session replay logging to tracking script
+
+- **Task**: Enhanced script-full.js with detailed logging for session replay debugging
+- **Changes Made**:
+  - **Initialization Logging**: Added logs for replay enable/disable status, rrweb library loading success/failure
+  - **Configuration Logging**: Added detailed logging of all replay configuration values (sample rate, max duration, mask settings, selectors)
+  - **Sampling Decision Logging**: Enhanced shouldStartReplay() to log random value, sample rate, and decision result
+  - **Recording Lifecycle Logging**: Added logs for rrweb.record() start, event emissions with type/timestamp, recording stop events
+  - **Batching Logging**: Added logs when batching occurs (size threshold vs timeout), with event counts
+  - **Network Logging**: Enhanced sendReplayEvents() with payload size, event count, URL, success/failure responses
+  - **Error Logging**: Improved error logging with [REPLAY ERROR] prefix for all try/catch blocks
+  - **Public API Logging**: Added logging for all public methods (startReplay, stopReplay, isReplayActive, getReplaySessionId) with current state
+  - **Event Lifecycle Logging**: Added logs for page unload/hide events, max duration timeout, cleanup operations
+- **Log Format**: Used consistent prefixes ([REPLAY], [REPLAY WARNING], [REPLAY ERROR]) with timestamps and context
+- **Impact**: Provides complete visibility into session replay lifecycle to debug "nothing seems to be happening" issues
+- **File Modified**: `server/public/script-full.js`

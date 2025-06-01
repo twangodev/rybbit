@@ -39,13 +39,17 @@
   // Initialize rrweb loading if session replay is enabled
   const enableSessionReplay =
     scriptTag.getAttribute("data-enable-replay") === "true";
+  console.log(`[REPLAY] Session replay enabled: ${enableSessionReplay}`);
+
   if (enableSessionReplay) {
+    console.log("[REPLAY] Loading rrweb library...");
     loadRrweb()
       .then(() => {
+        console.log("[REPLAY] rrweb library loaded successfully");
         initSessionReplay();
       })
       .catch((e) => {
-        console.warn("Failed to load rrweb library:", e);
+        console.error("[REPLAY ERROR] Failed to load rrweb library:", e);
       });
   }
 
@@ -102,6 +106,14 @@
   const replayMaskSelectors =
     scriptTag.getAttribute("data-replay-mask-selectors") ||
     "input[type='password'], input[type='email'], .sensitive, [data-sensitive]";
+
+  // Log replay configuration
+  console.log("[REPLAY] Configuration:", {
+    sampleRate: replaySampleRate,
+    maxDuration: replayMaxDuration,
+    maskInputs: replayMaskInputs,
+    maskSelectors: replayMaskSelectors,
+  });
 
   let skipPatterns = [];
   try {
@@ -387,11 +399,19 @@
 
   // Session replay functions
   const shouldStartReplay = () => {
-    return Math.random() < replaySampleRate;
+    const randomValue = Math.random();
+    const shouldStart = randomValue < replaySampleRate;
+    console.log(
+      `[REPLAY] shouldStartReplay() called - random: ${randomValue.toFixed(4)}, sampleRate: ${replaySampleRate}, result: ${shouldStart}`
+    );
+    return shouldStart;
   };
 
   const sendReplayEvents = (events, isComplete = false) => {
-    if (!events.length) return;
+    if (!events.length) {
+      console.log("[REPLAY] sendReplayEvents called with empty events array");
+      return;
+    }
 
     const payload = {
       site_id: SITE_ID,
@@ -406,6 +426,11 @@
       payload.user_id = customUserId;
     }
 
+    const payloadSize = JSON.stringify(payload).length;
+    console.log(
+      `[REPLAY] Sending ${events.length} events (${payloadSize} bytes) to ${ANALYTICS_HOST}/api/replay/ingest, isComplete: ${isComplete}`
+    );
+
     fetch(`${ANALYTICS_HOST}/api/replay/ingest`, {
       method: "POST",
       headers: {
@@ -414,12 +439,27 @@
       body: JSON.stringify(payload),
       mode: "cors",
       keepalive: true,
-    }).catch(console.error);
+    })
+      .then((response) => {
+        if (response.ok) {
+          console.log(`[REPLAY] Successfully sent ${events.length} events`);
+        } else {
+          console.error(
+            `[REPLAY ERROR] Failed to send events - Status: ${response.status} ${response.statusText}`
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("[REPLAY ERROR] Network error sending events:", error);
+      });
   };
 
   const batchReplayEvents = () => {
     if (replayEvents.length >= REPLAY_BATCH_SIZE) {
       const eventsToSend = replayEvents.splice(0, REPLAY_BATCH_SIZE);
+      console.log(
+        `[REPLAY] Batching ${eventsToSend.length} events (batch size reached)`
+      );
       sendReplayEvents(eventsToSend);
     }
 
@@ -430,19 +470,28 @@
     replayBatchTimeout = setTimeout(() => {
       if (replayEvents.length > 0) {
         const eventsToSend = replayEvents.splice(0);
+        console.log(
+          `[REPLAY] Batching ${eventsToSend.length} events (timeout reached)`
+        );
         sendReplayEvents(eventsToSend);
       }
     }, REPLAY_BATCH_INTERVAL);
   };
 
   const stopReplay = () => {
+    console.log("[REPLAY] Stopping replay recording");
+
     if (replayRecorder) {
+      console.log("[REPLAY] Calling rrweb recorder stop function");
       replayRecorder();
       replayRecorder = null;
     }
 
     // Send remaining events
     if (replayEvents.length > 0) {
+      console.log(
+        `[REPLAY] Sending final ${replayEvents.length} events before stopping`
+      );
       sendReplayEvents(replayEvents, true);
       replayEvents = [];
     }
@@ -450,11 +499,22 @@
     if (replayBatchTimeout) {
       clearTimeout(replayBatchTimeout);
       replayBatchTimeout = null;
+      console.log("[REPLAY] Cleared batch timeout");
     }
+
+    console.log("[REPLAY] Replay recording stopped");
   };
 
   const initSessionReplay = () => {
-    if (typeof rrweb === "undefined" || !shouldStartReplay()) {
+    console.log("[REPLAY] initSessionReplay() called");
+
+    if (typeof rrweb === "undefined") {
+      console.warn("[REPLAY WARNING] rrweb library not available");
+      return;
+    }
+
+    if (!shouldStartReplay()) {
+      console.log("[REPLAY] Replay not started due to sample rate");
       return;
     }
 
@@ -468,14 +528,23 @@
           });
       replayStartTime = Date.now();
 
+      console.log(
+        `[REPLAY] Generated session ID: ${replaySessionId}, start time: ${new Date(replayStartTime).toISOString()}`
+      );
+
       // Parse mask selectors
       const maskSelectors = replayMaskSelectors
         .split(",")
         .map((s) => s.trim())
         .filter(Boolean);
 
-      replayRecorder = rrweb.record({
+      console.log("[REPLAY] Parsed mask selectors:", maskSelectors);
+
+      const recordOptions = {
         emit(event) {
+          console.log(
+            `[REPLAY] Event emitted - type: ${event.type}, timestamp: ${event.timestamp}`
+          );
           replayEvents.push(event);
           batchReplayEvents();
         },
@@ -491,18 +560,36 @@
         },
         recordCanvas: false, // Disable canvas recording for performance
         collectFonts: false, // Disable font collection for performance
-      });
+      };
+
+      console.log(
+        "[REPLAY] Starting rrweb.record() with options:",
+        recordOptions
+      );
+
+      replayRecorder = rrweb.record(recordOptions);
+
+      console.log("[REPLAY] rrweb recording started successfully");
 
       // Stop recording after max duration
       setTimeout(() => {
+        console.log(
+          `[REPLAY] Max duration (${replayMaxDuration}ms) reached, stopping replay`
+        );
         stopReplay();
       }, replayMaxDuration);
 
       // Stop recording on page unload
-      window.addEventListener("beforeunload", stopReplay);
-      window.addEventListener("pagehide", stopReplay);
+      window.addEventListener("beforeunload", () => {
+        console.log("[REPLAY] Page unloading, stopping replay");
+        stopReplay();
+      });
+      window.addEventListener("pagehide", () => {
+        console.log("[REPLAY] Page hiding, stopping replay");
+        stopReplay();
+      });
     } catch (e) {
-      console.warn("Error initializing session replay:", e);
+      console.error("[REPLAY ERROR] Error initializing session replay:", e);
     }
   };
 
@@ -582,24 +669,39 @@
 
     // Session replay methods
     startReplay: () => {
+      console.log(
+        `[REPLAY] Public API startReplay() called - enableSessionReplay: ${enableSessionReplay}, rrweb available: ${typeof rrweb !== "undefined"}, recorder active: ${replayRecorder !== null}`
+      );
       if (
         enableSessionReplay &&
         typeof rrweb !== "undefined" &&
         !replayRecorder
       ) {
         initSessionReplay();
+      } else {
+        console.warn(
+          "[REPLAY WARNING] Cannot start replay - conditions not met"
+        );
       }
     },
 
     stopReplay: () => {
+      console.log("[REPLAY] Public API stopReplay() called");
       stopReplay();
     },
 
     isReplayActive: () => {
-      return replayRecorder !== null;
+      const isActive = replayRecorder !== null;
+      console.log(
+        `[REPLAY] Public API isReplayActive() called - result: ${isActive}`
+      );
+      return isActive;
     },
 
     getReplaySessionId: () => {
+      console.log(
+        `[REPLAY] Public API getReplaySessionId() called - result: ${replaySessionId}`
+      );
       return replaySessionId;
     },
   };
