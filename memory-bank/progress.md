@@ -117,3 +117,20 @@ This file tracks the project's progress using a task list format.
 - **Impact**: Session replay will now record all sessions by default instead of just 10%
 - **Result**: Users will see session replay data for all sessions unless explicitly configured otherwise
 - **File Modified**: `server/public/script-full.js`
+
+2025-05-31 22:59:32 - Fixed persistent session replay API URL duplication issue
+
+- **Task**: Resolved malformed API URLs causing session replay events to fail with 404 errors
+- **Problem**: Script was generating `/api/api/replay/ingest` instead of `/api/replay/ingest`
+- **Root Cause**: ANALYTICS_HOST construction logic failed when script filename was `script-full.js` instead of `script.js`
+- **Solution**: Updated URL construction to use regex that handles both script filenames properly
+- **Result**: Session replay events now POST to correct endpoint, eliminating route not found errors
+- **File Fixed**: `server/public/script-full.js` - Updated ANALYTICS_HOST construction logic
+  2025-05-31 22:59:32 - Fixed persistent session replay API URL duplication issue
+
+- **Task**: Resolved malformed API URLs causing session replay events to fail with 404 errors
+- **Problem**: Script was generating `/api/api/replay/ingest` instead of `/api/replay/ingest`
+- **Root Cause**: ANALYTICS_HOST construction logic failed when script filename was `script-full.js` instead of `script.js`
+- **Solution**: Updated URL construction to use regex that handles both script filenames properly
+- **Result**: Session replay events now POST to correct endpoint, eliminating route not found errors
+- **File Fixed**: `server/public/script-full.js` - Updated ANALYTICS_HOST construction logic
