@@ -22,11 +22,7 @@ export default function SiteLayout({
   useSyncStateWithUrl();
 
   useEffect(() => {
-    if (
-      pathname.includes("/") &&
-      pathname.split("/")[1] !== site &&
-      !isNaN(Number(pathname.split("/")[1]))
-    ) {
+    if (pathname.includes("/") && pathname.split("/")[1] !== site) {
       setSite(pathname.split("/")[1]);
     }
   }, [pathname]);
