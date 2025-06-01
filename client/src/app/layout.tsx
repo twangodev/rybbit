@@ -1,10 +1,9 @@
 "use client";
 
-import { BACKEND_URL } from "@/lib/const";
 import QueryProvider from "@/providers/QueryProvider";
 import { Inter } from "next/font/google";
 import { redirect, usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Toaster } from "../components/ui/sonner";
 import { TooltipProvider } from "../components/ui/tooltip";
 import { userStore } from "../lib/userStore";
@@ -14,25 +13,11 @@ import Script from "next/script";
 import { useStopImpersonation } from "@/hooks/useStopImpersonation";
 import { ReactScan } from "./ReactScan";
 import { OrganizationInitializer } from "../components/OrganizationInitializer";
+import { useGetSiteIsPublic } from "@/api/admin/sites";
 
 const inter = Inter({ subsets: ["latin"] });
 
 const publicRoutes = ["/login", "/signup", "/invitation", "/reset-password"];
-
-// Helper function to check if a site is public
-async function checkIfSiteIsPublic(siteId: string): Promise<boolean> {
-  try {
-    const response = await fetch(`${BACKEND_URL}/site-is-public/${siteId}`);
-    if (response.ok) {
-      const data = await response.json();
-      console.info("site is public", data);
-      return !!data.isPublic;
-    }
-  } catch (error) {
-    console.error("Error checking if site is public:", error);
-  }
-  return false;
-}
 
 export default function RootLayout({
   children,
@@ -41,30 +26,20 @@ export default function RootLayout({
 }) {
   const { user, isPending } = userStore();
   const pathname = usePathname();
-  const [isCheckingPublic, setIsCheckingPublic] = useState(true);
-  const [isPublicSite, setIsPublicSite] = useState(false);
+
+  // Extract potential siteId from path like /{siteId} or /{siteId}/something
+  const pathSegments = pathname.split("/").filter(Boolean);
+  const potentialSiteId =
+    pathSegments.length > 0 && !isNaN(Number(pathSegments[0]))
+      ? pathSegments[0]
+      : undefined;
+
+  // Use Tanstack Query to check if site is public
+  const { data: isPublicSite, isLoading: isCheckingPublic } =
+    useGetSiteIsPublic(potentialSiteId);
 
   // Use the hook to expose stopImpersonating globally
   useStopImpersonation();
-
-  useEffect(() => {
-    // Check if the current path could be a site path
-    // Extract potential siteId from path like /{siteId} or /{siteId}/something
-    const pathSegments = pathname.split("/").filter(Boolean);
-    if (pathSegments.length > 0) {
-      const potentialSiteId = pathSegments[0];
-
-      // Don't check for public site status on obvious non-site paths
-      if (!isNaN(Number(potentialSiteId))) {
-        setIsCheckingPublic(true);
-
-        checkIfSiteIsPublic(potentialSiteId).then((isPublic) => {
-          setIsPublicSite(isPublic);
-          setIsCheckingPublic(false);
-        });
-      }
-    }
-  }, [pathname]);
 
   useEffect(() => {
     // Only redirect if:
@@ -79,15 +54,6 @@ export default function RootLayout({
       !publicRoutes.includes(pathname) &&
       !isPublicSite
     ) {
-      console.log("redirecting to /login");
-      console.info({
-        isPublicSite,
-        isCheckingPublic,
-      });
-      // alert("redirecting to /login");
-      alert(
-        `isPublicSite: ${isPublicSite}, isCheckingPublic: ${isCheckingPublic}`
-      );
       redirect("/login");
     }
   }, [isPending, user, pathname, isCheckingPublic, isPublicSite]);
