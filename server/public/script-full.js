@@ -15,6 +15,18 @@
     });
   };
 
+  // Load rrweb library dynamically from CDN
+  const loadRrweb = () => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src =
+        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.4/dist/rrweb.min.js";
+      script.onload = () => resolve();
+      script.onerror = () => reject(new Error("Failed to load rrweb library"));
+      document.head.appendChild(script);
+    });
+  };
+
   // Initialize web vitals loading
   loadWebVitals()
     .then(() => {
@@ -23,6 +35,19 @@
     .catch((e) => {
       console.warn("Failed to load web vitals library:", e);
     });
+
+  // Initialize rrweb loading if session replay is enabled
+  const enableSessionReplay =
+    scriptTag.getAttribute("data-enable-replay") === "true";
+  if (enableSessionReplay) {
+    loadRrweb()
+      .then(() => {
+        initSessionReplay();
+      })
+      .catch((e) => {
+        console.warn("Failed to load rrweb library:", e);
+      });
+  }
 
   // Check if the user has opted out of tracking via localStorage
   if (localStorage.getItem("disable-rybbit") !== null) {
@@ -65,6 +90,19 @@
   const trackOutbound =
     scriptTag.getAttribute("data-track-outbound") !== "false";
 
+  // Session replay configuration
+  const replaySampleRate = parseFloat(
+    scriptTag.getAttribute("data-replay-sample-rate") || "0.1"
+  );
+  const replayMaxDuration = parseInt(
+    scriptTag.getAttribute("data-replay-max-duration") || "300000"
+  ); // 5 minutes default
+  const replayMaskInputs =
+    scriptTag.getAttribute("data-replay-mask-inputs") !== "false";
+  const replayMaskSelectors =
+    scriptTag.getAttribute("data-replay-mask-selectors") ||
+    "input[type='password'], input[type='email'], .sensitive, [data-sensitive]";
+
   let skipPatterns = [];
   try {
     const skipAttr = scriptTag.getAttribute("data-skip-patterns");
@@ -99,6 +137,15 @@
   } catch (e) {
     // localStorage not available, ignore
   }
+
+  // Session replay state
+  let replayRecorder = null;
+  let replayEvents = [];
+  let replaySessionId = null;
+  let replayStartTime = null;
+  let replayBatchTimeout = null;
+  const REPLAY_BATCH_SIZE = 50;
+  const REPLAY_BATCH_INTERVAL = 5000; // 5 seconds
 
   // Helper function to convert wildcard pattern to regex
   function patternToRegex(pattern) {
@@ -338,6 +385,127 @@
     }
   };
 
+  // Session replay functions
+  const shouldStartReplay = () => {
+    return Math.random() < replaySampleRate;
+  };
+
+  const sendReplayEvents = (events, isComplete = false) => {
+    if (!events.length) return;
+
+    const payload = {
+      site_id: SITE_ID,
+      session_id: replaySessionId,
+      events: events,
+      is_complete: isComplete,
+      timestamp: new Date().toISOString(),
+    };
+
+    // Add custom user ID if available
+    if (customUserId) {
+      payload.user_id = customUserId;
+    }
+
+    fetch(`${ANALYTICS_HOST}/api/replay/ingest`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(payload),
+      mode: "cors",
+      keepalive: true,
+    }).catch(console.error);
+  };
+
+  const batchReplayEvents = () => {
+    if (replayEvents.length >= REPLAY_BATCH_SIZE) {
+      const eventsToSend = replayEvents.splice(0, REPLAY_BATCH_SIZE);
+      sendReplayEvents(eventsToSend);
+    }
+
+    // Schedule next batch
+    if (replayBatchTimeout) {
+      clearTimeout(replayBatchTimeout);
+    }
+    replayBatchTimeout = setTimeout(() => {
+      if (replayEvents.length > 0) {
+        const eventsToSend = replayEvents.splice(0);
+        sendReplayEvents(eventsToSend);
+      }
+    }, REPLAY_BATCH_INTERVAL);
+  };
+
+  const stopReplay = () => {
+    if (replayRecorder) {
+      replayRecorder();
+      replayRecorder = null;
+    }
+
+    // Send remaining events
+    if (replayEvents.length > 0) {
+      sendReplayEvents(replayEvents, true);
+      replayEvents = [];
+    }
+
+    if (replayBatchTimeout) {
+      clearTimeout(replayBatchTimeout);
+      replayBatchTimeout = null;
+    }
+  };
+
+  const initSessionReplay = () => {
+    if (typeof rrweb === "undefined" || !shouldStartReplay()) {
+      return;
+    }
+
+    try {
+      replaySessionId = crypto.randomUUID
+        ? crypto.randomUUID()
+        : "xxxx-xxxx-4xxx-yxxx".replace(/[xy]/g, function (c) {
+            const r = (Math.random() * 16) | 0;
+            const v = c === "x" ? r : (r & 0x3) | 0x8;
+            return v.toString(16);
+          });
+      replayStartTime = Date.now();
+
+      // Parse mask selectors
+      const maskSelectors = replayMaskSelectors
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean);
+
+      replayRecorder = rrweb.record({
+        emit(event) {
+          replayEvents.push(event);
+          batchReplayEvents();
+        },
+        maskAllInputs: replayMaskInputs,
+        maskTextSelector: maskSelectors.join(","),
+        maskInputSelector: replayMaskInputs ? "input" : "",
+        blockSelector: ".rybbit-no-record, [data-rybbit-no-record]",
+        sampling: {
+          mousemove: true,
+          mouseInteraction: true,
+          scroll: 150, // Sample every 150ms
+          input: "last", // Only record the final input value
+        },
+        recordCanvas: false, // Disable canvas recording for performance
+        collectFonts: false, // Disable font collection for performance
+      });
+
+      // Stop recording after max duration
+      setTimeout(() => {
+        stopReplay();
+      }, replayMaxDuration);
+
+      // Stop recording on page unload
+      window.addEventListener("beforeunload", stopReplay);
+      window.addEventListener("pagehide", stopReplay);
+    } catch (e) {
+      console.warn("Error initializing session replay:", e);
+    }
+  };
+
   const trackPageview = () => track("pageview");
 
   const debouncedTrackPageview =
@@ -411,6 +579,29 @@
     },
 
     getUserId: () => customUserId,
+
+    // Session replay methods
+    startReplay: () => {
+      if (
+        enableSessionReplay &&
+        typeof rrweb !== "undefined" &&
+        !replayRecorder
+      ) {
+        initSessionReplay();
+      }
+    },
+
+    stopReplay: () => {
+      stopReplay();
+    },
+
+    isReplayActive: () => {
+      return replayRecorder !== null;
+    },
+
+    getReplaySessionId: () => {
+      return replaySessionId;
+    },
   };
 
   if (autoTrackPageview) {
