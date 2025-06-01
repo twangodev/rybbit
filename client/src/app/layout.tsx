@@ -25,6 +25,7 @@ async function checkIfSiteIsPublic(siteId: string): Promise<boolean> {
     const response = await fetch(`${BACKEND_URL}/site-is-public/${siteId}`);
     if (response.ok) {
       const data = await response.json();
+      console.info("site is public", data);
       return !!data.isPublic;
     }
   } catch (error) {
@@ -78,6 +79,11 @@ export default function RootLayout({
       !publicRoutes.includes(pathname) &&
       !isPublicSite
     ) {
+      console.log("redirecting to /login");
+      console.info({
+        isPublicSite,
+        isCheckingPublic,
+      });
       redirect("/login");
     }
   }, [isPending, user, pathname, isCheckingPublic, isPublicSite]);
