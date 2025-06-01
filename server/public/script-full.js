@@ -19,8 +19,7 @@
   const loadRrweb = () => {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src =
-        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.4/dist/rrweb-all.js";
+      script.src = "https://cdn.jsdelivr.net/npm/rrweb@1.1.3/dist/rrweb.min.js";
       script.onload = () => resolve();
       script.onerror = () => reject(new Error("Failed to load rrweb library"));
       document.head.appendChild(script);
@@ -583,22 +582,6 @@
       replayRecorder = rrweb.record(recordOptions);
 
       console.log("[REPLAY] rrweb recording started successfully");
-
-      // Force an initial snapshot
-      if (
-        replayRecorder &&
-        typeof replayRecorder.takeFullSnapshot === "function"
-      ) {
-        console.log("[REPLAY] Taking initial full snapshot");
-        replayRecorder.takeFullSnapshot();
-      } else if (rrweb.takeFullSnapshot) {
-        console.log("[REPLAY] Taking initial full snapshot via rrweb");
-        rrweb.takeFullSnapshot();
-      } else {
-        console.log(
-          "[REPLAY] No takeFullSnapshot method available, relying on automatic snapshot"
-        );
-      }
 
       // Stop recording after max duration
       setTimeout(() => {
