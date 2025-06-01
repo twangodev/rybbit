@@ -20,7 +20,7 @@
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src =
-        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.18/dist/rrweb.min.js";
+        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.13/dist/rrweb.min.js";
       script.onload = () => resolve();
       script.onerror = () => reject(new Error("Failed to load rrweb library"));
       document.head.appendChild(script);
