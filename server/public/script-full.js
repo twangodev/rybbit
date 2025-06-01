@@ -46,7 +46,13 @@
     loadRrweb()
       .then(() => {
         console.log("[REPLAY] rrweb library loaded successfully");
-        initSessionReplay();
+        // Wait for DOM to be ready before initializing
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", initSessionReplay);
+        } else {
+          // DOM is already ready, wait a bit to ensure everything is settled
+          setTimeout(initSessionReplay, 100);
+        }
       })
       .catch((e) => {
         console.error("[REPLAY ERROR] Failed to load rrweb library:", e);
@@ -559,7 +565,6 @@
         maskInputSelector: replayMaskInputs ? "input" : "",
         blockSelector: ".rybbit-no-record, [data-rybbit-no-record]",
         checkoutEveryNms: 10 * 1000, // Take full DOM snapshot every 10 seconds
-        packFn: rrweb.pack, // Ensure proper event packing
         sampling: {
           mousemove: true,
           mouseInteraction: true,
