@@ -134,3 +134,17 @@ This file tracks the project's progress using a task list format.
 - **Solution**: Updated URL construction to use regex that handles both script filenames properly
 - **Result**: Session replay events now POST to correct endpoint, eliminating route not found errors
 - **File Fixed**: `server/public/script-full.js` - Updated ANALYTICS_HOST construction logic
+
+2025-05-31 23:05:02 - Fixed session replay Zod validation error for site_id type mismatch
+
+- **Task**: Resolved `ZodError: Expected number, received string at path ["site_id"]` in session replay API
+- **Problem Diagnosed**: Tracking scripts extracted `site_id` from HTML attributes (strings) but didn't convert to number before API calls
+- **Solution Implemented**:
+  - Updated `server/public/script-full.js` to convert `SITE_ID` from string to number using `Number()` function
+  - Applied equivalent fix to minified `server/public/script.js`
+  - Added logging to track conversion process for debugging
+- **Result**: Session replay events now send `site_id` as number type, matching backend Zod schema expectations
+- **Files Fixed**:
+  - `server/public/script-full.js`
+  - `server/public/script.js`
+- **Impact**: Eliminates validation errors, enables successful session replay event ingestion

@@ -72,15 +72,21 @@
     return;
   }
 
-  const SITE_ID =
+  const SITE_ID_STRING =
     scriptTag.getAttribute("data-site-id") || scriptTag.getAttribute("site-id");
 
-  if (!SITE_ID || isNaN(Number(SITE_ID))) {
+  if (!SITE_ID_STRING || isNaN(Number(SITE_ID_STRING))) {
     console.error(
       "Please provide a valid site ID using the data-site-id attribute"
     );
     return;
   }
+
+  // Convert to number to match backend Zod schema expectation
+  const SITE_ID = Number(SITE_ID_STRING);
+  console.log(
+    `[REPLAY] Site ID converted from string "${SITE_ID_STRING}" to number ${SITE_ID}`
+  );
 
   const debounceDuration = scriptTag.getAttribute("data-debounce")
     ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce")))

@@ -119,3 +119,18 @@ Implemented a comprehensive Memory Bank system to maintain project context acros
 - **Impact**: All sessions will now be recorded by default unless explicitly overridden with `data-replay-sample-rate` attribute
 - **Preserved Logic**: Kept parseFloat() and attribute reading logic intact, only changed the default fallback value
 - **File Modified**: `server/public/script-full.js` line 99
+
+[2025-05-31 23:04:51] - Fixed Zod validation error for session replay events site_id type mismatch
+
+- **Issue**: Session replay API endpoint was rejecting requests with `ZodError: Expected number, received string at path ["site_id"]`
+- **Root Cause**: Tracking scripts were extracting `site_id` from `data-site-id` HTML attribute (always returns string) but not converting to number before sending to API
+- **Backend Expectation**: Zod schema in `server/src/api/replay/ingestEvents.ts` expects `site_id: z.number().int().positive()`
+- **Frontend Behavior**: Scripts validated `isNaN(Number(SITE_ID))` but never actually converted the string to number in payload
+- **Solution Applied**:
+  1. **script-full.js**: Changed `SITE_ID` extraction to convert string to number: `const SITE_ID = Number(SITE_ID_STRING)`
+  2. **script.js**: Applied equivalent fix to minified version: `const n=Number(e.getAttribute("data-site-id")||e.getAttribute("site-id"))`
+  3. Added logging to track the conversion process for debugging
+- **Impact**: Session replay events now send `site_id` as number type, eliminating Zod validation errors and allowing successful event ingestion
+- **Files Modified**:
+  - `server/public/script-full.js` (lines 75-84)
+  - `server/public/script.js` (minified equivalent)
