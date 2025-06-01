@@ -159,7 +159,7 @@ const ANALYTICS_ROUTES = [
 server.addHook("preValidation", async (request, reply) => {
   const { url, method } = request.raw;
 
-  if (url === "/track" && method === "POST") {
+  if (url === "/api/track" && method === "POST") {
     const apiKey = request.headers["x-api-key"] as string;
 
     if (!apiKey) {
