@@ -584,6 +584,22 @@
 
       console.log("[REPLAY] rrweb recording started successfully");
 
+      // Force an initial snapshot
+      if (
+        replayRecorder &&
+        typeof replayRecorder.takeFullSnapshot === "function"
+      ) {
+        console.log("[REPLAY] Taking initial full snapshot");
+        replayRecorder.takeFullSnapshot();
+      } else if (rrweb.takeFullSnapshot) {
+        console.log("[REPLAY] Taking initial full snapshot via rrweb");
+        rrweb.takeFullSnapshot();
+      } else {
+        console.log(
+          "[REPLAY] No takeFullSnapshot method available, relying on automatic snapshot"
+        );
+      }
+
       // Stop recording after max duration
       setTimeout(() => {
         console.log(
