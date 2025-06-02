@@ -1,5 +1,6 @@
+import { eq } from "drizzle-orm";
 import { db } from "../db/postgres/postgres.js";
-import { sites } from "../db/postgres/schema.js";
+import { sites, organization } from "../db/postgres/schema.js";
 
 // Site configuration interface
 interface SiteConfigData {
@@ -23,9 +24,10 @@ class SiteConfig {
           saltUserIds: sites.saltUserIds,
           domain: sites.domain,
           blockBots: sites.blockBots,
-          apiKey: sites.apiKey,
+          apiKey: organization.apiKey,
         })
-        .from(sites);
+        .from(sites)
+        .innerJoin(organization, eq(sites.organizationId, organization.id));
 
       // Reset the map
       this.siteConfigMap.clear();

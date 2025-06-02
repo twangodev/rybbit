@@ -1,3 +1,4 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
   integer,
@@ -53,13 +54,12 @@ export const sites = pgTable(
     siteId: serial("site_id").primaryKey().notNull(),
     name: text("name").notNull(),
     domain: text("domain").notNull().unique(),
-    apiKey: text("api_key").notNull().unique(),
     createdAt: timestamp("created_at").defaultNow(),
     updatedAt: timestamp("updated_at").defaultNow(),
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id),
-    organizationId: text("organization_id").references(() => organization.id),
+    organizationId: text("organization_id").notNull().references(() => organization.id),
     public: boolean().default(false),
     saltUserIds: boolean().default(false),
     blockBots: boolean().default(true).notNull(),
@@ -160,6 +160,7 @@ export const organization = pgTable(
     stripeCustomerId: text(),
     monthlyEventCount: integer().default(0),
     overMonthlyLimit: boolean().default(false),
+    apiKey: text().notNull().unique().default(sql`gen_random_uuid()`),
   },
   (table) => [unique("organization_slug_unique").on(table.slug)]
 );

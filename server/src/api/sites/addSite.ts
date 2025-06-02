@@ -1,10 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import { eq } from "drizzle-orm";
 import { db } from "../../db/postgres/postgres.js";
-import { sites } from "../../db/postgres/schema.js";
+import { sites, organization } from "../../db/postgres/schema.js";
 import { loadAllowedDomains } from "../../lib/allowedDomains.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { siteConfig } from "../../lib/siteConfig.js";
-import crypto from "crypto";
 
 export async function addSite(
   request: FastifyRequest<{
@@ -90,15 +90,12 @@ export async function addSite(
       });
     }
 
-    const apiKey = crypto.randomBytes(32).toString("hex");
-
     // Create the new site
     const newSite = await db
       .insert(sites)
       .values({
         domain,
         name,
-        apiKey,
         createdBy: session.user.id,
         organizationId,
         public: isPublic || false,
@@ -110,6 +107,12 @@ export async function addSite(
     // Update allowed domains
     await loadAllowedDomains();
 
+    const siteOrganization = await db
+      .select({ apiKey: organization.apiKey })
+      .from(organization)
+      .where(eq(organization.id, organizationId))
+      .limit(1);
+
     // Update siteConfig cache with the new site
     siteConfig.addSite(newSite[0].siteId, {
       public: newSite[0].public || false,
@@ -117,7 +120,7 @@ export async function addSite(
       domain: newSite[0].domain,
       blockBots:
         newSite[0].blockBots === undefined ? true : newSite[0].blockBots,
-      apiKey: newSite[0].apiKey,
+      apiKey: siteOrganization[0].apiKey,
     });
 
     return reply.status(201).send(newSite[0]);
