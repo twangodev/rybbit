@@ -179,27 +179,6 @@ export function useGetSite(siteId?: string | number) {
   });
 }
 
-export function useGetSiteApiKey(siteId?: string | number) {
-  const { site: storeSelectedSite } = useStore();
-
-  const siteIdToUse = siteId ?? storeSelectedSite;
-
-  return useQuery({
-    queryKey: ["get-site-api-key", siteIdToUse],
-    queryFn: async () => {
-      if (!siteIdToUse) {
-        return null;
-      }
-
-      return await authedFetchWithError<{ apiKey: string }>(
-        `${BACKEND_URL}/get-site-api-key/${siteIdToUse}`
-      )
-    },
-    staleTime: 60000,
-    enabled: !!siteId,
-  });
-}
-
 export function changeSiteSalt(siteId: number, saltUserIds: boolean) {
   return authedFetchWithError(`${BACKEND_URL}/change-site-salt`, {
     method: "POST",
