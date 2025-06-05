@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Check, X, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../../lib/utils";
 
 // Available event tiers for the slider
 const EVENT_TIERS = [

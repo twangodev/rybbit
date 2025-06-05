@@ -19,7 +19,7 @@ import { UserProfiles } from "./components/Cards/UserProfiles";
 import { UserSessions } from "./components/Cards/UserSessions";
 import { Integrations } from "./components/integrations";
 import { Logo } from "./components/Logo";
-import { PricingSection } from "./components/PricingSection";
+import { PricingSection } from "./pricing/components/PricingSection";
 import { TweetCard } from "./components/Tweet";
 
 const tilt_wrap = Tilt_Warp({

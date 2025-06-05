@@ -33,7 +33,8 @@
         "**/*.ts",
         "**/*.tsx",
         ".next/types/**/*.ts",
-        "src/app/providers.jsx"
+        "src/app/providers.jsx",
+        "src/app/pricing/components/ComparisonSection.jsx"
     ],
     "exclude": [
         "node_modules"
