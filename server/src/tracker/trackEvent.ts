@@ -225,40 +225,19 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Use validated data
     const validatedPayload = validationResult.data;
 
-    const isApiKeyAuth = request.isApiKeyAuthenticated === true;
-    const providedApiKey = request.providedApiKey as string | undefined;
+    const originValidation = await validateOrigin(
+      validatedPayload.site_id,
+      request.headers.origin as string
+    );
 
-    // An API key was given, but it was invalid for the site_id
-    if (providedApiKey && !isApiKeyAuth) {
+    if (!originValidation.success) {
       console.error(
-        `[Tracking] Request rejected for site ${validatedPayload.site_id}: Invalid API Key provided`
+        `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
       );
       return reply.status(403).send({
         success: false,
-        error: "Invalid API key",
+        error: originValidation.error,
       });
-    }
-
-    // If not authenticated by API key, perform origin validation
-    if (!isApiKeyAuth) {
-      const originValidation = await validateOrigin(
-        validatedPayload.site_id,
-        request.headers.origin as string
-      );
-
-      if (!originValidation.success) {
-        console.error(
-          `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
-        );
-        return reply.status(403).send({
-          success: false,
-          error: originValidation.error,
-        });
-      }
-    } else {
-      console.log(
-        `[Tracking] Request for site ${validatedPayload.site_id} authenticated via API Key`
-      );
     }
 
     // Make sure the site config is loaded
