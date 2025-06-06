@@ -225,6 +225,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Use validated data
     const validatedPayload = validationResult.data;
 
+    // Validate that the request is coming from the expected origin
     const originValidation = await validateOrigin(
       validatedPayload.site_id,
       request.headers.origin as string
