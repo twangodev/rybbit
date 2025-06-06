@@ -1,8 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin as adminPlugin, organization, emailOTP } from "better-auth/plugins";
-import { createAccessControl } from "better-auth/plugins/access";
-import { defaultStatements, adminAc, ownerAc, memberAc } from "better-auth/plugins/organization/access";
+import { admin, organization, emailOTP } from "better-auth/plugins";
 import dotenv from "dotenv";
 import { eq } from "drizzle-orm";
 import pg from "pg";
@@ -15,36 +13,9 @@ dotenv.config();
 
 type AuthType = ReturnType<typeof betterAuth> | null;
 
-const statement = {
-  ...defaultStatements,
-  apiKey: ["view"],
-} as const;
-
-const ac = createAccessControl(statement);
-
-const owner = ac.newRole({
-  apiKey: ["view"],
-  ...ownerAc.statements,
-});
-
-const admin = ac.newRole({
-  apiKey: ["view"],
-  ...adminAc.statements,
-});
-
-const member = ac.newRole({
-  ...memberAc.statements,
-});
-
 const pluginList = [
-  adminPlugin(),
+  admin(),
   organization({
-    ac,
-    roles: {
-      owner,
-      admin,
-      member,
-    },
     allowUserToCreateOrganization: true,
     creatorRole: "owner",
     sendInvitationEmail: async (invitation) => {
