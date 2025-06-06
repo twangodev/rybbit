@@ -60,6 +60,7 @@ import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./tracker/trackEvent.js";
 import { extractSiteId, isSitePublic, normalizeOrigin } from "./utils.js";
 import { getOrganizationApiKey } from "./api/user/getOrganizationApiKey.js";
+import { trackServerEvent } from "./tracker/trackServerEvent.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -159,7 +160,7 @@ const ANALYTICS_ROUTES = [
 server.addHook("preValidation", async (request, reply) => {
   const { url, method } = request.raw;
 
-  if (url === "/api/track" && method === "POST") {
+  if (url === "/api/track-server" && method === "POST") {
     const apiKey = request.headers["x-api-key"] as string;
 
     if (!apiKey) {
@@ -298,6 +299,7 @@ if (IS_CLOUD) {
 }
 
 server.post("/api/track", trackEvent);
+server.post("/api/track-server", trackServerEvent);
 server.get("/api/health", { logLevel: "silent" }, (_, reply) =>
   reply.send("OK")
 );
