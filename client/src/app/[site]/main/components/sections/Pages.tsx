@@ -15,7 +15,7 @@ import { Card, CardContent } from "../../../../../components/ui/card";
 import { truncateString } from "../../../../../lib/utils";
 import { StandardSection } from "../../../components/shared/StandardSection/StandardSection";
 
-type Tab = "pages" | "page_title" | "entry_pages" | "exit_pages";
+type Tab = "pages" | "page_title" | "entry_pages" | "exit_pages" | "hostname";
 
 const MAX_LABEL_LENGTH = 70;
 
@@ -41,6 +41,7 @@ export function Pages() {
               <TabsTrigger value="page_title">Page Titles</TabsTrigger>
               <TabsTrigger value="entry_pages">Entry Pages</TabsTrigger>
               <TabsTrigger value="exit_pages">Exit Pages</TabsTrigger>
+              <TabsTrigger value="hostname">Hostnames</TabsTrigger>
             </TabsList>
             <Button size="smIcon" onClick={() => setExpanded(!expanded)}>
               <Expand className="w-4 h-4" />
@@ -102,6 +103,17 @@ export function Pages() {
                 truncateString(e.value, MAX_LABEL_LENGTH) || "Other"
               }
               getLink={(e) => `https://${siteMetadata?.domain}${e.value}`}
+              expanded={expanded}
+              close={close}
+            />
+          </TabsContent>
+          <TabsContent value="hostname">
+            <StandardSection
+              filterParameter="hostname"
+              title="Hostnames"
+              getValue={(e) => e.value}
+              getKey={(e) => e.value}
+              getLabel={(e) => e.value}
               expanded={expanded}
               close={close}
             />

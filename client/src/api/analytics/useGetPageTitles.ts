@@ -11,6 +11,7 @@ export type PageTitleItem = {
   pathname: string; // A representative pathname
   count: number;
   percentage: number;
+  time_on_page_seconds?: number;
   // Add other potential fields if your backend query for page_titles includes them
 };
 

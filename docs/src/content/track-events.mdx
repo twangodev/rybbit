@@ -1,6 +1,26 @@
 # Track Custom Events
 
-The script exposes a global object `window.rybbit` with functions for manual tracking of events.
+The script exposes a global object `window.rybbit` with functions for manual tracking of events, as well as the ability to track events using data attributes on HTML elements.
+
+## Using Data Attributes
+
+You can track custom events by adding data attributes to any HTML element:
+
+```html
+<!-- Basic event tracking -->
+<button data-rybbit-event="signup_clicked">Sign Up</button>
+
+<!-- Event with custom properties -->
+<button 
+  data-rybbit-event="purchase_click" 
+  data-rybbit-prop-product="premium" 
+  data-rybbit-prop-price="49.99"
+>
+  Buy Now
+</button>
+```
+
+This approach requires no JavaScript and works on any clickable element.
 
 ## Available Functions
 
@@ -152,6 +172,14 @@ interface Rybbit {
      * @returns The current user ID or null if not set
      */
     getUserId: () => string | null;
+    
+    /**
+     * Manually tracks outbound link clicks
+     * @param url The URL of the outbound link
+     * @param text Optional text content of the link
+     * @param target Optional target attribute of the link
+     */
+    trackOutbound: (url: string, text?: string, target?: string) => void;
 }
 
 declare global {

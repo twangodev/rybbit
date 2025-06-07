@@ -118,7 +118,7 @@ export async function getExistingSession(userId: string, siteId: string) {
 // Create base tracking payload from request
 export function createBasePayload(
   request: FastifyRequest,
-  eventType: "pageview" | "custom_event" = "pageview",
+  eventType: "pageview" | "custom_event" | "performance" = "pageview",
   validatedBody: ValidatedTrackingPayload
 ): TotalTrackingPayload {
   const userAgent = request.headers["user-agent"] || "";

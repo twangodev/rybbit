@@ -1,0 +1,144 @@
+import { authedFetch, getStartAndEndDate } from "../utils";
+import { BACKEND_URL } from "../../lib/const";
+import { timeZone } from "../../lib/dateTimeUtils";
+import { Filter, useStore } from "../../lib/store";
+import { usePerformanceStore } from "../../app/[site]/performance/performanceStore";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
+
+type UseGetPerformanceByPathOptions = {
+  site: number | string;
+  limit?: number;
+  page?: number;
+  useFilters?: boolean;
+  enabled?: boolean;
+  additionalFilters?: Filter[];
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+};
+
+// Import the correct type from backend
+export type PerformanceByPathItem = {
+  pathname: string;
+  event_count: number;
+  lcp_avg: number | null;
+  lcp_p50: number | null;
+  lcp_p75: number | null;
+  lcp_p90: number | null;
+  lcp_p99: number | null;
+  cls_avg: number | null;
+  cls_p50: number | null;
+  cls_p75: number | null;
+  cls_p90: number | null;
+  cls_p99: number | null;
+  inp_avg: number | null;
+  inp_p50: number | null;
+  inp_p75: number | null;
+  inp_p90: number | null;
+  inp_p99: number | null;
+  fcp_avg: number | null;
+  fcp_p50: number | null;
+  fcp_p75: number | null;
+  fcp_p90: number | null;
+  fcp_p99: number | null;
+  ttfb_avg: number | null;
+  ttfb_p50: number | null;
+  ttfb_p75: number | null;
+  ttfb_p90: number | null;
+  ttfb_p99: number | null;
+};
+
+type PaginatedPerformanceResponse = {
+  data: PerformanceByPathItem[];
+  totalCount: number;
+};
+
+// Keep the old type for backward compatibility, but mark as deprecated
+/** @deprecated Use PerformanceByPathItem instead */
+export type PerformanceByPathResponse = {
+  path: string;
+  lcp: number;
+  cls: number;
+  inp: number;
+  fcp: number;
+  ttfb: number;
+  pageviews: number;
+};
+
+export function useGetPerformanceByPath({
+  site,
+  limit = 10,
+  page = 1,
+  useFilters = true,
+  enabled = true,
+  additionalFilters = [],
+  sortBy,
+  sortOrder,
+}: UseGetPerformanceByPathOptions): UseQueryResult<PaginatedPerformanceResponse> {
+  const { time, filters } = useStore();
+  const { selectedPercentile } = usePerformanceStore();
+
+  // Check if we're using last-24-hours mode
+  const isPast24HoursMode = time.mode === "last-24-hours";
+
+  // Determine the query parameters based on mode
+  const queryParams = isPast24HoursMode
+    ? {
+        // Past minutes approach for last-24-hours mode
+        timeZone: timeZone,
+        pastMinutesStart: 24 * 60, // 24 hours ago
+        pastMinutesEnd: 0, // now
+        limit,
+        page,
+        percentile: selectedPercentile,
+        filters: useFilters ? [...filters, ...additionalFilters] : undefined,
+        sortBy,
+        sortOrder,
+      }
+    : {
+        // Regular date-based approach
+        ...getStartAndEndDate(time),
+        timeZone: timeZone,
+        limit,
+        page,
+        percentile: selectedPercentile,
+        filters: useFilters ? [...filters, ...additionalFilters] : undefined,
+        sortBy,
+        sortOrder,
+      };
+
+  return useQuery({
+    queryKey: [
+      "performance-by-path",
+      time,
+      site,
+      filters,
+      selectedPercentile,
+      limit,
+      page,
+      isPast24HoursMode ? "past-minutes" : "date-range",
+      additionalFilters,
+      sortBy,
+      sortOrder,
+    ],
+    queryFn: () => {
+      return authedFetch(
+        `${BACKEND_URL}/performance/by-path/${site}`,
+        queryParams
+      )
+        .then((res) => res.json())
+        .then(({ data }) => data);
+    },
+    staleTime: Infinity,
+    placeholderData: (_, query: any) => {
+      if (!query?.queryKey) return undefined;
+      const prevQueryKey = query.queryKey;
+      const [, , prevSite] = prevQueryKey;
+
+      if (prevSite === site) {
+        return query.state.data;
+      }
+      return undefined;
+    },
+    enabled,
+  });
+}

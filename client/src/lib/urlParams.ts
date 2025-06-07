@@ -174,7 +174,7 @@ export const useSyncStateWithUrl = () => {
     if (!pathname) return false;
     const pathParts = pathname.split("/");
     if (pathParts.length < 3) return false;
-    return ["main", "sessions", "users"].includes(pathParts[2]);
+    return ["main", "sessions", "users", "performance"].includes(pathParts[2]);
   };
 
   // Initialize from URL params after site is set

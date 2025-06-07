@@ -1,10 +1,13 @@
 import { Duration, DurationLikeObject, Settings } from "luxon";
 
 // Detect user locale from the browser environment (fallback to 'en-US' on server)
-export const userLocale = typeof navigator !== "undefined" ? navigator.language : "en-US";
+export const userLocale =
+  typeof navigator !== "undefined" ? navigator.language : "en-US";
 
 // Detect whether the user prefers 12-hour time format (true = 12h, false = 24h)
-const resolved = new Intl.DateTimeFormat(userLocale, { hour: "numeric" }).resolvedOptions();
+const resolved = new Intl.DateTimeFormat(userLocale, {
+  hour: "numeric",
+}).resolvedOptions();
 export const hour12 = resolved.hourCycle === "h12";
 
 // Detect user's timezone (not exported but used internally)
@@ -30,7 +33,15 @@ export function getLocalizedWeekdayNames(
   const fallback: Record<"narrow" | "short" | "long", string[]> = {
     narrow: ["M", "T", "W", "T", "F", "S", "S"],
     short: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-    long: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+    long: [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ],
   };
 
   const today = new Date();
@@ -78,7 +89,7 @@ export function getLocalizedTimeLabels(
 export function formatDuration(duration: number): string {
   // Prepare duration parts in seconds and optionally minutes.
   const units: Record<string, number> = {
-    seconds: duration % 60,
+    seconds: Math.round(duration % 60),
   };
 
   if (duration > 59) {
@@ -86,7 +97,8 @@ export function formatDuration(duration: number): string {
   }
 
   // Choose which units to show: only "seconds" or both "minutes" and "seconds".
-  const keys: (keyof DurationLikeObject)[] = duration > 59 ? ["minutes", "seconds"] : ["seconds"];
+  const keys: (keyof DurationLikeObject)[] =
+    duration > 59 ? ["minutes", "seconds"] : ["seconds"];
 
   // Convert to Luxon duration object and format to human-readable string.
   const luxonDuration = Duration.fromObject(units)
@@ -97,6 +109,22 @@ export function formatDuration(duration: number): string {
     listStyle: "narrow",
     unitDisplay: "short",
   });
+}
+
+/**
+ * Formats a duration in seconds to a compact string using short units.
+ *
+ * @param seconds - Duration in seconds.
+ * @returns Compact duration string (e.g., "1m 10s", "45s").
+ */
+export function formatShortDuration(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.round(seconds % 60);
+
+  if (mins > 0) {
+    return secs > 0 ? `${mins}m ${secs}s` : `${mins}m`;
+  }
+  return `${secs}s`;
 }
 
 /**
@@ -123,10 +151,16 @@ export const formatLocalTime = (hour: number, minute: number): string => {
 // --- Precomputed localized data ---
 
 // Full weekday names (e.g., "Monday", "Tuesday")
-export const longDayNames: string[] = getLocalizedWeekdayNames(userLocale, "long");
+export const longDayNames: string[] = getLocalizedWeekdayNames(
+  userLocale,
+  "long"
+);
 
 // Short weekday names (e.g., "Mon", "Tue")
-export const shortDayNames: string[] = getLocalizedWeekdayNames(userLocale, "short");
+export const shortDayNames: string[] = getLocalizedWeekdayNames(
+  userLocale,
+  "short"
+);
 
 // Hour-only labels (e.g., "00", "01", "02", "1 AM", "2 PM")
 export const hourLabels: string[] = getLocalizedTimeLabels(userLocale, {

@@ -60,8 +60,7 @@ export function DeleteAccount() {
       queryClient.clear();
       toast.success("Account successfully deleted");
       setIsOpen(false);
-
-      router.push("/login");
+      window.location.reload();
     } catch (error) {
       toast.error(`Failed to delete account: ${error}`);
     } finally {

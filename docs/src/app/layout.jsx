@@ -9,6 +9,7 @@ import { getPageMap } from "nextra/page-map";
 import { cn } from "../lib/utils";
 import { SmallLogo } from "./components/Logo";
 import "./globals.css";
+import { PostHogProvider } from "./providers";
 
 const tilt_wrap = Tilt_Warp({
   subsets: ["latin"],
@@ -125,42 +126,60 @@ export default async function RootLayout({ children }) {
           lightness: 51,
         }}
       />
-      <script src="https://app.rybbit.io/api/script.js" site-id="2" defer />
+      {/* <script
+        src="https://app.rybbit.io/api/script.js"
+        site-id="2"
+        defer
+        data-enable-replay="true"
+      /> */}
       <script
         src="https://demo.rybbit.io/api/script.js"
         data-site-id="21"
         defer
+        data-enable-replay="true"
+      ></script>
+      <script
+        src="https://amdtest.tomato.gg/api/script.js"
+        data-site-id="2"
+        defer
+        data-enable-replay="true"
       ></script>
       <body>
-        <Layout
-          banner={
-            <div className="text-center text-sm text-neutral-100 pt-2 pb-1 bg-neutral-700/50 flex items-center justify-center gap-2">
-              <div className="mb-1">
-                🚀 We just launched! Please star us on Github!{" "}
+        <PostHogProvider>
+          <Layout
+            banner={
+              <div className="text-center text-sm text-neutral-100 pt-2 pb-1 bg-neutral-700/50 flex items-center justify-center gap-2">
+                <div className="mb-1">
+                  🚀 We just launched! Please star us on Github!{" "}
+                </div>
+                <a
+                  className="github-button"
+                  href="https://github.com/rybbit-io/rybbit"
+                  data-color-scheme="no-preference: light; light: light; dark: light;"
+                  data-show-count="true"
+                  aria-label="Star rybbit-io/rybbit on GitHub"
+                ></a>
               </div>
-              <a
-                className="github-button"
-                href="https://github.com/rybbit-io/rybbit"
-                data-color-scheme="no-preference: light; light: light; dark: light;"
-                data-show-count="true"
-                aria-label="Star rybbit-io/rybbit on GitHub"
-              ></a>
-            </div>
-          }
-          navbar={navbar}
-          footer={<Footer_ />}
-          editLink="Edit this page on GitHub"
-          docsRepositoryBase="https://github.com/rybbit-io/rybbit/tree/master/docs"
-          sidebar={{ defaultMenuCollapseLevel: 1 }}
-          pageMap={pageMap}
-          nextThemes={{
-            defaultTheme: "dark",
-            forcedTheme: "dark",
-          }}
-        >
-          {children}
-        </Layout>
-        <script async defer src="https://buttons.github.io/buttons.js"></script>
+            }
+            navbar={navbar}
+            footer={<Footer_ />}
+            editLink="Edit this page on GitHub"
+            docsRepositoryBase="https://github.com/rybbit-io/rybbit/tree/master/docs"
+            sidebar={{ defaultMenuCollapseLevel: 1 }}
+            pageMap={pageMap}
+            nextThemes={{
+              defaultTheme: "dark",
+              forcedTheme: "dark",
+            }}
+          >
+            {children}
+          </Layout>
+          <script
+            async
+            defer
+            src="https://buttons.github.io/buttons.js"
+          ></script>
+        </PostHogProvider>
       </body>
     </html>
   );

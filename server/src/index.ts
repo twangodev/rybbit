@@ -24,6 +24,10 @@ import { getOrgEventCount } from "./api/analytics/getOrgEventCount.js";
 import { getOverview } from "./api/analytics/getOverview.js";
 import { getOverviewBucketed } from "./api/analytics/getOverviewBucketed.js";
 import { getPageTitles } from "./api/analytics/getPageTitles.js";
+import { getPerformanceByPath } from "./api/analytics/getPerformanceByPath.js";
+import { getPerformanceByDimension } from "./api/analytics/getPerformanceByDimension.js";
+import { getPerformanceOverview } from "./api/analytics/getPerformanceOverview.js";
+import { getPerformanceTimeSeries } from "./api/analytics/getPerformanceTimeSeries.js";
 import { getRetention } from "./api/analytics/getRetention.js";
 import { getSession } from "./api/analytics/getSession.js";
 import { getSessions } from "./api/analytics/getSessions.js";
@@ -153,6 +157,10 @@ const ANALYTICS_ROUTES = [
   "/api/analytics/events/properties/",
   "/api/events/",
   "/api/get-site",
+  "/api/performance/overview/",
+  "/api/performance/time-series/",
+  "/api/performance/by-path/",
+  "/api/performance/by-dimension/",
 ];
 
 server.addHook("onRequest", async (request, reply) => {
@@ -234,6 +242,12 @@ server.put("/api/goal/update", updateGoal);
 server.get("/api/events/names/:site", getEventNames);
 server.get("/api/events/properties/:site", getEventProperties);
 server.get("/api/org-event-count/:organizationId", getOrgEventCount);
+
+// Performance Analytics
+server.get("/api/performance/overview/:site", getPerformanceOverview);
+server.get("/api/performance/time-series/:site", getPerformanceTimeSeries);
+server.get("/api/performance/by-path/:site", getPerformanceByPath);
+server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
 
 // Administrative
 server.get("/api/config", getConfig);

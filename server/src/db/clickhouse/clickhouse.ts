@@ -46,6 +46,18 @@ export const initializeClickhouse = async () => {
       `,
   });
 
+  // Add performance metric columns if they don't exist
+  await clickhouse.exec({
+    query: `
+      ALTER TABLE events
+        ADD COLUMN IF NOT EXISTS lcp Nullable(Float64),
+        ADD COLUMN IF NOT EXISTS cls Nullable(Float64),
+        ADD COLUMN IF NOT EXISTS inp Nullable(Float64),
+        ADD COLUMN IF NOT EXISTS fcp Nullable(Float64),
+        ADD COLUMN IF NOT EXISTS ttfb Nullable(Float64)
+    `,
+  });
+
   if (IS_CLOUD) {
     await clickhouse.exec({
       query: `

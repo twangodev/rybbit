@@ -206,6 +206,30 @@ export function changeSiteBlockBots(siteId: number, blockBots: boolean) {
   });
 }
 
+export function useGetSiteIsPublic(siteId?: string | number) {
+  return useQuery({
+    queryKey: ["site-is-public", siteId],
+    queryFn: async () => {
+      if (!siteId) {
+        return false;
+      }
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/site-is-public/${siteId}`);
+        if (response.ok) {
+          const data = await response.json();
+          return !!data.isPublic;
+        }
+      } catch (error) {
+        console.error("Error checking if site is public:", error);
+      }
+      return false;
+    },
+    staleTime: 60000, // 1 minute
+    enabled: !!siteId,
+  });
+}
+
 export const useCurrentSite = () => {
   const { data: activeOrganization } = authClient.useActiveOrganization();
   const { data: sites } = useGetSitesFromOrg(activeOrganization?.id);

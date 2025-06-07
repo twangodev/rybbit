@@ -4,7 +4,7 @@ import { Slider } from "@/components/ui/slider";
 import { Check, X, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
-import { cn } from "../../lib/utils";
+import { cn } from "../../../lib/utils";
 
 // Available event tiers for the slider
 const EVENT_TIERS = [
@@ -23,11 +23,14 @@ const PRO_FEATURES = [
   "Unlimited websites",
   "Unlimited team members",
   "Real-time analytics",
+  "Web vitals",
   "Custom events",
   "Sessions",
   "Funnels",
   "Goals",
-  "User flows",
+  "Journeys",
+  "User profiles",
+  "Retention",
   "All features",
 ];
 
@@ -96,7 +99,7 @@ export function PricingSection() {
         {/* Two card layout */}
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto justify-center items-start">
           {/* Free Plan Card */}
-          <div className="w-full lg:w-70 flex-shrink-0 md:h-[666px] h-full">
+          <div className="w-full lg:w-70 flex-shrink-0 md:h-[788px] h-full">
             <div className="bg-neutral-800/30 rounded-xl border border-neutral-700 overflow-hidden backdrop-blur-sm shadow-lg h-full">
               <div className="p-6">
                 <div className="md:mb-[70px] mb-6">

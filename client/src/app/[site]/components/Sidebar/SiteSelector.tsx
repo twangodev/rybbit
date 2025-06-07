@@ -23,29 +23,42 @@ function SiteSelectorContent() {
 
   return (
     <DropdownMenuContent align="start">
-      {sites?.sites?.map((site) => {
-        const isSelected = site.siteId === currentSiteId;
-        return (
-          <DropdownMenuItem
-            key={site.siteId}
-            onClick={() => {
-              if (isSelected) return;
-              resetStore();
-              router.push(`/${site.siteId}`);
-            }}
-            className={cn(
-              "flex items-center justify-between",
-              isSelected && "bg-neutral-800"
-            )}
-          >
-            <div className="flex items-center gap-2">
-              <Favicon domain={site.domain} className="w-4 h-4" />
-              <span>{site.domain}</span>
-            </div>
-            {isSelected && <Check size={16} />}
-          </DropdownMenuItem>
-        );
-      })}
+      {sites?.sites
+        ? sites.sites.map((site) => {
+            const isSelected = site.siteId === currentSiteId;
+            return (
+              <DropdownMenuItem
+                key={site.siteId}
+                onClick={() => {
+                  if (isSelected) return;
+                  resetStore();
+                  router.push(`/${site.siteId}`);
+                }}
+                className={cn(
+                  "flex items-center justify-between",
+                  isSelected && "bg-neutral-800"
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <Favicon domain={site.domain} className="w-4 h-4" />
+                  <span>{site.domain}</span>
+                </div>
+                {isSelected && <Check size={16} />}
+              </DropdownMenuItem>
+            );
+          })
+        : Array.from({ length: 3 }).map((_, index) => (
+            <DropdownMenuItem
+              key={`skeleton-${index}`}
+              className="flex items-center justify-between animate-pulse cursor-default"
+              onClick={(e) => e.preventDefault()}
+            >
+              <div className="flex items-center gap-2">
+                <div className="w-4 h-4 bg-neutral-700 rounded"></div>
+                <div className="h-4 bg-neutral-700 rounded w-32"></div>
+              </div>
+            </DropdownMenuItem>
+          ))}
     </DropdownMenuContent>
   );
 }
@@ -60,10 +73,15 @@ export function SiteSelector() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger unstyled>
-        {site && (
+        {site ? (
           <div className="flex gap-2 border border-neutral-800 rounded-lg py-1.5 px-3 justify-start cursor-pointer hover:bg-neutral-800/50 transition-colors h-[36px]">
             <Favicon domain={site.domain} className="w-5 h-5" />
             <div className="text-white truncate text-sm">{site.domain}</div>
+          </div>
+        ) : (
+          <div className="flex gap-2 border border-neutral-800 rounded-lg py-1.5 px-3 justify-start items-center h-[36px] animate-pulse">
+            <div className="w-5 h-5 bg-neutral-800 rounded"></div>
+            <div className="h-4 bg-neutral-800 rounded w-24"></div>
           </div>
         )}
       </DropdownMenuTrigger>

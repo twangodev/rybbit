@@ -25,8 +25,14 @@ export const PRO_FEATURES = [
   "Unlimited websites",
   "Unlimited team members",
   "Real-time analytics",
+  "Web vitals",
   "Custom events",
-  "Funnels & user flows",
+  "Sessions",
+  "Funnels",
+  "Goals",
+  "Journeys",
+  "User profiles",
+  "Retention",
   "All features",
 ];
 

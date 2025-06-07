@@ -32,6 +32,7 @@ export type FilterParameter =
   | "city"
   | "device_type"
   | "referrer"
+  | "hostname"
   | "pathname"
   | "page_title"
   | "querystring"
@@ -50,6 +51,7 @@ export type FilterParameter =
   | "operating_system_version";
 
 export const SESSION_PAGE_FILTERS: FilterParameter[] = [
+  "hostname",
   "browser",
   "operating_system",
   "language",
@@ -76,7 +78,7 @@ export const EVENT_FILTERS: FilterParameter[] = [
   // "country",
   // "device_type",
   // "referrer",
-
+  "hostname",
   "browser",
   "operating_system",
   "language",
@@ -101,6 +103,7 @@ export const EVENT_FILTERS: FilterParameter[] = [
 ];
 
 export const GOALS_PAGE_FILTERS: FilterParameter[] = [
+  "hostname",
   "browser",
   "operating_system",
   "language",
@@ -116,6 +119,7 @@ export const GOALS_PAGE_FILTERS: FilterParameter[] = [
 ];
 
 export const USER_PAGE_FILTERS: FilterParameter[] = [
+  "hostname",
   "browser",
   "operating_system",
   "language",

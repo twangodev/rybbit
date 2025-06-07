@@ -13,7 +13,7 @@ export type UserOrganization = {
   role: string;
 };
 
-export function getUserOrganizations(): Promise<UserOrganization[]> {
+function getUserOrganizations(): Promise<UserOrganization[]> {
   return authedFetchWithError(`${BACKEND_URL}/user/organizations`);
 }
 
