@@ -7,10 +7,10 @@ Integrating Rybbit Analytics with your Laravel application is straightforward. Y
 First, you'll need your Rybbit tracking script. You can find this in your Rybbit dashboard under **Site Settings > Tracking Code**. It will look something like this:
 
 ```html
-<script async defer src="https://your-rybbit-instance.com/script.js" data-site-id="YOUR_SITE_ID"></script>
+<script async defer src="https://app.rybbit.io/api/script.js" data-site-id="YOUR_SITE_ID"></script>
 ```
 
-Replace `https://your-rybbit-instance.com` with the URL of your Rybbit instance and `YOUR_SITE_ID` with the actual Site ID from your Rybbit dashboard.
+Replace `YOUR_SITE_ID` with your actual Site ID from your Rybbit dashboard.
 
 ## 2. Locate Your Main Blade Layout File
 
@@ -44,7 +44,7 @@ Open your main Blade layout file. Paste the Rybbit tracking script just before t
 
     {{-- Rybbit Analytics Script --}}
     @if(app()->environment('production'))
-        <script async defer src="{{ config('services.rybbit.instance_url', 'https://your-rybbit-instance.com') }}/script.js" data-site-id="{{ config('services.rybbit.site_id') }}"></script>
+        <script async defer src="{{ config('services.rybbit.instance_url', 'https://app.rybbit.io') }}/api/script.js" data-site-id="{{ config('services.rybbit.site_id') }}"></script>
     @endif
 </body>
 </html>
@@ -58,7 +58,7 @@ If you prefer not to use the config helper immediately, you can hardcode the val
 ```php
     {{-- Rybbit Analytics Script --}}
     @if(app()->environment('production'))
-        <script async defer src="https://your-rybbit-instance.com/script.js" data-site-id="YOUR_SITE_ID"></script>
+        <script async defer src="https://app.rybbit.io/api/script.js" data-site-id="YOUR_SITE_ID"></script>
     @endif
 ```
 Remember to replace placeholders with your actual script URL and Site ID.
@@ -71,7 +71,7 @@ It's best practice to store your Rybbit Site ID and instance URL in your `.env` 
 Open your `.env` file and add:
 
 ```env
-RYBBIT_INSTANCE_URL=https://your-rybbit-instance.com
+RYBBIT_INSTANCE_URL=https://app.rybbit.io
 RYBBIT_SITE_ID=YOUR_SITE_ID
 ```
 

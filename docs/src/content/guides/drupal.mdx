@@ -9,10 +9,10 @@ Integrating Rybbit Analytics with your Drupal site can be done by adding the tra
 First, you'll need your Rybbit tracking script. You can find this in your Rybbit dashboard under **Site Settings > Tracking Code**. It will look something like this:
 
 ```html
-<script async defer src="https://your-rybbit-instance.com/script.js" data-site-id="YOUR_SITE_ID"></script>
+<script async defer src="https://app.rybbit.io/api/script.js" data-site-id="YOUR_SITE_ID"></script>
 ```
 
-Replace `https://your-rybbit-instance.com` with the URL of your Rybbit instance and `YOUR_SITE_ID` with the actual Site ID from your Rybbit dashboard.
+Replace `YOUR_SITE_ID` with your actual Site ID from your Rybbit dashboard.
 
 ## Method 1: Adding to Your Theme (Recommended for Themers)
 
@@ -41,11 +41,11 @@ Modify it to include the script:
     <js-bottom-placeholder token="{{ placeholder_token }}">
 
     {# Rybbit Analytics Script #}
-    <script async defer src="https://your-rybbit-instance.com/script.js" data-site-id="YOUR_SITE_ID"></script>
+    <script async defer src="https://app.rybbit.io/api/script.js" data-site-id="YOUR_SITE_ID"></script>
   </body>
 </html>
 ```
-Replace `https://your-rybbit-instance.com` and `YOUR_SITE_ID` with your actual details.
+Replace `YOUR_SITE_ID` with your actual Site ID.
 
 **c. Clear Drupal Caches:**
 After adding the script, you must clear Drupal's caches for the changes to take effect.

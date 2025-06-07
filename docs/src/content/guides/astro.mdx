@@ -51,7 +51,7 @@ const rybbitSiteId = "YOUR_SITE_ID"; // Replace with your actual Site ID
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 
-    {/* Rybbit Tracking Snippet */}
+    <!-- Rybbit Tracking Snippet -->
     <script
       src="https://app.rybbit.io/api/script.js"
       data-site-id={rybbitSiteId}
@@ -59,7 +59,7 @@ const rybbitSiteId = "YOUR_SITE_ID"; // Replace with your actual Site ID
     ></script>
 	</head>
 	<body>
-		<slot /> {/* Page content will be injected here */}
+		<slot /> <!-- Page content will be injected here -->
 	</body>
 </html>
 ```
