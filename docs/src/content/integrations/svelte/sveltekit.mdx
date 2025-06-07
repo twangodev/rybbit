@@ -7,9 +7,9 @@ This guide explains how to integrate Rybbit with your SvelteKit application for 
 
 ## How to Add Rybbit to Your SvelteKit App
 
-### Method 1: Adding to `src/app.html` (Recommended)
+The recommended and most straightforward method for SvelteKit is to add the Rybbit tracking script directly to your `src/app.html` file. This ensures the script is loaded early on all pages.
 
-This is the most straightforward method for SvelteKit and ensures the script is loaded early.
+### Adding to `src/app.html`
 
 <Steps>
 ### 1. Retrieve Your Tracking Script
@@ -59,36 +59,6 @@ Ensure `YOUR_SITE_ID` is replaced.
 
 Deploy your application and check your Rybbit dashboard for incoming data.
 </Steps>
-
-### (Advanced) Method 2: Using a SvelteKit Layout (`+layout.svelte`)
-
-For more dynamic control, you can load the script within a root layout file.
-
-**SvelteKit Root Layout Example (`src/routes/+layout.svelte`):**
-```svelte filename="src/routes/+layout.svelte"
-<script>
-  import { onMount } from 'svelte';
-  import { browser } from '$app/environment'; // Ensure code runs only in browser
-
-  const RYBBIT_SITE_ID = 'YOUR_SITE_ID'; // Replace
-
-  onMount(() => {
-    if (browser) { // Check if in browser environment
-      const existingScript = document.querySelector(`script[data-site-id="${RYBBIT_SITE_ID}"]`);
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = 'https://app.rybbit.io/api/script.js';
-        script.async = true;
-        script.setAttribute('data-site-id', RYBBIT_SITE_ID);
-        document.head.appendChild(script);
-      }
-    }
-  });
-</script>
-
-<slot />
-```
-This ensures the script is loaded when your main layout mounts in the browser.
 
 <Callout type="info">
   **SPA Page View Tracking**: Rybbit's script is designed to automatically track route changes in SvelteKit applications. If page views aren't tracked correctly after navigation (which is uncommon), you might need to manually trigger them using the `afterNavigate` lifecycle function:

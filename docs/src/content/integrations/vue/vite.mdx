@@ -7,9 +7,9 @@ This guide explains how to integrate Rybbit with your standard client-side Vue.j
 
 ## How to Add Rybbit to Your Client-Side Vue.js App
 
-### Method 1: Adding to `index.html` (Recommended)
+The recommended and simplest method for client-side Vue applications is to add the Rybbit tracking script directly to your `index.html` file. This ensures the script is loaded early and reliably.
 
-For client-side Vue applications, the simplest and most common method is to add the Rybbit tracking script directly to your `index.html` file.
+### Adding to `index.html`
 
 <Steps>
 ### 1. Retrieve Your Tracking Script
@@ -61,41 +61,6 @@ Ensure `YOUR_SITE_ID` is replaced with your actual Site ID.
 
 Deploy your application and check your Rybbit dashboard for incoming data. You can also inspect your browser's network tab to confirm that `script.js` is loaded.
 </Steps>
-
-### (Optional) Method 2: Using a Vue Plugin or Component (Advanced)
-
-For more dynamic control or specific loading strategies, you could create a simple Vue plugin or a component that injects the script.
-
-**Vue Plugin Example:**
-```javascript filename="src/plugins/rybbit.js"
-const RYBBIT_SITE_ID = 'YOUR_SITE_ID'; // Replace with your Site ID
-
-export default {
-  install: (app, options) => {
-    // Ensure running in browser context
-    if (typeof window !== 'undefined') {
-      const existingScript = document.querySelector(`script[data-site-id="${RYBBIT_SITE_ID}"]`);
-      if (!existingScript) {
-        const script = document.createElement('script');
-        script.src = 'https://app.rybbit.io/api/script.js';
-        script.async = true;
-        script.setAttribute('data-site-id', RYBBIT_SITE_ID);
-        document.head.appendChild(script);
-      }
-    }
-  }
-};
-```
-Then, register the plugin in your `main.js` (or `main.ts`):
-```javascript filename="src/main.js"
-import { createApp } from 'vue'
-import App from './App.vue'
-import RybbitPlugin from './plugins/rybbit' // Adjust path if needed
-
-const app = createApp(App)
-app.use(RybbitPlugin)
-app.mount('#app')
-```
 
 <Callout type="info">
   **SPA Page View Tracking**: Rybbit's script is designed to automatically track route changes in SPAs using Vue Router. If page views aren't tracked correctly after navigation, you might need to manually trigger them using `window.rybbit.trackPageview()` after each route change. This can be done using Vue Router's navigation guards:

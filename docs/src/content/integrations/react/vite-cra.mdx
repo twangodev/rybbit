@@ -7,9 +7,9 @@ This guide explains how to integrate Rybbit with your client-side React applicat
 
 ## How to Add Rybbit to Your React App
 
-There are two primary methods to add the Rybbit tracking script: directly in your `index.html` file (simplest for most SPAs) or by dynamically injecting it using a React component (more control, but often unnecessary if Rybbit's script handles SPA navigation well).
+The recommended and simplest method to add the Rybbit tracking script is directly in your `index.html` file. This ensures the script is loaded early and reliably.
 
-### Method 1: Adding to `public/index.html` (Recommended for CRA/Vite)
+### Adding to `public/index.html` (or `index.html` for Vite)
 
 This is the most straightforward method and ensures the script is loaded early.
 
@@ -64,56 +64,6 @@ Make sure to replace `YOUR_SITE_ID` with your actual Site ID.
 
 After deploying your application, open your Rybbit dashboard to see if data is being received. You can also check your browser's network tab to ensure `script.js` is loaded.
 </Steps>
-
-### Method 2: Using a React Component (Advanced)
-
-You can also load the script dynamically using a React component, for instance, with `useEffect`. This gives you more control but is generally not necessary if the script is placed in `index.html`.
-
-```jsx filename="src/components/RybbitTracker.jsx"
-import React, { useEffect } from 'react'; // Corrected import
-
-const RYBBIT_SITE_ID = 'YOUR_SITE_ID'; // Replace with your Site ID
-
-const RybbitTracker = () => {
-  useEffect(() => {
-    const existingScript = document.querySelector(`script[data-site-id="${RYBBIT_SITE_ID}"]`);
-
-    if (!existingScript) {
-      const script = document.createElement('script');
-      script.src = 'https://app.rybbit.io/api/script.js';
-      script.async = true;
-      script.setAttribute('data-site-id', RYBBIT_SITE_ID);
-      document.head.appendChild(script);
-
-      // Optional: Clean up script on component unmount if needed,
-      // though for analytics scripts, this is usually not desired.
-      // return () => {
-      //   document.head.removeChild(script);
-      // };
-    }
-  }, []); // Empty dependency array ensures this runs once on mount
-
-  return null; // This component doesn't render anything
-};
-
-export default RybbitTracker;
-```
-You would then include this component in your main `App.js` or a similar root component:
-```jsx filename="src/App.js"
-import RybbitTracker from './components/RybbitTracker';
-// ... other imports
-
-function App() {
-  return (
-    <>
-      <RybbitTracker />
-      {/* Rest of your application */}
-    </>
-  );
-}
-
-export default App;
-```
 
 <Callout type="info">
   **SPA Page View Tracking**: Rybbit's tracking script is designed to automatically detect route changes in most modern SPAs (including those using React Router or similar libraries) and track them as page views. If you find that page views are not being tracked correctly after navigation, you might need to manually trigger page views using `window.rybbit.trackPageview()` after each route change. However, try the standard installation first.

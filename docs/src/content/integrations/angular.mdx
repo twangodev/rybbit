@@ -7,7 +7,9 @@ This guide explains how to integrate Rybbit with your Angular application.
 
 ## How to Add Rybbit to Your Angular App
 
-The most common and recommended method is to add the Rybbit tracking script directly to your `index.html` file.
+The recommended and most common method is to add the Rybbit tracking script directly to your `src/index.html` file. This ensures the script is loaded early and reliably for your Angular application.
+
+### Adding to `src/index.html`
 
 <Steps>
 ### 1. Retrieve Your Tracking Script
@@ -59,59 +61,6 @@ Make sure to replace `YOUR_SITE_ID` with your actual Site ID.
 
 After building and deploying your application, open your Rybbit dashboard to check if data is being received. You can also inspect your browser's network tab to confirm that `script.js` is loaded.
 </Steps>
-
-### (Advanced) Dynamically Loading the Script via a Service
-
-For more complex scenarios or if you need to conditionally load the script, you can create an Angular service.
-
-```typescript filename="src/app/rybbit-tracking.service.ts"
-import { Injectable, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
-
-@Injectable({{
-  providedIn: 'root',
-}})
-export class RybbitTrackingService {{
-  private RYBBIT_SITE_ID = 'YOUR_SITE_ID'; // Replace with your Site ID
-
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {{}}
-
-  loadScript(): void {{
-    if (isPlatformBrowser(this.platformId)) {{ // Ensure running in browser
-      const existingScript = document.querySelector(`script[data-site-id="${{this.RYBBIT_SITE_ID}}"]`);
-
-      if (!existingScript) {{
-        const script = document.createElement('script');
-        script.src = 'https://app.rybbit.io/api/script.js';
-        script.async = true;
-        script.setAttribute('data-site-id', this.RYBBIT_SITE_ID);
-        document.head.appendChild(script);
-      }}
-    }}
-  }}
-}}
-```
-You would then inject this service into your root component (`AppComponent`) or another appropriate place and call `loadScript()`:
-
-```typescript filename="src/app/app.component.ts"
-import { Component, OnInit } from '@angular/core';
-import { RybbitTrackingService } from './rybbit-tracking.service';
-
-@Component({{
-  selector: 'app-root',
-  templateUrl: './app.component.html',
-  styleUrls: ['./app.component.css'],
-}})
-export class AppComponent implements OnInit {{
-  title = 'MyAngularApp';
-
-  constructor(private rybbitTrackingService: RybbitTrackingService) {{}}
-
-  ngOnInit(): void {{
-    this.rybbitTrackingService.loadScript();
-  }}
-}}
-```
 
 <Callout type="info">
   **SPA Page View Tracking**: Rybbit's tracking script is designed to automatically detect route changes in most Angular applications (using Angular Router) and track them as page views. If you find that page views are not being tracked correctly after navigation, you might need to manually trigger page views. You can subscribe to router events:
