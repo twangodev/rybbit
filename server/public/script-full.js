@@ -346,9 +346,31 @@
       ? debounce(trackPageview, debounceDuration)
       : trackPageview;
 
-  // Track outbound link clicks
-  if (trackOutbound) {
-    document.addEventListener("click", function (e) {
+  // Track outbound link clicks and custom data-attribute events
+  document.addEventListener("click", function (e) {
+    // First check for custom events via data attributes
+    let target = e.target;
+    while (target && target !== document) {
+      if (target.hasAttribute("data-rybbit-event")) {
+        const eventName = target.getAttribute("data-rybbit-event");
+        if (eventName) {
+          // Collect additional properties from data-rybbit-prop-* attributes
+          const properties = {};
+          for (const attr of target.attributes) {
+            if (attr.name.startsWith("data-rybbit-prop-")) {
+              const propName = attr.name.replace("data-rybbit-prop-", "");
+              properties[propName] = attr.value;
+            }
+          }
+          track("custom_event", eventName, properties);
+        }
+        break;
+      }
+      target = target.parentElement;
+    }
+    
+    // Then check for outbound links
+    if (trackOutbound) {
       const link = e.target.closest("a");
       if (!link || !link.href) return;
 
@@ -359,8 +381,8 @@
           target: link.target || "_self",
         });
       }
-    });
-  }
+    }
+  });
 
   if (autoTrackSpa) {
     const originalPushState = history.pushState;

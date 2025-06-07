@@ -50,12 +50,20 @@ export default function IndexPage() {
       </h2>
 
       <div className="flex flex-col sm:flex-row my-8 md:my-10 items-center justify-center gap-4 md:gap-6 text-base md:text-lg px-4">
-        <Link href="https://app.rybbit.io/signup" className="w-full sm:w-auto">
+        <Link
+          href="https://app.rybbit.io/signup"
+          className="w-full sm:w-auto"
+          data-rybbit-event="signup"
+        >
           <button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer">
             Track your Site
           </button>
         </Link>
-        <Link href="https://demo.rybbit.io/1" className="w-full sm:w-auto">
+        <Link
+          href="https://demo.rybbit.io/1"
+          className="w-full sm:w-auto"
+          data-rybbit-event="demo"
+        >
           <button className="w-full sm:w-auto bg-neutral-800 hover:bg-neutral-700 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer">
             View Live Demo
           </button>
