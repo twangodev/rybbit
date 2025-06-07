@@ -11,7 +11,7 @@ import {
 import { db } from "../db/postgres/postgres.js";
 import { activeSessions } from "../db/postgres/schema.js";
 import { eq } from "drizzle-orm";
-import { getDeviceType } from "../utils.js";
+import { getDeviceType, normalizeOrigin } from "../utils.js";
 import { pageviewQueue } from "./pageviewQueue.js";
 import { siteConfig } from "../lib/siteConfig.js";
 import { DISABLE_ORIGIN_CHECK } from "./const.js";
@@ -205,9 +205,9 @@ async function validateOrigin(siteId: string, requestOrigin?: string) {
       // Parse the origin into URL components
       const originUrl = new URL(requestOrigin);
 
-      // Normalize domains by removing 'www.' prefix if present
-      const normalizedOriginHost = originUrl.hostname.replace(/^www\./, "");
-      const normalizedSiteDomain = siteDomain.replace(/^www\./, "");
+      // Normalize domains by removing all subdomain prefixes
+      const normalizedOriginHost = normalizeOrigin(requestOrigin);
+      const normalizedSiteDomain = normalizeOrigin(`https://${siteDomain}`);
 
       // Check if the normalized domains match
       if (normalizedOriginHost !== normalizedSiteDomain) {

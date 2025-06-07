@@ -53,3 +53,27 @@ This file tracks the project's progress using a task list format.
 - Removed duplicate sequential queries that were previously executed separately
 - Now runs admin check, member check, sites query, owner query, and org info query all concurrently
 - Maximum performance optimization achieved - reduced from 5 sequential to 1 concurrent operation
+
+2025-06-06 21:28:35 - Enhanced normalizeOrigin function to remove all subdomain prefixes
+
+- Modified normalizeOrigin function in server/src/utils.ts to handle all subdomains, not just "www"
+- Added support for IP addresses and localhost (returned as-is)
+- Implemented logic for multi-level TLDs (e.g., .co.uk, .com.au)
+- Function now extracts the root domain from any subdomain structure
+- Examples: api.example.com → example.com, subdomain.site.co.uk → site.co.uk
+
+2025-06-06 21:29:55 - Updated domain normalization in trackEvent.ts validateOrigin function
+
+- Imported normalizeOrigin function from utils.ts into trackEvent.ts
+- Replaced manual www. prefix removal with enhanced normalizeOrigin function
+- Now uses consistent subdomain removal logic across both origin and site domain validation
+- Ensures proper domain matching for sites with subdomains in tracking validation
+
+2025-06-06 21:33:45 - Improved normalizeOrigin function with Public Suffix List and better input handling
+
+- Added psl (Public Suffix List) dependency for reliable multi-level TLD detection
+- Removed unnecessary URL parsing when input is already a hostname
+- Function now accepts both URLs and hostnames as input
+- Uses PSL to accurately determine registrable domains (handles all TLDs correctly)
+- Added robust fallback logic for edge cases
+- Eliminates hardcoded TLD list that was incomplete and unreliable
