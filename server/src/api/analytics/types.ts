@@ -9,6 +9,7 @@ export type FilterParameter =
   | "city"
   | "device_type"
   | "referrer"
+  | "hostname"
   | "pathname"
   | "page_title"
   | "querystring"

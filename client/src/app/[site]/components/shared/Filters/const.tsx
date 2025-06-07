@@ -17,6 +17,7 @@ import {
   Puzzle,
   Radio,
   Search,
+  Server,
   TabletSmartphone,
   Tag,
   Target,
@@ -43,6 +44,11 @@ export const FilterOptions: {
     label: "Query",
     value: "querystring",
     icon: <Search className="h-4 w-4" />,
+  },
+  {
+    label: "Hostname",
+    value: "hostname",
+    icon: <Server className="h-4 w-4" />,
   },
   {
     label: "Event Name",

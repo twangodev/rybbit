@@ -184,6 +184,7 @@ export const filterParamSchema = z.enum([
   "city",
   "device_type",
   "referrer",
+  "hostname",
   "pathname",
   "page_title",
   "querystring",
