@@ -4,9 +4,7 @@ services:
     container_name: caddy
     restart: unless-stopped
     ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp" # Needed for HTTP/3
+      - "3010:80"
     volumes:
       - ./Caddyfile:/etc/caddy/Caddyfile # Mount Caddy config file
       - caddy_data:/data # Mount persistent data volume for certs etc.
