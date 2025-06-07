@@ -1,0 +1,123 @@
+import { Steps } from "nextra/components"
+import { Callout } from "nextra/components"
+
+# SvelteKit
+
+This guide explains how to integrate Rybbit with your SvelteKit application for analytics tracking.
+
+## How to Add Rybbit to Your SvelteKit App
+
+### Method 1: Adding to `src/app.html` (Recommended)
+
+This is the most straightforward method for SvelteKit and ensures the script is loaded early.
+
+<Steps>
+### 1. Retrieve Your Tracking Script
+
+Navigate to your Rybbit dashboard to obtain your code snippet:
+
+```html
+<script
+  src="https://app.rybbit.io/api/script.js"
+  data-site-id="YOUR_SITE_ID"
+  async
+></script>
+```
+Replace `YOUR_SITE_ID` with your actual Site ID.
+
+### 2. Locate Your `app.html` File
+
+In a SvelteKit project, this file is typically located at `src/app.html`.
+
+### 3. Add the Snippet to `app.html`
+
+Open `src/app.html` and paste the Rybbit tracking snippet into the `<head>` section, usually before `%sveltekit.head%` or just after it.
+
+```html filename="src/app.html"
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="%sveltekit.assets%/favicon.png" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+    {/* Rybbit Tracking Snippet */}
+    <script
+      src="https://app.rybbit.io/api/script.js"
+      data-site-id="YOUR_SITE_ID"
+      async
+    ></script>
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
+```
+Ensure `YOUR_SITE_ID` is replaced.
+
+### 4. Verify Installation
+
+Deploy your application and check your Rybbit dashboard for incoming data.
+</Steps>
+
+### (Advanced) Method 2: Using a SvelteKit Layout (`+layout.svelte`)
+
+For more dynamic control, you can load the script within a root layout file.
+
+**SvelteKit Root Layout Example (`src/routes/+layout.svelte`):**
+```svelte filename="src/routes/+layout.svelte"
+<script>
+  import { onMount } from 'svelte';
+  import { browser } from '$app/environment'; // Ensure code runs only in browser
+
+  const RYBBIT_SITE_ID = 'YOUR_SITE_ID'; // Replace
+
+  onMount(() => {
+    if (browser) { // Check if in browser environment
+      const existingScript = document.querySelector(`script[data-site-id="${RYBBIT_SITE_ID}"]`);
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://app.rybbit.io/api/script.js';
+        script.async = true;
+        script.setAttribute('data-site-id', RYBBIT_SITE_ID);
+        document.head.appendChild(script);
+      }
+    }
+  });
+</script>
+
+<slot />
+```
+This ensures the script is loaded when your main layout mounts in the browser.
+
+<Callout type="info">
+  **SPA Page View Tracking**: Rybbit's script is designed to automatically track route changes in SvelteKit applications. If page views aren't tracked correctly after navigation (which is uncommon), you might need to manually trigger them using the `afterNavigate` lifecycle function:
+  ```svelte
+  // In a layout or page component
+  import { afterNavigate } from '$app/navigation';
+
+  afterNavigate(() => {
+    if (typeof window !== 'undefined' && window.rybbit) {
+      window.rybbit.trackPageview();
+    }
+  });
+  ```
+  Test the default behavior first.
+</Callout>
+
+## Custom Event Tracking
+
+From any Svelte component within your SvelteKit app, you can track custom events:
+
+```svelte
+<script>
+  function handleAction() {
+    if (typeof window !== 'undefined' && window.rybbit) {
+      window.rybbit.trackEvent('user_action_sveltekit', { component: 'MySvelteKitComponent' });
+    }
+  }
+</script>
+
+<button on:click={handleAction}>Perform SvelteKit Action</button>
+```
+Always check `typeof window !== 'undefined'` before accessing `window.rybbit` as SvelteKit components can also run on the server.

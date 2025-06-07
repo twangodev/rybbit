@@ -1,0 +1,140 @@
+import { Steps } from "nextra/components"
+import { Callout } from "nextra/components"
+
+# Vue.js (Vite / Client-Side)
+
+This guide explains how to integrate Rybbit with your standard client-side Vue.js Single Page Applications (SPAs), typically built using Vite (e.g., via `npm create vue@latest` or `npm create vite@latest -- --template vue`).
+
+## How to Add Rybbit to Your Client-Side Vue.js App
+
+### Method 1: Adding to `index.html` (Recommended)
+
+For client-side Vue applications, the simplest and most common method is to add the Rybbit tracking script directly to your `index.html` file.
+
+<Steps>
+### 1. Retrieve Your Tracking Script
+
+Navigate to your Rybbit dashboard to obtain your code snippet:
+
+```html
+<script
+  src="https://app.rybbit.io/api/script.js"
+  data-site-id="YOUR_SITE_ID"
+  async
+></script>
+```
+Replace `YOUR_SITE_ID` with your actual Site ID.
+
+### 2. Locate Your `index.html` File
+
+This file is typically located at the root of your Vite-based Vue project.
+
+### 3. Add the Snippet to `index.html`
+
+Open `index.html` and paste the Rybbit tracking snippet just before the closing `</head>` tag or `</body>` tag. Placing it in the `<head>` allows it to load sooner.
+
+```html filename="index.html (Vite)"
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Vue App</title>
+    {/* Rybbit Tracking Snippet */}
+    <script
+      src="https://app.rybbit.io/api/script.js"
+      data-site-id="YOUR_SITE_ID"
+      async
+    ></script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.js"></script>
+    {/* Or place script here, before </body> */}
+  </body>
+</html>
+```
+Ensure `YOUR_SITE_ID` is replaced with your actual Site ID.
+
+### 4. Verify Installation
+
+Deploy your application and check your Rybbit dashboard for incoming data. You can also inspect your browser's network tab to confirm that `script.js` is loaded.
+</Steps>
+
+### (Optional) Method 2: Using a Vue Plugin or Component (Advanced)
+
+For more dynamic control or specific loading strategies, you could create a simple Vue plugin or a component that injects the script.
+
+**Vue Plugin Example:**
+```javascript filename="src/plugins/rybbit.js"
+const RYBBIT_SITE_ID = 'YOUR_SITE_ID'; // Replace with your Site ID
+
+export default {
+  install: (app, options) => {
+    // Ensure running in browser context
+    if (typeof window !== 'undefined') {
+      const existingScript = document.querySelector(`script[data-site-id="${RYBBIT_SITE_ID}"]`);
+      if (!existingScript) {
+        const script = document.createElement('script');
+        script.src = 'https://app.rybbit.io/api/script.js';
+        script.async = true;
+        script.setAttribute('data-site-id', RYBBIT_SITE_ID);
+        document.head.appendChild(script);
+      }
+    }
+  }
+};
+```
+Then, register the plugin in your `main.js` (or `main.ts`):
+```javascript filename="src/main.js"
+import { createApp } from 'vue'
+import App from './App.vue'
+import RybbitPlugin from './plugins/rybbit' // Adjust path if needed
+
+const app = createApp(App)
+app.use(RybbitPlugin)
+app.mount('#app')
+```
+
+<Callout type="info">
+  **SPA Page View Tracking**: Rybbit's script is designed to automatically track route changes in SPAs using Vue Router. If page views aren't tracked correctly after navigation, you might need to manually trigger them using `window.rybbit.trackPageview()` after each route change. This can be done using Vue Router's navigation guards:
+  ```javascript
+  // Example with Vue Router in your router setup file (e.g., src/router/index.js)
+  import { createRouter, createWebHistory } from 'vue-router';
+  // ... your routes ...
+
+  const router = createRouter({
+    history: createWebHistory(import.meta.env.BASE_URL),
+    routes: [ /* ... your routes ... */ ]
+  });
+
+  router.afterEach((to, from) => {
+    if (window.rybbit && typeof window.rybbit.trackPageview === 'function') {
+      window.rybbit.trackPageview();
+    }
+  });
+
+  export default router;
+  ```
+  Always test the default behavior first, as manual tracking might not be necessary.
+</Callout>
+
+## Custom Event Tracking
+
+From any Vue component or method, you can track custom events:
+
+```vue
+<template>
+  <button @click="trackCustomEvent">Track Action</button>
+</template>
+
+<script setup>
+function trackCustomEvent() {
+  if (window.rybbit && typeof window.rybbit.trackEvent === 'function') {
+    window.rybbit.trackEvent('custom_vue_action', { detail: 'User performed a client-side Vue action' });
+  }
+}
+</script>
+```
+Always check if `window.rybbit` and its methods are available before calling them.
