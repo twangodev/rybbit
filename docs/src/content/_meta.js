@@ -8,7 +8,7 @@ export default {
   script: "",
   "track-events": "",
   sdks: "SDKs",
-  integrations: "",
+  guides: "",
   "hiding-own-traffic": "",
   _4: {
     type: "separator",

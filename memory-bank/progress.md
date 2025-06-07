@@ -77,3 +77,13 @@ This file tracks the project's progress using a task list format.
 - Uses PSL to accurately determine registrable domains (handles all TLDs correctly)
 - Added robust fallback logic for edge cases
 - Eliminates hardcoded TLD list that was incomplete and unreliable
+
+2025-06-06 23:20:00 - Completed creation of new integration guides
+
+- Completed: Create Squarespace integration guide ([`docs/src/content/integrations/squarespace.mdx`](docs/src/content/integrations/squarespace.mdx:1))
+- Completed: Create Wix integration guide ([`docs/src/content/integrations/wix.mdx`](docs/src/content/integrations/wix.mdx:1))
+- Completed: Create Hugo integration guide ([`docs/src/content/integrations/hugo.mdx`](docs/src/content/integrations/hugo.mdx:1))
+- Completed: Create Jekyll integration guide ([`docs/src/content/integrations/jekyll.mdx`](docs/src/content/integrations/jekyll.mdx:1))
+- Completed: Create Drupal integration guide ([`docs/src/content/integrations/drupal.mdx`](docs/src/content/integrations/drupal.mdx:1))
+- Completed: Create Laravel integration guide ([`docs/src/content/integrations/laravel.mdx`](docs/src/content/integrations/laravel.mdx:1))
+- Created: [`docs/src/content/integrations/_meta.json`](docs/src/content/integrations/_meta.json:1) to include new guides in sidebar.
