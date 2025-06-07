@@ -23,7 +23,7 @@ Paste your Rybbit tracking script into this new file:
 ```html
 {{/* layouts/partials/rybbit-analytics.html */}}
 {{ if not .Site.IsServer }} {{/* Only include in production builds */}}
-  <script async defer src="https://your-rybbit-instance.com/script.js" data-site-id="YOUR_SITE_ID"></script>
+  <script async defer src="https://your-rybbit-instance.com/api/script.js" data-site-id="YOUR_SITE_ID"></script>
 {{ end }}
 ```
 

@@ -37,7 +37,7 @@ The simplest way is to add the script directly to your default layout file.
 
 **Explanation:**
 - `{{% raw %}}{% if jekyll.environment == "production" %}}{{% endraw %}}`: This Liquid tag condition ensures the script is only included when your site is built for production (e.g., when `JEKYLL_ENV=production jekyll build`). This prevents tracking your local development views.
-- Replace `https://your-rybbit-instance.com` and `YOUR_SITE_ID` with your actual details.
+- Replace `YOUR_SITE_ID` with your actual Site ID. The script source `https://app.rybbit.io/api/script.js` is for the standard cloud-hosted Rybbit instance.
 
 ## 3. Option B: Create an Include File (Recommended)
 

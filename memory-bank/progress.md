@@ -87,3 +87,11 @@ This file tracks the project's progress using a task list format.
 - Completed: Create Drupal integration guide ([`docs/src/content/integrations/drupal.mdx`](docs/src/content/integrations/drupal.mdx:1))
 - Completed: Create Laravel integration guide ([`docs/src/content/integrations/laravel.mdx`](docs/src/content/integrations/laravel.mdx:1))
 - Created: [`docs/src/content/integrations/_meta.json`](docs/src/content/integrations/_meta.json:1) to include new guides in sidebar.
+
+2025-06-07 00:16:00 - Completed review and standardization of integration guides
+
+- Standardized script tags (URL, `async defer`) across all relevant guides in `docs/src/content/guides/`.
+- Updated Next.js guide ([`docs/src/content/guides/react/next-js.mdx`](docs/src/content/guides/react/next-js.mdx:1)) with SPA page view tracking callout and custom event tracking section.
+- Significantly expanded Shopify guide ([`docs/src/content/guides/shopify.mdx`](docs/src/content/guides/shopify.mdx:1)) with e-commerce event tracking.
+- Expanded Framer guide ([`docs/src/content/guides/framer.mdx`](docs/src/content/guides/framer.mdx:1)) and Webflow guide ([`docs/src/content/guides/webflow.mdx`](docs/src/content/guides/webflow.mdx:1)) with notes on SPA behavior and custom event tracking.
+- Corrected minor inconsistencies in Hugo and Jekyll guides.

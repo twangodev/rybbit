@@ -52,7 +52,7 @@ Open your main Blade layout file. Paste the Rybbit tracking script just before t
 
 **Explanation:**
 - `@if(app()->environment('production'))`: This Blade directive ensures the script is only included when your Laravel application is running in the `production` environment. This prevents tracking during local development.
-- `{{ config('services.rybbit.instance_url', 'https://your-rybbit-instance.com') }}` and `{{ config('services.rybbit.site_id') }}`: This is a recommended way to manage your Rybbit credentials using Laravel's configuration system. See step 4.
+- `{{ config('services.rybbit.instance_url', 'https://app.rybbit.io') }}/api/script.js` and `{{ config('services.rybbit.site_id') }}`: This is a recommended way to manage your Rybbit credentials using Laravel's configuration system. The `config('services.rybbit.instance_url')` should resolve to your Rybbit instance's base URL (e.g., `https://app.rybbit.io` or your self-hosted URL), and `/api/script.js` is appended to it. The fallback shown ensures it defaults to the cloud-hosted Rybbit script. See step 4 for `.env` configuration.
 
 If you prefer not to use the config helper immediately, you can hardcode the values:
 ```php

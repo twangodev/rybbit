@@ -114,3 +114,42 @@ and where you are using the script:
 ```
 
 Note that this rewrite will consume the bandwidth of your server, as all tracking requests will be proxied through your Next.js application. Consider this when evaluating your hosting costs and server capacity requirements.
+import { Callout } from "nextra/components"
+
+<Callout type="info">
+  **Page View Tracking in Next.js**: Rybbit's tracking script is designed to automatically detect route changes when using Next.js's `&lt;Link&gt;` component or `router.push()` and track them as page views. If you encounter a rare scenario where page views are not being tracked correctly after client-side navigation, you might need to manually trigger page views using `window.rybbit.trackPageview()`. However, test the default behavior first, as manual tracking is typically not necessary.
+</Callout>
+
+## Custom Event Tracking
+
+Once the Rybbit script is loaded via the Next.js `Script` component, you can track custom events from any of your React components within your Next.js application.
+
+```jsx
+// Example in a Next.js component
+// components/MyButton.js
+'use client'; // If using App Router and this component has interactivity
+
+// Declare rybbit on window for TypeScript if you're using it
+// declare global {
+//   interface Window {
+//     rybbit?: {
+//       trackEvent: (eventName: string, eventData?: Record<string, any>) => void;
+//       trackPageview: () => void;
+//       // Add other methods if you use them
+//     };
+//   }
+// }
+
+export default function MyButton({ title }) {
+  const handleClick = () => {
+    if (typeof window !== 'undefined' && window.rybbit && typeof window.rybbit.trackEvent === 'function') {
+      window.rybbit.trackEvent('button_click', { buttonTitle: title });
+    } else {
+      console.warn('Rybbit tracking not available.');
+    }
+  };
+
+  return <button onClick={handleClick}>{title || 'Click Me'}</button>;
+}
+```
+Always ensure `window.rybbit` and its methods are available before calling them, especially since the script loading is managed by Next.js's `strategy`. Consider the script's loading strategy (`afterInteractive` in the examples) when deciding where and how early you can reliably call these tracking functions.
