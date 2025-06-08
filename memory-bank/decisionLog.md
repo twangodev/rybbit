@@ -49,3 +49,28 @@ The TRPC client was not configured to include authentication headers/cookies, ca
 - Server can validate user sessions for TRPC procedures
 - Proper separation between public and protected TRPC procedures
 - Eliminates "Unauthorized onrequest" errors for authenticated users
+
+[2025-06-08 12:07:52] - **Docker Build Fix: TRPC Type Import Resolution**
+**Problem**: GitHub Actions Docker build failing with "Cannot find module '@rybbit/server/src/router'" error during client build process.
+
+**Root Cause**: Client was importing TRPC AppRouter types from server package, but Docker build context didn't include server code, making the `@rybbit/server` package unavailable during build.
+
+**Solution Implemented**:
+
+1. **Updated client/Dockerfile**: Added server package copying and building in deps stage
+
+   - Copy server code: `COPY server ./server`
+   - Build server: `RUN npm install && npm run build`
+   - Copy built server to builder stage: `COPY --from=deps /app/server ./server`
+
+2. **Updated client/tsconfig.json**: Added TypeScript path mapping for server package
+   - Added path: `"@rybbit/server/*": ["../server/src/*"]`
+
+**Technical Details**:
+
+- Client package.json already had `"@rybbit/server": "file:../server"` dependency
+- Issue was Docker build context isolation - server wasn't available during client build
+- TRPC requires client to import server router types for type safety
+- Solution maintains monorepo structure while ensuring Docker builds work
+
+**Impact**: Fixes Docker build pipeline in GitHub Actions, enables successful client image creation with TRPC integration.

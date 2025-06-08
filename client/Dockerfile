@@ -10,6 +10,11 @@ COPY shared ./shared
 WORKDIR /app/shared
 RUN npm install && npm run build
 
+# Copy server package for types
+COPY server ./server
+WORKDIR /app/server
+RUN npm install && npm run build
+
 # Install client dependencies
 WORKDIR /app/client
 COPY client/package.json client/package-lock.json* ./
@@ -19,6 +24,7 @@ RUN npm ci --legacy-peer-deps
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/shared ./shared
+COPY --from=deps /app/server ./server
 COPY --from=deps /app/client/node_modules ./client/node_modules
 COPY client/ ./client
 
