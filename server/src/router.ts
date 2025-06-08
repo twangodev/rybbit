@@ -1,6 +1,6 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
-import type { Context } from "./context.js";
+import type { Context } from "./types.js";
 
 type User = {
   id: string;
