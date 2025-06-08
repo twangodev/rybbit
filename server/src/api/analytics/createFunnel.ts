@@ -3,17 +3,12 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { funnels as funnelsTable } from "../../db/postgres/schema.js";
 import { getUserHasAccessToSite } from "../../lib/auth-utils.js";
+import { Filter } from "./types.js";
 
 type FunnelStep = {
   value: string;
   name?: string;
   type: "page" | "event";
-};
-
-type Filter = {
-  parameter: string;
-  type: string;
-  value: string[];
 };
 
 type Funnel = {

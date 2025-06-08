@@ -1,9 +1,10 @@
+import { Filter, FilterParameter } from "@rybbit/shared";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
 import { authedFetch, getStartAndEndDate } from "@/api/utils";
 import { BACKEND_URL } from "@/lib/const";
 import { timeZone } from "@/lib/dateTimeUtils";
-import { Filter, FilterParameter, useStore } from "@/lib/store";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useStore } from "@/lib/store";
 
 type UsePaginatedSingleColOptions = {
   parameter: FilterParameter;

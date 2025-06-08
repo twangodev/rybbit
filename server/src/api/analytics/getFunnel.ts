@@ -9,6 +9,7 @@ import {
 } from "./utils.js";
 import { getUserHasAccessToSitePublic } from "../../lib/auth-utils.js";
 import SqlString from "sqlstring";
+import { Filter } from "./types.js";
 
 type FunnelStep = {
   value: string;
@@ -16,12 +17,6 @@ type FunnelStep = {
   type: "page" | "event";
   eventPropertyKey?: string;
   eventPropertyValue?: string | number | boolean;
-};
-
-type Filter = {
-  parameter: string;
-  type: string;
-  value: string[];
 };
 
 type Funnel = {

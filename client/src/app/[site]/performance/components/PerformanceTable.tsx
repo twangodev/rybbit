@@ -33,11 +33,11 @@ import {
   useGetPerformanceByDimension,
 } from "../../../../api/analytics/useGetPerformanceByDimension";
 import { TablePagination } from "../../../../components/pagination";
+import { FilterParameter } from "@rybbit/shared";
 import {
   useStore,
   addFilter,
   removeFilter,
-  FilterParameter,
 } from "../../../../lib/store";
 import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
 import {

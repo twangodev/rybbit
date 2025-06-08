@@ -13,7 +13,7 @@ import {
 import { ListFilterPlus, Plus, Save, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { ThreeDotLoader } from "../../../../components/Loaders";
-import { Filter } from "../../../../lib/store";
+import { Filter } from "@rybbit/shared";
 import { FilterComponent } from "../../components/shared/Filters/FilterComponent";
 import { Funnel } from "./Funnel";
 import { SavedFunnel } from "../../../../api/analytics/useGetFunnels";

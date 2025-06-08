@@ -1,3 +1,4 @@
+import { FilterParameter } from "@rybbit/shared";
 import NumberFlow from "@number-flow/react";
 import { round } from "lodash";
 import { ChevronDown, ChevronRight, SquareArrowOutUpRight } from "lucide-react";
@@ -6,7 +7,6 @@ import { usePaginatedSingleCol } from "../../../../../api/analytics/usePaginated
 import { SingleColResponse } from "../../../../../api/analytics/useSingleCol";
 import {
   addFilter,
-  FilterParameter,
   removeFilter,
   useStore,
 } from "../../../../../lib/store";

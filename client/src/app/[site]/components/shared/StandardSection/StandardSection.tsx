@@ -1,12 +1,12 @@
 "use client";
 
+import { FilterParameter } from "@rybbit/shared";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, Info, RefreshCcw } from "lucide-react";
 import { ReactNode } from "react";
 import { usePaginatedSingleCol } from "../../../../../api/analytics/usePaginatedSingleCol";
 import { SingleColResponse } from "../../../../../api/analytics/useSingleCol";
 import { CardLoader } from "../../../../../components/ui/card";
-import { FilterParameter } from "../../../../../lib/store";
 import { StandardSectionDialog } from "./StandardSectionDialog";
 import { Row } from "./Row";
 import { Skeleton } from "./Skeleton";

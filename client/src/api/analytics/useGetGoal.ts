@@ -1,8 +1,9 @@
+import { Filter } from "@rybbit/shared";
 import { useQuery } from "@tanstack/react-query";
 import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
+import { useStore } from "../../lib/store";
 import { authedFetch } from "../utils";
-import { useStore, Filter } from "../../lib/store";
 import { Goal } from "./useGetGoals";
 
 interface GetGoalResponse {

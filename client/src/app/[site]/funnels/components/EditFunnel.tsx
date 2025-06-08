@@ -17,7 +17,7 @@ import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getStartAndEndDate } from "../../../../api/utils";
-import { Filter } from "../../../../lib/store";
+import { Filter } from "@rybbit/shared";
 import { FunnelForm } from "./FunnelForm";
 
 interface EditFunnelDialogProps {

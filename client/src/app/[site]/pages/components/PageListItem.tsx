@@ -8,7 +8,8 @@ import {
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
 import { usePageMetadata } from "@/api/usePageMetadata";
 import { Card, CardContent } from "@/components/ui/card";
-import { Filter, useStore } from "@/lib/store";
+import { Filter } from "@rybbit/shared";
+import { useStore } from "@/lib/store";
 import { truncateString } from "@/lib/utils";
 import { formatShortDuration } from "@/lib/dateTimeUtils";
 import { ExternalLink } from "lucide-react";

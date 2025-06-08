@@ -20,7 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getStartAndEndDate } from "../../../../api/utils";
 import { FunnelForm } from "./FunnelForm";
-import { Filter } from "../../../../lib/store";
+import { Filter } from "@rybbit/shared";
 
 export function CreateFunnelDialog() {
   const [open, setOpen] = useState(false);

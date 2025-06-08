@@ -1,14 +1,11 @@
 "use client";
 
+import { FilterParameter } from "@rybbit/shared";
 import { useMemo } from "react";
-
-import { getCountryName, getLanguageName } from "../../../../../lib/utils";
-
-import { FilterParameter } from "../../../../../lib/store";
-
 import { useSingleCol } from "../../../../../api/analytics/useSingleCol";
 import { MultiSelect } from "../../../../../components/MultiSelect";
 import { useGetRegionName } from "../../../../../lib/geo";
+import { getCountryName, getLanguageName } from "../../../../../lib/utils";
 
 export function ValueSelect({
   parameter,

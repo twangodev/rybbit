@@ -1,10 +1,10 @@
 "use client";
-import { Filters } from "./Filters/Filters";
-
-import { Button } from "@/components/ui/button";
-import { FilterParameter, goBack, goForward, useStore } from "@/lib/store";
+import { FilterParameter } from "@rybbit/shared";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DateTime } from "luxon";
+import { Button } from "@/components/ui/button";
+import { goBack, goForward, useStore } from "@/lib/store";
+import { Filters } from "./Filters/Filters";
 
 import { DateSelector } from "../../../../components/DateSelector/DateSelector";
 import { Time } from "../../../../components/DateSelector/types";

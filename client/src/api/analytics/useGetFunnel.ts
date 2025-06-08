@@ -1,9 +1,10 @@
+import { Filter } from "@rybbit/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
-import { authedFetch, authedFetchWithError } from "../utils";
-import { useStore, Filter } from "../../lib/store";
-import { timeZone } from "../../lib/dateTimeUtils";
 import { useDebounce } from "@uidotdev/usehooks";
+import { BACKEND_URL } from "../../lib/const";
+import { timeZone } from "../../lib/dateTimeUtils";
+import { useStore } from "../../lib/store";
+import { authedFetch, authedFetchWithError } from "../utils";
 
 export type FunnelStep = {
   value: string;

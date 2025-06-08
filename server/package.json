@@ -20,6 +20,7 @@
     "db:check": "drizzle-kit check --config=drizzle.config.ts"
   },
   "dependencies": {
+    "@rybbit/shared": "file:../shared",
     "@better-auth/stripe": "1.2.7",
     "@clickhouse/client": "1.11.1",
     "@fastify/cors": "11.0.1",

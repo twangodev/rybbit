@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@rybbit/shared": "file:../shared",
     "@better-auth/stripe": "1.2.7",
     "@hookform/resolvers": "5.0.1",
     "@nivo/bar": "0.96.0",

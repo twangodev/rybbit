@@ -1,9 +1,9 @@
+import { TimeBucket } from "@rybbit/shared";
 import { useQuery } from "@tanstack/react-query";
-import { TimeBucket } from "../../lib/store";
 import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
-import { authedFetch } from "../utils";
 import { APIResponse } from "../types";
+import { authedFetch } from "../utils";
 import { GetOverviewBucketedResponse } from "./useGetOverviewBucketed";
 
 /**

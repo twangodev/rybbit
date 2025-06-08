@@ -1,13 +1,13 @@
+import { Filter } from "@rybbit/shared";
 import { useQuery } from "@tanstack/react-query";
 import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
 import {
   useStore,
-  Filter,
   USER_PAGE_FILTERS,
   getFilteredFilters,
 } from "../../lib/store";
-import { getStartAndEndDate, authedFetch } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 import { APIResponse } from "../types";
 import { getQueryTimeParams } from "./utils";
 

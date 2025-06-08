@@ -1,6 +1,7 @@
 "use client";
+import { TimeBucket } from "@rybbit/shared";
 import { nivoTheme } from "@/lib/nivo";
-import { StatType, TimeBucket, useStore } from "@/lib/store";
+import { StatType, useStore } from "@/lib/store";
 import {
   LineCustomSvgLayer,
   LineCustomSvgLayerProps,

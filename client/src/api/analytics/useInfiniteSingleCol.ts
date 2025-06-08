@@ -1,13 +1,14 @@
-import { SingleColResponse } from "@/api/analytics/useSingleCol";
-import { authedFetch, getStartAndEndDate } from "@/api/utils";
-import { BACKEND_URL } from "@/lib/const";
-import { timeZone } from "@/lib/dateTimeUtils";
-import { FilterParameter, useStore } from "@/lib/store";
+import { FilterParameter } from "@rybbit/shared";
 import {
   useInfiniteQuery,
   UseInfiniteQueryResult,
   InfiniteData,
 } from "@tanstack/react-query";
+import { SingleColResponse } from "@/api/analytics/useSingleCol";
+import { authedFetch, getStartAndEndDate } from "@/api/utils";
+import { BACKEND_URL } from "@/lib/const";
+import { timeZone } from "@/lib/dateTimeUtils";
+import { useStore } from "@/lib/store";
 
 type UseInfiniteSingleColOptions = {
   parameter: FilterParameter;

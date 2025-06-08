@@ -1,6 +1,6 @@
+import { Filter } from "@rybbit/shared";
 import { useQuery } from "@tanstack/react-query";
 import { BACKEND_URL } from "../../lib/const";
-import { Filter } from "../../lib/store";
 import { FunnelStep } from "./useGetFunnel";
 import { authedFetchWithError } from "../utils";
 

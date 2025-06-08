@@ -24,7 +24,8 @@ import {
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useInfiniteSingleCol } from "../../../../../api/analytics/useInfiniteSingleCol";
 import { SingleColResponse } from "../../../../../api/analytics/useSingleCol";
-import { addFilter, FilterParameter } from "../../../../../lib/store";
+import { FilterParameter } from "@rybbit/shared";
+import { addFilter } from "../../../../../lib/store";
 import { cn, formatSecondsAsMinutesAndSeconds } from "../../../../../lib/utils";
 
 interface StandardSectionDialogProps {

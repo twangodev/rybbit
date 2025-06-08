@@ -1,3 +1,4 @@
+import { FilterParameter } from "@rybbit/shared";
 import {
   AppWindow,
   Brain,
@@ -23,7 +24,6 @@ import {
   Target,
 } from "lucide-react";
 import React from "react";
-import { FilterParameter } from "../../../../../lib/store";
 
 export const FilterOptions: {
   label: string;
