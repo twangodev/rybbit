@@ -5,15 +5,13 @@ FROM base AS deps
 RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
-# Copy shared package first
+# Copy shared package first and build it
 COPY shared ./shared
 WORKDIR /app/shared
 RUN npm install && npm run build
 
-# Copy server package for types
+# Copy server source for types (no need to build, just need TypeScript files)
 COPY server ./server
-WORKDIR /app/server
-RUN npm install && npm run build
 
 # Install client dependencies
 WORKDIR /app/client
