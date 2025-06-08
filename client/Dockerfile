@@ -11,6 +11,7 @@ WORKDIR /app/shared
 RUN npm install && npm run build
 
 # Copy server source for types (no need to build, just need TypeScript files)
+WORKDIR /app
 COPY server ./server
 
 # Install client dependencies
