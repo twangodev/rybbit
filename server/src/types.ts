@@ -1,11 +1,4 @@
-// Minimal context type for client builds
-export type Context = {
-  req: any;
-  res: any;
-  user: { id: string; name: string; bio?: string } | null;
-};
-
-// Re-export AppRouter type (now safe since router.ts imports Context from here)
+// Re-export AppRouter type from router
 export type { AppRouter } from "./router.js";
 
 export interface TrackingPayload {

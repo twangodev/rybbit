@@ -19,6 +19,12 @@ WORKDIR /app/client
 COPY client/package.json client/package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
+# Install server dependencies needed for type resolution
+WORKDIR /app/server
+RUN npm install --only=production @trpc/server zod
+
+WORKDIR /app/client
+
 # Rebuild the source code only when needed
 FROM base AS builder
 WORKDIR /app
