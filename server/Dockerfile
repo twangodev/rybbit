@@ -11,11 +11,11 @@ RUN npm install && npm run build
 
 # Install server dependencies
 WORKDIR /app/server
-COPY package*.json ./
+COPY server/package*.json ./
 RUN npm ci
 
 # Copy server source code
-COPY . .
+COPY server/ .
 
 # Build the application
 RUN npm run build

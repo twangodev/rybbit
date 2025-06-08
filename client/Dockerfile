@@ -12,7 +12,7 @@ RUN npm install && npm run build
 
 # Install client dependencies
 WORKDIR /app/client
-COPY package.json package-lock.json* ./
+COPY client/package.json client/package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
@@ -20,7 +20,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/shared ./shared
 COPY --from=deps /app/client/node_modules ./client/node_modules
-COPY . ./client
+COPY client/ ./client
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry
