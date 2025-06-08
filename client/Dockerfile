@@ -6,13 +6,13 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy shared package first
-COPY shared ./shared
+COPY ../shared ./shared
 WORKDIR /app/shared
 RUN npm install && npm run build
 
 # Install client dependencies
 WORKDIR /app/client
-COPY client/package.json client/package-lock.json* ./
+COPY package.json package-lock.json* ./
 RUN npm ci --legacy-peer-deps
 
 # Rebuild the source code only when needed
@@ -20,7 +20,7 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/shared ./shared
 COPY --from=deps /app/client/node_modules ./client/node_modules
-COPY client ./client
+COPY . ./client
 
 # Next.js collects completely anonymous telemetry data about general usage.
 # Learn more here: https://nextjs.org/telemetry

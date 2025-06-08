@@ -5,17 +5,17 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy and build shared package first
-COPY shared ./shared
+COPY ../shared ./shared
 WORKDIR /app/shared
 RUN npm install && npm run build
 
 # Install server dependencies
 WORKDIR /app/server
-COPY server/package*.json ./
+COPY package*.json ./
 RUN npm ci
 
 # Copy server source code
-COPY server .
+COPY . .
 
 # Build the application
 RUN npm run build
