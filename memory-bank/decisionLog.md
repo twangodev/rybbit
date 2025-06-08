@@ -74,3 +74,35 @@ The TRPC client was not configured to include authentication headers/cookies, ca
 - Solution maintains monorepo structure while ensuring Docker builds work
 
 **Impact**: Fixes Docker build pipeline in GitHub Actions, enables successful client image creation with TRPC integration.
+
+[2025-06-08 14:19:11] - TRPC Docker Build Dependency Resolution
+
+## Decision
+
+Resolved Docker build failures caused by TypeScript compilation attempting to compile server dependencies during client builds.
+
+## Rationale
+
+The client was importing TRPC AppRouter types directly from the server package, causing TypeScript to compile the entire server dependency chain during Docker builds. This led to cascading missing dependency errors, including UAParser namespace issues in server utilities.
+
+## Implementation Details
+
+- **Root Cause**: Client imported `AppRouter` type from `@rybbit/server/src/router`, triggering compilation of server runtime dependencies during client builds
+- **Dependency Chain**: router.ts → context.ts → auth-utils.ts → utils.ts (with UAParser dependency)
+- **Solution**: Fixed missing UAParser import in `server/src/utils.ts` by adding `import UAParser from "ua-parser-js"`
+- **Architecture**: Maintained type-only import approach using `server/src/router-types.ts` as intermediary
+- **Path Mapping**: Kept client tsconfig.json path mapping to `@rybbit/server/*` for type imports
+
+## Impact
+
+- Client builds now complete successfully without server dependency compilation errors
+- Docker builds should work without requiring server dependencies in client container
+- TRPC type safety maintained through proper AppRouter type imports
+- Clean separation between client and server build processes restored
+
+## Technical Details
+
+- Fixed: `Cannot find namespace 'UAParser'` error in server/src/utils.ts:7:7
+- Maintained: Type-only imports from server to client via router-types.ts
+- Preserved: Full TRPC functionality and type inference
+- Verified: Local client build success (npm run build)

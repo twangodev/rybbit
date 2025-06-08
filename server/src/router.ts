@@ -1,14 +1,16 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { z } from "zod";
+import type { User } from "@rybbit/shared";
 import type { Context } from "./context.js";
 
-type User = {
-  id: string;
-  name: string;
-  bio?: string;
-};
-
 const users: Record<string, User> = {};
+
+// Define schemas locally
+const getUserByIdSchema = z.string();
+const createUserSchema = z.object({
+  name: z.string().min(3),
+  bio: z.string().max(142).optional(),
+});
 
 export const t = initTRPC.context<Context>().create();
 
@@ -35,23 +37,16 @@ export const publicProcedure = t.procedure;
 export const protectedProcedure = t.procedure.use(isAuthed);
 
 export const appRouter = t.router({
-  getUserById: publicProcedure.input(z.string()).query((opts) => {
+  getUserById: publicProcedure.input(getUserByIdSchema).query((opts) => {
     console.log("getUserById", opts.input);
     return opts.input; // input type is string
   }),
-  createUser: protectedProcedure
-    .input(
-      z.object({
-        name: z.string().min(3),
-        bio: z.string().max(142).optional(),
-      })
-    )
-    .mutation((opts) => {
-      const id = Date.now().toString();
-      const user: User = { id, ...opts.input };
-      users[user.id] = user;
-      return user;
-    }),
+  createUser: protectedProcedure.input(createUserSchema).mutation((opts) => {
+    const id = Date.now().toString();
+    const user: User = { id, ...opts.input };
+    users[user.id] = user;
+    return user;
+  }),
 });
 
 // export type definition of API
