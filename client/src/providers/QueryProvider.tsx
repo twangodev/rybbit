@@ -47,7 +47,7 @@ export default function QueryProvider({
       links: [
         httpBatchLink({
           url: `${BACKEND_URL}/trpc`,
-          fetch(url, options) {
+          fetch(url: URL | RequestInfo, options?: RequestInit) {
             return fetch(url, {
               ...options,
               credentials: "include", // Include cookies for authentication
