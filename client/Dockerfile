@@ -6,7 +6,7 @@ RUN apk add --no-cache libc6-compat
 WORKDIR /app
 
 # Copy shared package first
-COPY ../shared ./shared
+COPY shared ./shared
 WORKDIR /app/shared
 RUN npm install && npm run build
 

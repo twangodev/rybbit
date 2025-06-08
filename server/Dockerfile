@@ -5,7 +5,7 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 # Copy and build shared package first
-COPY ../shared ./shared
+COPY shared ./shared
 WORKDIR /app/shared
 RUN npm install && npm run build
 
