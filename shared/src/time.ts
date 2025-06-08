@@ -8,8 +8,3 @@ export type TimeBucket =
   | "week"
   | "month"
   | "year";
-
-export interface DateRange {
-  from?: Date;
-  to?: Date;
-}
