@@ -21,3 +21,5 @@ Implemented a comprehensive Memory Bank system to maintain project context acros
 - Established initial project context based on projectBrief.md
 - Set up tracking mechanisms for ongoing development activities
 - Prepared framework for documenting future architectural decisions and patterns
+
+[2025-06-08 06:53:49] - Docker Build Context Fix: Changed all build contexts from subdirectory (./client, ./server) to monorepo root (.) in docker-compose.cloud.yml and GitHub Actions workflow. Updated Dockerfiles to use correct paths from monorepo root (e.g., COPY client/package.json instead of COPY package.json). This resolves the shared package access issue while maintaining compatibility between local and CI builds.
