@@ -1,12 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
 import {
   getFilteredFilters,
   GOALS_PAGE_FILTERS,
   useStore,
 } from "../../lib/store";
-import { authedFetch, getStartAndEndDate } from "../utils";
+import { authedFetchWithError, getStartAndEndDate } from "../utils";
 import { getQueryTimeParams } from "./utils";
 
 export interface Goal {
@@ -93,14 +92,14 @@ export function useGetGoals({
       order,
     ],
     queryFn: async () => {
-      return authedFetch(`${BACKEND_URL}/goals/${site}`, {
+      return authedFetchWithError<GoalsResponse>(`/goals/${site}`, {
         ...timeParams,
         filteredFilters,
         page,
         pageSize,
         sort,
         order,
-      }).then((res) => res.json());
+      });
     },
     enabled: !!site && enabled,
   });

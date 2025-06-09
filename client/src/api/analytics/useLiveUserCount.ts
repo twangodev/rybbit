@@ -1,7 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "../../lib/store";
-import { BACKEND_URL } from "../../lib/const";
-import { authedFetch } from "../utils";
+import { authedFetchWithError } from "../utils";
 
 export function useGetLiveUsercount(minutes = 5) {
   const { site } = useStore();
@@ -9,8 +8,6 @@ export function useGetLiveUsercount(minutes = 5) {
     queryKey: ["live-user-count", site, minutes],
     refetchInterval: 5000,
     queryFn: () =>
-      authedFetch(
-        `${BACKEND_URL}/live-user-count/${site}?minutes=${minutes}`
-      ).then((res) => res.json()),
+      authedFetchWithError(`/live-user-count/${site}`, { minutes }),
   });
 }

@@ -5,11 +5,10 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { usePerformanceStore } from "../../app/[site]/performance/performanceStore";
-import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetch, getStartAndEndDate } from "../utils";
+import { authedFetchWithError, getStartAndEndDate } from "../utils";
 
 type PeriodTime = "current" | "previous";
 
@@ -78,13 +77,15 @@ export function useGetPerformanceTimeSeries({
       selectedPerformanceMetric,
     ],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/performance/time-series/${site}`, {
+      return authedFetchWithError<
+        APIResponse<GetPerformanceTimeSeriesResponse>
+      >(`/performance/time-series/${site}`, {
         startDate,
         endDate,
         timeZone,
         bucket: bucketToUse,
         filters: combinedFilters,
-      }).then((res) => res.json());
+      });
     },
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;

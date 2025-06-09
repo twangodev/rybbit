@@ -1,8 +1,7 @@
 import { useGetOverviewPastMinutes } from "./useGetOverview";
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
-import { authedFetch } from "../utils";
+import { authedFetchWithError } from "../utils";
 
 /**
  * A wrapper around useGetOverviewPastMinutes that adds support for
@@ -21,10 +20,10 @@ export function useGetOverviewWithInView({
   return useQuery({
     queryKey: ["overview-past-minutes", pastMinutes, site],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/overview/${site}`, {
+      return authedFetchWithError(`/overview/${site}`, {
         pastMinutes,
         timeZone,
-      }).then((res) => res.json());
+      });
     },
     enabled: isInView, // Only fetch when in view
     staleTime: Infinity,

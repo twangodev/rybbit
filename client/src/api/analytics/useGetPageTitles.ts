@@ -1,10 +1,9 @@
 import { FilterParameter } from "@rybbit/shared";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { BACKEND_URL } from "@/lib/const";
 import { timeZone } from "@/lib/dateTimeUtils";
 import { useStore } from "@/lib/store";
 import { APIResponse } from "../types";
-import { authedFetch, getStartAndEndDate } from "../utils";
+import { authedFetchWithError, getStartAndEndDate } from "../utils";
 
 // This should match PageTitleItem from the backend
 export type PageTitleItem = {
@@ -77,11 +76,9 @@ export function useGetPageTitlesPaginated({
       isPast24HoursMode ? "past-minutes" : "date-range",
     ],
     queryFn: () => {
-      return authedFetch(
-        `${BACKEND_URL}/page-titles/${site}`,
+      return authedFetchWithError<APIResponse<PageTitlesPaginatedResponse>>(
+        `/page-titles/${site}`,
         queryParams
-      ).then(
-        (res: any) => res.json() // Added any type for res
       );
     },
     staleTime: Infinity,

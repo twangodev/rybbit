@@ -1,10 +1,9 @@
 import { FilterParameter } from "@rybbit/shared";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetch, getStartAndEndDate } from "../utils";
+import { authedFetchWithError, getStartAndEndDate } from "../utils";
 
 type PeriodTime = "current" | "previous";
 
@@ -68,10 +67,11 @@ export function useSingleCol({
 
   return useQuery({
     queryKey,
-    queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/single-col/${site}`, queryParams)
-        .then((res) => res.json())
-        .then((res) => res.data);
+    queryFn: async () => {
+      const response = await authedFetchWithError<{
+        data: APIResponse<SingleColResponse[]>;
+      }>(`/single-col/${site}`, queryParams);
+      return response.data;
     },
     staleTime: Infinity,
     placeholderData: (_, query: any) => {
@@ -110,13 +110,16 @@ export function useSingleColRealtime({
       "realtime",
     ],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/single-col/${site}`, {
-        timeZone,
-        parameter,
-        limit,
-        pastMinutesStart,
-        pastMinutesEnd,
-      }).then((res) => res.json());
+      return authedFetchWithError<APIResponse<SingleColResponse[]>>(
+        `/single-col/${site}`,
+        {
+          timeZone,
+          parameter,
+          limit,
+          pastMinutesStart,
+          pastMinutesEnd,
+        }
+      );
     },
     staleTime: Infinity,
     placeholderData: (_, query: any) => {

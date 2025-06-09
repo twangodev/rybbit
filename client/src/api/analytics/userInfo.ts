@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
-import { authedFetch } from "../utils";
+import { authedFetchWithError } from "../utils";
 
 export type UserInfo = {
   duration: number;
@@ -25,10 +24,11 @@ export type UserInfo = {
 export function useUserInfo(siteId: number, userId: string) {
   return useQuery<UserInfo>({
     queryKey: ["user-info", userId, siteId],
-    queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/user/info/${userId}/${siteId}`)
-        .then((res) => res.json())
-        .then((res) => res.data);
+    queryFn: async () => {
+      const response = await authedFetchWithError<{ data: UserInfo }>(
+        `/user/info/${userId}/${siteId}`
+      );
+      return response.data;
     },
   });
 }

@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Time } from "../../components/DateSelector/types";
 import { useStore } from "../../lib/store";
-import { authedFetchWithError, buildUrl, getStartAndEndDate } from "../utils";
+import { authedFetchWithError, getStartAndEndDate } from "../utils";
 import { timeZone } from "../../lib/dateTimeUtils";
 
 export type Event = {

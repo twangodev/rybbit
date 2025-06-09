@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
-import { authedFetch, authedFetchWithError } from "../utils";
+import { authedFetchWithError } from "../utils";
 
 export type FunnelStep = {
   value: string;
