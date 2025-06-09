@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "../../lib/store";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 import { timeZone } from "../../lib/dateTimeUtils";
 
 export type GetOverviewResponse = {
@@ -28,7 +28,7 @@ export function useGetOverview({
   return useQuery({
     queryKey: ["overview", timeToUse, site, filters],
     queryFn: () => {
-      return authedFetchWithError<GetOverviewResponse>(`/overview/${site}`, {
+      return authedFetch<{ data: GetOverviewResponse }>(`/overview/${site}`, {
         startDate,
         endDate,
         timeZone,
@@ -61,7 +61,7 @@ export function useGetOverviewPastMinutes({
   return useQuery({
     queryKey: ["overview-past-minutes", pastMinutesStart, pastMinutesEnd, site],
     queryFn: () => {
-      return authedFetchWithError<GetOverviewResponse>(`/overview/${site}`, {
+      return authedFetch<{ data: GetOverviewResponse }>(`/overview/${site}`, {
         timeZone,
         pastMinutesStart,
         pastMinutesEnd,

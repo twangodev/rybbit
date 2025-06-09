@@ -6,7 +6,7 @@ import {
   useStore,
 } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 import { getQueryTimeParams } from "./utils";
 
 export type UserSessionsResponse = {
@@ -34,7 +34,7 @@ export function useGetUserSessions(userId: string) {
   return useQuery({
     queryKey: ["user-sessions", userId, time, site, filters],
     queryFn: () => {
-      return authedFetchWithError<UserSessionsResponse>(
+      return authedFetch<UserSessionsResponse>(
         `/user/${userId}/sessions/${site}`,
         {
           startDate,
@@ -110,7 +110,7 @@ export function useGetSessionsInfinite(userId?: string) {
         requestParams.endDate = timeParams.endDate;
       }
 
-      return authedFetchWithError<APIResponse<GetSessionsResponse>>(
+      return authedFetch<APIResponse<GetSessionsResponse>>(
         `/sessions/${site}`,
         requestParams
       );
@@ -198,7 +198,7 @@ export function useGetSessionDetailsInfinite(sessionId: string | null) {
         queryParams.minutes = minutes;
       }
 
-      return authedFetchWithError<APIResponse<SessionPageviewsAndEvents>>(
+      return authedFetch<APIResponse<SessionPageviewsAndEvents>>(
         `/session/${sessionId}/${site}`,
         queryParams
       );
@@ -226,7 +226,7 @@ export function useGetUserSessionCount(userId: string) {
   return useQuery<APIResponse<UserSessionCountResponse[]>>({
     queryKey: ["user-session-count", userId, site],
     queryFn: () => {
-      return authedFetchWithError<APIResponse<UserSessionCountResponse[]>>(
+      return authedFetch<APIResponse<UserSessionCountResponse[]>>(
         `/user/session-count/${site}`,
         {
           userId,

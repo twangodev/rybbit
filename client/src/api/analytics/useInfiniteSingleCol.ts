@@ -5,7 +5,7 @@ import {
   InfiniteData,
 } from "@tanstack/react-query";
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
-import { authedFetchWithError, getStartAndEndDate } from "@/api/utils";
+import { authedFetch, getStartAndEndDate } from "@/api/utils";
 import { timeZone } from "@/lib/dateTimeUtils";
 import { useStore } from "@/lib/store";
 
@@ -61,7 +61,7 @@ export function useInfiniteSingleCol({
             filters: useFilters ? filters : undefined,
           };
 
-      const response = await authedFetchWithError<{
+      const response = await authedFetch<{
         data: InfinitePaginatedResponse;
       }>(`/single-col/${site}`, queryParams);
       return response.data;

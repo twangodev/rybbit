@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { authedFetchWithError } from "../api/utils";
+import { authedFetch } from "../api/utils";
 
 interface Configs {
   disableSignup: boolean;
@@ -8,7 +8,7 @@ interface Configs {
 export function useConfigs() {
   const { data, isLoading, error } = useQuery<Configs>({
     queryKey: ["configs"],
-    queryFn: () => authedFetchWithError<Configs>("/config"),
+    queryFn: () => authedFetch<Configs>("/config"),
   });
 
   return {

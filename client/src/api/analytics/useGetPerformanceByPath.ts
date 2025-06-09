@@ -3,7 +3,7 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { usePerformanceStore } from "../../app/[site]/performance/performanceStore";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 
 type UseGetPerformanceByPathOptions = {
   site: number | string;
@@ -121,7 +121,7 @@ export function useGetPerformanceByPath({
       sortOrder,
     ],
     queryFn: async () => {
-      const response = await authedFetchWithError<{
+      const response = await authedFetch<{
         data: PaginatedPerformanceResponse;
       }>(`/performance/by-path/${site}`, queryParams);
       return response.data;

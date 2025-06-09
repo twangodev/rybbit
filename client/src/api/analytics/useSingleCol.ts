@@ -3,7 +3,7 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 
 type PeriodTime = "current" | "previous";
 
@@ -68,7 +68,7 @@ export function useSingleCol({
   return useQuery({
     queryKey,
     queryFn: async () => {
-      const response = await authedFetchWithError<{
+      const response = await authedFetch<{
         data: APIResponse<SingleColResponse[]>;
       }>(`/single-col/${site}`, queryParams);
       return response.data;
@@ -110,7 +110,7 @@ export function useSingleColRealtime({
       "realtime",
     ],
     queryFn: () => {
-      return authedFetchWithError<APIResponse<SingleColResponse[]>>(
+      return authedFetch<APIResponse<SingleColResponse[]>>(
         `/single-col/${site}`,
         {
           timeZone,

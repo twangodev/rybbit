@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 /**
  * Hook for deleting a saved funnel report
@@ -10,7 +10,7 @@ export function useDeleteFunnel() {
   return useMutation<{ success: boolean }, Error, number>({
     mutationFn: async (reportId) => {
       try {
-        return await authedFetchWithError<{ success: boolean }>(
+        return await authedFetch<{ success: boolean }>(
           `/funnel/${reportId}`,
           undefined,
           {

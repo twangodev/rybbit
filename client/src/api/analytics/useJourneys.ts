@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 import { Time } from "../../components/DateSelector/types";
 
 export interface JourneyParams {
@@ -40,10 +40,7 @@ export const useJourneys = ({
       if (timeZone) params.timeZone = timeZone;
       if (limit) params.limit = limit;
 
-      return authedFetchWithError<JourneysResponse>(
-        `/journeys/${siteId}`,
-        params
-      );
+      return authedFetch<JourneysResponse>(`/journeys/${siteId}`, params);
     },
     enabled: !!siteId,
   });

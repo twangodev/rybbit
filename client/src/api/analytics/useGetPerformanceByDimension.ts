@@ -3,7 +3,7 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { usePerformanceStore } from "../../app/[site]/performance/performanceStore";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 
 type UseGetPerformanceByDimensionOptions = {
   site: number | string;
@@ -119,7 +119,7 @@ export function useGetPerformanceByDimension({
       sortOrder,
     ],
     queryFn: async () => {
-      const response = await authedFetchWithError<{ data: any }>(
+      const response = await authedFetch<{ data: any }>(
         `/performance/by-dimension/${site}`,
         queryParams
       );

@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 export type UserInfo = {
   duration: number;
@@ -25,7 +25,7 @@ export function useUserInfo(siteId: number, userId: string) {
   return useQuery<UserInfo>({
     queryKey: ["user-info", userId, siteId],
     queryFn: async () => {
-      const response = await authedFetchWithError<{ data: UserInfo }>(
+      const response = await authedFetch<{ data: UserInfo }>(
         `/user/info/${userId}/${siteId}`
       );
       return response.data;

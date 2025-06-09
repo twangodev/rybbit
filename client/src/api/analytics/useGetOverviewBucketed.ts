@@ -7,7 +7,7 @@ import {
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 
 type PeriodTime = "current" | "previous";
 
@@ -45,7 +45,7 @@ export function useGetOverviewBucketed({
   return useQuery({
     queryKey: ["overview-bucketed", timeToUse, bucket, site, combinedFilters],
     queryFn: () => {
-      return authedFetchWithError<APIResponse<GetOverviewBucketedResponse>>(
+      return authedFetch<APIResponse<GetOverviewBucketedResponse>>(
         `/overview-bucketed/${site}`,
         {
           startDate,
@@ -107,7 +107,7 @@ export function useGetOverviewBucketedPastMinutes({
       combinedFilters,
     ],
     queryFn: () => {
-      return authedFetchWithError<APIResponse<GetOverviewBucketedResponse>>(
+      return authedFetch<APIResponse<GetOverviewBucketedResponse>>(
         `/overview-bucketed/${site}`,
         {
           timeZone,
@@ -172,7 +172,7 @@ export function useGetOverviewBucketedPreviousPastMinutes({
       combinedFilters,
     ],
     queryFn: () => {
-      return authedFetchWithError<APIResponse<GetOverviewBucketedResponse>>(
+      return authedFetch<APIResponse<GetOverviewBucketedResponse>>(
         `/overview-bucketed/${site}`,
         {
           timeZone,

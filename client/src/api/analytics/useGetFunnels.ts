@@ -1,7 +1,7 @@
 import { Filter } from "@rybbit/shared";
 import { useQuery } from "@tanstack/react-query";
 import { FunnelStep } from "./useGetFunnel";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 export interface SavedFunnel {
   id: number;
@@ -22,7 +22,7 @@ export function useGetFunnels(siteId?: string | number) {
         return [];
       }
       try {
-        const response = await authedFetchWithError<{ data: SavedFunnel[] }>(
+        const response = await authedFetch<{ data: SavedFunnel[] }>(
           `/funnels/${siteId}`
         );
         return response.data;

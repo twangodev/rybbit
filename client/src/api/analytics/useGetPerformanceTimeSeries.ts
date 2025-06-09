@@ -8,7 +8,7 @@ import { usePerformanceStore } from "../../app/[site]/performance/performanceSto
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 
 type PeriodTime = "current" | "previous";
 
@@ -77,15 +77,16 @@ export function useGetPerformanceTimeSeries({
       selectedPerformanceMetric,
     ],
     queryFn: () => {
-      return authedFetchWithError<
-        APIResponse<GetPerformanceTimeSeriesResponse>
-      >(`/performance/time-series/${site}`, {
-        startDate,
-        endDate,
-        timeZone,
-        bucket: bucketToUse,
-        filters: combinedFilters,
-      });
+      return authedFetch<APIResponse<GetPerformanceTimeSeriesResponse>>(
+        `/performance/time-series/${site}`,
+        {
+          startDate,
+          endDate,
+          timeZone,
+          bucket: bucketToUse,
+          filters: combinedFilters,
+        }
+      );
     },
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;

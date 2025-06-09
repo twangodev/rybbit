@@ -1,7 +1,7 @@
 import { Filter, FilterParameter } from "@rybbit/shared";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
-import { authedFetchWithError, getStartAndEndDate } from "@/api/utils";
+import { authedFetch, getStartAndEndDate } from "@/api/utils";
 import { timeZone } from "@/lib/dateTimeUtils";
 import { useStore } from "@/lib/store";
 
@@ -66,7 +66,7 @@ export function usePaginatedSingleCol({
       additionalFilters,
     ],
     queryFn: async () => {
-      const response = await authedFetchWithError<{ data: PaginatedResponse }>(
+      const response = await authedFetch<{ data: PaginatedResponse }>(
         `/single-col/${site}`,
         queryParams
       );

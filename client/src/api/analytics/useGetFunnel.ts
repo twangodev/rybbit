@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 export type FunnelStep = {
   value: string;
@@ -69,7 +69,7 @@ export function useGetFunnel(config?: FunnelRequest, debounce?: boolean) {
         timeZone,
       };
       try {
-        const response = await authedFetchWithError<{ data: FunnelResponse[] }>(
+        const response = await authedFetch<{ data: FunnelResponse[] }>(
           `/funnel/${site}`,
           undefined,
           {
@@ -108,7 +108,7 @@ export function useSaveFunnel() {
 
       try {
         // Save the funnel configuration
-        const saveResponse = await authedFetchWithError<{
+        const saveResponse = await authedFetch<{
           success: boolean;
           funnelId: number;
         }>(`/funnel/create/${site}`, undefined, {

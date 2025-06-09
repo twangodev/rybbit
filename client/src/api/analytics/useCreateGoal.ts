@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 export interface CreateGoalRequest {
   siteId: number;
@@ -24,7 +24,7 @@ export function useCreateGoal() {
   return useMutation<CreateGoalResponse, Error, CreateGoalRequest>({
     mutationFn: async (goalData) => {
       try {
-        return await authedFetchWithError<CreateGoalResponse>(
+        return await authedFetch<CreateGoalResponse>(
           "/goal/create",
           undefined,
           {

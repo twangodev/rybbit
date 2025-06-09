@@ -2,7 +2,7 @@ import { TimeBucket } from "@rybbit/shared";
 import { useQuery } from "@tanstack/react-query";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { APIResponse } from "../types";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 import { GetOverviewBucketedResponse } from "./useGetOverviewBucketed";
 
 /**
@@ -25,7 +25,7 @@ export function useGetOverviewBucketedWithInView({
   return useQuery<APIResponse<GetOverviewBucketedResponse>>({
     queryKey: ["overview-bucketed-past-minutes", pastMinutes, site, bucket],
     queryFn: () => {
-      return authedFetchWithError<APIResponse<GetOverviewBucketedResponse>>(
+      return authedFetch<APIResponse<GetOverviewBucketedResponse>>(
         `/overview-bucketed/${site}`,
         {
           timeZone,

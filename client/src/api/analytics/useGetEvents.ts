@@ -1,7 +1,7 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Time } from "../../components/DateSelector/types";
 import { useStore } from "../../lib/store";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 import { timeZone } from "../../lib/dateTimeUtils";
 
 export type Event = {
@@ -45,7 +45,7 @@ export function useGetEvents(count = 10) {
     queryKey: ["events", site, count],
     refetchInterval: 5000,
     queryFn: () =>
-      authedFetchWithError<{ data: Event[] }>(`/recent-events/${site}`, {
+      authedFetch<{ data: Event[] }>(`/recent-events/${site}`, {
         count,
       }).then((res) => res.data),
   });
@@ -90,7 +90,7 @@ export function useGetEventsInfinite(options: GetEventsOptions = {}) {
         params.count = options.count;
       }
 
-      const response = await authedFetchWithError<EventsResponse>(
+      const response = await authedFetch<EventsResponse>(
         `/events/${site}`,
         params
       );

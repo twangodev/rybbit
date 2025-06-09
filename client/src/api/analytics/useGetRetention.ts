@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "../../lib/store";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 // Define the interface for processed retention data
 export interface ProcessedRetentionData {
@@ -20,7 +20,7 @@ export function useGetRetention(
   return useQuery<ProcessedRetentionData>({
     queryKey: ["retention", site, mode, range],
     queryFn: async () => {
-      const response = await authedFetchWithError<{
+      const response = await authedFetch<{
         data: ProcessedRetentionData;
       }>(`/retention/${site}`, { mode, range });
       return response.data;

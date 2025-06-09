@@ -83,7 +83,7 @@ export function AddSite({
         saltUserIds,
       });
     } catch (error) {
-      setError("Failed to add site");
+      setError(String(error));
       return;
     }
 

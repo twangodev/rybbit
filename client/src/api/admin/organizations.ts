@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 import { authClient } from "../../lib/auth";
 
 export type UserOrganization = {
@@ -13,7 +13,7 @@ export type UserOrganization = {
 };
 
 function getUserOrganizations(): Promise<UserOrganization[]> {
-  return authedFetchWithError("/user/organizations");
+  return authedFetch("/user/organizations");
 }
 
 export function useUserOrganizations() {

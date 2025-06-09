@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 type GetOrganizationMembersResponse = {
   data: {
@@ -19,8 +19,7 @@ type GetOrganizationMembersResponse = {
 export const useOrganizationMembers = (organizationId: string) => {
   return useQuery<GetOrganizationMembersResponse>({
     queryKey: ["organization-members", organizationId],
-    queryFn: () =>
-      authedFetchWithError(`/list-organization-members/${organizationId}`),
+    queryFn: () => authedFetch(`/list-organization-members/${organizationId}`),
     staleTime: Infinity,
   });
 };

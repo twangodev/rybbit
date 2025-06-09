@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStore, getFilteredFilters, EVENT_FILTERS } from "../../lib/store";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 import { getQueryTimeParams } from "./utils";
 
 export type EventProperty = {
@@ -31,7 +31,7 @@ export function useGetEventProperties(eventName: string | null) {
         filters: filteredFilters.length > 0 ? filteredFilters : undefined,
       };
 
-      return authedFetchWithError<{ data: EventProperty[] }>(
+      return authedFetch<{ data: EventProperty[] }>(
         `/events/properties/${site}`,
         params
       ).then((res) => res.data);

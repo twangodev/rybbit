@@ -3,7 +3,7 @@ import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { timeZone } from "@/lib/dateTimeUtils";
 import { useStore } from "@/lib/store";
 import { APIResponse } from "../types";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 
 // This should match PageTitleItem from the backend
 export type PageTitleItem = {
@@ -76,7 +76,7 @@ export function useGetPageTitlesPaginated({
       isPast24HoursMode ? "past-minutes" : "date-range",
     ],
     queryFn: () => {
-      return authedFetchWithError<APIResponse<PageTitlesPaginatedResponse>>(
+      return authedFetch<APIResponse<PageTitlesPaginatedResponse>>(
         `/page-titles/${site}`,
         queryParams
       );

@@ -5,7 +5,7 @@ import {
   GOALS_PAGE_FILTERS,
   useStore,
 } from "../../lib/store";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 import { getQueryTimeParams } from "./utils";
 
 export interface Goal {
@@ -92,7 +92,7 @@ export function useGetGoals({
       order,
     ],
     queryFn: async () => {
-      return authedFetchWithError<GoalsResponse>(`/goals/${site}`, {
+      return authedFetch<GoalsResponse>(`/goals/${site}`, {
         ...timeParams,
         filteredFilters,
         page,

@@ -6,7 +6,7 @@ import {
   USER_PAGE_FILTERS,
   getFilteredFilters,
 } from "../../lib/store";
-import { authedFetchWithError, getStartAndEndDate } from "../utils";
+import { authedFetch, getStartAndEndDate } from "../utils";
 import { APIResponse } from "../types";
 import { getQueryTimeParams } from "./utils";
 
@@ -83,7 +83,7 @@ export function useGetUsers(options: GetUsersOptions) {
         requestParams.endDate = timeParams.endDate;
       }
 
-      return authedFetchWithError<
+      return authedFetch<
         APIResponse<UsersResponse[]> & {
           totalCount: number;
           page: number;

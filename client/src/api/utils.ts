@@ -34,19 +34,25 @@ export function getStartAndEndDate(time: Time) {
   return { startDate: time.day, endDate: time.day };
 }
 
-export async function authedFetchWithError<T>(
+export async function authedFetch<T>(
   url: string,
   params?: Record<string, any>,
   config: AxiosRequestConfig = {}
 ): Promise<T> {
   const fullUrl = url.startsWith("http") ? url : `${BACKEND_URL}${url}`;
 
-  const response = await axios({
-    url: fullUrl,
-    params,
-    withCredentials: true,
-    ...config,
-  });
-
-  return response.data;
+  try {
+    const response = await axios({
+      url: fullUrl,
+      params,
+      withCredentials: true,
+      ...config,
+    });
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    throw error;
+  }
 }
