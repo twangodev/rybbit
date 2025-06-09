@@ -1,5 +1,7 @@
 import { DateTime } from "luxon";
 import { Time } from "../components/DateSelector/types";
+import axios, { AxiosRequestConfig } from "axios";
+import { BACKEND_URL } from "../lib/const";
 
 export function getStartAndEndDate(time: Time) {
   if (time.mode === "range") {
@@ -87,14 +89,17 @@ export async function authedFetch(
 
 export async function authedFetchWithError<T>(
   url: string,
-  opts: RequestInit = {}
+  params?: Record<string, any>,
+  config: AxiosRequestConfig = {}
 ): Promise<T> {
-  const res = await fetch(url, {
-    credentials: "include",
-    ...opts,
+  const fullUrl = url.startsWith("http") ? url : `${BACKEND_URL}${url}`;
+
+  const response = await axios({
+    url: fullUrl,
+    params,
+    withCredentials: true,
+    ...config,
   });
-  if (!res.ok) {
-    throw new Error(await res.text());
-  }
-  return res.json();
+
+  return response.data;
 }

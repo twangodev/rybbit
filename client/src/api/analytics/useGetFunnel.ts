@@ -1,7 +1,6 @@
 import { Filter } from "@rybbit/shared";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useDebounce } from "@uidotdev/usehooks";
-import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
 import { useStore } from "../../lib/store";
 import { authedFetch, authedFetchWithError } from "../utils";
@@ -71,13 +70,11 @@ export function useGetFunnel(config?: FunnelRequest, debounce?: boolean) {
       };
       try {
         const response = await authedFetchWithError<{ data: FunnelResponse[] }>(
-          `${BACKEND_URL}/funnel/${site}`,
+          `/funnel/${site}`,
+          undefined,
           {
             method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(fullConfig),
+            data: fullConfig,
           }
         );
 
@@ -114,12 +111,9 @@ export function useSaveFunnel() {
         const saveResponse = await authedFetchWithError<{
           success: boolean;
           funnelId: number;
-        }>(`${BACKEND_URL}/funnel/create/${site}`, {
+        }>(`/funnel/create/${site}`, undefined, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(fullConfig),
+          data: fullConfig,
         });
 
         // Invalidate the funnels query to refresh the list

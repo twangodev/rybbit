@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { useStore } from "../../lib/store";
 import { authedFetchWithError } from "../utils";
 import { usePathname } from "next/navigation";
@@ -74,9 +73,7 @@ export function useGetSitesFromOrg(organizationId?: string) {
   return useQuery<GetSitesFromOrgResponse>({
     queryKey: ["get-sites-from-org", organizationId],
     queryFn: () => {
-      return authedFetchWithError(
-        `${BACKEND_URL}/get-sites-from-org/${organizationId}`
-      );
+      return authedFetchWithError(`/get-sites-from-org/${organizationId}`);
     },
     staleTime: 60000, // 1 minute
     enabled: !!organizationId,
@@ -93,16 +90,16 @@ export function addSite(
     blockBots?: boolean;
   }
 ) {
-  return authedFetchWithError<{ siteId: number }>(`${BACKEND_URL}/add-site`, {
+  return authedFetchWithError<{ siteId: number }>("/add-site", undefined, {
     method: "POST",
-    body: JSON.stringify({
+    data: {
       domain,
       name,
       organizationId,
       public: settings?.isPublic || false,
       saltUserIds: settings?.saltUserIds || false,
       blockBots: settings?.blockBots === undefined ? true : settings?.blockBots,
-    }),
+    },
     headers: {
       "Content-Type": "application/json",
     },
@@ -110,18 +107,18 @@ export function addSite(
 }
 
 export function deleteSite(siteId: number) {
-  return authedFetchWithError(`${BACKEND_URL}/delete-site/${siteId}`, {
+  return authedFetchWithError(`/delete-site/${siteId}`, undefined, {
     method: "POST",
   });
 }
 
 export function changeSiteDomain(siteId: number, newDomain: string) {
-  return authedFetchWithError(`${BACKEND_URL}/change-site-domain`, {
+  return authedFetchWithError("/change-site-domain", undefined, {
     method: "POST",
-    body: JSON.stringify({
+    data: {
       siteId,
       newDomain,
-    }),
+    },
     headers: {
       "Content-Type": "application/json",
     },
@@ -129,12 +126,12 @@ export function changeSiteDomain(siteId: number, newDomain: string) {
 }
 
 export function changeSitePublic(siteId: number, isPublic: boolean) {
-  return authedFetchWithError(`${BACKEND_URL}/change-site-public`, {
+  return authedFetchWithError("/change-site-public", undefined, {
     method: "POST",
-    body: JSON.stringify({
+    data: {
       siteId,
       isPublic,
-    }),
+    },
     headers: {
       "Content-Type": "application/json",
     },
@@ -149,7 +146,7 @@ export function useSiteHasData(siteId: string) {
         return Promise.resolve(false);
       }
       return authedFetchWithError<{ hasData: boolean }>(
-        `${BACKEND_URL}/site-has-data/${siteId}`
+        `/site-has-data/${siteId}`
       ).then((data) => data.hasData);
     },
     refetchInterval: 5000,
@@ -171,7 +168,7 @@ export function useGetSite(siteId?: string | number) {
 
       // Use regular fetch instead of authedFetch to support public sites
       const data = await authedFetchWithError<SiteResponse>(
-        `${BACKEND_URL}/get-site/${siteIdToUse}`
+        `/get-site/${siteIdToUse}`
       );
       return data;
     },
@@ -181,12 +178,12 @@ export function useGetSite(siteId?: string | number) {
 }
 
 export function changeSiteSalt(siteId: number, saltUserIds: boolean) {
-  return authedFetchWithError(`${BACKEND_URL}/change-site-salt`, {
+  return authedFetchWithError("/change-site-salt", undefined, {
     method: "POST",
-    body: JSON.stringify({
+    data: {
       siteId,
       saltUserIds,
-    }),
+    },
     headers: {
       "Content-Type": "application/json",
     },
@@ -194,12 +191,12 @@ export function changeSiteSalt(siteId: number, saltUserIds: boolean) {
 }
 
 export function changeSiteBlockBots(siteId: number, blockBots: boolean) {
-  return authedFetchWithError(`${BACKEND_URL}/change-site-block-bots`, {
+  return authedFetchWithError("/change-site-block-bots", undefined, {
     method: "POST",
-    body: JSON.stringify({
+    data: {
       siteId,
       blockBots,
-    }),
+    },
     headers: {
       "Content-Type": "application/json",
     },
@@ -215,15 +212,14 @@ export function useGetSiteIsPublic(siteId?: string | number) {
       }
 
       try {
-        const response = await fetch(`${BACKEND_URL}/site-is-public/${siteId}`);
-        if (response.ok) {
-          const data = await response.json();
-          return !!data.isPublic;
-        }
+        const data = await authedFetchWithError<{ isPublic: boolean }>(
+          `/site-is-public/${siteId}`
+        );
+        return !!data.isPublic;
       } catch (error) {
         console.error("Error checking if site is public:", error);
+        return false;
       }
-      return false;
     },
     staleTime: 60000, // 1 minute
     enabled: !!siteId,

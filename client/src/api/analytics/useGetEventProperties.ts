@@ -1,9 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { useStore, getFilteredFilters, EVENT_FILTERS } from "../../lib/store";
 import { authedFetchWithError } from "../utils";
 import { getQueryTimeParams } from "./utils";
-import { buildUrl } from "../utils";
 
 export type EventProperty = {
   propertyKey: string;
@@ -27,15 +25,16 @@ export function useGetEventProperties(eventName: string | null) {
     ],
     enabled: !!site && !!eventName,
     queryFn: () => {
-      const url = buildUrl(`${BACKEND_URL}/events/properties/${site}`, {
+      const params = {
         ...Object.fromEntries(new URLSearchParams(timeParams)),
         eventName,
         filters: filteredFilters.length > 0 ? filteredFilters : undefined,
-      });
+      };
 
-      return authedFetchWithError<{ data: EventProperty[] }>(url).then(
-        (res) => res.data
-      );
+      return authedFetchWithError<{ data: EventProperty[] }>(
+        `/events/properties/${site}`,
+        params
+      ).then((res) => res.data);
     },
   });
 }

@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { authedFetchWithError } from "../utils";
 
 export interface AdminSiteData {
@@ -12,7 +11,7 @@ export interface AdminSiteData {
 }
 
 export async function getAdminSites() {
-  return authedFetchWithError<AdminSiteData[]>(`${BACKEND_URL}/admin/sites`);
+  return authedFetchWithError<AdminSiteData[]>("/admin/sites");
 }
 
 export function useAdminSites() {

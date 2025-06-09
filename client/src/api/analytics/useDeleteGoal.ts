@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { authedFetchWithError } from "../utils";
 import { useStore } from "../../lib/store";
 
@@ -11,7 +10,8 @@ export function useDeleteGoal() {
     mutationFn: async (goalId: number) => {
       try {
         return await authedFetchWithError<{ success: boolean }>(
-          `${BACKEND_URL}/goal/${goalId}`,
+          `/goal/${goalId}`,
+          undefined,
           {
             method: "DELETE",
           }

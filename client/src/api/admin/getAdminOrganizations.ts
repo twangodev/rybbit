@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { authedFetchWithError } from "../utils";
 
 export interface AdminOrganizationData {
@@ -34,9 +33,7 @@ export interface AdminOrganizationData {
 }
 
 export async function getAdminOrganizations() {
-  return authedFetchWithError<AdminOrganizationData[]>(
-    `${BACKEND_URL}/admin/organizations`
-  );
+  return authedFetchWithError<AdminOrganizationData[]>("/admin/organizations");
 }
 
 export function useAdminOrganizations() {

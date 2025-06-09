@@ -1,6 +1,5 @@
 import { Filter } from "@rybbit/shared";
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { FunnelStep } from "./useGetFunnel";
 import { authedFetchWithError } from "../utils";
 
@@ -24,7 +23,7 @@ export function useGetFunnels(siteId?: string | number) {
       }
       try {
         const response = await authedFetchWithError<{ data: SavedFunnel[] }>(
-          `${BACKEND_URL}/funnels/${siteId}`
+          `/funnels/${siteId}`
         );
         return response.data;
       } catch (error) {

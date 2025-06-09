@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { authedFetchWithError } from "../utils";
 import { useStore } from "../../lib/store";
 
@@ -29,13 +28,11 @@ export function useUpdateGoal() {
     mutationFn: async (goalData) => {
       try {
         return await authedFetchWithError<UpdateGoalResponse>(
-          `${BACKEND_URL}/goal/update`,
+          "/goal/update",
+          undefined,
           {
             method: "PUT",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify(goalData),
+            data: goalData,
           }
         );
       } catch (error) {

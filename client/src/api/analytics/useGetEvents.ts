@@ -1,6 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Time } from "../../components/DateSelector/types";
-import { BACKEND_URL } from "../../lib/const";
 import { useStore } from "../../lib/store";
 import { authedFetchWithError, buildUrl, getStartAndEndDate } from "../utils";
 import { timeZone } from "../../lib/dateTimeUtils";
@@ -46,9 +45,9 @@ export function useGetEvents(count = 10) {
     queryKey: ["events", site, count],
     refetchInterval: 5000,
     queryFn: () =>
-      authedFetchWithError<{ data: Event[] }>(
-        `${BACKEND_URL}/recent-events/${site}?count=${count}`
-      ).then((res) => res.data),
+      authedFetchWithError<{ data: Event[] }>(`/recent-events/${site}`, {
+        count,
+      }).then((res) => res.data),
   });
 }
 
@@ -91,8 +90,10 @@ export function useGetEventsInfinite(options: GetEventsOptions = {}) {
         params.count = options.count;
       }
 
-      const url = buildUrl(`${BACKEND_URL}/events/${site}`, params);
-      const response = await authedFetchWithError<EventsResponse>(url);
+      const response = await authedFetchWithError<EventsResponse>(
+        `/events/${site}`,
+        params
+      );
       return response;
     },
     getNextPageParam: (lastPage: EventsResponse) => {
