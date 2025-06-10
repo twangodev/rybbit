@@ -22,15 +22,15 @@ const sharedServerTrackingPayloadFields = {
   page_title: z.string().max(512).optional().default(""),
   referrer: z.string().max(2048).optional().default(""),
 
-    // Device/Browser fields
-    screen_width: z.number().int().positive().optional().default(0),
-    screen_height: z.number().int().positive().optional().default(0),
-    device_type: z.enum(["desktop", "tablet", "mobile"]).optional().default("desktop"),
-    browser: z.string().max(100).optional().default(""),
-    browser_version: z.string().max(50).optional().default(""),
-    operating_system: z.string().max(100).optional().default(""),
-    operating_system_version: z.string().max(50).optional().default(""),
-    language: z.string().max(35).optional().default(""),
+  // Device/Browser fields
+  screen_width: z.number().int().positive().optional().default(0),
+  screen_height: z.number().int().positive().optional().default(0),
+  device_type: z.enum(["desktop", "tablet", "mobile"]).optional().default("desktop"),
+  browser: z.string().max(100).optional().default(""),
+  browser_version: z.string().max(50).optional().default(""),
+  operating_system: z.string().max(100).optional().default(""),
+  operating_system_version: z.string().max(50).optional().default(""),
+  language: z.string().max(35).optional().default(""),
 
     // Location fields
     country: z.string().max(2).optional().default(""),
