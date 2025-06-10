@@ -47,8 +47,8 @@ const sharedServerTrackingPayloadFields = {
   utm_term: z.string().max(255).optional(),
   utm_content: z.string().max(255).optional(),
 
-    // Additional URL parameters as JSON object
-    url_parameters: z.record(z.string()).optional().default({}),
+  // Additional URL parameters
+  url_parameters: z.record(z.string()).optional().default({}),
 
     // Session tracking
     is_new_session: z.boolean().optional().default(false),
