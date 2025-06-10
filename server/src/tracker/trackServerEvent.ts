@@ -40,12 +40,12 @@ const sharedServerTrackingPayloadFields = {
   lon: z.number().default(0),
 
   // Traffic source fields
-  channel: z.string().max(100).optional().default("Direct"),
-  utm_source: z.string().max(255).optional(),
-  utm_medium: z.string().max(255).optional(),
-  utm_campaign: z.string().max(255).optional(),
-  utm_term: z.string().max(255).optional(),
-  utm_content: z.string().max(255).optional(),
+  channel: z.string().max(100).default("Unknown"),
+  utm_source: z.string().max(255).optional(), // remove, derived from querystring
+  utm_medium: z.string().max(255).optional(), // remove, derived from querystring
+  utm_campaign: z.string().max(255).optional(), // remove, derived from querystring
+  utm_term: z.string().max(255).optional(), // remove, derived from querystring
+  utm_content: z.string().max(255).optional(), // remove, derived from querystring
 
   // Additional URL parameters
   url_parameters: z.record(z.string()).optional().default({}),
