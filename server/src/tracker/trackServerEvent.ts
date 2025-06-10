@@ -50,9 +50,15 @@ const sharedServerTrackingPayloadFields = {
   // Additional URL parameters
   url_parameters: z.record(z.string()).optional().default({}),
 
-    // Session tracking
-    is_new_session: z.boolean().optional().default(false),
-    session_pageviews: z.number().int().positive().optional().default(1),
+  // Session tracking
+  is_new_session: z.boolean().optional().default(false),
+  session_pageviews: z.number().int().positive().optional().default(1),
+};
+
+export const serverTrackingPayloadSchema = z.discriminatedUnion("type", [
+  z.object({
+    type: z.literal("pageview"),
+    ...sharedServerTrackingPayloadFields,
   }),
   z.object({
     type: z.literal("custom_event"),
