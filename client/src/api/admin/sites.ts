@@ -1,9 +1,8 @@
-import {useQuery} from "@tanstack/react-query";
-import {BACKEND_URL} from "@/lib/const";
-import {useStore} from "@/lib/store";
-import {authedFetch} from "../utils";
-import {usePathname} from "next/navigation";
-import {authClient} from "@/lib/auth";
+import { useQuery } from "@tanstack/react-query";
+import { useStore } from "@/lib/store";
+import { authedFetch } from "../utils";
+import { usePathname } from "next/navigation";
+import { authClient } from "@/lib/auth";
 
 export type SiteResponse = {
   siteId: number;
