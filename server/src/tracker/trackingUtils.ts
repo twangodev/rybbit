@@ -220,6 +220,7 @@ function getUserId(
 const getIpAddress = (request: FastifyRequest): string => {
   const cfConnectingIp = request.headers["cf-connecting-ip"];
   if (cfConnectingIp && typeof cfConnectingIp === "string") {
+    console.log("cfConnectingIp");
     return cfConnectingIp.trim();
   }
 
@@ -230,11 +231,14 @@ const getIpAddress = (request: FastifyRequest): string => {
       .map((ip) => ip.trim())
       .filter(Boolean);
     if (ips.length > 0) {
+      console.log("forwardedFor");
       // Return rightmost IP - the last proxy before reaching our server
       // This is the most trustworthy IP in the chain
       return ips[ips.length - 1];
     }
   }
+
+  console.log("request.ip");
 
   return request.ip;
 };
