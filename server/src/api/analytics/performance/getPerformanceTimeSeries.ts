@@ -36,23 +36,15 @@ const bucketIntervalMap = {
 } as const;
 
 function getTimeStatementFill(params: FilterParams, bucket: TimeBucket) {
-  const { startDate, endDate, timeZone, pastMinutesStart, pastMinutesEnd } =
-    params;
-
-  const date =
-    startDate && endDate && timeZone
-      ? { startDate, endDate, timeZone }
-      : undefined;
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
   const { params: validatedParams, bucket: validatedBucket } =
-    validateTimeStatementFillParams({ date, pastMinutesRange }, bucket);
+    validateTimeStatementFillParams(params, bucket);
 
-  if (validatedParams.date) {
-    const { startDate, endDate, timeZone } = validatedParams.date;
+  if (
+    validatedParams.startDate &&
+    validatedParams.endDate &&
+    validatedParams.timeZone
+  ) {
+    const { startDate, endDate, timeZone } = validatedParams;
     return `WITH FILL FROM toTimeZone(
       toDateTime(${
         TimeBucketToFn[validatedBucket]
@@ -77,8 +69,11 @@ function getTimeStatementFill(params: FilterParams, bucket: TimeBucket) {
       ) STEP INTERVAL ${bucketIntervalMap[validatedBucket]}`;
   }
   // For specific past minutes range - convert to exact timestamps for better performance
-  if (validatedParams.pastMinutesRange) {
-    const { start, end } = validatedParams.pastMinutesRange;
+  if (
+    validatedParams.pastMinutesStart !== undefined &&
+    validatedParams.pastMinutesEnd !== undefined
+  ) {
+    const { pastMinutesStart: start, pastMinutesEnd: end } = validatedParams;
 
     // Calculate exact timestamps in JavaScript to avoid runtime ClickHouse calculations
     const now = new Date();
@@ -166,8 +161,6 @@ WHERE
 GROUP BY time ORDER BY time ${
     isAllTime ? "" : getTimeStatementFill(params, bucket)
   }`;
-
-  console.log(query);
 
   return query;
 };
