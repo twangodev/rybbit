@@ -39,13 +39,13 @@ const sharedServerTrackingPayloadFields = {
   lat: z.number().optional().default(0),
   lon: z.number().optional().default(0),
 
-    // Traffic source fields
-    channel: z.string().max(100).optional().default("Direct"),
-    utm_source: z.string().max(255).optional(),
-    utm_medium: z.string().max(255).optional(),
-    utm_campaign: z.string().max(255).optional(),
-    utm_term: z.string().max(255).optional(),
-    utm_content: z.string().max(255).optional(),
+  // Traffic source fields
+  channel: z.string().max(100).optional().default("Direct"),
+  utm_source: z.string().max(255).optional(),
+  utm_medium: z.string().max(255).optional(),
+  utm_campaign: z.string().max(255).optional(),
+  utm_term: z.string().max(255).optional(),
+  utm_content: z.string().max(255).optional(),
 
     // Additional URL parameters as JSON object
     url_parameters: z.record(z.string()).optional().default({}),
