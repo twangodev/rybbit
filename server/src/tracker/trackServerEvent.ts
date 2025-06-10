@@ -8,14 +8,12 @@ import { eq, and } from "drizzle-orm";
 import { isSiteOverLimit } from "./trackingUtils.js";
 import { siteConfig } from "../lib/siteConfig.js";
 
-export const serverTrackingPayloadSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("pageview"),
-    // Required fields
-    site_id: z.string().min(1),
-    user_id: z.string().min(1).max(255),
-    session_id: z.string().min(1).max(255),
-    timestamp: z.string().datetime().optional(), // ISO string, defaults to now
+const sharedServerTrackingPayloadFields = {
+  // Required
+  site_id: z.string().min(1),
+  user_id: z.string().min(1).max(255),
+  session_id: z.string().min(1).max(255),
+  timestamp: z.string().datetime().optional(),
 
     // Page/URL fields
     hostname: z.string().max(253).optional().default(""),
