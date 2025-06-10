@@ -231,7 +231,8 @@ const getIpAddress = (request: FastifyRequest): string => {
       .map((ip) => ip.trim())
       .filter(Boolean);
     if (ips.length > 0) {
-      console.log("forwardedFor");
+      console.log("forwardedFor", ips);
+      console.info(request.ip);
       // Return rightmost IP - the last proxy before reaching our server
       // This is the most trustworthy IP in the chain
       return ips[ips.length - 1];
