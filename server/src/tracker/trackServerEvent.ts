@@ -16,11 +16,11 @@ const sharedServerTrackingPayloadFields = {
   timestamp: z.string().datetime().optional(), // remove
 
   // Page/URL fields
-  hostname: z.string().max(253).optional().default(""),
-  pathname: z.string().max(2048).optional().default(""),
-  querystring: z.string().max(2048).optional().default(""),
-  page_title: z.string().max(512).optional().default(""),
-  referrer: z.string().max(2048).optional().default(""),
+  hostname: z.string().max(253).default(""),
+  pathname: z.string().max(2048).default(""),
+  querystring: z.string().max(2048).default(""),
+  page_title: z.string().max(512).default(""),
+  referrer: z.string().max(2048).default(""),
 
   // Device/Browser fields
   screen_width: z.number().int().positive().optional().default(0),
