@@ -91,20 +91,7 @@ const getQuery = (
   }
 
   const filterStatement = getFilterStatement(filters);
-
-  // Handle specific past minutes range if provided
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
-  const timeStatement = getTimeStatement(
-    pastMinutesRange
-      ? { pastMinutesRange }
-      : {
-          date: { startDate, endDate, timeZone },
-        }
-  );
+  const timeStatement = getTimeStatement(request.query);
 
   let validatedLimit: number | null = null;
   if (!isCountQuery && limit !== undefined) {

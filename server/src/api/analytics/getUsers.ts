@@ -74,22 +74,9 @@ export async function getUsers(
   const actualSortBy = validSortFields.includes(sortBy) ? sortBy : "last_seen";
   const actualSortOrder = sortOrder === "asc" ? "ASC" : "DESC";
 
-  // Handle specific past minutes range if provided
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
-  // Set up time parameters
-  const timeParams = pastMinutesRange
-    ? { pastMinutesRange }
-    : startDate && endDate
-      ? { date: { startDate, endDate, timeZone } }
-      : {};
-
   // Generate filter statement and time statement
   const filterStatement = getFilterStatement(filters);
-  const timeStatement = getTimeStatement(timeParams);
+  const timeStatement = getTimeStatement(req.query);
 
   const query = `
 WITH AggregatedUsers AS (

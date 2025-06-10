@@ -40,17 +40,7 @@ export async function getEventNames(
     return res.status(403).send({ error: "Forbidden" });
   }
 
-  // Handle specific past minutes range if provided
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
-  const timeStatement = getTimeStatement(
-    pastMinutesRange
-      ? { pastMinutesRange }
-      : { date: { startDate, endDate, timeZone } }
-  );
+  const timeStatement = getTimeStatement(req.query);
 
   const filterStatement = filters ? getFilterStatement(filters) : "";
 

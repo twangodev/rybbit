@@ -64,7 +64,9 @@ export async function getFunnel(
   try {
     // Create the time statement for the date range
     const timeStatement = getTimeStatement({
-      date: { startDate, endDate, timeZone },
+      startDate,
+      endDate,
+      timeZone,
     });
 
     // Get filter conditions using the existing utility function

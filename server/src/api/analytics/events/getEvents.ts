@@ -6,6 +6,7 @@ import {
   getFilterStatement,
 } from "../utils.js";
 import { getUserHasAccessToSitePublic } from "../../../lib/auth-utils.js";
+import { FilterParams } from "@rybbit/shared";
 
 export type GetEventsResponse = {
   timestamp: string;
@@ -28,15 +29,11 @@ interface GetEventsRequest {
   Params: {
     site: string;
   };
-  Querystring: {
-    startDate?: string;
-    endDate?: string;
-    timeZone?: string;
-    filters?: string;
+  Querystring: FilterParams<{
     page?: string;
     pageSize?: string;
     count?: string; // Keeping for backward compatibility
-  };
+  }>;
 }
 
 export async function getEvents(
@@ -66,7 +63,7 @@ export async function getEvents(
   // Get time and filter statements if parameters are provided
   const timeStatement =
     startDate || endDate
-      ? getTimeStatement({ date: { startDate, endDate, timeZone } })
+      ? getTimeStatement(req.query)
       : "AND timestamp > now() - INTERVAL 30 MINUTE"; // Default to last 30 minutes if no time range specified
 
   const filterStatement = filters ? getFilterStatement(filters) : "";

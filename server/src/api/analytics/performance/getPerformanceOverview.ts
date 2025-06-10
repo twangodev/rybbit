@@ -9,26 +9,10 @@ import { getUserHasAccessToSitePublic } from "../../../lib/auth-utils.js";
 import { PerformanceOverviewMetrics } from "../types.js";
 import { FilterParams } from "@rybbit/shared";
 
-const getQuery = ({
-  startDate,
-  endDate,
-  timeZone,
-  filters,
-  pastMinutesRange,
-}: {
-  startDate: string;
-  endDate: string;
-  timeZone: string;
-  filters: string;
-  pastMinutesRange?: { start: number; end: number };
-}) => {
-  const timeParams = pastMinutesRange
-    ? { pastMinutesRange }
-    : { date: { startDate, endDate, timeZone } };
+const getQuery = (params: FilterParams) => {
+  const filterStatement = getFilterStatement(params.filters);
 
-  const filterStatement = getFilterStatement(filters);
-
-  return `SELECT   
+  return `SELECT
       quantile(0.5)(lcp) AS lcp_p50,
       quantile(0.75)(lcp) AS lcp_p75,
       quantile(0.9)(lcp) AS lcp_p90,
@@ -51,11 +35,11 @@ const getQuery = ({
       quantile(0.99)(ttfb) AS ttfb_p99,
       COUNT(*) AS total_performance_events
     FROM events
-    WHERE 
+    WHERE
         site_id = {siteId:Int32}
         AND type = 'performance'
         ${filterStatement}
-        ${getTimeStatement(timeParams)}`;
+        ${getTimeStatement(params)}`;
 };
 
 export interface PerformanceOverviewRequest {
@@ -69,32 +53,13 @@ export async function getPerformanceOverview(
   req: FastifyRequest<PerformanceOverviewRequest>,
   res: FastifyReply
 ) {
-  const {
-    startDate,
-    endDate,
-    timeZone,
-    filters,
-    pastMinutesStart,
-    pastMinutesEnd,
-  } = req.query;
   const site = req.params.site;
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
   if (!userHasAccessToSite) {
     return res.status(403).send({ error: "Forbidden" });
   }
 
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
-  const query = getQuery({
-    startDate,
-    endDate,
-    timeZone,
-    filters,
-    pastMinutesRange: pastMinutesRange,
-  });
+  const query = getQuery(req.query);
 
   try {
     const result = await clickhouse.query({

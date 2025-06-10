@@ -46,17 +46,7 @@ export async function getEventProperties(
     return res.status(400).send({ error: "Event name is required" });
   }
 
-  // Handle specific past minutes range if provided
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
-  const timeStatement = getTimeStatement(
-    pastMinutesRange
-      ? { pastMinutesRange }
-      : { date: { startDate, endDate, timeZone } }
-  );
+  const timeStatement = getTimeStatement(req.query);
 
   const filterStatement = filters ? getFilterStatement(filters) : "";
 

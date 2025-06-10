@@ -18,26 +18,10 @@ type GetOverviewResponse = {
   session_duration: number;
 };
 
-const getQuery = ({
-  startDate,
-  endDate,
-  timeZone,
-  filters,
-  pastMinutesRange,
-}: {
-  startDate: string;
-  endDate: string;
-  timeZone: string;
-  filters: string;
-  pastMinutesRange?: { start: number; end: number };
-}) => {
-  const timeParams = pastMinutesRange
-    ? { pastMinutesRange }
-    : { date: { startDate, endDate, timeZone } };
+const getQuery = (params: FilterParams) => {
+  const filterStatement = getFilterStatement(params.filters);
 
-  const filterStatement = getFilterStatement(filters);
-
-  return `SELECT   
+  return `SELECT
       session_stats.sessions,
       session_stats.pages_per_session,
       session_stats.bounce_rate * 100 AS bounce_rate,
@@ -64,7 +48,7 @@ const getQuery = ({
                 WHERE
                     site_id = {siteId:Int32}
                     ${filterStatement}
-                    ${getTimeStatement(timeParams)}
+                    ${getTimeStatement(params)}
                 GROUP BY session_id
             )
         ) AS session_stats
@@ -78,7 +62,7 @@ const getQuery = ({
             WHERE 
                 site_id = {siteId:Int32}
                 ${filterStatement}
-                ${getTimeStatement(timeParams)}
+                ${getTimeStatement(params)}
                 AND type = 'pageview'
         ) AS page_stats`;
 };
@@ -108,17 +92,13 @@ export async function getOverview(
     return res.status(403).send({ error: "Forbidden" });
   }
 
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
   const query = getQuery({
     startDate,
     endDate,
     timeZone,
     filters,
-    pastMinutesRange: pastMinutesRange,
+    pastMinutesStart,
+    pastMinutesEnd,
   });
 
   try {
