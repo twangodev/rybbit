@@ -19,8 +19,8 @@ interface PricingCardProps {
 }
 
 export function PricingCard({ stripePrices, isLoggedIn }: PricingCardProps) {
-  const [eventLimitIndex, setEventLimitIndex] = useState<number>(0); // Default to 100k (index 0)
-  const [isAnnual, setIsAnnual] = useState<boolean>(true);
+  const [eventLimitIndex, setEventLimitIndex] = useState<number>(0);
+  const [isAnnual, setIsAnnual] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { data: activeOrg } = authClient.useActiveOrganization();
 

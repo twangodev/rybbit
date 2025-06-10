@@ -4,7 +4,7 @@ import {
   FunnelStep,
   useGetFunnel,
   useSaveFunnel,
-} from "@/api/analytics/useGetFunnel";
+} from "../../../../api/analytics/funnels/useGetFunnel";
 import { Time } from "@/components/DateSelector/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +20,7 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { getStartAndEndDate } from "../../../../api/utils";
 import { FunnelForm } from "./FunnelForm";
-import { Filter } from "../../../../lib/store";
+import { Filter } from "@rybbit/shared";
 
 export function CreateFunnelDialog() {
   const [open, setOpen] = useState(false);

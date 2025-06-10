@@ -1,5 +1,4 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { timeZone } from "../../lib/dateTimeUtils";
 import {
   getFilteredFilters,
@@ -35,12 +34,15 @@ export function useGetUserSessions(userId: string) {
   return useQuery({
     queryKey: ["user-sessions", userId, time, site, filters],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/user/${userId}/sessions/${site}`, {
-        startDate,
-        endDate,
-        timeZone,
-        filters,
-      }).then((res) => res.json());
+      return authedFetch<UserSessionsResponse>(
+        `/user/${userId}/sessions/${site}`,
+        {
+          startDate,
+          endDate,
+          timeZone,
+          filters,
+        }
+      );
     },
     staleTime: Infinity,
   });
@@ -108,8 +110,9 @@ export function useGetSessionsInfinite(userId?: string) {
         requestParams.endDate = timeParams.endDate;
       }
 
-      return authedFetch(`${BACKEND_URL}/sessions/${site}`, requestParams).then(
-        (res) => res.json()
+      return authedFetch<APIResponse<GetSessionsResponse>>(
+        `/sessions/${site}`,
+        requestParams
       );
     },
     initialPageParam: 1,
@@ -184,15 +187,21 @@ export function useGetSessionDetailsInfinite(sessionId: string | null) {
       if (!sessionId) throw new Error("Session ID is required");
       const limit = 100;
 
-      // Build URL with query parameters
-      let url = `${BACKEND_URL}/session/${sessionId}/${site}?limit=${limit}&offset=${pageParam}`;
+      // Build query parameters object
+      const queryParams: Record<string, any> = {
+        limit,
+        offset: pageParam,
+      };
 
       // Add minutes parameter for last-24-hours mode
       if (isPast24HoursMode && minutes) {
-        url += `&minutes=${minutes}`;
+        queryParams.minutes = minutes;
       }
 
-      return authedFetch(url).then((res) => res.json());
+      return authedFetch<APIResponse<SessionPageviewsAndEvents>>(
+        `/session/${sessionId}/${site}`,
+        queryParams
+      );
     },
     initialPageParam: 0,
     getNextPageParam: (lastPage) => {
@@ -217,10 +226,13 @@ export function useGetUserSessionCount(userId: string) {
   return useQuery<APIResponse<UserSessionCountResponse[]>>({
     queryKey: ["user-session-count", userId, site],
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/user/session-count/${site}`, {
-        userId,
-        timeZone,
-      }).then((res) => res.json());
+      return authedFetch<APIResponse<UserSessionCountResponse[]>>(
+        `/user/session-count/${site}`,
+        {
+          userId,
+          timeZone,
+        }
+      );
     },
     staleTime: Infinity,
   });

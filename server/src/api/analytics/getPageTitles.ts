@@ -6,21 +6,16 @@ import {
   getTimeStatement,
   processResults,
 } from "./utils.js";
+import { FilterParams } from "@rybbit/shared";
 
 interface GetPageTitlesRequest {
   Params: {
     site: string;
   };
-  Querystring: {
-    startDate: string;
-    endDate: string;
-    pastMinutesStart?: number;
-    pastMinutesEnd?: number;
-    timeZone: string;
-    filters: string;
+  Querystring: FilterParams<{
     limit?: number;
     page?: number;
-  };
+  }>;
 }
 
 // This type represents a single item in the array
@@ -29,6 +24,7 @@ export type PageTitleItem = {
   pathname: string;
   count: number;
   percentage: number;
+  time_on_page_seconds?: number;
 };
 
 // Structure for paginated response (if/when fully paginated)
@@ -53,20 +49,7 @@ const getPageTitlesQuery = (
   } = request.query;
 
   const filterStatement = getFilterStatement(filters);
-
-  // Handle specific past minutes range if provided
-  const pastMinutesRange =
-    pastMinutesStart && pastMinutesEnd
-      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
-      : undefined;
-
-  const timeStatement = getTimeStatement(
-    pastMinutesRange
-      ? { pastMinutesRange }
-      : {
-          date: { startDate, endDate, timeZone },
-        }
-  );
+  const timeStatement = getTimeStatement(request.query);
 
   let validatedLimit: number | null = null;
   if (!isCountQuery && limit !== undefined) {
@@ -95,38 +78,64 @@ const getPageTitlesQuery = (
     !isCountQuery && validatedOffset ? `OFFSET ${validatedOffset}` : "";
 
   // For page_title, we want to count distinct sessions that viewed this title.
-  // We also need a representative pathname.
+  // We also need a representative pathname and calculate average time on page.
   // Using argMax to get the pathname from the most recent event for that title in a session.
-  const coreLogic = `
-    SELECT
-        page_title as value,
-        argMax(pathname, timestamp) as pathname, // Get pathname of latest event for this title in session
-        COUNT(DISTINCT session_id) as unique_sessions
-    FROM events
-    WHERE
-        site_id = {siteId:Int32}
-        AND page_title IS NOT NULL
-        AND page_title <> ''
-        AND type = 'pageview' // Ensure these are pageview events
-        ${filterStatement}
-        ${timeStatement}
-    GROUP BY page_title
+  const baseCteQuery = `
+    EventTimes AS (
+        SELECT
+            session_id,
+            page_title,
+            pathname,
+            timestamp,
+            leadInFrame(timestamp) OVER (PARTITION BY session_id ORDER BY timestamp ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING) as next_timestamp
+        FROM events
+        WHERE
+          site_id = {siteId:Int32}
+          AND page_title IS NOT NULL
+          AND page_title <> ''
+          AND type = 'pageview'
+          ${filterStatement}
+          ${timeStatement}
+    ),
+    PageDurations AS (
+        SELECT
+            session_id,
+            page_title,
+            pathname,
+            timestamp,
+            next_timestamp,
+            if(isNull(next_timestamp), 0, dateDiff('second', timestamp, next_timestamp)) as time_diff_seconds
+        FROM EventTimes
+    ),
+    PageTitleStats AS (
+        SELECT
+            page_title as value,
+            argMax(pathname, timestamp) as pathname,
+            count(DISTINCT session_id) as unique_sessions,
+            avg(if(time_diff_seconds < 0, 0, if(time_diff_seconds > 1800, 1800, time_diff_seconds))) as avg_time_on_page_seconds
+        FROM PageDurations
+        GROUP BY page_title
+    )
   `;
 
   if (isCountQuery) {
-    return `SELECT COUNT(*) as totalCount FROM (${coreLogic})`;
+    return `
+    WITH ${baseCteQuery}
+    SELECT COUNT(*) as totalCount FROM PageTitleStats;
+    `;
   }
 
   return `
-    WITH PageTitleStats AS (${coreLogic})
+    WITH ${baseCteQuery}
     SELECT
         value,
         pathname,
         unique_sessions as count,
         ROUND(
-            unique_sessions * 100.0 / SUM(unique_sessions) OVER (), 
+            unique_sessions * 100.0 / SUM(unique_sessions) OVER (),
             2
-        ) as percentage
+        ) as percentage,
+        avg_time_on_page_seconds as time_on_page_seconds
     FROM PageTitleStats
     ORDER BY count DESC
     ${limitStatement}

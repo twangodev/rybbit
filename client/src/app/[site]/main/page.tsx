@@ -22,13 +22,7 @@ export default function MainPage() {
 }
 
 function MainPageContent() {
-  const { data: siteMetadata, isLoading: isLoadingSiteMetadata } = useGetSite();
-
   useSetPageTitle("Rybbit · Main");
-
-  if (isLoadingSiteMetadata || !siteMetadata) {
-    return null;
-  }
 
   return (
     <div className="p-2 md:p-4 max-w-[1100px] mx-auto space-y-3 ">

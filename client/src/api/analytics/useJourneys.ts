@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
 import { authedFetch, getStartAndEndDate } from "../utils";
-import { BACKEND_URL } from "../../lib/const";
 import { Time } from "../../components/DateSelector/types";
 
 export interface JourneyParams {
@@ -33,20 +32,15 @@ export const useJourneys = ({
   return useQuery<JourneysResponse>({
     queryKey: ["journeys", siteId, steps, startDate, endDate, timeZone, limit],
     queryFn: async () => {
-      let url = `${BACKEND_URL}/journeys/${siteId}`;
-      const params = new URLSearchParams();
+      const params: Record<string, any> = {};
 
-      if (steps) params.append("steps", steps.toString());
-      if (startDate) params.append("startDate", startDate);
-      if (endDate) params.append("endDate", endDate);
-      if (timeZone) params.append("timeZone", timeZone);
-      if (limit) params.append("limit", limit.toString());
+      if (steps) params.steps = steps;
+      if (startDate) params.startDate = startDate;
+      if (endDate) params.endDate = endDate;
+      if (timeZone) params.timeZone = timeZone;
+      if (limit) params.limit = limit;
 
-      const queryString = params.toString();
-      if (queryString) url += `?${queryString}`;
-
-      const response = await authedFetch(url);
-      return response.json();
+      return authedFetch<JourneysResponse>(`/journeys/${siteId}`, params);
     },
     enabled: !!siteId,
   });

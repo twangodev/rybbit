@@ -1,7 +1,8 @@
+import { Filter, TimeBucket } from "@rybbit/shared";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { Time } from "../components/DateSelector/types";
-import { Filter, StatType, TimeBucket, useStore } from "./store";
+import { StatType, useStore } from "./store";
 
 // Serialize store state to URL parameters
 export const serializeStateToUrl = (
@@ -174,7 +175,7 @@ export const useSyncStateWithUrl = () => {
     if (!pathname) return false;
     const pathParts = pathname.split("/");
     if (pathParts.length < 3) return false;
-    return ["main", "sessions", "users"].includes(pathParts[2]);
+    return ["main", "sessions", "users", "performance"].includes(pathParts[2]);
   };
 
   // Initialize from URL params after site is set

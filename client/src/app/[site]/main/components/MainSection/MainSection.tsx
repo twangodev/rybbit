@@ -4,15 +4,11 @@ import { Tilt_Warp } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { useGetOverview } from "../../../../../api/analytics/useGetOverview";
-import {
-  useGetOverviewBucketed,
-  useGetOverviewBucketedPastMinutes,
-  useGetOverviewBucketedPreviousPastMinutes,
-} from "../../../../../api/analytics/useGetOverviewBucketed";
+import { useGetOverviewBucketed } from "../../../../../api/analytics/useGetOverviewBucketed";
 import { authClient } from "../../../../../lib/auth";
 import { useStore } from "../../../../../lib/store";
 import { cn } from "../../../../../lib/utils";
-import { BucketSelection } from "./BucketSelection";
+import { BucketSelection } from "../../../../../components/BucketSelection";
 import { Chart } from "./Chart";
 import { Overview } from "./Overview";
 import { PreviousChart } from "./PreviousChart";
@@ -70,7 +66,7 @@ export function MainSection() {
     data: pastMinutesData,
     isFetching: isPastMinutesFetching,
     error: pastMinutesError,
-  } = useGetOverviewBucketedPastMinutes({
+  } = useGetOverviewBucketed({
     pastMinutesStart: 24 * 60,
     pastMinutesEnd: 0,
     site,
@@ -84,7 +80,7 @@ export function MainSection() {
     data: pastMinutesPreviousData,
     isFetching: isPastMinutesPreviousFetching,
     error: pastMinutesPreviousError,
-  } = useGetOverviewBucketedPreviousPastMinutes({
+  } = useGetOverviewBucketed({
     pastMinutesStart: 48 * 60,
     pastMinutesEnd: 24 * 60,
     site,

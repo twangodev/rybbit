@@ -1,3 +1,4 @@
+import { FilterParameter } from "@rybbit/shared";
 import {
   AppWindow,
   Brain,
@@ -17,12 +18,12 @@ import {
   Puzzle,
   Radio,
   Search,
+  Server,
   TabletSmartphone,
   Tag,
   Target,
 } from "lucide-react";
 import React from "react";
-import { FilterParameter } from "../../../../../lib/store";
 
 export const FilterOptions: {
   label: string;
@@ -43,6 +44,11 @@ export const FilterOptions: {
     label: "Query",
     value: "querystring",
     icon: <Search className="h-4 w-4" />,
+  },
+  {
+    label: "Hostname",
+    value: "hostname",
+    icon: <Server className="h-4 w-4" />,
   },
   {
     label: "Event Name",

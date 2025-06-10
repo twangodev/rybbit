@@ -4,8 +4,8 @@ import {
   FunnelStep,
   useGetFunnel,
   useSaveFunnel,
-} from "@/api/analytics/useGetFunnel";
-import { SavedFunnel } from "@/api/analytics/useGetFunnels";
+} from "../../../../api/analytics/funnels/useGetFunnel";
+import { SavedFunnel } from "../../../../api/analytics/funnels/useGetFunnels";
 import { Time } from "@/components/DateSelector/types";
 import {
   Dialog,
@@ -17,7 +17,7 @@ import { DateTime } from "luxon";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { getStartAndEndDate } from "../../../../api/utils";
-import { Filter } from "../../../../lib/store";
+import { Filter } from "@rybbit/shared";
 import { FunnelForm } from "./FunnelForm";
 
 interface EditFunnelDialogProps {

@@ -11,7 +11,8 @@ import {
 import { useUserOrganizations } from "../api/admin/organizations";
 
 export function OrganizationSelector() {
-  const { data: organizations } = useUserOrganizations();
+  const { data: organizations, isLoading: isLoadingOrganizations } =
+    useUserOrganizations();
   const { data: activeOrganization, isPending } =
     authClient.useActiveOrganization();
 
@@ -33,6 +34,16 @@ export function OrganizationSelector() {
       organizationId,
     });
   };
+
+  if (!isLoadingOrganizations && organizations?.length === 0) {
+    return (
+      <Select disabled>
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder={"No organizations"} />
+        </SelectTrigger>
+      </Select>
+    );
+  }
 
   // Show placeholder when loading or no active organization
   if (isPending || !activeOrganization) {

@@ -1,13 +1,13 @@
-import { SingleColResponse } from "@/api/analytics/useSingleCol";
-import { authedFetch, getStartAndEndDate } from "@/api/utils";
-import { BACKEND_URL } from "@/lib/const";
-import { timeZone } from "@/lib/dateTimeUtils";
-import { FilterParameter, useStore } from "@/lib/store";
+import { FilterParameter } from "@rybbit/shared";
 import {
   useInfiniteQuery,
   UseInfiniteQueryResult,
   InfiniteData,
 } from "@tanstack/react-query";
+import { SingleColResponse } from "@/api/analytics/useSingleCol";
+import { authedFetch, getQueryParams } from "@/api/utils";
+import { timeZone } from "@/lib/dateTimeUtils";
+import { useStore } from "@/lib/store";
 
 type UseInfiniteSingleColOptions = {
   parameter: FilterParameter;
@@ -29,8 +29,6 @@ export function useInfiniteSingleCol({
 > {
   const { time, site, filters } = useStore();
 
-  const isPast24HoursMode = time.mode === "last-24-hours";
-
   return useInfiniteQuery({
     queryKey: [
       parameter,
@@ -38,35 +36,22 @@ export function useInfiniteSingleCol({
       site,
       filters,
       limit,
-      isPast24HoursMode ? "past-minutes" : "date-range",
+      time.mode === "last-24-hours" ? "past-minutes" : "date-range",
       "infinite-single-col",
     ],
     queryFn: async ({ pageParam = 1 }) => {
-      const queryParams = isPast24HoursMode
-        ? {
-            timeZone: timeZone,
-            pastMinutesStart: 24 * 60, // 24 hours ago
-            pastMinutesEnd: 0, // now
-            parameter,
-            limit,
-            page: pageParam,
-            filters: useFilters ? filters : undefined,
-          }
-        : {
-            ...getStartAndEndDate(time),
-            timeZone: timeZone,
-            parameter,
-            limit,
-            page: pageParam,
-            filters: useFilters ? filters : undefined,
-          };
+      const queryParams = {
+        ...getQueryParams(time),
+        parameter,
+        limit,
+        page: pageParam,
+        filters: useFilters ? filters : undefined,
+      };
 
-      const response = await authedFetch(
-        `${BACKEND_URL}/single-col/${site}`,
-        queryParams
-      );
-      const json = await response.json();
-      return json.data;
+      const response = await authedFetch<{
+        data: InfinitePaginatedResponse;
+      }>(`/single-col/${site}`, queryParams);
+      return response.data;
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage, allPages) => {

@@ -1,4 +1,5 @@
-import { PricingSection } from "../components/PricingSection";
+import { PricingSection } from "./components/PricingSection";
+import { ComparisonSection } from "./components/ComparisonSection";
 
 export const metadata = {
   title: "Pricing",
@@ -9,6 +10,7 @@ export default function Pricing() {
   return (
     <div className="flex flex-col items-center justify-center overflow-x-hidden">
       <PricingSection />
+      <ComparisonSection />
 
       {/* FAQ section */}
       <div className="max-w-lg mx-auto px-4 pb-16">

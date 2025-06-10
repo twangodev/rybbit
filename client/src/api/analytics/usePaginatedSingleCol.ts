@@ -1,9 +1,9 @@
-import { SingleColResponse } from "@/api/analytics/useSingleCol";
-import { authedFetch, getStartAndEndDate } from "@/api/utils";
-import { BACKEND_URL } from "@/lib/const";
-import { timeZone } from "@/lib/dateTimeUtils";
-import { Filter, FilterParameter, useStore } from "@/lib/store";
+import { Filter, FilterParameter } from "@rybbit/shared";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { SingleColResponse } from "@/api/analytics/useSingleCol";
+import { authedFetch, getQueryParams } from "@/api/utils";
+import { timeZone } from "@/lib/dateTimeUtils";
+import { useStore } from "@/lib/store";
 
 type UsePaginatedSingleColOptions = {
   parameter: FilterParameter;
@@ -29,30 +29,13 @@ export function usePaginatedSingleCol({
 }: UsePaginatedSingleColOptions): UseQueryResult<PaginatedResponse> {
   const { time, site, filters } = useStore();
 
-  // Check if we're using last-24-hours mode
-  const isPast24HoursMode = time.mode === "last-24-hours";
-
-  // Determine the query parameters based on mode
-  const queryParams = isPast24HoursMode
-    ? {
-        // Past minutes approach for last-24-hours mode
-        timeZone: timeZone,
-        pastMinutesStart: 24 * 60, // 24 hours ago
-        pastMinutesEnd: 0, // now
-        parameter,
-        limit,
-        page,
-        filters: useFilters ? [...filters, ...additionalFilters] : undefined,
-      }
-    : {
-        // Regular date-based approach
-        ...getStartAndEndDate(time),
-        timeZone: timeZone,
-        parameter,
-        limit,
-        page,
-        filters: useFilters ? [...filters, ...additionalFilters] : undefined,
-      };
+  const queryParams = {
+    ...getQueryParams(time),
+    parameter,
+    limit,
+    page,
+    filters: useFilters ? [...filters, ...additionalFilters] : undefined,
+  };
 
   return useQuery({
     queryKey: [
@@ -62,13 +45,15 @@ export function usePaginatedSingleCol({
       filters,
       limit,
       page,
-      isPast24HoursMode ? "past-minutes" : "date-range",
+      time.mode === "last-24-hours" ? "past-minutes" : "date-range",
       additionalFilters,
     ],
-    queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/single-col/${site}`, queryParams)
-        .then((res) => res.json())
-        .then(({ data }) => data);
+    queryFn: async () => {
+      const response = await authedFetch<{ data: PaginatedResponse }>(
+        `/single-col/${site}`,
+        queryParams
+      );
+      return response.data;
     },
     staleTime: Infinity,
     placeholderData: (_, query: any) => {

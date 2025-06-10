@@ -25,11 +25,10 @@ export async function getSitesFromOrg(
       return res.status(401).send({ error: "Unauthorized" });
     }
 
-    const isAdmin = await getIsUserAdmin(req);
-
-    // If not admin, verify user is a member of the organization
-    if (!isAdmin) {
-      const memberCheck = await db
+    // Run all database queries concurrently
+    const [isOwner, memberCheck, sitesData, orgInfo] = await Promise.all([
+      getIsUserAdmin(req),
+      db
         .select()
         .from(member)
         .where(
@@ -38,20 +37,21 @@ export async function getSitesFromOrg(
             eq(member.userId, userId)
           )
         )
-        .limit(1);
+        .limit(1),
+      db.select().from(sites).where(eq(sites.organizationId, organizationId)),
+      db
+        .select()
+        .from(organization)
+        .where(eq(organization.id, organizationId))
+        .limit(1),
+    ]);
 
-      if (memberCheck.length === 0) {
-        return res
-          .status(403)
-          .send({ error: "Access denied to this organization" });
-      }
+    // If not admin, verify user is a member of the organization
+    if (!isOwner && memberCheck.length === 0) {
+      return res
+        .status(403)
+        .send({ error: "Access denied to this organization" });
     }
-
-    // Get sites for the organization
-    const sitesData = await db
-      .select()
-      .from(sites)
-      .where(eq(sites.organizationId, organizationId));
 
     // Query session counts for the sites
     const sessionCountMap = new Map<number, number>();
@@ -71,7 +71,6 @@ export async function getSitesFromOrg(
         `,
         format: "JSONEachRow",
       });
-
       const sessionCounts = await processResults(sessionCountsResult);
 
       if (Array.isArray(sessionCounts)) {
@@ -87,20 +86,6 @@ export async function getSitesFromOrg(
       }
     }
 
-    // Get organization owner for subscription info
-    let ownerId = "";
-    const orgOwnerResult = await db
-      .select({ userId: member.userId })
-      .from(member)
-      .where(
-        and(eq(member.organizationId, organizationId), eq(member.role, "owner"))
-      )
-      .limit(1);
-
-    if (orgOwnerResult.length > 0) {
-      ownerId = orgOwnerResult[0].userId;
-    }
-
     // Get subscription info
     let subscription = null;
     let monthlyEventCount = 0;
@@ -109,24 +94,17 @@ export async function getSitesFromOrg(
     if (!IS_CLOUD) {
       // Self-hosted version has unlimited events
       eventLimit = Infinity;
-    } else if (ownerId) {
+    } else {
       subscription = await getSubscriptionInner(organizationId);
       monthlyEventCount = subscription?.monthlyEventCount || 0;
       eventLimit = subscription?.eventLimit || DEFAULT_EVENT_LIMIT;
     }
 
-    // Get organization info
-    const orgInfo = await db
-      .select()
-      .from(organization)
-      .where(eq(organization.id, organizationId))
-      .limit(1);
-
     // Enhance sites data with session counts and subscription info
     const enhancedSitesData = sitesData.map((site) => ({
       ...site,
       sessionsLast24Hours: sessionCountMap.get(site.siteId) || 0,
-      isOwner: userId === ownerId,
+      isOwner: isOwner,
     }));
 
     // Sort by sessions descending

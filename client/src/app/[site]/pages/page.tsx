@@ -4,7 +4,7 @@ import {
   PageTitleItem,
   useGetPageTitlesPaginated,
 } from "@/api/analytics/useGetPageTitles";
-import { TablePagination } from "@/components/pagination";
+import { Pagination } from "@/components/pagination";
 import { useSetPageTitle } from "@/hooks/useSetPageTitle";
 import { useStore } from "@/lib/store";
 import { useEffect, useState } from "react";
@@ -26,10 +26,6 @@ export default function Pages() {
   const [totalPages, setTotalPages] = useState(0);
 
   useSetPageTitle("Rybbit · Pages");
-
-  if (!site) {
-    return null;
-  }
 
   // Get page number (1-based) from pageIndex (0-based)
   const pageNumber = pagination.pageIndex + 1;
@@ -110,6 +106,10 @@ export default function Pages() {
     pagination.pageSize,
   ]);
 
+  if (!site) {
+    return null;
+  }
+
   return (
     <DisabledOverlay message="pages">
       <div className="p-2 md:p-4 max-w-[1100px] mx-auto space-y-3">
@@ -132,11 +132,12 @@ export default function Pages() {
                   title: pageItem.value,
                   count: pageItem.count,
                   percentage: pageItem.percentage,
+                  time_on_page_seconds: pageItem.time_on_page_seconds,
                 }}
               />
             ))}
             {totalPages > 0 && (
-              <TablePagination
+              <Pagination
                 table={table}
                 data={{ items: pagesDataArray || [], total: totalCount || 0 }}
                 pagination={pagination}

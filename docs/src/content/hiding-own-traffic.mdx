@@ -1,35 +1,65 @@
+import { Tabs } from 'nextra/components'
 import { Steps } from 'nextra/components'
+import { Callout } from 'nextra/components'
 
 # Hiding Your Own Traffic
 
-You can disable Rybbit tracking in your browser using the localStorage API.
+There are several ways to disable Rybbit tracking to hide your own visits from analytics.
 
-<Steps>
+<Tabs items={['Browser Extensions', 'localStorage Method']}>
+  <Tabs.Tab>
+    **Browser Extensions (Recommended)**: The easiest way to disable tracking using community-maintained browser extensions.
 
-### 1. Open your browser's developer console
+    ### Available Extensions
 
-Press **F12** or right-click the page and select "Inspect"
+    - **[Chrome Extension](https://chrome.google.com/webstore/detail/gofnfdfidbkpellionhpmkejgaajieoo)**: Install from the Chrome Web Store
+    - **[Firefox Extension](https://addons.mozilla.org/en-US/firefox/addon/rybbit-opt-out/)**: Install from Firefox Add-ons
 
-Navigate to the "Console" tab
+    These extensions automatically disable Rybbit tracking on all websites where you have Rybbit installed, without requiring any manual configuration.
 
-### 2. Disable tracking
+    <Callout type="info">
+    **Self-hosted users**: These extensions require Rybbit version 1.1.0 or higher. If you're running an older version, please update your installation or use the localStorage method.
+    </Callout>
 
-Enter this command to disable tracking:
+    *These extensions are community-maintained by [@davidfiala](https://github.com/davidfiala).*
+  </Tabs.Tab>
+  
+  <Tabs.Tab>
+    **localStorage Method**: Manual configuration using your browser's developer console for more granular control.
 
-```js
-localStorage.setItem('disable-rybbit', 'true');
-```
+    <Steps>
 
-### 3. Re-enable tracking (when needed)
+    ### 1. Open your browser's developer console
 
-If you want to re-enable tracking later, enter:
+    Press **F12** or right-click the page and select "Inspect"
 
-```js
-localStorage.removeItem('disable-rybbit');
-```
+    Navigate to the "Console" tab
 
-</Steps>
+    ### 2. Disable tracking
 
-This method is useful for developers testing the site or site owners who don't want to track their own visits.
+    Enter this command to disable tracking:
 
-Once disabled, the Rybbit script will not send any tracking data while preserving the API functions to prevent JavaScript errors.
+    ```js
+    localStorage.setItem('disable-rybbit', 'true');
+    ```
+
+    ### 3. Re-enable tracking (when needed)
+
+    If you want to re-enable tracking later, enter:
+
+    ```js
+    localStorage.removeItem('disable-rybbit');
+    ```
+
+    </Steps>
+  </Tabs.Tab>
+</Tabs>
+
+## Summary
+
+Both methods are useful for developers testing sites or site owners who don't want to track their own visits:
+
+- **Browser extensions** provide the most convenient solution, automatically working across all your Rybbit-enabled websites
+- **localStorage method** offers more granular control for specific websites or temporary disabling
+
+Once disabled through either method, the Rybbit script will not send any tracking data while preserving the API functions to prevent JavaScript errors.

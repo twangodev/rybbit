@@ -24,6 +24,8 @@ import {
 import { authClient } from "../../lib/auth";
 import { IS_CLOUD } from "../../lib/const";
 import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
+import { resetStore, useStore } from "../../lib/store";
+import { useRouter } from "next/navigation";
 
 /**
  * A simple domain validation function:
@@ -44,6 +46,9 @@ export function AddSite({
   trigger?: React.ReactNode;
   disabled?: boolean;
 }) {
+  const { setSite } = useStore();
+  const router = useRouter();
+
   const { data: activeOrganization } = authClient.useActiveOrganization();
   const { data: sites, refetch } = useGetSitesFromOrg(activeOrganization?.id);
   const { data: subscription } = useStripeSubscription();
@@ -78,12 +83,16 @@ export function AddSite({
     }
 
     try {
-      await addSite(domain, domain, activeOrganization.id, {
+      const site = await addSite(domain, domain, activeOrganization.id, {
         isPublic,
         saltUserIds,
       });
+
+      resetStore();
+      setSite(site.siteId.toString());
+      router.push(`/${site.siteId}`);
     } catch (error) {
-      setError("Failed to add site");
+      setError(String(error));
       return;
     }
 

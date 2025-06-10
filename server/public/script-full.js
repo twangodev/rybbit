@@ -1,10 +1,35 @@
 // Rybbit Analytics Script
+// NOTE: script.js is generated via `npm run pack-script` from the `server` directory
 (function () {
   const scriptTag = document.currentScript;
   const ANALYTICS_HOST = scriptTag.getAttribute("src").split("/script.js")[0];
 
-  // Check if the user has opted out of tracking via localStorage
-  if (localStorage.getItem("disable-rybbit") !== null) {
+  // Load Web Vitals library dynamically from CDN
+  const loadWebVitals = () => {
+    return new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://unpkg.com/web-vitals@3/dist/web-vitals.iife.js";
+      script.onload = () => resolve();
+      script.onerror = () =>
+        reject(new Error("Failed to load web-vitals library"));
+      document.head.appendChild(script);
+    });
+  };
+
+  // Initialize web vitals loading
+  loadWebVitals()
+    .then(() => {
+      initWebVitals();
+    })
+    .catch((e) => {
+      console.warn("Failed to load web vitals library:", e);
+    });
+
+  // Check if the user has opted out of tracking
+  if (
+    !!window.__RYBBIT_OPTOUT__ ||
+    localStorage.getItem("disable-rybbit") !== null
+  ) {
     // Create a no-op implementation to ensure the API still works
     window.rybbit = {
       pageview: () => {},
@@ -137,17 +162,8 @@
     }
   }
 
-  const track = (eventType = "pageview", eventName = "", properties = {}) => {
-    if (
-      eventType === "custom_event" &&
-      (!eventName || typeof eventName !== "string")
-    ) {
-      console.error(
-        "Event name is required and must be a string for custom events"
-      );
-      return;
-    }
-
+  // Helper function to create base payload with pattern matching
+  const createBasePayload = () => {
     const url = new URL(window.location.href);
     let pathname = url.pathname;
 
@@ -157,10 +173,12 @@
       pathname = url.hash.substring(1);
     }
 
+    // Check skip patterns
     if (findMatchingPattern(pathname, skipPatterns)) {
-      return;
+      return null; // Indicates tracking should be skipped
     }
 
+    // Apply mask patterns
     const maskMatch = findMatchingPattern(pathname, maskPatterns);
     if (maskMatch) {
       pathname = maskMatch;
@@ -176,12 +194,6 @@
       language: navigator.language,
       page_title: document.title,
       referrer: document.referrer,
-      type: eventType,
-      event_name: eventName,
-      properties:
-        eventType === "custom_event" || eventType === "outbound"
-          ? JSON.stringify(properties)
-          : undefined,
     };
 
     // Add custom user ID only if it's set
@@ -189,6 +201,11 @@
       payload.user_id = customUserId;
     }
 
+    return payload;
+  };
+
+  // Helper function to send tracking data
+  const sendTrackingData = (payload) => {
     fetch(`${ANALYTICS_HOST}/track`, {
       method: "POST",
       headers: {
@@ -200,6 +217,131 @@
     }).catch(console.error);
   };
 
+  const track = (eventType = "pageview", eventName = "", properties = {}) => {
+    if (
+      eventType === "custom_event" &&
+      (!eventName || typeof eventName !== "string")
+    ) {
+      console.error(
+        "Event name is required and must be a string for custom events"
+      );
+      return;
+    }
+
+    const basePayload = createBasePayload();
+    if (!basePayload) {
+      return; // Skip tracking due to pattern match
+    }
+
+    const payload = {
+      ...basePayload,
+      type: eventType,
+      event_name: eventName,
+      properties:
+        eventType === "custom_event" || eventType === "outbound"
+          ? JSON.stringify(properties)
+          : undefined,
+    };
+
+    sendTrackingData(payload);
+  };
+
+  // Web vitals collection state
+  let webVitalsData = {
+    lcp: null,
+    cls: null,
+    inp: null,
+    fcp: null,
+    ttfb: null,
+  };
+  let webVitalsSent = false;
+  let webVitalsTimeout = null;
+
+  // Check if all metrics are collected and send if ready
+  const checkAndSendWebVitals = () => {
+    if (webVitalsSent) return;
+
+    const allMetricsCollected = Object.values(webVitalsData).every(
+      (value) => value !== null
+    );
+
+    if (allMetricsCollected) {
+      sendWebVitals();
+    }
+  };
+
+  // Send web vitals data in a single request
+  const sendWebVitals = () => {
+    if (webVitalsSent) return;
+    webVitalsSent = true;
+
+    // Clear timeout if it exists
+    if (webVitalsTimeout) {
+      clearTimeout(webVitalsTimeout);
+      webVitalsTimeout = null;
+    }
+
+    const basePayload = createBasePayload();
+    if (!basePayload) {
+      return; // Skip web vitals tracking due to pattern match
+    }
+
+    const payload = {
+      ...basePayload,
+      type: "performance",
+      event_name: "web-vitals",
+      // Include all collected metrics
+      lcp: webVitalsData.lcp,
+      cls: webVitalsData.cls,
+      inp: webVitalsData.inp,
+      fcp: webVitalsData.fcp,
+      ttfb: webVitalsData.ttfb,
+    };
+
+    sendTrackingData(payload);
+  };
+
+  // Individual metric collectors
+  const collectMetric = (metric) => {
+    if (webVitalsSent) return;
+
+    webVitalsData[metric.name.toLowerCase()] = metric.value;
+    checkAndSendWebVitals();
+  };
+
+  // Initialize web vitals tracking if available
+  const initWebVitals = () => {
+    if (typeof webVitals !== "undefined") {
+      try {
+        // Track Core Web Vitals
+        webVitals.getLCP(collectMetric);
+        webVitals.getCLS(collectMetric);
+        webVitals.getINP(collectMetric);
+
+        // Track additional metrics
+        webVitals.getFCP(collectMetric);
+        webVitals.getTTFB(collectMetric);
+
+        // Set a timeout to send metrics even if not all are collected
+        // This handles cases where some metrics might not fire (e.g., no user interactions for INP)
+        webVitalsTimeout = setTimeout(() => {
+          if (!webVitalsSent) {
+            sendWebVitals();
+          }
+        }, 20000);
+
+        // Also send on page unload to capture any remaining metrics
+        window.addEventListener("beforeunload", () => {
+          if (!webVitalsSent) {
+            sendWebVitals();
+          }
+        });
+      } catch (e) {
+        console.warn("Error initializing web vitals tracking:", e);
+      }
+    }
+  };
+
   const trackPageview = () => track("pageview");
 
   const debouncedTrackPageview =
@@ -207,9 +349,31 @@
       ? debounce(trackPageview, debounceDuration)
       : trackPageview;
 
-  // Track outbound link clicks
-  if (trackOutbound) {
-    document.addEventListener("click", function (e) {
+  // Track outbound link clicks and custom data-attribute events
+  document.addEventListener("click", function (e) {
+    // First check for custom events via data attributes
+    let target = e.target;
+    while (target && target !== document) {
+      if (target.hasAttribute("data-rybbit-event")) {
+        const eventName = target.getAttribute("data-rybbit-event");
+        if (eventName) {
+          // Collect additional properties from data-rybbit-prop-* attributes
+          const properties = {};
+          for (const attr of target.attributes) {
+            if (attr.name.startsWith("data-rybbit-prop-")) {
+              const propName = attr.name.replace("data-rybbit-prop-", "");
+              properties[propName] = attr.value;
+            }
+          }
+          track("custom_event", eventName, properties);
+        }
+        break;
+      }
+      target = target.parentElement;
+    }
+
+    // Then check for outbound links
+    if (trackOutbound) {
       const link = e.target.closest("a");
       if (!link || !link.href) return;
 
@@ -220,8 +384,8 @@
           target: link.target || "_self",
         });
       }
-    });
-  }
+    }
+  });
 
   if (autoTrackSpa) {
     const originalPushState = history.pushState;

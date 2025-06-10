@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 
 export type OrgEventCountResponse = {
   event_date: string;
@@ -27,8 +26,9 @@ async function getOrgEventCount({
   if (endDate) params.append("endDate", endDate);
   if (timeZone) params.append("timeZone", timeZone);
 
-  return authedFetchWithError(
-    `${BACKEND_URL}/org-event-count/${organizationId}?${params.toString()}`
+  return authedFetch(
+    `/org-event-count/${organizationId}`,
+    Object.fromEntries(params)
   );
 }
 

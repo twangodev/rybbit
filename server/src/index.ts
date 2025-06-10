@@ -4,19 +4,15 @@ import { toNodeHandler } from "better-auth/node";
 import Fastify from "fastify";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
-import { getAdminSites } from "./api/admin/getAdminSites.js";
 import { getAdminOrganizations } from "./api/admin/getAdminOrganizations.js";
-import { createFunnel } from "./api/analytics/createFunnel.js";
-import { createGoal } from "./api/analytics/createGoal.js";
-import { deleteFunnel } from "./api/analytics/deleteFunnel.js";
-import { deleteGoal } from "./api/analytics/deleteGoal.js";
-import { getEventNames } from "./api/analytics/getEventNames.js";
-import { getEventProperties } from "./api/analytics/getEventProperties.js";
-import { getEvents } from "./api/analytics/getEvents.js";
-import { getFunnel } from "./api/analytics/getFunnel.js";
-import { getFunnels } from "./api/analytics/getFunnels.js";
-import { getGoal } from "./api/analytics/getGoal.js";
-import { getGoals } from "./api/analytics/getGoals.js";
+import { getAdminSites } from "./api/admin/getAdminSites.js";
+import { getEventNames } from "./api/analytics/events/getEventNames.js";
+import { getEventProperties } from "./api/analytics/events/getEventProperties.js";
+import { getEvents } from "./api/analytics/events/getEvents.js";
+import { createFunnel } from "./api/analytics/funnels/createFunnel.js";
+import { deleteFunnel } from "./api/analytics/funnels/deleteFunnel.js";
+import { getFunnel } from "./api/analytics/funnels/getFunnel.js";
+import { getFunnels } from "./api/analytics/funnels/getFunnels.js";
 import { getJourneys } from "./api/analytics/getJourneys.js";
 import { getLiveSessionLocations } from "./api/analytics/getLiveSessionLocations.js";
 import { getLiveUsercount } from "./api/analytics/getLiveUsercount.js";
@@ -32,7 +28,13 @@ import { getUserInfo } from "./api/analytics/getUserInfo.js";
 import { getUserSessionCount } from "./api/analytics/getUserSessionCount.js";
 import { getUserSessions } from "./api/analytics/getUserSessions.js";
 import { getUsers } from "./api/analytics/getUsers.js";
-import { updateGoal } from "./api/analytics/updateGoal.js";
+import { createGoal } from "./api/analytics/goals/createGoal.js";
+import { deleteGoal } from "./api/analytics/goals/deleteGoal.js";
+import { getGoals } from "./api/analytics/goals/getGoals.js";
+import { updateGoal } from "./api/analytics/goals/updateGoal.js";
+import { getPerformanceByDimension } from "./api/analytics/performance/getPerformanceByDimension.js";
+import { getPerformanceOverview } from "./api/analytics/performance/getPerformanceOverview.js";
+import { getPerformanceTimeSeries } from "./api/analytics/performance/getPerformanceTimeSeries.js";
 import { getConfig } from "./api/getConfig.js";
 import { addSite } from "./api/sites/addSite.js";
 import { changeSiteBlockBots } from "./api/sites/changeSiteBlockBots.js";
@@ -83,6 +85,8 @@ server.register(cors, {
       callback(new Error("Not allowed by CORS"), false);
     }
   },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
+  allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
 });
 
@@ -155,6 +159,10 @@ const ANALYTICS_ROUTES = [
   "/api/analytics/events/properties/",
   "/api/events/",
   "/api/get-site",
+  "/api/performance/overview/",
+  "/api/performance/time-series/",
+  "/api/performance/by-path/",
+  "/api/performance/by-dimension/",
 ];
 
 server.addHook("preValidation", async (request, reply) => {
@@ -257,13 +265,17 @@ server.post("/api/funnel/:site", getFunnel);
 server.post("/api/funnel/create/:site", createFunnel);
 server.delete("/api/funnel/:funnelId", deleteFunnel);
 server.get("/api/goals/:site", getGoals);
-server.get("/api/goal/:goalId/:site", getGoal);
 server.post("/api/goal/create", createGoal);
 server.delete("/api/goal/:goalId", deleteGoal);
 server.put("/api/goal/update", updateGoal);
 server.get("/api/events/names/:site", getEventNames);
 server.get("/api/events/properties/:site", getEventProperties);
 server.get("/api/org-event-count/:organizationId", getOrgEventCount);
+
+// Performance Analytics
+server.get("/api/performance/overview/:site", getPerformanceOverview);
+server.get("/api/performance/time-series/:site", getPerformanceTimeSeries);
+server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
 
 // Administrative
 server.get("/api/config", getConfig);

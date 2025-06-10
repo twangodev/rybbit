@@ -1,24 +1,33 @@
 import { ResultSet } from "@clickhouse/client";
-import { Filter, FilterParameter, FilterType } from "./types.js";
-import {
-  validateTimeStatementParams,
-  validateFilters,
-  filterParamSchema,
-} from "./query-validation.js";
+import { FilterParams } from "@rybbit/shared";
 import SqlString from "sqlstring";
+import {
+  filterParamSchema,
+  validateFilters,
+  validateTimeStatementParams,
+} from "./query-validation.js";
+import { FilterParameter, FilterType } from "./types.js";
 
-export function getTimeStatement({
-  date,
-  pastMinutesRange,
-}: {
-  date?: {
-    startDate?: string;
-    endDate?: string;
-    timeZone?: string;
-    table?: "events" | "sessions";
-  };
-  pastMinutesRange?: { start: number; end: number };
-}) {
+export function getTimeStatement(
+  params: Pick<
+    FilterParams,
+    "startDate" | "endDate" | "timeZone" | "pastMinutesStart" | "pastMinutesEnd"
+  >
+) {
+  const { startDate, endDate, timeZone, pastMinutesStart, pastMinutesEnd } =
+    params;
+
+  // Construct the legacy format for validation
+  const pastMinutesRange =
+    pastMinutesStart !== undefined && pastMinutesEnd !== undefined
+      ? { start: Number(pastMinutesStart), end: Number(pastMinutesEnd) }
+      : undefined;
+
+  const date =
+    startDate && endDate && timeZone
+      ? { startDate, endDate, timeZone }
+      : undefined;
+
   // Sanitize inputs with Zod
   const sanitized = validateTimeStatementParams({
     date,
@@ -81,7 +90,15 @@ export async function processResults<T>(
   const data: T[] = await results.json();
   for (const row of data) {
     for (const key in row) {
-      if (!isNaN(Number(row[key])) && row[key] !== "") {
+      // Only convert to number if the value is not null/undefined and is a valid number
+      if (
+        key !== "session_id" &&
+        key !== "user_id" &&
+        row[key] !== null &&
+        row[key] !== undefined &&
+        row[key] !== "" &&
+        !isNaN(Number(row[key]))
+      ) {
         row[key] = Number(row[key]) as any;
       }
     }

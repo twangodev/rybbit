@@ -1,6 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "@/lib/const";
-import { authedFetchWithError } from "../utils";
+import { authedFetch } from "../utils";
 import { authClient } from "@/lib/auth";
 
 export type UserOrganization = {
@@ -13,8 +12,8 @@ export type UserOrganization = {
   role: string;
 };
 
-export function getUserOrganizations(): Promise<UserOrganization[]> {
-  return authedFetchWithError(`${BACKEND_URL}/user/organizations`);
+function getUserOrganizations(): Promise<UserOrganization[]> {
+  return authedFetch("/user/organizations");
 }
 
 export function useUserOrganizations() {
@@ -47,8 +46,8 @@ export function useGetOrganizationApiKey(organizationId: string) {
   return useQuery({
     queryKey: ["get-org-api-key", organizationId],
     queryFn: () => {
-      return authedFetchWithError<{ apiKey: string }>(
-        `${BACKEND_URL}/get-org-api-key/${organizationId}`
+      return authedFetch<{ apiKey: string }>(
+        `/get-org-api-key/${organizationId}`
       );
     },
   });

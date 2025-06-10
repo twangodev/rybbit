@@ -1,33 +1,41 @@
-export type FilterType = "equals" | "not_equals" | "contains" | "not_contains";
+// Import and re-export shared types
+import type { 
+  Filter, 
+  FilterType, 
+  FilterParameter,
+  TimeBucket,
+  WebVitalMetric,
+  PercentileLevel
+} from "@rybbit/shared";
 
-export type FilterParameter =
-  | "browser"
-  | "operating_system"
-  | "language"
-  | "country"
-  | "region"
-  | "city"
-  | "device_type"
-  | "referrer"
-  | "pathname"
-  | "page_title"
-  | "querystring"
-  | "event_name"
-  | "channel"
-  | "utm_source"
-  | "utm_medium"
-  | "utm_campaign"
-  | "utm_term"
-  | "utm_content"
-  // derivative parameters
-  | "entry_page"
-  | "exit_page"
-  | "dimensions"
-  | "browser_version"
-  | "operating_system_version";
+// Re-export for other modules
+export { 
+  Filter, 
+  FilterType, 
+  FilterParameter,
+  TimeBucket,
+  WebVitalMetric,
+  PercentileLevel
+};
 
-export type Filter = {
-  parameter: FilterParameter;
-  value: string[];
-  type: FilterType;
+export type PerformanceOverviewMetrics = {
+  [K in WebVitalMetric as `${K}_${PercentileLevel}`]: number | null;
+} & {
+  total_performance_events: number;
+};
+
+export type PerformanceTimeSeriesPoint = {
+  time: string;
+  event_count: number;
+} & {
+  [K in WebVitalMetric as `${K}_${PercentileLevel}`]: number | null;
+};
+
+export type PerformanceByPathItem = {
+  pathname: string;
+  event_count: number;
+} & {
+  [K in WebVitalMetric as `${K}_avg`]: number | null;
+} & {
+  [K in WebVitalMetric as `${K}_${PercentileLevel}`]: number | null;
 };

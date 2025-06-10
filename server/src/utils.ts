@@ -1,4 +1,5 @@
 import { siteConfig } from "./lib/siteConfig.js";
+import * as psl from "psl";
 
 export function getDeviceType(
   screenWidth: number,
@@ -75,12 +76,55 @@ export const extractSiteId = (path: string) => {
   return null;
 };
 
-// Normalizes a URL origin by removing the "www." prefix.
-export const normalizeOrigin = (url: string) => {
+// Normalizes a domain/hostname by removing all subdomain prefixes.
+// Accepts either a full URL or just a hostname.
+export const normalizeOrigin = (input: string): string => {
   try {
-    const hostname = new URL(url).hostname;
-    return hostname.replace(/^www\./, "").toLowerCase();
+    let hostname: string;
+
+    // If input looks like a URL, extract hostname; otherwise treat as hostname
+    if (input.includes("://")) {
+      hostname = new URL(input).hostname;
+    } else {
+      hostname = input;
+    }
+
+    hostname = hostname.toLowerCase();
+
+    // Handle IP addresses and localhost - return as-is
+    if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+      return hostname;
+    }
+
+    // Use Public Suffix List to get the registrable domain
+    const parsed = psl.parse(hostname);
+
+    // If parsing failed or no domain found, fall back to simple logic
+    if (parsed.error || !parsed.domain) {
+      const parts = hostname.split(".");
+      if (parts.length < 2) {
+        return hostname;
+      }
+      // Default fallback: take last 2 parts
+      return parts.slice(-2).join(".");
+    }
+
+    // Return the registrable domain (domain + public suffix)
+    return parsed.domain;
   } catch {
-    return url;
+    // Fallback for any errors: try simple domain extraction
+    try {
+      let hostname = input.includes("://") ? new URL(input).hostname : input;
+      hostname = hostname.toLowerCase();
+
+      if (hostname === "localhost" || /^\d+\.\d+\.\d+\.\d+$/.test(hostname)) {
+        return hostname;
+      }
+
+      const parts = hostname.split(".");
+      return parts.length >= 2 ? parts.slice(-2).join(".") : hostname;
+    } catch {
+      return input;
+    }
   }
 };

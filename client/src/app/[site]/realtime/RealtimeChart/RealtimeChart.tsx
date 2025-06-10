@@ -1,14 +1,14 @@
 import { ResponsiveBar } from "@nivo/bar";
 import { DateTime } from "luxon";
 import { useMemo } from "react";
-import { useGetOverviewBucketedPastMinutes } from "../../../../api/analytics/useGetOverviewBucketed";
+import { useGetOverviewBucketed } from "../../../../api/analytics/useGetOverviewBucketed";
 import { nivoTheme } from "../../../../lib/nivo";
 import { useStore } from "../../../../lib/store";
 
 export function RealtimeChart() {
   const { site } = useStore();
 
-  const { data, isLoading } = useGetOverviewBucketedPastMinutes({
+  const { data, isLoading } = useGetOverviewBucketed({
     pastMinutesStart: 30,
     pastMinutesEnd: 0,
     site,
