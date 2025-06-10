@@ -35,8 +35,8 @@ export const serverTrackingPayloadSchema = z.discriminatedUnion("type", [
     language: z.string().max(35).optional().default(""),
 
     // Location fields
-    country: z.string().max(2).optional().default(""), // ISO country code
-    region: z.string().max(10).optional().default(""), // e.g., "US-CA"
+    country: z.string().max(2).optional().default(""),
+    region: z.string().max(10).optional().default(""),
     city: z.string().max(100).optional().default(""),
     lat: z.number().optional().default(0),
     lon: z.number().optional().default(0),
@@ -239,7 +239,6 @@ async function processServerTrackingEvent(payload: ServerTrackingPayload): Promi
 // Main server-side tracking endpoint
 export async function trackServerEvent(request: FastifyRequest, reply: FastifyReply) {
   try {
-    // Validate request body using Zod
     const validationResult = serverTrackingPayloadSchema.safeParse(request.body);
 
     if (!validationResult.success) {
@@ -253,8 +252,8 @@ export async function trackServerEvent(request: FastifyRequest, reply: FastifyRe
     const validatedPayload = validationResult.data;
 
     // Check API key authentication (required for server-side tracking)
-    const isApiKeyAuth = request.isApiKeyAuthenticated === true;
-    const providedApiKey = request.providedApiKey as string | undefined;
+    const correctApiKey = request.correctApiKey === true;
+    const providedApiKey = request.providedApiKey;
 
     if (!providedApiKey) {
       return reply.status(401).send({
@@ -263,7 +262,7 @@ export async function trackServerEvent(request: FastifyRequest, reply: FastifyRe
       });
     }
 
-    if (!isApiKeyAuth) {
+    if (!correctApiKey) {
       console.error(
         `[Server Tracking] Request rejected for site ${validatedPayload.site_id}: Invalid API Key provided`
       );

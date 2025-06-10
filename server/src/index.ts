@@ -180,8 +180,8 @@ server.addHook("preValidation", async (request, reply) => {
     await siteConfig.ensureInitialized();
     const expectedApiKey = siteConfig.getSiteApiKey(siteIdFromPayload);
 
-    request.isApiKeyAuthenticated = !!(expectedApiKey && apiKey === expectedApiKey);
     request.providedApiKey = apiKey;
+    request.correctApiKey = !!expectedApiKey && apiKey === expectedApiKey;
   }
 });
 
@@ -329,7 +329,7 @@ start();
 declare module "fastify" {
   interface FastifyRequest {
     user?: any; // Or define a more specific user type
-    isApiKeyAuthenticated?: boolean;
     providedApiKey?: string;
+    correctApiKey?: boolean;
   }
 }
