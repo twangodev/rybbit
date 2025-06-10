@@ -65,13 +65,6 @@ export const serverTrackingPayloadSchema = z.discriminatedUnion("type", [
     ...sharedServerTrackingPayloadFields,
     event_name: z.string().min(1).max(256),
     properties: z.record(z.any()).optional().default({}),
-
-    // Additional URL parameters as JSON object
-    url_parameters: z.record(z.string()).optional().default({}),
-
-    // Session tracking
-    is_new_session: z.boolean().optional().default(false),
-    session_pageviews: z.number().int().positive().optional().default(1),
   }),
 ]);
 
