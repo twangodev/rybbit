@@ -32,12 +32,12 @@ const sharedServerTrackingPayloadFields = {
   operating_system_version: z.string().max(50).optional().default(""),
   language: z.string().max(35).optional().default(""),
 
-    // Location fields
-    country: z.string().max(2).optional().default(""),
-    region: z.string().max(10).optional().default(""),
-    city: z.string().max(100).optional().default(""),
-    lat: z.number().optional().default(0),
-    lon: z.number().optional().default(0),
+  // Location fields
+  country: z.string().max(2).optional().default(""),
+  region: z.string().max(10).optional().default(""),
+  city: z.string().max(100).optional().default(""),
+  lat: z.number().optional().default(0),
+  lon: z.number().optional().default(0),
 
     // Traffic source fields
     channel: z.string().max(100).optional().default("Direct"),
