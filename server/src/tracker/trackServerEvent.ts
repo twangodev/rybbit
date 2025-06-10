@@ -11,9 +11,9 @@ import { siteConfig } from "../lib/siteConfig.js";
 const sharedServerTrackingPayloadFields = {
   // Required
   site_id: z.string().min(1),
-  user_id: z.string().min(1).max(255),
-  session_id: z.string().min(1).max(255),
-  timestamp: z.string().datetime().optional(),
+  user_id: z.string().min(1).max(255), // opt?
+  session_id: z.string().min(1).max(255), // opt?
+  timestamp: z.string().datetime().optional(), // remove
 
   // Page/URL fields
   hostname: z.string().max(253).optional().default(""),
