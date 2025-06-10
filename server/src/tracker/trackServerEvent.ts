@@ -51,8 +51,8 @@ const sharedServerTrackingPayloadFields = {
   url_parameters: z.record(z.string()).optional().default({}), // remove, derived from querystring
 
   // Session tracking
-  is_new_session: z.boolean().optional().default(false),
-  session_pageviews: z.number().int().positive().optional().default(1),
+  is_new_session: z.boolean().default(false), // remove?
+  session_pageviews: z.number().int().positive().default(1), // remove?
 };
 
 export const serverTrackingPayloadSchema = z.discriminatedUnion("type", [
