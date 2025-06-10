@@ -62,10 +62,7 @@ export const serverTrackingPayloadSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     type: z.literal("custom_event"),
-    // Required fields
-    site_id: z.string().min(1),
-    user_id: z.string().min(1).max(255),
-    session_id: z.string().min(1).max(255),
+    ...sharedServerTrackingPayloadFields,
     event_name: z.string().min(1).max(256),
     timestamp: z.string().datetime().optional(), // ISO string, defaults to now
 
