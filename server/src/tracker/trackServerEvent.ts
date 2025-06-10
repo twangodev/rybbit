@@ -64,41 +64,6 @@ export const serverTrackingPayloadSchema = z.discriminatedUnion("type", [
     type: z.literal("custom_event"),
     ...sharedServerTrackingPayloadFields,
     event_name: z.string().min(1).max(256),
-    timestamp: z.string().datetime().optional(), // ISO string, defaults to now
-
-    // Page/URL fields
-    hostname: z.string().max(253).optional().default(""),
-    pathname: z.string().max(2048).optional().default(""),
-    querystring: z.string().max(2048).optional().default(""),
-    page_title: z.string().max(512).optional().default(""),
-    referrer: z.string().max(2048).optional().default(""),
-
-    // Device/Browser fields
-    screen_width: z.number().int().positive().optional().default(0),
-    screen_height: z.number().int().positive().optional().default(0),
-    device_type: z.enum(["desktop", "tablet", "mobile"]).optional().default("desktop"),
-    browser: z.string().max(100).optional().default(""),
-    browser_version: z.string().max(50).optional().default(""),
-    operating_system: z.string().max(100).optional().default(""),
-    operating_system_version: z.string().max(50).optional().default(""),
-    language: z.string().max(35).optional().default(""),
-
-    // Location fields
-    country: z.string().max(2).optional().default(""),
-    region: z.string().max(10).optional().default(""),
-    city: z.string().max(100).optional().default(""),
-    lat: z.number().optional().default(0),
-    lon: z.number().optional().default(0),
-
-    // Traffic source fields
-    channel: z.string().max(100).optional().default("Direct"),
-    utm_source: z.string().max(255).optional(),
-    utm_medium: z.string().max(255).optional(),
-    utm_campaign: z.string().max(255).optional(),
-    utm_term: z.string().max(255).optional(),
-    utm_content: z.string().max(255).optional(),
-
-    // Event properties
     properties: z.record(z.any()).optional().default({}),
 
     // Additional URL parameters as JSON object
