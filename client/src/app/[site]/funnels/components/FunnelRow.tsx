@@ -1,8 +1,8 @@
 "use client";
 
-import { useDeleteFunnel } from "@/api/analytics/useDeleteFunnel";
-import { useGetFunnel } from "@/api/analytics/useGetFunnel";
-import { SavedFunnel } from "@/api/analytics/useGetFunnels";
+import { useDeleteFunnel } from "../../../../api/analytics/funnels/useDeleteFunnel";
+import { useGetFunnel } from "../../../../api/analytics/funnels/useGetFunnel";
+import { SavedFunnel } from "../../../../api/analytics/funnels/useGetFunnels";
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { DateRangeMode, Time } from "@/components/DateSelector/types";
 import { Button } from "@/components/ui/button";

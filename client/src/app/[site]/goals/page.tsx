@@ -4,7 +4,7 @@ import { useState } from "react";
 import {
   useGetGoals,
   useGetGoalsPastMinutes,
-} from "../../../api/analytics/useGetGoals";
+} from "../../../api/analytics/goals/useGetGoals";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
 import { NothingFound } from "../../../components/NothingFound";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";

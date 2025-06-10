@@ -2,7 +2,7 @@
 
 import { FileText, MousePointerClick, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
-import { useDeleteGoal } from "../../../../api/analytics/useDeleteGoal";
+import { useDeleteGoal } from "../../../../api/analytics/goals/useDeleteGoal";
 import { Goal } from "../../../../api/analytics/useGetGoals";
 import {
   AlertDialog,
