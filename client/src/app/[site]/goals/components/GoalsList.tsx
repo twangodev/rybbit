@@ -1,9 +1,12 @@
 "use client";
 
-import { Goal, PaginationMeta } from "../../../../api/analytics/useGetGoals";
 import GoalCard from "./GoalCard";
 import { Button } from "../../../../components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import {
+  Goal,
+  PaginationMeta,
+} from "../../../../api/analytics/goals/useGetGoals";
 
 interface GoalsListProps {
   goals: Goal[];

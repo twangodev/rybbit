@@ -3,7 +3,6 @@
 import { FileText, MousePointerClick, Edit, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { useDeleteGoal } from "../../../../api/analytics/goals/useDeleteGoal";
-import { Goal } from "../../../../api/analytics/useGetGoals";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +20,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "../../../../components/ui/tooltip";
+import { Goal } from "../../../../api/analytics/goals/useGetGoals";
 
 interface GoalCardProps {
   goal: Goal;
