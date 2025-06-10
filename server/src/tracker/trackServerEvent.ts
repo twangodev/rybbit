@@ -23,14 +23,14 @@ const sharedServerTrackingPayloadFields = {
   referrer: z.string().max(2048).default(""),
 
   // Device/Browser fields
-  screen_width: z.number().int().positive().optional().default(0),
-  screen_height: z.number().int().positive().optional().default(0),
-  device_type: z.enum(["desktop", "tablet", "mobile"]).optional().default("desktop"),
-  browser: z.string().max(100).optional().default(""),
-  browser_version: z.string().max(50).optional().default(""),
-  operating_system: z.string().max(100).optional().default(""),
-  operating_system_version: z.string().max(50).optional().default(""),
-  language: z.string().max(35).optional().default(""),
+  screen_width: z.number().int().positive().default(0),
+  screen_height: z.number().int().positive().default(0),
+  device_type: z.enum(["Desktop", "Tablet", "Mobile"]).default("Desktop"),
+  browser: z.string().max(100).default(""), // use user-agent?
+  browser_version: z.string().max(50).default(""), // use user-agent?
+  operating_system: z.string().max(100).default(""), // use user-agent?
+  operating_system_version: z.string().max(50).default(""), // use user-agent?
+  language: z.string().max(35).default(""),
 
   // Location fields
   country: z.string().max(2).optional().default(""),
