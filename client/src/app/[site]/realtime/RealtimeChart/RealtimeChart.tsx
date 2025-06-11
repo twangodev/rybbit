@@ -9,8 +9,6 @@ export function RealtimeChart() {
   const { site } = useStore();
 
   const { data, isLoading } = useGetOverviewBucketed({
-    pastMinutesStart: 30,
-    pastMinutesEnd: 0,
     site,
     bucket: "minute",
     refetchInterval: 10000,
