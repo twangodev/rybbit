@@ -27,8 +27,6 @@ export function useGetOverviewBucketed({
   bucket = "hour",
   dynamicFilters = [],
   refetchInterval,
-  pastMinutesStart,
-  pastMinutesEnd,
   props,
 }: {
   periodTime?: PeriodTime;
@@ -36,14 +34,26 @@ export function useGetOverviewBucketed({
   bucket?: TimeBucket;
   dynamicFilters?: Filter[];
   refetchInterval?: number;
-  pastMinutesStart?: number;
-  pastMinutesEnd?: number;
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
   const { time, previousTime, filters: globalFilters } = useStore();
 
   const timeToUse = periodTime === "previous" ? previousTime : time;
   const combinedFilters = [...globalFilters, ...dynamicFilters];
+
+  // Extract past minutes values from timeToUse when in past-minutes mode
+  const pastMinutesStart =
+    timeToUse.mode === "past-minutes"
+      ? periodTime === "previous"
+        ? timeToUse.pastMinutesStart * 2
+        : timeToUse.pastMinutesStart
+      : undefined;
+  const pastMinutesEnd =
+    timeToUse.mode === "past-minutes"
+      ? periodTime === "previous"
+        ? timeToUse.pastMinutesStart
+        : timeToUse.pastMinutesEnd
+      : undefined;
 
   // Use getQueryParams utility to handle conditional logic
   const queryParams = getQueryParams(

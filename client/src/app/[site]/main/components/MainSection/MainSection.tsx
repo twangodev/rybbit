@@ -32,76 +32,22 @@ export function MainSection() {
 
   const { selectedStat, time, site, bucket } = useStore();
 
-  // Use past minutes API when in past-minutes mode
-  const isPastMinutesMode = time.mode === "past-minutes";
-
-  // Regular date-based queries
-  const {
-    data: regularData,
-    isFetching: isRegularFetching,
-    error: regularError,
-  } = useGetOverviewBucketed({
+  // Current period data
+  const { data, isFetching, error } = useGetOverviewBucketed({
     site,
     bucket,
-    props: {
-      enabled: !isPastMinutesMode,
-    },
   });
 
+  // Previous period data
   const {
-    data: regularPreviousData,
-    isFetching: isRegularPreviousFetching,
-    error: regularPreviousError,
+    data: previousData,
+    isFetching: isPreviousFetching,
+    error: previousError,
   } = useGetOverviewBucketed({
     periodTime: "previous",
     site,
     bucket,
-    props: {
-      enabled: !isPastMinutesMode,
-    },
   });
-
-  // Past minutes-based queries
-  const {
-    data: pastMinutesData,
-    isFetching: isPastMinutesFetching,
-    error: pastMinutesError,
-  } = useGetOverviewBucketed({
-    pastMinutesStart: time.mode === "past-minutes" ? time.pastMinutesStart : 0,
-    pastMinutesEnd: time.mode === "past-minutes" ? time.pastMinutesEnd : 0,
-    site,
-    bucket,
-    props: {
-      enabled: isPastMinutesMode,
-    },
-  });
-
-  const {
-    data: pastMinutesPreviousData,
-    isFetching: isPastMinutesPreviousFetching,
-    error: pastMinutesPreviousError,
-  } = useGetOverviewBucketed({
-    pastMinutesStart:
-      time.mode === "past-minutes" ? time.pastMinutesStart * 2 : 0,
-    pastMinutesEnd: time.mode === "past-minutes" ? time.pastMinutesStart : 0,
-    site,
-    bucket,
-    props: {
-      enabled: isPastMinutesMode,
-    },
-  });
-
-  // Combine the data based on the mode
-  const data = isPastMinutesMode ? pastMinutesData : regularData;
-  const previousData = isPastMinutesMode
-    ? pastMinutesPreviousData
-    : regularPreviousData;
-  const isFetching = isPastMinutesMode
-    ? isPastMinutesFetching
-    : isRegularFetching;
-  const isPreviousFetching = isPastMinutesMode
-    ? isPastMinutesPreviousFetching
-    : isRegularPreviousFetching;
 
   const { isFetching: isOverviewFetching } = useGetOverview({ site });
   const { isFetching: isOverviewFetchingPrevious } = useGetOverview({

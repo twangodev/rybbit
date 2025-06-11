@@ -27,8 +27,6 @@ export function SiteCard({ siteId, domain }: SiteCardProps) {
   const hasLoadedData = useRef(false);
 
   const { data, isLoading, isSuccess } = useGetOverviewBucketed({
-    pastMinutesStart: MINUTES_IN_24_HOURS,
-    pastMinutesEnd: 0,
     site: siteId,
     bucket: "hour",
     props: {
@@ -42,8 +40,6 @@ export function SiteCard({ siteId, domain }: SiteCardProps) {
     isSuccess: isOverviewSuccess,
   } = useGetOverview({
     site: siteId,
-    pastMinutesStart: MINUTES_IN_24_HOURS,
-    pastMinutesEnd: 0,
   });
 
   // Update the hasLoadedData ref when data loads successfully

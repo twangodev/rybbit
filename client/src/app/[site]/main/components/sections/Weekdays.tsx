@@ -37,37 +37,14 @@ export function Weekdays() {
   const { site, time } = useStore();
   const [metric, setMetric] = useState<StatType>("users");
 
-  // Use past minutes API when in past-minutes mode
-  const isPastMinutesMode = time.mode === "past-minutes";
-
   const { data, isFetching, error } = useGetOverviewBucketed({
     site,
     bucket: "hour",
-    props: {
-      enabled: !isPastMinutesMode,
-    },
   });
-
-  // Past minutes-based queries
-  const {
-    data: pastMinutesData,
-    isFetching: isPastMinutesFetching,
-    error: pastMinutesError,
-  } = useGetOverviewBucketed({
-    pastMinutesStart: time.mode === "past-minutes" ? time.pastMinutesStart : 0,
-    pastMinutesEnd: time.mode === "past-minutes" ? time.pastMinutesEnd : 0,
-    site,
-    bucket: "hour",
-    props: {
-      enabled: isPastMinutesMode,
-    },
-  });
-
-  const dataToUse = isPastMinutesMode ? pastMinutesData : data;
 
   // Generate aggregated data for the heatmap
   const heatmapData = useMemo(() => {
-    if (!dataToUse?.data) return [];
+    if (!data?.data) return [];
 
     // Initialize a 2D array for days (0-6) and hours (0-23)
     const aggregated: number[][] = Array(7)
@@ -80,7 +57,7 @@ export function Weekdays() {
       .map(() => Array(24).fill(0));
 
     // Process each data point
-    dataToUse.data.forEach((item) => {
+    data.data.forEach((item) => {
       if (!item || !item.time) return;
 
       // Parse the timestamp
@@ -108,7 +85,7 @@ export function Weekdays() {
     }
 
     return aggregated;
-  }, [dataToUse, metric]);
+  }, [data, metric]);
 
   // Find max value for color intensity scaling
   const maxValue = useMemo(() => {
