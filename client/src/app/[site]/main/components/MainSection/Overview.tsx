@@ -74,16 +74,16 @@ const Stat = ({
 }) => {
   const { selectedStat, setSelectedStat, site, bucket, time } = useStore();
   const [isHovering, setIsHovering] = useState(false);
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const isPastMinutesMode = time.mode === "past-minutes";
 
   // Consolidated bucketed data for sparklines - automatically handles both modes
   const { data } = useGetOverviewBucketed({
     site,
     bucket,
-    // For past-24-hours mode, use custom past minutes; otherwise use regular time-based approach
-    ...(isPast24HoursMode && {
-      pastMinutesStart: 24 * 60,
-      pastMinutesEnd: 0,
+    // For past-minutes mode, use the actual time values
+    ...(isPastMinutesMode && {
+      pastMinutesStart: time.pastMinutesStart,
+      pastMinutesEnd: time.pastMinutesEnd,
     }),
   });
 
@@ -91,14 +91,14 @@ const Stat = ({
   const sparklinesData =
     data?.data
       ?.filter((d) => {
-        // For last-24-hours mode, ensure we only show data within the last 24 hours
-        if (isPast24HoursMode) {
+        // For past-minutes mode, ensure we only show data within the specified time range
+        if (isPastMinutesMode) {
           const timestamp = new Date(d.time);
           const now = new Date();
-          const twentyFourHoursAgo = new Date(
-            now.getTime() - 24 * 60 * 60 * 1000
+          const startTime = new Date(
+            now.getTime() - time.pastMinutesStart * 60 * 1000
           );
-          return timestamp >= twentyFourHoursAgo && timestamp <= now;
+          return timestamp >= startTime && timestamp <= now;
         }
         return true;
       })
@@ -159,7 +159,7 @@ const Stat = ({
 
 export function Overview() {
   const { site, time } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const isPastMinutesMode = time.mode === "past-minutes";
 
   // Current period - automatically handles both regular time-based and past-minutes queries
   const {
@@ -169,10 +169,10 @@ export function Overview() {
     error: overviewError,
   } = useGetOverview({
     site,
-    // For past-24-hours mode, use custom past minutes; otherwise use regular time-based approach
-    ...(isPast24HoursMode && {
-      pastMinutesStart: 24 * 60,
-      pastMinutesEnd: 0,
+    // For past-minutes mode, use the actual time values
+    ...(isPastMinutesMode && {
+      pastMinutesStart: time.pastMinutesStart,
+      pastMinutesEnd: time.pastMinutesEnd,
     }),
   });
 
@@ -180,11 +180,11 @@ export function Overview() {
   const { data: overviewDataPrevious, isLoading: isOverviewLoadingPrevious } =
     useGetOverview({
       site,
-      // For past-24-hours mode, use previous 24-hour period; otherwise use regular previous period
-      ...(isPast24HoursMode
+      // For past-minutes mode, use previous period with same duration; otherwise use regular previous period
+      ...(isPastMinutesMode
         ? {
-            pastMinutesStart: 48 * 60,
-            pastMinutesEnd: 24 * 60,
+            pastMinutesStart: time.pastMinutesStart * 2,
+            pastMinutesEnd: time.pastMinutesStart,
           }
         : {
             periodTime: "previous",

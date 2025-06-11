@@ -12,7 +12,7 @@ import { DateTime } from "luxon";
 import { Time } from "../../../../../components/DateSelector/types";
 
 const getOptions = (time: Time) => {
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "past-minutes" && time.pastMinutesStart >= 1440) {
     return (
       <SelectContent>
         <SelectItem size="sm" value="minute">

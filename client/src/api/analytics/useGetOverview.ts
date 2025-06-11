@@ -50,13 +50,7 @@ export function useGetOverview({
           site,
           filters,
         ]
-      : [
-          "overview",
-          timeToUse,
-          site,
-          filters,
-          timeToUse.mode === "last-24-hours" ? "past-minutes" : "date-range",
-        ];
+      : ["overview", timeToUse, site, filters];
 
   return useQuery({
     queryKey,

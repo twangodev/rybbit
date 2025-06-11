@@ -24,8 +24,12 @@ const getLabel = (time: Time) => {
     return `${startFormatted} - ${endFormatted}`;
   }
 
-  if (time.mode === "last-24-hours") {
-    return "Past 24 Hours";
+  if (time.mode === "past-minutes") {
+    if (time.pastMinutesStart >= 1440) {
+      const hours = Math.floor(time.pastMinutesStart / 60);
+      return `Last ${hours} ${hours === 1 ? "Hour" : "Hours"}`;
+    }
+    return `Last ${time.pastMinutesStart} minutes`;
   }
 
   if (time.mode === "day") {
@@ -109,7 +113,9 @@ export function DateSelector({
           <DropdownMenuItem
             onClick={() =>
               setTime({
-                mode: "last-24-hours",
+                mode: "past-minutes",
+                pastMinutesStart: 1440, // 24 hours * 60 minutes
+                pastMinutesEnd: 0, // current time
               })
             }
           >

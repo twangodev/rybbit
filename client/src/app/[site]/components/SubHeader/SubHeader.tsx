@@ -1,15 +1,14 @@
 "use client";
+import { Button } from "@/components/ui/button";
+import { goBack, goForward, useStore } from "@/lib/store";
 import { FilterParameter } from "@rybbit/shared";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { DateTime } from "luxon";
-import { Button } from "@/components/ui/button";
-import { goBack, goForward, useStore } from "@/lib/store";
 import { Filters } from "./Filters/Filters";
 
 import { DateSelector } from "../../../../components/DateSelector/DateSelector";
 import { Time } from "../../../../components/DateSelector/types";
 import { MobileSidebar } from "../../../../components/MobileSidebar";
-import { useWindowSize } from "@uidotdev/usehooks";
 
 const canGoForward = (time: Time) => {
   const currentDay = DateTime.now().startOf("day");
@@ -94,7 +93,7 @@ export function SubHeader({
               variant="outline"
               size="icon"
               onClick={goBack}
-              disabled={time.mode === "last-24-hours"}
+              disabled={time.mode === "past-minutes"}
               className="rounded-r-none h-8 w-8 sm:h-9 sm:w-9"
             >
               <ChevronLeft />

@@ -18,14 +18,14 @@ export default function GoalsPage() {
   useSetPageTitle("Rybbit · Goals");
 
   const { time, site } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const isPastMinutesMode = time.mode === "past-minutes";
   const [pagination, setPagination] = useState({
     pageIndex: 0, // TablePagination uses 0-based indexing
     pageSize: 10, // Show 10 goals per page
   });
 
   // Use the appropriate hook based on the mode
-  const { data: goalsData, isLoading } = isPast24HoursMode
+  const { data: goalsData, isLoading } = isPastMinutesMode
     ? useGetGoalsPastMinutes({
         page: pagination.pageIndex + 1, // API uses 1-based indexing
         pageSize: pagination.pageSize,

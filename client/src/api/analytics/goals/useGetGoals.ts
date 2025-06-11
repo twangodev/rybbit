@@ -72,7 +72,7 @@ export function useGetGoals({
     };
   } else if (!startDate || !endDate) {
     // Otherwise get time parameters from the store's time
-    // This will handle last-24-hours mode automatically
+    // This will handle past-minutes mode automatically
     const queryParams = getQueryTimeParams(time);
     timeParams = Object.fromEntries(new URLSearchParams(queryParams));
   } else {

@@ -29,6 +29,9 @@ export const serializeStateToUrl = (
     params.set("month", time.month);
   } else if (time.mode === "year") {
     params.set("year", time.year);
+  } else if (time.mode === "past-minutes") {
+    params.set("pastMinutesStart", time.pastMinutesStart.toString());
+    params.set("pastMinutesEnd", time.pastMinutesEnd.toString());
   }
 
   // Serialize bucket
@@ -64,8 +67,16 @@ export const deserializeUrlToState = (
   // Deserialize time
   const timeMode = searchParams.get("timeMode") as Time["mode"] | null;
   if (timeMode) {
-    if (timeMode === "last-24-hours") {
-      result.time = { mode: "last-24-hours" };
+    if (timeMode === "past-minutes") {
+      const pastMinutesStart = searchParams.get("pastMinutesStart");
+      const pastMinutesEnd = searchParams.get("pastMinutesEnd");
+      if (pastMinutesStart && pastMinutesEnd) {
+        result.time = {
+          mode: "past-minutes",
+          pastMinutesStart: Number(pastMinutesStart),
+          pastMinutesEnd: Number(pastMinutesEnd),
+        };
+      }
     } else if (timeMode === "day") {
       const day = searchParams.get("day");
       if (day) {

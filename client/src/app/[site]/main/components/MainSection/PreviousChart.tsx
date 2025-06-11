@@ -9,10 +9,10 @@ import { APIResponse } from "../../../../../api/types";
 import { Time } from "../../../../../components/DateSelector/types";
 
 const getMin = (time: Time) => {
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "past-minutes") {
     return DateTime.now()
       .setZone("UTC")
-      .minus({ hours: 48 })
+      .minus({ minutes: time.pastMinutesStart * 2 })
       .startOf("hour")
       .toJSDate();
   } else if (time.mode === "day") {
@@ -56,9 +56,12 @@ export function PreviousChart({
     .slice(0, size);
 
   const min = useMemo(() => getMin(time), [time]);
-  const max24Hours =
-    time.mode === "last-24-hours"
-      ? DateTime.now().setZone("UTC").minus({ hours: 24 }).toJSDate()
+  const maxPastMinutes =
+    time.mode === "past-minutes"
+      ? DateTime.now()
+          .setZone("UTC")
+          .minus({ minutes: time.pastMinutesStart })
+          .toJSDate()
       : undefined;
 
   return (
@@ -77,7 +80,7 @@ export function PreviousChart({
         precision: "second",
         useUTC: true,
         min,
-        max: max24Hours,
+        max: maxPastMinutes,
       }}
       yScale={{
         type: "linear",
@@ -100,7 +103,10 @@ export function PreviousChart({
         format: (value) => {
           const localTime = DateTime.fromJSDate(value).toLocal();
 
-          if (time.mode === "last-24-hours" || time.mode === "day") {
+          if (
+            (time.mode === "past-minutes" && time.pastMinutesStart >= 1440) ||
+            time.mode === "day"
+          ) {
             return localTime.toFormat("ha");
           } else if (time.mode === "range") {
             return localTime.toFormat("MMM d");

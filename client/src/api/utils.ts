@@ -26,10 +26,7 @@ export function getStartAndEndDate(time: Time) {
       endDate: DateTime.fromISO(time.year).endOf("year").toISODate(),
     };
   }
-  if (time.mode === "all-time") {
-    return { startDate: null, endDate: null };
-  }
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "all-time" || time.mode === "past-minutes") {
     return { startDate: null, endDate: null };
   }
   return { startDate: time.day, endDate: time.day };
@@ -43,20 +40,38 @@ export function getQueryParams(
     pastMinutesEnd?: number;
   } = {}
 ): Record<string, any> {
-  return options.pastMinutesStart || options.pastMinutesEnd
-    ? {
-        // Past minutes approach for last-24-hours mode
-        timeZone,
-        pastMinutesStart: options.pastMinutesStart ?? 24 * 60, // 24 hours ago by default
-        pastMinutesEnd: options.pastMinutesEnd ?? 0, // now by default
-        ...additionalParams,
-      }
-    : {
-        // Regular date-based approach
-        ...getStartAndEndDate(time),
-        timeZone,
-        ...additionalParams,
-      };
+  // Check if we should use past minutes mode
+  const shouldUsePastMinutes =
+    options.pastMinutesStart ||
+    options.pastMinutesEnd ||
+    time.mode === "past-minutes";
+
+  if (shouldUsePastMinutes) {
+    let pastMinutesStart: number;
+    let pastMinutesEnd: number;
+
+    if (time.mode === "past-minutes") {
+      pastMinutesStart = options.pastMinutesStart ?? time.pastMinutesStart;
+      pastMinutesEnd = options.pastMinutesEnd ?? time.pastMinutesEnd;
+    } else {
+      pastMinutesStart = options.pastMinutesStart ?? 24 * 60; // fallback
+      pastMinutesEnd = options.pastMinutesEnd ?? 0; // fallback
+    }
+
+    return {
+      timeZone,
+      pastMinutesStart,
+      pastMinutesEnd,
+      ...additionalParams,
+    };
+  }
+
+  // Regular date-based approach
+  return {
+    ...getStartAndEndDate(time),
+    timeZone,
+    ...additionalParams,
+  };
 }
 
 export async function authedFetch<T>(

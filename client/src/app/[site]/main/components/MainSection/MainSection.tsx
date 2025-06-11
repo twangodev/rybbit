@@ -32,8 +32,8 @@ export function MainSection() {
 
   const { selectedStat, time, site, bucket } = useStore();
 
-  // Use the past minutes API when in last-24-hours mode
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  // Use past minutes API when in past-minutes mode
+  const isPastMinutesMode = time.mode === "past-minutes";
 
   // Regular date-based queries
   const {
@@ -44,7 +44,7 @@ export function MainSection() {
     site,
     bucket,
     props: {
-      enabled: !isPast24HoursMode,
+      enabled: !isPastMinutesMode,
     },
   });
 
@@ -57,22 +57,22 @@ export function MainSection() {
     site,
     bucket,
     props: {
-      enabled: !isPast24HoursMode,
+      enabled: !isPastMinutesMode,
     },
   });
 
-  // Past minutes-based queries (for 24 hour mode)
+  // Past minutes-based queries
   const {
     data: pastMinutesData,
     isFetching: isPastMinutesFetching,
     error: pastMinutesError,
   } = useGetOverviewBucketed({
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
+    pastMinutesStart: time.mode === "past-minutes" ? time.pastMinutesStart : 0,
+    pastMinutesEnd: time.mode === "past-minutes" ? time.pastMinutesEnd : 0,
     site,
     bucket,
     props: {
-      enabled: isPast24HoursMode,
+      enabled: isPastMinutesMode,
     },
   });
 
@@ -81,24 +81,25 @@ export function MainSection() {
     isFetching: isPastMinutesPreviousFetching,
     error: pastMinutesPreviousError,
   } = useGetOverviewBucketed({
-    pastMinutesStart: 48 * 60,
-    pastMinutesEnd: 24 * 60,
+    pastMinutesStart:
+      time.mode === "past-minutes" ? time.pastMinutesStart * 2 : 0,
+    pastMinutesEnd: time.mode === "past-minutes" ? time.pastMinutesStart : 0,
     site,
     bucket,
     props: {
-      enabled: isPast24HoursMode,
+      enabled: isPastMinutesMode,
     },
   });
 
   // Combine the data based on the mode
-  const data = isPast24HoursMode ? pastMinutesData : regularData;
-  const previousData = isPast24HoursMode
+  const data = isPastMinutesMode ? pastMinutesData : regularData;
+  const previousData = isPastMinutesMode
     ? pastMinutesPreviousData
     : regularPreviousData;
-  const isFetching = isPast24HoursMode
+  const isFetching = isPastMinutesMode
     ? isPastMinutesFetching
     : isRegularFetching;
-  const isPreviousFetching = isPast24HoursMode
+  const isPreviousFetching = isPastMinutesMode
     ? isPastMinutesPreviousFetching
     : isRegularPreviousFetching;
 

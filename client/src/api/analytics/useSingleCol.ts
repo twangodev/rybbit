@@ -2,6 +2,7 @@ import { FilterParameter } from "@rybbit/shared";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { useStore } from "../../lib/store";
 import { APIResponse } from "../types";
+import { isPastMinutesMode } from "../../components/DateSelector/utils";
 import { authedFetch, getQueryParams } from "../utils";
 
 type PeriodTime = "current" | "previous";
@@ -37,22 +38,21 @@ export function useSingleCol({
       limit,
       filters: useFilters ? filters : undefined,
     },
-    {
-      pastMinutesStart: periodTime === "previous" ? 48 * 60 : 24 * 60,
-      pastMinutesEnd: periodTime === "previous" ? 24 * 60 : 0,
-    }
+    isPastMinutesMode(timeToUse)
+      ? {
+          pastMinutesStart:
+            periodTime === "previous"
+              ? timeToUse.pastMinutesStart * 2
+              : timeToUse.pastMinutesStart,
+          pastMinutesEnd:
+            periodTime === "previous"
+              ? timeToUse.pastMinutesStart
+              : timeToUse.pastMinutesEnd,
+        }
+      : {}
   );
 
-  // Use a consistent query key format that includes the mode
-  const queryKey = [
-    parameter,
-    timeToUse,
-    site,
-    filters,
-    limit,
-    useFilters,
-    timeToUse.mode === "last-24-hours" ? "past-minutes" : "date-range",
-  ];
+  const queryKey = [parameter, timeToUse, site, filters, limit, useFilters];
 
   return useQuery({
     queryKey,

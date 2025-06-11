@@ -37,33 +37,33 @@ export function Weekdays() {
   const { site, time } = useStore();
   const [metric, setMetric] = useState<StatType>("users");
 
-  // Use the past minutes API when in last-24-hours mode
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  // Use past minutes API when in past-minutes mode
+  const isPastMinutesMode = time.mode === "past-minutes";
 
   const { data, isFetching, error } = useGetOverviewBucketed({
     site,
     bucket: "hour",
     props: {
-      enabled: !isPast24HoursMode,
+      enabled: !isPastMinutesMode,
     },
   });
 
-  // Past minutes-based queries (for 24 hour mode)
+  // Past minutes-based queries
   const {
-    data: past24HoursData,
-    isFetching: isPast24HoursFetching,
-    error: past24HoursError,
+    data: pastMinutesData,
+    isFetching: isPastMinutesFetching,
+    error: pastMinutesError,
   } = useGetOverviewBucketed({
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
+    pastMinutesStart: time.mode === "past-minutes" ? time.pastMinutesStart : 0,
+    pastMinutesEnd: time.mode === "past-minutes" ? time.pastMinutesEnd : 0,
     site,
     bucket: "hour",
     props: {
-      enabled: isPast24HoursMode,
+      enabled: isPastMinutesMode,
     },
   });
 
-  const dataToUse = isPast24HoursMode ? past24HoursData : data;
+  const dataToUse = isPastMinutesMode ? pastMinutesData : data;
 
   // Generate aggregated data for the heatmap
   const heatmapData = useMemo(() => {

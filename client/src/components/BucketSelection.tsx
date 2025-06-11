@@ -12,7 +12,27 @@ import { DateTime } from "luxon";
 import { Time } from "./DateSelector/types";
 
 const getOptions = (time: Time) => {
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "past-minutes") {
+    // For longer durations (24+ hours), include hour buckets
+    if (time.pastMinutesStart >= 1440) {
+      return (
+        <SelectContent>
+          <SelectItem size="sm" value="minute">
+            Minute
+          </SelectItem>
+          <SelectItem size="sm" value="five_minutes">
+            5 Minutes
+          </SelectItem>
+          <SelectItem size="sm" value="fifteen_minutes">
+            15 Minutes
+          </SelectItem>
+          <SelectItem size="sm" value="hour">
+            Hour
+          </SelectItem>
+        </SelectContent>
+      );
+    }
+    // For shorter durations, exclude hour buckets
     return (
       <SelectContent>
         <SelectItem size="sm" value="minute">
@@ -23,9 +43,6 @@ const getOptions = (time: Time) => {
         </SelectItem>
         <SelectItem size="sm" value="fifteen_minutes">
           15 Minutes
-        </SelectItem>
-        <SelectItem size="sm" value="hour">
-          Hour
         </SelectItem>
       </SelectContent>
     );

@@ -20,7 +20,7 @@ export const formatter = Intl.NumberFormat(userLocale, { notation: "compact" });
 
 const getMax = (time: Time, bucket: TimeBucket) => {
   const now = DateTime.now();
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "past-minutes") {
     return DateTime.now().setZone("UTC").toJSDate();
   } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day)
@@ -88,7 +88,7 @@ const getMax = (time: Time, bucket: TimeBucket) => {
 };
 
 const getMin = (time: Time, bucket: TimeBucket) => {
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "past-minutes") {
     return DateTime.now()
       .setZone("UTC")
       .minus({ hours: 24 })
@@ -185,8 +185,8 @@ export function Chart({
     (time.mode === "range" && time.endDate !== currentDayStr) || // do not display in range mode if end date is not current day
     (time.mode === "day" &&
       (bucket === "minute" || bucket === "five_minutes")) || // do not display in day mode if bucket is minute or five_minutes
-    (time.mode === "last-24-hours" &&
-      (bucket === "minute" || bucket === "five_minutes")); // do not display in last-24-hours mode if bucket is minute or five_minutes
+    (time.mode === "past-minutes" &&
+      (bucket === "minute" || bucket === "five_minutes")); // do not display in 24-hour mode if bucket is minute or five_minutes
   const displayDashed = formattedData.length >= 2 && !shouldNotDisplay;
 
   const baseGradient = {
@@ -302,13 +302,13 @@ export function Chart({
         truncateTickAt: 0,
         tickValues: Math.min(
           maxTicks,
-          time.mode === "day" || time.mode === "last-24-hours"
+          time.mode === "day" || time.mode === "past-minutes"
             ? 24
             : Math.min(12, data?.data?.length ?? 0)
         ),
         format: (value) => {
           const dt = DateTime.fromJSDate(value).setLocale(userLocale);
-          if (time.mode === "day" || time.mode === "last-24-hours") {
+          if (time.mode === "day" || time.mode === "past-minutes") {
             return dt.toFormat(hour12 ? "ha" : "HH:mm");
           }
           return dt.toFormat(hour12 ? "MMM d" : "dd MMM");

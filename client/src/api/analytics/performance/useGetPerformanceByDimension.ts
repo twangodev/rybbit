@@ -91,7 +91,6 @@ export function useGetPerformanceByDimension({
       selectedPercentile,
       limit,
       page,
-      time.mode === "last-24-hours" ? "past-minutes" : "date-range",
       additionalFilters,
       sortBy,
       sortOrder,

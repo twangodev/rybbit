@@ -9,6 +9,7 @@ import {
 import { authedFetch, getStartAndEndDate } from "../utils";
 import { APIResponse } from "../types";
 import { getQueryTimeParams } from "./utils";
+import { isPastMinutesMode } from "../../components/DateSelector/utils";
 
 export type UsersResponse = {
   user_id: string;
@@ -36,10 +37,10 @@ export interface GetUsersOptions {
 
 export function useGetUsers(options: GetUsersOptions) {
   const { time, site } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const pastMinutesMode = isPastMinutesMode(time);
 
   // Get the appropriate time parameters
-  const timeParams = isPast24HoursMode
+  const timeParams = pastMinutesMode
     ? Object.fromEntries(new URLSearchParams(getQueryTimeParams(time)))
     : getStartAndEndDate(time);
 
@@ -75,8 +76,7 @@ export function useGetUsers(options: GetUsersOptions) {
       };
 
       // Add time parameters
-      if (isPast24HoursMode) {
-        // Add minutes parameter for last-24-hours mode
+      if (pastMinutesMode) {
         Object.assign(requestParams, timeParams);
       } else {
         requestParams.startDate = timeParams.startDate;

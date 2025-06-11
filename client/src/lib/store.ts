@@ -1,4 +1,4 @@
-import { Filter, FilterParameter, FilterType, TimeBucket } from "@rybbit/shared";
+import { Filter, FilterParameter, TimeBucket } from "@rybbit/shared";
 import { DateTime } from "luxon";
 import { create } from "zustand";
 import { Time } from "../components/DateSelector/types";
@@ -156,10 +156,12 @@ export const useStore = create<Store>((set) => ({
         mode: "day",
         day: DateTime.fromISO(time.day).minus({ days: 1 }).toISODate() ?? "",
       };
-    } else if (time.mode === "last-24-hours") {
+    } else if (time.mode === "past-minutes") {
       bucketToUse = "hour";
       previousTime = {
-        mode: "last-24-hours",
+        mode: "past-minutes",
+        pastMinutesStart: time.pastMinutesStart,
+        pastMinutesEnd: time.pastMinutesEnd,
       };
     } else if (time.mode === "range") {
       const timeRangeLength =

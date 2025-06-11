@@ -1,4 +1,5 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { isPastMinutesMode } from "../../components/DateSelector/utils";
 import { timeZone } from "../../lib/dateTimeUtils";
 import {
   getFilteredFilters,
@@ -76,10 +77,11 @@ export type GetSessionsResponse = {
 
 export function useGetSessionsInfinite(userId?: string) {
   const { time, site, filters } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+
+  const pastMinutesMode = isPastMinutesMode(time);
 
   // Get the appropriate time parameters
-  const timeParams = isPast24HoursMode
+  const timeParams = pastMinutesMode
     ? Object.fromEntries(new URLSearchParams(getQueryTimeParams(time)))
     : getStartAndEndDate(time);
 
@@ -101,8 +103,7 @@ export function useGetSessionsInfinite(userId?: string) {
       }
 
       // Add time parameters
-      if (isPast24HoursMode) {
-        // Add minutes parameter for last-24-hours mode
+      if (pastMinutesMode) {
         Object.assign(requestParams, timeParams);
       } else if (!userId) {
         // Only add date parameters if not filtering by userId
@@ -176,10 +177,15 @@ export interface SessionPageviewsAndEvents {
 
 export function useGetSessionDetailsInfinite(sessionId: string | null) {
   const { site, time } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const pastMinutesMode = isPastMinutesMode(time);
 
-  // Get minutes for last-24-hours mode
-  const minutes = isPast24HoursMode ? 24 * 60 : undefined;
+  // Get minutes based on the time mode
+  let minutes: number | undefined;
+  if (pastMinutesMode) {
+    if (time.mode === "past-minutes") {
+      minutes = time.pastMinutesStart; // Use the dynamic value
+    }
+  }
 
   return useInfiniteQuery<APIResponse<SessionPageviewsAndEvents>>({
     queryKey: ["session-details-infinite", sessionId, site, minutes],
@@ -193,8 +199,7 @@ export function useGetSessionDetailsInfinite(sessionId: string | null) {
         offset: pageParam,
       };
 
-      // Add minutes parameter for last-24-hours mode
-      if (isPast24HoursMode && minutes) {
+      if (pastMinutesMode && minutes) {
         queryParams.minutes = minutes;
       }
 
