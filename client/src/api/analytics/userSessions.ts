@@ -1,5 +1,4 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
-import { isPastMinutesMode } from "../../components/DateSelector/utils";
 import { timeZone } from "../../lib/dateTimeUtils";
 import {
   getFilteredFilters,
@@ -7,8 +6,7 @@ import {
   useStore,
 } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetch, getStartAndEndDate } from "../utils";
-import { getQueryTimeParams } from "./utils";
+import { authedFetch, getQueryParams } from "../utils";
 
 export type UserSessionsResponse = {
   session_id: string;
@@ -30,7 +28,7 @@ export type UserSessionsResponse = {
 
 export function useGetUserSessions(userId: string) {
   const { time, site, filters } = useStore();
-  const { startDate, endDate } = getStartAndEndDate(time);
+  const timeParams = getQueryParams(time);
 
   return useQuery({
     queryKey: ["user-sessions", userId, time, site, filters],
@@ -38,9 +36,7 @@ export function useGetUserSessions(userId: string) {
       return authedFetch<UserSessionsResponse>(
         `/user/${userId}/sessions/${site}`,
         {
-          startDate,
-          endDate,
-          timeZone,
+          ...timeParams,
           filters,
         }
       );
@@ -78,12 +74,8 @@ export type GetSessionsResponse = {
 export function useGetSessionsInfinite(userId?: string) {
   const { time, site, filters } = useStore();
 
-  const pastMinutesMode = isPastMinutesMode(time);
-
-  // Get the appropriate time parameters
-  const timeParams = pastMinutesMode
-    ? Object.fromEntries(new URLSearchParams(getQueryTimeParams(time)))
-    : getStartAndEndDate(time);
+  // Get the appropriate time parameters using getQueryParams
+  const timeParams = getQueryParams(time);
 
   const filteredFilters = getFilteredFilters(SESSION_PAGE_FILTERS);
 
@@ -103,7 +95,7 @@ export function useGetSessionsInfinite(userId?: string) {
       }
 
       // Add time parameters
-      if (pastMinutesMode) {
+      if (time.mode === "past-minutes") {
         Object.assign(requestParams, timeParams);
       } else if (!userId) {
         // Only add date parameters if not filtering by userId
@@ -177,7 +169,7 @@ export interface SessionPageviewsAndEvents {
 
 export function useGetSessionDetailsInfinite(sessionId: string | null) {
   const { site, time } = useStore();
-  const pastMinutesMode = isPastMinutesMode(time);
+  const pastMinutesMode = time.mode === "past-minutes";
 
   // Get minutes based on the time mode
   let minutes: number | undefined;

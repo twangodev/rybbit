@@ -4,8 +4,7 @@ import {
   getFilteredFilters,
   EVENT_FILTERS,
 } from "../../../lib/store";
-import { authedFetch } from "../../utils";
-import { getQueryTimeParams } from "../utils";
+import { authedFetch, getQueryParams } from "../../utils";
 
 export type EventProperty = {
   propertyKey: string;
@@ -16,7 +15,7 @@ export type EventProperty = {
 export function useGetEventProperties(eventName: string | null) {
   const { site, time, filters } = useStore();
 
-  const timeParams = getQueryTimeParams(time);
+  const timeParams = getQueryParams(time);
   const filteredFilters = getFilteredFilters(EVENT_FILTERS);
 
   return useQuery({
@@ -30,7 +29,7 @@ export function useGetEventProperties(eventName: string | null) {
     enabled: !!site && !!eventName,
     queryFn: () => {
       const params = {
-        ...Object.fromEntries(new URLSearchParams(timeParams)),
+        ...timeParams,
         eventName,
         filters: filteredFilters.length > 0 ? filteredFilters : undefined,
       };

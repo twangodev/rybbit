@@ -5,8 +5,7 @@ import {
   GOALS_PAGE_FILTERS,
   useStore,
 } from "../../../lib/store";
-import { authedFetch } from "../../utils";
-import { getQueryTimeParams } from "../utils";
+import { authedFetch, getQueryParams } from "../../utils";
 
 export interface Goal {
   goalId: number;
@@ -73,8 +72,7 @@ export function useGetGoals({
   } else if (!startDate || !endDate) {
     // Otherwise get time parameters from the store's time
     // This will handle past-minutes mode automatically
-    const queryParams = getQueryTimeParams(time);
-    timeParams = Object.fromEntries(new URLSearchParams(queryParams));
+    timeParams = getQueryParams(time);
   } else {
     // Use explicitly provided dates if available
     timeParams = { startDate, endDate, timeZone };
