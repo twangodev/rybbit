@@ -3,8 +3,6 @@ import { nivoTheme } from "@/lib/nivo";
 import { ResponsiveLine } from "@nivo/line";
 import { DateTime } from "luxon";
 
-export const formatter = Intl.NumberFormat("en", { notation: "compact" });
-
 export function SparklinesChart({
   data,
   isHovering,

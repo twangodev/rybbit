@@ -23,7 +23,7 @@ Settings.defaultLocale = userLocale;
  * @param format - The weekday format: "narrow" | "short" | "long".
  * @returns An array of localized weekday names from Monday to Sunday.
  */
-export function getLocalizedWeekdayNames(
+function getLocalizedWeekdayNames(
   locale: string,
   format: "narrow" | "short" | "long" = "long"
 ): string[] {
@@ -67,7 +67,7 @@ export function getLocalizedWeekdayNames(
  * @param options - Intl.DateTimeFormat options (e.g., { hour: "numeric", hour12: true }).
  * @returns An array of 24 formatted hour strings.
  */
-export function getLocalizedTimeLabels(
+function getLocalizedTimeLabels(
   locale: string,
   options: Intl.DateTimeFormatOptions
 ): string[] {

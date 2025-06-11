@@ -13,10 +13,11 @@ import { DateTime } from "luxon";
 import { GetOverviewBucketedResponse } from "../../../../../api/analytics/useGetOverviewBucketed";
 import { APIResponse } from "../../../../../api/types";
 import { Time } from "../../../../../components/DateSelector/types";
-import { formatSecondsAsMinutesAndSeconds } from "../../../../../lib/utils";
+import {
+  formatSecondsAsMinutesAndSeconds,
+  formatter,
+} from "../../../../../lib/utils";
 import { userLocale, hour12 } from "../../../../../lib/dateTimeUtils";
-
-export const formatter = Intl.NumberFormat(userLocale, { notation: "compact" });
 
 const getMax = (time: Time, bucket: TimeBucket) => {
   const now = DateTime.now();
@@ -329,7 +330,7 @@ export function Chart({
         tickRotation: 0,
         truncateTickAt: 0,
         tickValues: Y_TICK_VALUES,
-        format: formatter.format,
+        format: formatter,
       }}
       enableTouchCrosshair={true}
       enablePoints={false}

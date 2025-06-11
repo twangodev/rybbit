@@ -5,7 +5,7 @@ import { Time } from "../components/DateSelector/types";
 import { StatType, useStore } from "./store";
 
 // Serialize store state to URL parameters
-export const serializeStateToUrl = (
+const serializeStateToUrl = (
   time: Time,
   bucket: TimeBucket,
   selectedStat: StatType,
@@ -49,7 +49,7 @@ export const serializeStateToUrl = (
 };
 
 // Deserialize URL parameters to store state
-export const deserializeUrlToState = (
+const deserializeUrlToState = (
   searchParams: URLSearchParams
 ): {
   time: Time | null;

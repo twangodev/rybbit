@@ -87,5 +87,3 @@ export function CopyText({
     </div>
   );
 }
-
-export default CopyText;

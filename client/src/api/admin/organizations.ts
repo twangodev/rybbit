@@ -2,7 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { authedFetch } from "../utils";
 import { authClient } from "../../lib/auth";
 
-export type UserOrganization = {
+type UserOrganization = {
   id: string;
   name: string;
   slug: string;

@@ -61,7 +61,7 @@ export function SiteSettings({
   return <SiteSettingsInner siteMetadata={siteMetadata} trigger={trigger} />;
 }
 
-export function SiteSettingsInner({
+function SiteSettingsInner({
   siteMetadata,
   trigger,
 }: {

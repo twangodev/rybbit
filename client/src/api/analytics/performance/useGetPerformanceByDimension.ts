@@ -116,13 +116,3 @@ export function useGetPerformanceByDimension({
     enabled,
   });
 }
-
-// Keep the old hook for backward compatibility
-export function useGetPerformanceByPath(
-  options: Omit<UseGetPerformanceByDimensionOptions, "dimension">
-) {
-  return useGetPerformanceByDimension({
-    ...options,
-    dimension: "pathname",
-  });
-}

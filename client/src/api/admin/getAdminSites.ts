@@ -10,7 +10,7 @@ export interface AdminSiteData {
   organizationOwnerEmail: string | null;
 }
 
-export async function getAdminSites() {
+async function getAdminSites() {
   return authedFetch<AdminSiteData[]>("/admin/sites");
 }
 

@@ -13,7 +13,7 @@ interface MetricInfo {
 }
 
 // Metric explanations with importance and structured content
-export const getMetricInfo = (metric: PerformanceMetric): MetricInfo => {
+const getMetricInfo = (metric: PerformanceMetric): MetricInfo => {
   switch (metric) {
     case "lcp":
       return {
