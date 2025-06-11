@@ -86,7 +86,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
 ]);
 
 // Update session for both pageviews and events
-export async function updateSession(
+async function updateSession(
   payload: TotalTrackingPayload,
   existingSession: any | null,
   isPageview: boolean = true
@@ -141,7 +141,7 @@ export async function updateSession(
 }
 
 // Process tracking event and add to queue
-export async function processTrackingEvent(
+async function processTrackingEvent(
   payload: TotalTrackingPayload,
   existingSession: any | null,
   isPageview: boolean = true

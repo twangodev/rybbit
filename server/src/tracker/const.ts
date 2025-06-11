@@ -4,7 +4,7 @@
  */
 export const DISABLE_ORIGIN_CHECK = process.env.DISABLE_ORIGIN_CHECK === "true";
 
-export const searchDomains = [
+const searchDomains = [
   // Google and variants
   "google.com",
   "google.",
@@ -64,7 +64,7 @@ export const searchDomains = [
   "kagi.com",
 ];
 
-export const socialDomains = [
+const socialDomains = [
   // Major social networks and their variants
   "facebook.com",
   "fb.com",
@@ -155,7 +155,7 @@ export const socialDomains = [
   "odnoklassniki.ru",
 ];
 
-export const videoDomains = [
+const videoDomains = [
   // Major video platforms
   "youtube.com",
   "youtu.be",
@@ -225,7 +225,7 @@ export const videoDomains = [
   "likee.video",
 ];
 
-export const shoppingDomains = [
+const shoppingDomains = [
   // Major marketplaces
   "amazon.com",
   "amazon.",
@@ -305,7 +305,7 @@ export const shoppingDomains = [
 ];
 
 // Define sources types
-export const searchSources = [
+const searchSources = [
   // Major search engines
   "google",
   "bing",
@@ -350,7 +350,7 @@ export const searchSources = [
   "kagi",
 ];
 
-export const socialSources = [
+const socialSources = [
   // Major social platforms
   "facebook",
   "twitter",
@@ -426,7 +426,7 @@ export const socialSources = [
   "odnoklassniki",
 ];
 
-export const videoSources = [
+const videoSources = [
   // Major video platforms
   "youtube",
   "vimeo",
@@ -490,7 +490,7 @@ export const videoSources = [
   "likee",
 ];
 
-export const shoppingSources = [
+const shoppingSources = [
   // Major marketplaces
   "amazon",
   "ebay",
@@ -569,7 +569,7 @@ export const shoppingSources = [
   "foodpanda",
 ];
 
-export const emailSources = [
+const emailSources = [
   "email",
   "e_mail",
   "e-mail",
@@ -599,7 +599,7 @@ export const emailSources = [
   "campaign",
 ];
 
-export const smsSources = [
+const smsSources = [
   "sms",
   "text",
   "twilio",
@@ -611,7 +611,7 @@ export const smsSources = [
 ];
 
 // Medium types
-export const socialMediums = [
+const socialMediums = [
   "sm",
   "social-media",
   "social-network",
@@ -631,7 +631,7 @@ export const socialMediums = [
   "social_post",
 ];
 
-export const videoMediums = [
+const videoMediums = [
   "video",
   "youtube",
   "vimeo",
@@ -654,7 +654,7 @@ export const videoMediums = [
   "post-roll",
 ];
 
-export const displayMediums = [
+const displayMediums = [
   "display",
   "interstitial",
   "banner",
@@ -677,7 +677,7 @@ export const displayMediums = [
   "impression",
 ];
 
-export const affiliateMediums = [
+const affiliateMediums = [
   "affiliate",
   "aff",
   "partner",
@@ -690,7 +690,7 @@ export const affiliateMediums = [
   "lead-generation",
 ];
 
-export const referralMediums = [
+const referralMediums = [
   "referral",
   "link",
   "app",
@@ -708,7 +708,7 @@ export const referralMediums = [
   "vanity-url",
 ];
 
-export const emailMediums = [
+const emailMediums = [
   "email",
   "e_mail",
   "e-mail",
@@ -726,7 +726,7 @@ export const emailMediums = [
   "news",
 ];
 
-export const pushMediums = [
+const pushMediums = [
   "push",
   "notification",
   "mobile",
@@ -740,7 +740,7 @@ export const pushMediums = [
   "install",
 ];
 
-export const audioMediums = [
+const audioMediums = [
   "audio",
   "podcast",
   "radio",
@@ -761,7 +761,7 @@ export const audioMediums = [
 ];
 
 // New medium categories for modern marketing
-export const influencerMediums = [
+const influencerMediums = [
   "influencer",
   "creator",
   "sponsored",
@@ -776,7 +776,7 @@ export const influencerMediums = [
   "endorsement",
 ];
 
-export const cpcMediums = [
+const cpcMediums = [
   "cpc",
   "ppc",
   "paid-search",
@@ -789,7 +789,7 @@ export const cpcMediums = [
   "paid-click",
 ];
 
-export const cpmMediums = [
+const cpmMediums = [
   "cpm",
   "display-ads",
   "banner-ads",
@@ -802,7 +802,7 @@ export const cpmMediums = [
   "ad-exchange",
 ];
 
-export const contentMediums = [
+const contentMediums = [
   "content",
   "blog",
   "article",
@@ -819,7 +819,7 @@ export const contentMediums = [
   "resource",
 ];
 
-export const eventMediums = [
+const eventMediums = [
   "event",
   "conference",
   "webinar",

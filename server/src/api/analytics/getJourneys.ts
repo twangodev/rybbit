@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import clickhouse from "../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { DateTime } from "luxon";
 import { getTimeStatement } from "./utils.js";
 import { FilterParams } from "@rybbit/shared";

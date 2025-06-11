@@ -89,5 +89,3 @@ export const initializeClickhouse = async () => {
     });
   }
 };
-
-export default clickhouse;

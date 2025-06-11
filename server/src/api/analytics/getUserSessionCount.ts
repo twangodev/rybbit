@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import clickhouse from "../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { processResults } from "./utils.js";
 import { getUserHasAccessToSitePublic } from "../../lib/auth-utils.js";
 import SqlString from "sqlstring";
@@ -57,9 +57,8 @@ export async function getUserSessionCount(
       },
     });
 
-    const data = await processResults<GetUserSessionCountResponse[number]>(
-      result
-    );
+    const data =
+      await processResults<GetUserSessionCountResponse[number]>(result);
 
     return res.send({
       data,

@@ -11,7 +11,7 @@ import { trackingPayloadSchema } from "./trackEvent.js";
 import { siteConfig } from "../lib/siteConfig.js";
 
 // Define extended payload types
-export type BaseTrackingPayload = TrackingPayload & {
+type BaseTrackingPayload = TrackingPayload & {
   type?: string;
   event_name?: string;
   properties?: string;
@@ -27,7 +27,7 @@ export type TotalTrackingPayload = BaseTrackingPayload & {
 };
 
 // Infer type from Zod schema
-export type ValidatedTrackingPayload = z.infer<typeof trackingPayloadSchema>;
+type ValidatedTrackingPayload = z.infer<typeof trackingPayloadSchema>;
 
 // UTM and URL parameter parsing utilities
 export function getUTMParams(querystring: string): Record<string, string> {

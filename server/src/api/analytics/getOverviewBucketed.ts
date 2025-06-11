@@ -1,7 +1,7 @@
 import { FilterParams } from "@rybbit/shared";
 import { FastifyReply, FastifyRequest } from "fastify";
 import SqlString from "sqlstring";
-import clickhouse from "../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getUserHasAccessToSitePublic } from "../../lib/auth-utils.js";
 import { validateTimeStatementFillParams } from "./query-validation.js";
 import {

@@ -1,5 +1,5 @@
 import { FastifyRequest, FastifyReply } from "fastify";
-import clickhouse from "../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { processResults } from "./utils.js";
 import SqlString from "sqlstring";
 

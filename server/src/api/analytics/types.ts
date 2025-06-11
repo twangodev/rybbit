@@ -1,21 +1,21 @@
 // Import and re-export shared types
-import type { 
-  Filter, 
-  FilterType, 
+import type {
+  Filter,
+  FilterType,
   FilterParameter,
   TimeBucket,
   WebVitalMetric,
-  PercentileLevel
+  PercentileLevel,
 } from "@rybbit/shared";
 
 // Re-export for other modules
-export { 
-  Filter, 
-  FilterType, 
+export {
+  Filter,
+  FilterType,
   FilterParameter,
   TimeBucket,
   WebVitalMetric,
-  PercentileLevel
+  PercentileLevel,
 };
 
 export type PerformanceOverviewMetrics = {

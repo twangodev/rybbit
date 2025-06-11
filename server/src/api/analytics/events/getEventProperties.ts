@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import clickhouse from "../../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../../db/clickhouse/clickhouse.js";
 import {
   getTimeStatement,
   processResults,
