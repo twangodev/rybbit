@@ -2,7 +2,6 @@ import { FilterParameter } from "@rybbit/shared";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { useStore } from "../../lib/store";
 import { APIResponse } from "../types";
-import { isPastMinutesMode } from "../../components/DateSelector/utils";
 import { authedFetch, getQueryParams } from "../utils";
 
 type PeriodTime = "current" | "previous";
@@ -31,28 +30,24 @@ export function useSingleCol({
   const { time, previousTime, site, filters } = useStore();
   const timeToUse = periodTime === "previous" ? previousTime : time;
 
-  const queryParams = getQueryParams(
-    timeToUse,
-    {
-      parameter,
-      limit,
-      filters: useFilters ? filters : undefined,
-    },
-    isPastMinutesMode(timeToUse)
+  // For "previous" periods in past-minutes mode, we need to modify the time object
+  // to use doubled duration for the start and the original start as the end
+  const timeForQuery =
+    timeToUse.mode === "past-minutes" && periodTime === "previous"
       ? {
-          pastMinutesStart:
-            periodTime === "previous"
-              ? timeToUse.pastMinutesStart * 2
-              : timeToUse.pastMinutesStart,
-          pastMinutesEnd:
-            periodTime === "previous"
-              ? timeToUse.pastMinutesStart
-              : timeToUse.pastMinutesEnd,
+          ...timeToUse,
+          pastMinutesStart: timeToUse.pastMinutesStart * 2,
+          pastMinutesEnd: timeToUse.pastMinutesStart,
         }
-      : {}
-  );
+      : timeToUse;
 
-  const queryKey = [parameter, timeToUse, site, filters, limit, useFilters];
+  const queryParams = getQueryParams(timeForQuery, {
+    parameter,
+    limit,
+    filters: useFilters ? filters : undefined,
+  });
+
+  const queryKey = [parameter, timeForQuery, site, filters, limit, useFilters];
 
   return useQuery({
     queryKey,

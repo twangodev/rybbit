@@ -34,34 +34,13 @@ export function getStartAndEndDate(time: Time) {
 
 export function getQueryParams(
   time: Time,
-  additionalParams: Record<string, any> = {},
-  options: {
-    pastMinutesStart?: number;
-    pastMinutesEnd?: number;
-  } = {}
+  additionalParams: Record<string, any> = {}
 ): Record<string, any> {
-  // Check if we should use past minutes mode
-  const shouldUsePastMinutes =
-    options.pastMinutesStart ||
-    options.pastMinutesEnd ||
-    time.mode === "past-minutes";
-
-  if (shouldUsePastMinutes) {
-    let pastMinutesStart: number;
-    let pastMinutesEnd: number;
-
-    if (time.mode === "past-minutes") {
-      pastMinutesStart = options.pastMinutesStart ?? time.pastMinutesStart;
-      pastMinutesEnd = options.pastMinutesEnd ?? time.pastMinutesEnd;
-    } else {
-      pastMinutesStart = options.pastMinutesStart ?? 24 * 60; // fallback
-      pastMinutesEnd = options.pastMinutesEnd ?? 0; // fallback
-    }
-
+  if (time.mode === "past-minutes") {
     return {
       timeZone,
-      pastMinutesStart,
-      pastMinutesEnd,
+      pastMinutesStart: time.pastMinutesStart,
+      pastMinutesEnd: time.pastMinutesEnd,
       ...additionalParams,
     };
   }

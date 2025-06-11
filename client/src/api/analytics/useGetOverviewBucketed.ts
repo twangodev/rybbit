@@ -41,46 +41,36 @@ export function useGetOverviewBucketed({
   const timeToUse = periodTime === "previous" ? previousTime : time;
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
-  // Extract past minutes values from timeToUse when in past-minutes mode
-  const pastMinutesStart =
-    timeToUse.mode === "past-minutes"
-      ? periodTime === "previous"
-        ? timeToUse.pastMinutesStart * 2
-        : timeToUse.pastMinutesStart
-      : undefined;
-  const pastMinutesEnd =
-    timeToUse.mode === "past-minutes"
-      ? periodTime === "previous"
-        ? timeToUse.pastMinutesStart
-        : timeToUse.pastMinutesEnd
-      : undefined;
+  // For "previous" periods in past-minutes mode, we need to modify the time object
+  // to use doubled duration for the start and the original start as the end
+  const timeForQuery =
+    timeToUse.mode === "past-minutes" && periodTime === "previous"
+      ? {
+          ...timeToUse,
+          pastMinutesStart: timeToUse.pastMinutesStart * 2,
+          pastMinutesEnd: timeToUse.pastMinutesStart,
+        }
+      : timeToUse;
 
   // Use getQueryParams utility to handle conditional logic
-  const queryParams = getQueryParams(
-    timeToUse,
-    {
-      timeZone,
-      bucket,
-      filters: combinedFilters,
-    },
-    {
-      pastMinutesStart,
-      pastMinutesEnd,
-    }
-  );
+  const queryParams = getQueryParams(timeForQuery, {
+    timeZone,
+    bucket,
+    filters: combinedFilters,
+  });
 
   // Generate appropriate query key based on whether we're using past minutes or regular time
   const queryKey =
-    pastMinutesStart !== undefined && pastMinutesEnd !== undefined
+    timeForQuery.mode === "past-minutes"
       ? [
           "overview-bucketed-past-minutes",
-          pastMinutesStart,
-          pastMinutesEnd,
+          timeForQuery.pastMinutesStart,
+          timeForQuery.pastMinutesEnd,
           site,
           bucket,
           combinedFilters,
         ]
-      : ["overview-bucketed", timeToUse, bucket, site, combinedFilters];
+      : ["overview-bucketed", timeForQuery, bucket, site, combinedFilters];
 
   return useQuery({
     queryKey,
