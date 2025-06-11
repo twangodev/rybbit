@@ -74,17 +74,11 @@ const Stat = ({
 }) => {
   const { selectedStat, setSelectedStat, site, bucket, time } = useStore();
   const [isHovering, setIsHovering] = useState(false);
-  const isPastMinutesMode = time.mode === "past-minutes";
 
   // Consolidated bucketed data for sparklines - automatically handles both modes
   const { data } = useGetOverviewBucketed({
     site,
     bucket,
-    // For past-minutes mode, use the actual time values
-    ...(isPastMinutesMode && {
-      pastMinutesStart: time.pastMinutesStart,
-      pastMinutesEnd: time.pastMinutesEnd,
-    }),
   });
 
   // Filter and format sparklines data
@@ -92,7 +86,7 @@ const Stat = ({
     data?.data
       ?.filter((d) => {
         // For past-minutes mode, ensure we only show data within the specified time range
-        if (isPastMinutesMode) {
+        if (time.mode === "past-minutes") {
           const timestamp = new Date(d.time);
           const now = new Date();
           const startTime = new Date(
@@ -158,8 +152,7 @@ const Stat = ({
 };
 
 export function Overview() {
-  const { site, time } = useStore();
-  const isPastMinutesMode = time.mode === "past-minutes";
+  const { site } = useStore();
 
   // Current period - automatically handles both regular time-based and past-minutes queries
   const {
@@ -169,26 +162,13 @@ export function Overview() {
     error: overviewError,
   } = useGetOverview({
     site,
-    // For past-minutes mode, use the actual time values
-    ...(isPastMinutesMode && {
-      pastMinutesStart: time.pastMinutesStart,
-      pastMinutesEnd: time.pastMinutesEnd,
-    }),
   });
 
   // Previous period - automatically handles both regular time-based and past-minutes queries
   const { data: overviewDataPrevious, isLoading: isOverviewLoadingPrevious } =
     useGetOverview({
       site,
-      // For past-minutes mode, use previous period with same duration; otherwise use regular previous period
-      ...(isPastMinutesMode
-        ? {
-            pastMinutesStart: time.pastMinutesStart * 2,
-            pastMinutesEnd: time.pastMinutesStart,
-          }
-        : {
-            periodTime: "previous",
-          }),
+      periodTime: "previous",
     });
 
   const isLoading = isOverviewLoading || isOverviewLoadingPrevious;
