@@ -98,7 +98,7 @@ export function useGetOverviewBucketed({
       }
       return undefined;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     ...props,
   });
 }

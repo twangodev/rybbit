@@ -157,7 +157,12 @@ export const useStore = create<Store>((set) => ({
         day: DateTime.fromISO(time.day).minus({ days: 1 }).toISODate() ?? "",
       };
     } else if (time.mode === "past-minutes") {
-      bucketToUse = "hour";
+      const timeDiff = time.pastMinutesStart - time.pastMinutesEnd;
+
+      if (timeDiff <= 120) {
+        bucketToUse = "minute";
+      }
+
       previousTime = {
         mode: "past-minutes",
         pastMinutesStart: time.pastMinutesStart,

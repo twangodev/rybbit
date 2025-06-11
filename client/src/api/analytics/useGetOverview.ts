@@ -34,7 +34,7 @@ export function useGetOverview({ periodTime, site }: UseGetOverviewOptions) {
         queryParams
       );
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
       const prevQueryKey = query.queryKey;

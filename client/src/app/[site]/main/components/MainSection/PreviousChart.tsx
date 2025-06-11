@@ -3,18 +3,21 @@ import { nivoTheme } from "@/lib/nivo";
 import { useStore } from "@/lib/store";
 import { ResponsiveLine } from "@nivo/line";
 import { DateTime } from "luxon";
-import { useMemo } from "react";
 import { GetOverviewBucketedResponse } from "../../../../../api/analytics/useGetOverviewBucketed";
 import { APIResponse } from "../../../../../api/types";
 import { Time } from "../../../../../components/DateSelector/types";
+import { TimeBucket } from "@rybbit/shared";
 
-const getMin = (time: Time) => {
+const getMin = (time: Time, bucket: TimeBucket) => {
   if (time.mode === "past-minutes") {
-    return DateTime.now()
-      .setZone("UTC")
-      .minus({ minutes: time.pastMinutesStart * 2 })
-      .startOf("hour")
-      .toJSDate();
+    if (bucket === "hour") {
+      return DateTime.now()
+        .setZone("UTC")
+        .minus({ minutes: time.pastMinutesStart * 2 })
+        .startOf("hour")
+        .toJSDate();
+    }
+    undefined;
   } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day).startOf("day");
     return dayDate.toJSDate();
@@ -42,7 +45,7 @@ export function PreviousChart({
   data: APIResponse<GetOverviewBucketedResponse> | undefined;
   max: number;
 }) {
-  const { previousTime: time, selectedStat } = useStore();
+  const { previousTime: time, selectedStat, bucket } = useStore();
 
   const size = (data?.data.length ?? 0 / 2) + 1;
   const formattedData = data?.data
@@ -55,12 +58,13 @@ export function PreviousChart({
     })
     .slice(0, size);
 
-  const min = useMemo(() => getMin(time), [time]);
+  const min = getMin(time, bucket);
   const maxPastMinutes =
-    time.mode === "past-minutes"
+    time.mode === "past-minutes" && bucket === "hour"
       ? DateTime.now()
           .setZone("UTC")
           .minus({ minutes: time.pastMinutesStart })
+          .startOf("hour")
           .toJSDate()
       : undefined;
 
@@ -73,7 +77,7 @@ export function PreviousChart({
         },
       ]}
       theme={nivoTheme}
-      margin={{ top: 10, right: 10, bottom: 25, left: 35 }}
+      margin={{ top: 10, right: 15, bottom: 25, left: 35 }}
       xScale={{
         type: "time",
         format: "%Y-%m-%d %H:%M:%S",

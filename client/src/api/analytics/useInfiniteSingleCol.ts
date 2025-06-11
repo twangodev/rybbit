@@ -60,6 +60,6 @@ export function useInfiniteSingleCol({
 
       return allPages.length + 1;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
   });
 }

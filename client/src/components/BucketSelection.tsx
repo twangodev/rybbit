@@ -13,7 +13,6 @@ import { Time } from "./DateSelector/types";
 
 const getOptions = (time: Time) => {
   if (time.mode === "past-minutes") {
-    // For longer durations (24+ hours), include hour buckets
     if (time.pastMinutesStart >= 1440) {
       return (
         <SelectContent>
@@ -32,17 +31,20 @@ const getOptions = (time: Time) => {
         </SelectContent>
       );
     }
+    if (time.pastMinutesStart >= 360) {
+      return (
+        <SelectContent>
+          <SelectItem size="sm" value="hour">
+            Hour
+          </SelectItem>
+        </SelectContent>
+      );
+    }
     // For shorter durations, exclude hour buckets
     return (
       <SelectContent>
         <SelectItem size="sm" value="minute">
           Minute
-        </SelectItem>
-        <SelectItem size="sm" value="five_minutes">
-          5 Minutes
-        </SelectItem>
-        <SelectItem size="sm" value="fifteen_minutes">
-          15 Minutes
         </SelectItem>
       </SelectContent>
     );

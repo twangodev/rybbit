@@ -57,7 +57,7 @@ export function useSingleCol({
       }>(`/single-col/${site}`, queryParams);
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
       const prevQueryKey = query.queryKey as [string, string, string];

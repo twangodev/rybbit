@@ -74,7 +74,7 @@ export function Funnel({
         <DateSelector
           time={time}
           setTime={setTime}
-          past24HoursEnabled={false}
+          pastMinutesEnabled={false}
         />
       </div>
 

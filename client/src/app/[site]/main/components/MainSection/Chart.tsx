@@ -21,7 +21,10 @@ export const formatter = Intl.NumberFormat(userLocale, { notation: "compact" });
 const getMax = (time: Time, bucket: TimeBucket) => {
   const now = DateTime.now();
   if (time.mode === "past-minutes") {
-    return DateTime.now().setZone("UTC").toJSDate();
+    if (bucket === "hour") {
+      return DateTime.now().setZone("UTC").startOf("hour").toJSDate();
+    }
+    return undefined;
   } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day)
       .endOf("day")
@@ -90,9 +93,8 @@ const getMax = (time: Time, bucket: TimeBucket) => {
 const getMin = (time: Time, bucket: TimeBucket) => {
   if (time.mode === "past-minutes") {
     return DateTime.now()
-      .setZone("UTC")
-      .minus({ hours: 24 })
-      .startOf("hour")
+      .minus({ minutes: time.pastMinutesStart })
+      .startOf(time.pastMinutesStart < 360 ? "minute" : "hour")
       .toJSDate();
   } else if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day).startOf("day");
@@ -273,7 +275,7 @@ export function Chart({
     <ResponsiveLine
       data={chartPropsData}
       theme={nivoTheme}
-      margin={{ top: 10, right: 10, bottom: 25, left: 35 }}
+      margin={{ top: 10, right: 15, bottom: 25, left: 35 }}
       xScale={{
         type: "time",
         format: "%Y-%m-%d %H:%M:%S",
@@ -302,13 +304,20 @@ export function Chart({
         truncateTickAt: 0,
         tickValues: Math.min(
           maxTicks,
-          time.mode === "day" || time.mode === "past-minutes"
+          time.mode === "day" ||
+            (time.mode === "past-minutes" && time.pastMinutesStart === 1440)
             ? 24
             : Math.min(12, data?.data?.length ?? 0)
         ),
         format: (value) => {
           const dt = DateTime.fromJSDate(value).setLocale(userLocale);
-          if (time.mode === "day" || time.mode === "past-minutes") {
+          if (time.mode === "past-minutes") {
+            if (time.pastMinutesStart < 1440) {
+              return dt.toFormat(hour12 ? "h:mm" : "HH:mm");
+            }
+            return dt.toFormat(hour12 ? "ha" : "HH:mm");
+          }
+          if (time.mode === "day") {
             return dt.toFormat(hour12 ? "ha" : "HH:mm");
           }
           return dt.toFormat(hour12 ? "MMM d" : "dd MMM");

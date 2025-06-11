@@ -45,7 +45,7 @@ export function usePaginatedSingleCol({
       );
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
       const prevQueryKey = query.queryKey;
