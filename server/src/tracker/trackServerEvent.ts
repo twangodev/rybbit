@@ -1,12 +1,12 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z, ZodError } from "zod";
-import { DateTime } from "luxon";
-import clickhouse from "../db/clickhouse/clickhouse.js";
 import { db } from "../db/postgres/postgres.js";
 import { activeSessions } from "../db/postgres/schema.js";
 import { eq, and } from "drizzle-orm";
-import { isSiteOverLimit } from "./trackingUtils.js";
+import { isSiteOverLimit, TotalTrackingPayload } from "./trackingUtils.js";
 import { siteConfig } from "../lib/siteConfig.js";
+import { pageviewQueue } from "./pageviewQueue.js";
+import UAParser from "ua-parser-js";
 
 const sharedServerTrackingPayloadFields = {
   // Required
@@ -135,65 +135,93 @@ async function updateServerSession(
   }
 }
 
-// Process server-side tracking event and insert directly into ClickHouse
-async function processServerTrackingEvent(payload: ServerTrackingPayload): Promise<void> {
-  const timestamp = payload.timestamp ? new Date(payload.timestamp) : new Date();
-
-  // Build UTM parameters object
-  const utmParams: Record<string, string> = {};
-  if (payload.utm_source) utmParams.utm_source = payload.utm_source;
-  if (payload.utm_medium) utmParams.utm_medium = payload.utm_medium;
-  if (payload.utm_campaign) utmParams.utm_campaign = payload.utm_campaign;
-  if (payload.utm_term) utmParams.utm_term = payload.utm_term;
-  if (payload.utm_content) utmParams.utm_content = payload.utm_content;
-
-  // Merge UTM params with additional URL parameters
-  const allUrlParams = { ...utmParams, ...(payload.url_parameters || {}) };
-
-  // Prepare the event data for ClickHouse
-  const eventData = {
-    site_id: payload.site_id,
-    timestamp: DateTime.fromJSDate(timestamp).toFormat("yyyy-MM-dd HH:mm:ss"),
-    session_id: payload.session_id,
-    user_id: payload.user_id,
-    hostname: payload.hostname || "",
-    pathname: payload.pathname || "",
-    querystring: payload.querystring || "",
-    page_title: payload.page_title || "",
-    referrer: payload.referrer || "",
-    channel: payload.channel || "Direct",
-    browser: payload.browser || "",
-    browser_version: payload.browser_version || "",
-    operating_system: payload.operating_system || "",
-    operating_system_version: payload.operating_system_version || "",
-    language: payload.language || "",
-    screen_width: payload.screen_width || 0,
-    screen_height: payload.screen_height || 0,
-    device_type: payload.device_type || "desktop",
-    country: payload.country || "",
-    region: payload.region || "",
-    city: payload.city || "",
-    lat: payload.lat || 0,
-    lon: payload.lon || 0,
-    type: payload.type,
-    event_name: payload.type === "custom_event" ? payload.event_name : "",
-    props: payload.type === "custom_event" ? payload.properties : undefined,
-    url_parameters: allUrlParams,
-  };
-
-  // Insert directly into ClickHouse (no queue needed for server-side)
-  try {
-    await clickhouse.insert({
-      table: "events",
-      values: [eventData],
-      format: "JSONEachRow",
-    });
-    console.log(`[Server Tracking] Event inserted for site ${payload.site_id}`);
-  } catch (error) {
-    console.error("Error inserting server tracking event:", error);
-    throw error;
-  }
-}
+// Convert server-side payload to TotalTrackingPayload format for queue processing
+// function convertToTotalTrackingPayload(payload: ServerTrackingPayload): TotalTrackingPayload {
+//   const timestamp = payload.timestamp || new Date().toISOString();
+//
+//   // Create a mock User Agent result if browser info is provided
+//   const ua: UAParser.IResult = {
+//     browser: {
+//       name: payload.browser || "",
+//       version: payload.browser_version || "",
+//       major: payload.browser_version?.split('.')[0] || ""
+//     },
+//     engine: { name: "", version: "" },
+//     os: {
+//       name: payload.operating_system || "",
+//       version: payload.operating_system_version || ""
+//     },
+//     device: { vendor: "", model: "", type: undefined },
+//     cpu: { architecture: undefined }
+//   };
+//
+//   // Build querystring from UTM parameters and additional URL parameters
+//   const urlParams = new URLSearchParams();
+//   if (payload.utm_source) urlParams.set('utm_source', payload.utm_source);
+//   if (payload.utm_medium) urlParams.set('utm_medium', payload.utm_medium);
+//   if (payload.utm_campaign) urlParams.set('utm_campaign', payload.utm_campaign);
+//   if (payload.utm_term) urlParams.set('utm_term', payload.utm_term);
+//   if (payload.utm_content) urlParams.set('utm_content', payload.utm_content);
+//
+//   // Add additional URL parameters
+//   if (payload.url_parameters) {
+//     Object.entries(payload.url_parameters).forEach(([key, value]) => {
+//       urlParams.set(key, value);
+//     });
+//   }
+//
+//   // Merge with existing querystring if provided
+//   const existingQuery = payload.querystring || "";
+//   const newQuery = urlParams.toString();
+//   const finalQuerystring = existingQuery && newQuery
+//     ? `${existingQuery}&${newQuery}`
+//     : existingQuery || newQuery;
+//
+//   const totalPayload: TotalTrackingPayload = {
+//     // Base tracking fields
+//     site_id: payload.site_id,
+//     hostname: payload.hostname || "",
+//     pathname: payload.pathname || "",
+//     querystring: finalQuerystring,
+//     screenWidth: payload.screen_width || 0,
+//     screenHeight: payload.screen_height || 0,
+//     language: payload.language || "",
+//     page_title: payload.page_title || "",
+//     referrer: payload.referrer || "",
+//     user_id: payload.user_id,
+//
+//     // Extended fields
+//     type: payload.type,
+//     event_name: payload.type === "custom_event" ? payload.event_name : undefined,
+//     properties: payload.type === "custom_event" && payload.properties
+//       ? JSON.stringify(payload.properties)
+//       : undefined,
+//
+//     // Generated/system fields
+//     userId: payload.user_id,
+//     timestamp: timestamp,
+//     sessionId: payload.session_id,
+//     ua: ua,
+//     ipAddress: "127.0.0.1", // Default IP for server-side (will be overridden by queue processor if needed)
+//
+//     // Server-side specific fields (these will be used by a modified queue processor)
+//     serverSideData: {
+//       country: payload.country || "",
+//       region: payload.region || "",
+//       city: payload.city || "",
+//       lat: payload.lat || 0,
+//       lon: payload.lon || 0,
+//       device_type: payload.device_type || "desktop",
+//       channel: payload.channel || "Direct",
+//       browser_version: payload.browser_version || "",
+//       operating_system_version: payload.operating_system_version || "",
+//       skipGeoLookup: true, // Flag to skip IP-based geo lookup
+//       skipChannelDetection: payload.channel ? true : false, // Skip if channel provided
+//     }
+//   };
+//
+//   return totalPayload;
+// }
 
 // Main server-side tracking endpoint
 export async function trackServerEvent(request: FastifyRequest, reply: FastifyReply) {
@@ -248,8 +276,11 @@ export async function trackServerEvent(request: FastifyRequest, reply: FastifyRe
         .send("Site over monthly limit, event not tracked");
     }
 
-    // Process the event directly (no queue needed for server-side)
-    await processServerTrackingEvent(validatedPayload);
+    // Convert to TotalTrackingPayload format and add to queue
+    // const totalPayload = convertToTotalTrackingPayload(validatedPayload);
+
+    // Add to the same queue as client-side tracking
+    // await pageviewQueue.add(totalPayload);
 
     // Update session data
     await updateServerSession(
