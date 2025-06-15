@@ -1,5 +1,5 @@
-import { ScriptConfig } from './types';
-import { parseJsonSafely } from './utils';
+import { ScriptConfig } from './types.js';
+import { parseJsonSafely } from './utils.js';
 
 /**
  * Parse script configuration from the script tag attributes

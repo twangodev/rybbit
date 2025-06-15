@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { patternToRegex, findMatchingPattern, debounce, isOutboundLink, parseJsonSafely } from './utils';
+import { patternToRegex, findMatchingPattern, debounce, isOutboundLink, parseJsonSafely } from './utils.js';
 
 describe('utils', () => {
   describe('patternToRegex', () => {

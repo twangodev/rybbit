@@ -1,5 +1,5 @@
 import { onLCP, onCLS, onINP, onFCP, onTTFB, Metric } from 'web-vitals';
-import { WebVitalsData } from './types';
+import { WebVitalsData } from './types.js';
 
 export class WebVitalsCollector {
   private data: WebVitalsData = {

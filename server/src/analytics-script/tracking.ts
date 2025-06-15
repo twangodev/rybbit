@@ -1,5 +1,5 @@
-import { BasePayload, ScriptConfig, TrackingPayload, WebVitalsData } from './types';
-import { findMatchingPattern } from './utils';
+import { BasePayload, ScriptConfig, TrackingPayload, WebVitalsData } from './types.js';
+import { findMatchingPattern } from './utils.js';
 
 export class Tracker {
   private config: ScriptConfig;

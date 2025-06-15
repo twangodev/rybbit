@@ -1,8 +1,8 @@
-import { parseScriptConfig } from './config';
-import { Tracker } from './tracking';
-import { WebVitalsCollector } from './webVitals';
-import { debounce, isOutboundLink } from './utils';
-import { RybbitAPI } from './types';
+import { parseScriptConfig } from './config.js';
+import { Tracker } from './tracking.js';
+import { WebVitalsCollector } from './webVitals.js';
+import { debounce, isOutboundLink } from './utils.js';
+import { RybbitAPI, WebVitalsData } from './types.js';
 
 declare global {
   interface Window {
@@ -43,7 +43,7 @@ declare global {
 
   // Initialize web vitals if enabled
   if (config.enableWebVitals) {
-    const webVitalsCollector = new WebVitalsCollector((vitals) => {
+    const webVitalsCollector = new WebVitalsCollector((vitals: WebVitalsData) => {
       tracker.trackWebVitals(vitals);
     });
     webVitalsCollector.initialize();

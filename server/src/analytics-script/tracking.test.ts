@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { Tracker } from './tracking';
-import { ScriptConfig } from './types';
+import { Tracker } from './tracking.js';
+import { ScriptConfig } from './types.js';
 
 // Mock fetch globally
 global.fetch = vi.fn();
@@ -178,7 +178,7 @@ describe('Tracker', () => {
         })
       );
 
-      const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1].body as string);
+      const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]!.body as string);
       expect(body.event_name).toBe('button_click');
       expect(body.properties).toBe(JSON.stringify({ button: 'submit' }));
     });
@@ -198,7 +198,7 @@ describe('Tracker', () => {
     it('should track outbound link', async () => {
       tracker.trackOutbound('https://external.com', 'External Link', '_blank');
 
-      const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1].body as string);
+      const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]!.body as string);
       expect(body.type).toBe('outbound');
       expect(body.properties).toBe(JSON.stringify({
         url: 'https://external.com',
@@ -218,7 +218,7 @@ describe('Tracker', () => {
 
       tracker.trackWebVitals(vitals);
 
-      const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1].body as string);
+      const body = JSON.parse(vi.mocked(global.fetch).mock.calls[0][1]!.body as string);
       expect(body.type).toBe('performance');
       expect(body.event_name).toBe('web-vitals');
       expect(body.lcp).toBe(2500);

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { WebVitalsCollector } from './webVitals';
+import { WebVitalsCollector } from './webVitals.js';
 
 // Mock web-vitals module
 vi.mock('web-vitals', () => ({
@@ -14,7 +14,7 @@ import { onLCP, onCLS, onINP, onFCP, onTTFB } from 'web-vitals';
 
 describe('WebVitalsCollector', () => {
   let collector: WebVitalsCollector;
-  let onReadyCallback: vi.Mock;
+  let onReadyCallback: ReturnType<typeof vi.fn>;
   let mockMetricCallbacks: Map<Function, Function>;
 
   beforeEach(() => {
