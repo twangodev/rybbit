@@ -18,6 +18,7 @@ export default {
   },
   "self-hosting": "",
   troubleshooting: "",
+  "self-hosting-manual": "",
   "self-hosting-advanced": "",
   "self-hosting-nginx": "",
   "v1-migration": "",
