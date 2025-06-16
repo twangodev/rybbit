@@ -1,18 +1,24 @@
 import { ResponsiveBar } from "@nivo/bar";
 import { DateTime } from "luxon";
 import { useMemo } from "react";
-import { useGetOverviewBucketedPastMinutes } from "../../../../api/analytics/useGetOverviewBucketed";
+import { useGetOverviewBucketed } from "../../../../api/analytics/useGetOverviewBucketed";
 import { nivoTheme } from "../../../../lib/nivo";
 import { useStore } from "../../../../lib/store";
 
 export function RealtimeChart() {
   const { site } = useStore();
 
-  const { data, isLoading } = useGetOverviewBucketedPastMinutes({
+  // Create a time object for the last 30 minutes for realtime data
+  const realtimeTime = {
+    mode: "past-minutes" as const,
     pastMinutesStart: 30,
     pastMinutesEnd: 0,
+  };
+
+  const { data, isLoading } = useGetOverviewBucketed({
     site,
     bucket: "minute",
+    overrideTime: realtimeTime,
     refetchInterval: 10000,
   });
 

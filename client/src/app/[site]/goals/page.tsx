@@ -1,12 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useGetGoals,
-  useGetGoalsPastMinutes,
-} from "../../../api/analytics/useGetGoals";
+import { useGetGoals } from "../../../api/analytics/goals/useGetGoals";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
 import { NothingFound } from "../../../components/NothingFound";
+import { Pagination } from "../../../components/pagination";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { GOALS_PAGE_FILTERS, useStore } from "../../../lib/store";
 import { SubHeader } from "../components/SubHeader/SubHeader";
@@ -16,31 +14,58 @@ import GoalsList from "./components/GoalsList";
 export default function GoalsPage() {
   useSetPageTitle("Rybbit · Goals");
 
-  const { time, site } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
-  const [currentPage, setCurrentPage] = useState(1);
-  const pageSize = 9; // Show 9 cards (3x3 grid)
+  const { site } = useStore();
+  const [pagination, setPagination] = useState({
+    pageIndex: 0, // TablePagination uses 0-based indexing
+    pageSize: 10, // Show 10 goals per page
+  });
 
-  // Use the appropriate hook based on the mode
-  const { data: goalsData, isLoading } = isPast24HoursMode
-    ? useGetGoalsPastMinutes({
-        page: currentPage,
-        pageSize,
-      })
-    : useGetGoals({
-        page: currentPage,
-        pageSize,
+  const { data: goalsData, isLoading } = useGetGoals({
+    page: pagination.pageIndex + 1, // API uses 1-based indexing
+    pageSize: pagination.pageSize,
+  });
+
+  // Create pagination controller for TablePagination
+  const paginationController = {
+    getState: () => ({ pagination }),
+    getCanPreviousPage: () => pagination.pageIndex > 0,
+    getCanNextPage: () => {
+      if (!goalsData?.meta) return false;
+      return pagination.pageIndex + 1 < goalsData.meta.totalPages;
+    },
+    getPageCount: () => goalsData?.meta?.totalPages || 1,
+    setPageIndex: (index: number) => {
+      setPagination((prev) => ({ ...prev, pageIndex: index }));
+      // Scroll to top of page when changing pages
+      window.scrollTo({
+        top: 0,
+        behavior: "smooth",
       });
-
-  // Handle page change
-  const handlePageChange = (newPage: number) => {
-    setCurrentPage(newPage);
-    // Scroll to top of page when changing pages
-    window.scrollTo({
-      top: 0,
-      behavior: "smooth",
-    });
+    },
+    previousPage: () => {
+      if (pagination.pageIndex > 0) {
+        setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
+    nextPage: () => {
+      if (
+        goalsData?.meta &&
+        pagination.pageIndex + 1 < goalsData.meta.totalPages
+      ) {
+        setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+    },
   };
+
+  // Transform data for TablePagination
+  const paginationData = goalsData
+    ? {
+        items: goalsData.data,
+        total: goalsData.meta.total,
+      }
+    : undefined;
 
   // Goal card skeleton component
   const GoalCardSkeleton = () => (
@@ -108,12 +133,20 @@ export default function GoalsPage() {
             action={<CreateGoalButton siteId={Number(site)} />}
           />
         ) : (
-          <GoalsList
-            goals={goalsData.data}
-            siteId={Number(site)}
-            paginationMeta={goalsData.meta}
-            onPageChange={handlePageChange}
-          />
+          <div className="space-y-6">
+            <GoalsList goals={goalsData.data} siteId={Number(site)} />
+
+            {goalsData.meta.totalPages > 1 && (
+              <Pagination
+                table={paginationController}
+                data={paginationData}
+                pagination={pagination}
+                setPagination={setPagination}
+                isLoading={isLoading}
+                itemName="goals"
+              />
+            )}
+          </div>
         )}
       </div>
     </DisabledOverlay>

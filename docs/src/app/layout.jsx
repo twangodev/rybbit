@@ -7,7 +7,6 @@ import "nextra-theme-docs/style.css";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
 import { cn } from "../lib/utils";
-import { SmallLogo } from "./components/Logo";
 import "./globals.css";
 import { PostHogProvider } from "./providers";
 
@@ -27,6 +26,9 @@ export const metadata = {
   // description: 'Next-gen, open source, lightweight, cookieless web & product analytics for everyone — GDPR/CCPA compliant.',
   applicationName: "Rybbit",
   generator: "Next.js",
+  alternates: {
+    canonical: "https://rybbit.io",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -67,7 +69,7 @@ function Footer_() {
     <div className="max-w-[1300px] mx-auto">
       <div className="flex flex-col md:flex-row items-center md:justify-between w-full px-6 py-4 space-y-4 md:space-y-0">
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-0 md:justify-between w-full">
-          <SmallLogo />
+          <Image src="/rybbit-text.svg" alt="Rybbit" width={120} height={27} />
           <div className="text-sm text-neutral-400 text-center md:text-left">
             Copyright {new Date().getFullYear()} © Rybbit.
           </div>
@@ -91,19 +93,49 @@ function Footer_() {
   );
 }
 
+// JSON-LD structured data for organization
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  name: "Rybbit",
+  description: "Open source, privacy-focused web analytics platform",
+  url: "https://rybbit.io",
+  logo: "https://rybbit.io/rybbit.svg",
+  sameAs: ["https://github.com/rybbit-io/rybbit"],
+  contactPoint: {
+    "@type": "ContactPoint",
+    email: "hello@rybbit.io",
+    contactType: "customer support",
+  },
+};
+
+// JSON-LD structured data for software application
+const softwareSchema = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Rybbit",
+  applicationCategory: "Analytics",
+  operatingSystem: "Web",
+  offers: {
+    "@type": "Offer",
+    price: "0",
+    priceCurrency: "USD",
+    priceValidUntil: "2025-12-31",
+  },
+  description: "Open source web analytics platform that respects user privacy",
+  softwareVersion: "1.0",
+  url: "https://rybbit.io",
+  author: {
+    "@type": "Organization",
+    name: "Rybbit",
+  },
+};
+
 export default async function RootLayout({ children }) {
   const navbar = (
     <Navbar
       logo={
-        <div
-          className={cn(
-            "text-2xl flex items-center gap-1.5",
-            tilt_wrap.className
-          )}
-        >
-          <Image src="/rybbit.png" alt="Rybbit" width={30} height={30} />
-          rybbit.
-        </div>
+        <Image src="/rybbit-text.svg" alt="Rybbit" width={110} height={27} />
       }
       chatLink="https://discord.gg/DEhGb4hYBj"
       projectLink="https://github.com/rybbit-io/rybbit"
@@ -179,6 +211,16 @@ export default async function RootLayout({ children }) {
             defer
             src="https://buttons.github.io/buttons.js"
           ></script>
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{
+              __html: JSON.stringify(organizationSchema),
+            }}
+          />
+          <script
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(softwareSchema) }}
+          />
         </PostHogProvider>
       </body>
     </html>

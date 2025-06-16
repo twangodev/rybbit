@@ -1,18 +1,19 @@
 "use client";
 
+import { FilterParameter } from "@rybbit/shared";
 import { useSingleCol } from "@/api/analytics/useSingleCol";
 import { useMeasure } from "@uidotdev/usehooks";
 import { scalePow } from "d3-scale";
 import { Feature, GeoJsonObject } from "geojson";
 import { Layer } from "leaflet";
 import "leaflet/dist/leaflet.css";
+import { round } from "lodash";
 import { useEffect, useMemo, useState } from "react";
 import { GeoJSON, MapContainer, useMapEvent } from "react-leaflet";
-import { useCountries, useSubdivisions } from "../../../../lib/geo";
-import { addFilter, FilterParameter } from "../../../../lib/store";
-import { CountryFlag } from "./icons/CountryFlag";
 import { getCountryPopulation } from "../../../../lib/countryPopulation";
-import { round } from "lodash";
+import { useCountries, useSubdivisions } from "../../../../lib/geo";
+import { addFilter } from "../../../../lib/store";
+import { CountryFlag } from "./icons/CountryFlag";
 
 interface TooltipContent {
   name: string;

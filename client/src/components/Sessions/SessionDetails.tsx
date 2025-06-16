@@ -1,4 +1,4 @@
-import CopyText from "@/components/CopyText";
+import { CopyText } from "@/components/CopyText";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -51,7 +51,9 @@ function PageviewItem({
   let duration = null;
   if (!isEvent && nextTimestamp) {
     const nextTime = DateTime.fromSQL(nextTimestamp, { zone: "utc" }).toLocal();
-    const totalSeconds = Math.floor(nextTime.diff(timestamp).milliseconds / 1000);
+    const totalSeconds = Math.floor(
+      nextTime.diff(timestamp).milliseconds / 1000
+    );
     duration = formatDuration(totalSeconds);
   }
 

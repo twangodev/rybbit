@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import clickhouse from "../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getUserHasAccessToSitePublic } from "../../lib/auth-utils.js";
 import { processResults } from "./utils.js";
 
@@ -51,8 +51,8 @@ WITH UserFirstPeriod AS (
     SELECT
         user_id,
         ${periodFunction}(min(timestamp)${
-      retentionMode === "week" ? ", 1" : ""
-    }) AS cohort_period
+          retentionMode === "week" ? ", 1" : ""
+        }) AS cohort_period
     FROM events
     WHERE site_id = {siteId:UInt16}
     -- Use the configurable time range
@@ -63,8 +63,8 @@ PeriodActivity AS (
     SELECT DISTINCT
         user_id,
         ${periodFunction}(timestamp${
-      retentionMode === "week" ? ", 1" : ""
-    }) AS activity_period
+          retentionMode === "week" ? ", 1" : ""
+        }) AS activity_period
     FROM events
     WHERE site_id = {siteId:UInt16}
     -- Match the date range filter

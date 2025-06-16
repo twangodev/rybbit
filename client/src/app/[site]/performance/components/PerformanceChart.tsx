@@ -9,10 +9,14 @@ import { Tilt_Warp } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
-import { useGetPerformanceTimeSeries } from "../../../../api/analytics/useGetPerformanceTimeSeries";
+import { useGetPerformanceTimeSeries } from "../../../../api/analytics/performance/useGetPerformanceTimeSeries";
 import { BucketSelection } from "../../../../components/BucketSelection";
 import { authClient } from "../../../../lib/auth";
-import { hour12, userLocale } from "../../../../lib/dateTimeUtils";
+import {
+  formatChartDateTime,
+  hour12,
+  userLocale,
+} from "../../../../lib/dateTimeUtils";
 import { useStore } from "../../../../lib/store";
 import { cn } from "../../../../lib/utils";
 import { usePerformanceStore } from "../performanceStore";
@@ -294,7 +298,7 @@ export function PerformanceChart() {
                 tilt_wrap.className
               )}
             >
-              <Image src="/rybbit.png" alt="Rybbit" width={20} height={20} />
+              <Image src="/rybbit.svg" alt="Rybbit" width={20} height={20} />
               rybbit.io
             </Link>
           </div>
@@ -405,32 +409,9 @@ export function PerformanceChart() {
                   new Date(slice.points[0].data.x)
                 );
 
-                const formatDateTime = (dt: DateTime) => {
-                  const options: Intl.DateTimeFormatOptions = {
-                    month: "short",
-                    day: "numeric",
-                    hour: "numeric",
-                    hour12: hour12,
-                  };
-                  if (
-                    bucket === "hour" ||
-                    bucket === "minute" ||
-                    bucket === "five_minutes" ||
-                    bucket === "ten_minutes" ||
-                    bucket === "fifteen_minutes"
-                  ) {
-                    if (!hour12) {
-                      options.minute = "numeric";
-                    }
-                  }
-                  return new Intl.DateTimeFormat(userLocale, options).format(
-                    dt.toJSDate()
-                  );
-                };
-
                 return (
-                  <div className="text-sm bg-neutral-900 p-3 rounded-md min-w-[150px] border border-neutral-750">
-                    {formatDateTime(currentTime)}
+                  <div className="text-sm bg-neutral-850 p-3 rounded-md min-w-[150px] border border-neutral-750">
+                    {formatChartDateTime(currentTime, bucket)}
                     <div className="space-y-2 mt-2">
                       {slice.points.map((point: any) => {
                         return (

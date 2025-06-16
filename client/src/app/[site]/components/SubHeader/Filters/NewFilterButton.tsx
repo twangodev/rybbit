@@ -1,4 +1,5 @@
 "use client";
+import { Filter, FilterParameter } from "@rybbit/shared";
 import { ListFilterPlus, Plus } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../../../../components/ui/button";
@@ -7,7 +8,7 @@ import {
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "../../../../../components/ui/dropdown-menu";
-import { Filter, FilterParameter, useStore } from "../../../../../lib/store";
+import { useStore } from "../../../../../lib/store";
 import { sleep } from "../../../../../lib/utils";
 import { FilterComponent } from "../../shared/Filters/FilterComponent";
 

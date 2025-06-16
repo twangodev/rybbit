@@ -78,17 +78,6 @@ export async function addSite(
       });
     }
 
-    // Check if site already exists
-    const existingSite = await db.query.sites.findFirst({
-      where: (sites, { eq }) => eq(sites.domain, domain),
-    });
-
-    if (existingSite) {
-      return reply.status(400).send({
-        error: "Site already exists",
-      });
-    }
-
     // Create the new site
     const newSite = await db
       .insert(sites)

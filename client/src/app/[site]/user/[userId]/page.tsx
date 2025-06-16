@@ -22,10 +22,7 @@ import { MobileSidebar } from "../../../../components/MobileSidebar";
 import { Button } from "../../../../components/ui/button";
 import { useSetPageTitle } from "../../../../hooks/useSetPageTitle";
 import { useGetRegionName } from "../../../../lib/geo";
-import {
-  getCountryName,
-  getLanguageName,
-} from "../../../../lib/utils";
+import { getCountryName, getLanguageName } from "../../../../lib/utils";
 import { formatDuration } from "../../../../lib/dateTimeUtils";
 import { Browser } from "../../components/shared/icons/Browser";
 import { CountryFlag } from "../../components/shared/icons/CountryFlag";
@@ -35,7 +32,7 @@ import { VisitCalendar } from "./components/Calendar";
 export default function UserPage() {
   useSetPageTitle("Rybbit · User");
 
-  const router = useRouter()
+  const router = useRouter();
   const { userId } = useParams();
   const { site } = useParams();
 
@@ -169,9 +166,9 @@ export default function UserPage() {
               First Seen
             </div>
             <div className="font-semibold">
-              {DateTime.fromSQL(data?.first_seen ?? "").toLocaleString(
-                DateTime.DATETIME_SHORT
-              )}
+              {DateTime.fromSQL(data?.first_seen ?? "", { zone: "utc" })
+                .toLocal()
+                .toLocaleString(DateTime.DATETIME_SHORT)}
             </div>
           </div>
           <div className="bg-neutral-900 p-3 rounded-lg flex flex-col gap-1 border border-neutral-800  flex-grow">
@@ -180,9 +177,9 @@ export default function UserPage() {
               Last Seen
             </div>
             <div className="font-semibold">
-              {DateTime.fromSQL(data?.last_seen ?? "").toLocaleString(
-                DateTime.DATETIME_SHORT
-              )}
+              {DateTime.fromSQL(data?.last_seen ?? "", { zone: "utc" })
+                .toLocal()
+                .toLocaleString(DateTime.DATETIME_SHORT)}
             </div>
           </div>
         </div>

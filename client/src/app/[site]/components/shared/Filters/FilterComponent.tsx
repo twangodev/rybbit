@@ -1,3 +1,4 @@
+import { Filter, FilterParameter, FilterType } from "@rybbit/shared";
 import { Trash } from "lucide-react";
 import { Button } from "../../../../../components/ui/button";
 import {
@@ -7,7 +8,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../../components/ui/select";
-import { Filter, FilterParameter, FilterType } from "../../../../../lib/store";
 import { FilterOptions, OperatorOptions } from "./const";
 import { ValueSelect } from "./ValueSelect";
 

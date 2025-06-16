@@ -5,8 +5,7 @@ import { useWindowSize } from "@uidotdev/usehooks";
 import { DateTime } from "luxon";
 import { useGetOrgEventCount } from "../api/analytics/useGetOrgEventCount";
 import { userLocale, hour12 } from "../lib/dateTimeUtils";
-
-export const formatter = Intl.NumberFormat(userLocale, { notation: "compact" });
+import { formatter } from "../lib/utils";
 
 interface UsageChartProps {
   organizationId: string;
@@ -124,7 +123,7 @@ export function UsageChart({
           tickRotation: 0,
           truncateTickAt: 0,
           tickValues: 5,
-          format: formatter.format,
+          format: formatter,
         }}
         enableTouchCrosshair={true}
         enablePoints={false}

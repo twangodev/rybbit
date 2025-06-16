@@ -1,8 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "../../lib/store";
-import { authedFetch, getStartAndEndDate } from "../utils";
-import { BACKEND_URL } from "../../lib/const";
-import { timeZone } from "../../lib/dateTimeUtils";
+import { authedFetch, getQueryParams } from "../utils";
 
 export type GetOverviewResponse = {
   sessions: number;
@@ -15,63 +13,41 @@ export type GetOverviewResponse = {
 
 type PeriodTime = "current" | "previous";
 
+type UseGetOverviewOptions = {
+  periodTime?: PeriodTime;
+  site?: number | string;
+  overrideTime?:
+    | { mode: "past-minutes"; pastMinutesStart: number; pastMinutesEnd: number }
+    | { mode: "range"; startDate: string; endDate: string };
+};
+
 export function useGetOverview({
   periodTime,
   site,
-}: {
-  periodTime?: PeriodTime;
-  site?: number | string;
-}) {
+  overrideTime,
+}: UseGetOverviewOptions) {
   const { time, previousTime, filters } = useStore();
-  const timeToUse = periodTime === "previous" ? previousTime : time;
-  const { startDate, endDate } = getStartAndEndDate(timeToUse);
+
+  // Use overrideTime if provided, otherwise use store time
+  const baseTime = overrideTime || time;
+  const timeToUse = periodTime === "previous" ? previousTime : baseTime;
+
+  const queryParams = getQueryParams(timeToUse, { filters });
+
+  const queryKey = ["overview", timeToUse, site, filters];
 
   return useQuery({
-    queryKey: ["overview", timeToUse, site, filters],
+    queryKey,
     queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/overview/${site}`, {
-        startDate,
-        endDate,
-        timeZone,
-        filters,
-      }).then((res) => res.json());
+      return authedFetch<{ data: GetOverviewResponse }>(
+        `/overview/${site}`,
+        queryParams
+      );
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
-      const prevQueryKey = query.queryKey as [string, string, string];
-      const [, , prevSite] = prevQueryKey;
-
-      if (prevSite === site) {
-        return query.state.data;
-      }
-      return undefined;
-    },
-  });
-}
-
-export function useGetOverviewPastMinutes({
-  pastMinutesStart,
-  pastMinutesEnd,
-  site,
-}: {
-  pastMinutesStart: number;
-  pastMinutesEnd: number;
-  site?: number | string;
-}) {
-  return useQuery({
-    queryKey: ["overview-past-minutes", pastMinutesStart, pastMinutesEnd, site],
-    queryFn: () => {
-      return authedFetch(`${BACKEND_URL}/overview/${site}`, {
-        timeZone,
-        pastMinutesStart,
-        pastMinutesEnd,
-      }).then((res) => res.json());
-    },
-    staleTime: Infinity,
-    placeholderData: (_, query: any) => {
-      if (!query?.queryKey) return undefined;
-      const prevQueryKey = query.queryKey as [string, string, string];
+      const prevQueryKey = query.queryKey;
       const [, , prevSite] = prevQueryKey;
 
       if (prevSite === site) {

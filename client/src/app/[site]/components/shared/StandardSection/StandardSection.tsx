@@ -1,15 +1,17 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
+import { FilterParameter } from "@rybbit/shared";
 import { AlertCircle, Info, RefreshCcw } from "lucide-react";
 import { ReactNode } from "react";
 import { usePaginatedSingleCol } from "../../../../../api/analytics/usePaginatedSingleCol";
 import { SingleColResponse } from "../../../../../api/analytics/useSingleCol";
 import { CardLoader } from "../../../../../components/ui/card";
-import { FilterParameter } from "../../../../../lib/store";
-import { StandardSectionDialog } from "./StandardSectionDialog";
 import { Row } from "./Row";
 import { Skeleton } from "./Skeleton";
+import { StandardSectionDialog } from "./StandardSectionDialog";
+
+const MAX_ITEMS_TO_DISPLAY = 10;
 
 export function StandardSection({
   title,
@@ -83,14 +85,14 @@ export function StandardSection({
             </Button>
           </div>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-2 overflow-x-hidden">
             <div className="flex flex-row gap-2 justify-between pr-1 text-xs text-neutral-400">
               <div>{title}</div>
               <div>{countLabel || "Sessions"}</div>
             </div>
             {itemsForDisplay?.length ? (
               itemsForDisplay
-                .slice(0, 10)
+                .slice(0, MAX_ITEMS_TO_DISPLAY)
                 .map((e) => (
                   <Row
                     key={getKey(e)}

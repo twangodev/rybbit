@@ -1,14 +1,14 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useGetOverviewPastMinutes } from "../api/analytics/useGetOverview";
-import { useGetOverviewBucketedPastMinutes } from "../api/analytics/useGetOverviewBucketed";
+import { useRef } from "react";
+import { useGetOverview } from "../api/analytics/useGetOverview";
+import { useGetOverviewBucketed } from "../api/analytics/useGetOverviewBucketed";
 import { useInView } from "../hooks/useInView";
+import { MINUTES_IN_24_HOURS } from "../lib/const";
 import { Favicon } from "./Favicon";
 import { SiteSessionChart } from "./SiteSessionChart";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
-import { SiteSettings } from "./SiteSettings/SiteSettings";
-import { useRef } from "react";
 
 interface SiteCardProps {
   siteId: number;
@@ -26,11 +26,14 @@ export function SiteCard({ siteId, domain }: SiteCardProps) {
   // Track if we've ever loaded data successfully
   const hasLoadedData = useRef(false);
 
-  const { data, isLoading, isSuccess } = useGetOverviewBucketedPastMinutes({
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
+  const { data, isLoading, isSuccess } = useGetOverviewBucketed({
     site: siteId,
     bucket: "hour",
+    overrideTime: {
+      mode: "past-minutes",
+      pastMinutesStart: 1440,
+      pastMinutesEnd: 0,
+    },
     props: {
       enabled: isInView,
     },
@@ -40,10 +43,13 @@ export function SiteCard({ siteId, domain }: SiteCardProps) {
     data: overviewData,
     isLoading: isOverviewLoading,
     isSuccess: isOverviewSuccess,
-  } = useGetOverviewPastMinutes({
+  } = useGetOverview({
     site: siteId,
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
+    overrideTime: {
+      mode: "past-minutes",
+      pastMinutesStart: 1440,
+      pastMinutesEnd: 0,
+    },
   });
 
   // Update the hasLoadedData ref when data loads successfully

@@ -1,17 +1,7 @@
+import { Filter, FilterParameter, TimeBucket } from "@rybbit/shared";
 import { DateTime } from "luxon";
 import { create } from "zustand";
 import { Time } from "../components/DateSelector/types";
-
-export type TimeBucket =
-  | "minute"
-  | "five_minutes"
-  | "ten_minutes"
-  | "fifteen_minutes"
-  | "hour"
-  | "day"
-  | "week"
-  | "month"
-  | "year";
 
 export type StatType =
   | "pageviews"
@@ -20,35 +10,6 @@ export type StatType =
   | "pages_per_session"
   | "bounce_rate"
   | "session_duration";
-
-export type FilterType = "equals" | "not_equals" | "contains" | "not_contains";
-
-export type FilterParameter =
-  | "browser"
-  | "operating_system"
-  | "language"
-  | "country"
-  | "region"
-  | "city"
-  | "device_type"
-  | "referrer"
-  | "hostname"
-  | "pathname"
-  | "page_title"
-  | "querystring"
-  | "event_name"
-  | "channel"
-  | "utm_source"
-  | "utm_medium"
-  | "utm_campaign"
-  | "utm_term"
-  | "utm_content"
-  // derivative parameters
-  | "entry_page"
-  | "exit_page"
-  | "dimensions"
-  | "browser_version"
-  | "operating_system_version";
 
 export const SESSION_PAGE_FILTERS: FilterParameter[] = [
   "hostname",
@@ -130,12 +91,6 @@ export const USER_PAGE_FILTERS: FilterParameter[] = [
   "referrer",
 ];
 
-export type Filter = {
-  parameter: FilterParameter;
-  value: string[];
-  type: FilterType;
-};
-
 type Store = {
   site: string;
   setSite: (site: string) => void;
@@ -201,10 +156,17 @@ export const useStore = create<Store>((set) => ({
         mode: "day",
         day: DateTime.fromISO(time.day).minus({ days: 1 }).toISODate() ?? "",
       };
-    } else if (time.mode === "last-24-hours") {
-      bucketToUse = "hour";
+    } else if (time.mode === "past-minutes") {
+      const timeDiff = time.pastMinutesStart - time.pastMinutesEnd;
+
+      if (timeDiff <= 120) {
+        bucketToUse = "minute";
+      }
+
       previousTime = {
-        mode: "last-24-hours",
+        mode: "past-minutes",
+        pastMinutesStart: time.pastMinutesStart + timeDiff,
+        pastMinutesEnd: time.pastMinutesEnd + timeDiff,
       };
     } else if (time.mode === "range") {
       const timeRangeLength =

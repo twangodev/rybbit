@@ -2,12 +2,11 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, MousePointerClick } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { useCreateGoal } from "../../../../api/analytics/useCreateGoal";
-import { Goal } from "../../../../api/analytics/useGetGoals";
-import { useUpdateGoal } from "../../../../api/analytics/useUpdateGoal";
+import { useCreateGoal } from "../../../../api/analytics/goals/useCreateGoal";
+import { Goal } from "../../../../api/analytics/goals/useGetGoals";
 import { Button } from "../../../../components/ui/button";
 import {
   Dialog,
@@ -29,6 +28,7 @@ import { Input } from "../../../../components/ui/input";
 import { Label } from "../../../../components/ui/label";
 import { Switch } from "../../../../components/ui/switch";
 import { cn } from "../../../../lib/utils";
+import { useUpdateGoal } from "../../../../api/analytics/goals/useUpdateGoal";
 
 // Define form schema
 const formSchema = z
@@ -74,6 +74,15 @@ export default function GoalFormModal({
   const [useProperties, setUseProperties] = useState(
     !!goal?.config.eventPropertyKey && !!goal?.config.eventPropertyValue
   );
+
+  // Reinitialize useProperties when goal changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setUseProperties(
+        !!goal?.config.eventPropertyKey && !!goal?.config.eventPropertyValue
+      );
+    }
+  }, [isOpen, goal?.config.eventPropertyKey, goal?.config.eventPropertyValue]);
 
   const onClose = () => {
     setIsOpen(false);
@@ -149,6 +158,10 @@ export default function GoalFormModal({
         });
       }
 
+      // Reset form and state after successful submission
+      form.reset();
+      setUseProperties(false);
+
       setIsOpen(false);
     } catch (error) {
       console.error("Error saving goal:", error);
@@ -162,6 +175,7 @@ export default function GoalFormModal({
         setIsOpen(open);
         if (!open) {
           form.reset();
+          setUseProperties(false);
         }
       }}
     >
@@ -220,7 +234,10 @@ export default function GoalFormModal({
                           variant={
                             field.value === "path" ? "default" : "outline"
                           }
-                          className={cn("flex-1 flex items-center justify-center gap-2", field.value === "path" && "border-blue-500")}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2",
+                            field.value === "path" && "border-blue-500"
+                          )}
                           onClick={() => field.onChange("path")}
                         >
                           <FileText className="w-4 h-4 text-blue-500" />
@@ -231,7 +248,10 @@ export default function GoalFormModal({
                           variant={
                             field.value === "event" ? "default" : "outline"
                           }
-                          className={cn("flex-1 flex items-center justify-center gap-2", field.value === "event" && "border-amber-500")}
+                          className={cn(
+                            "flex-1 flex items-center justify-center gap-2",
+                            field.value === "event" && "border-amber-500"
+                          )}
                           onClick={() => field.onChange("event")}
                         >
                           <MousePointerClick className="w-4 h-4 text-amber-500" />

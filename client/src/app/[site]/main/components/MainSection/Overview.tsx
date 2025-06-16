@@ -5,14 +5,8 @@ import { cn, formatSecondsAsMinutesAndSeconds } from "@/lib/utils";
 import NumberFlow from "@number-flow/react";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import { useState } from "react";
-import {
-  useGetOverview,
-  useGetOverviewPastMinutes,
-} from "../../../../../api/analytics/useGetOverview";
-import {
-  useGetOverviewBucketed,
-  useGetOverviewBucketedPastMinutes,
-} from "../../../../../api/analytics/useGetOverviewBucketed";
+import { useGetOverview } from "../../../../../api/analytics/useGetOverview";
+import { useGetOverviewBucketed } from "../../../../../api/analytics/useGetOverviewBucketed";
 import { StatType, useStore } from "../../../../../lib/store";
 import { SparklinesChart } from "./SparklinesChart";
 
@@ -80,43 +74,25 @@ const Stat = ({
 }) => {
   const { selectedStat, setSelectedStat, site, bucket, time } = useStore();
   const [isHovering, setIsHovering] = useState(false);
-  const isPast24HoursMode = time.mode === "last-24-hours";
 
-  // Regular bucketed data for sparklines
-  const { data: regularData } = useGetOverviewBucketed({
+  // Consolidated bucketed data for sparklines - automatically handles both modes
+  const { data } = useGetOverviewBucketed({
     site,
     bucket,
-    props: {
-      enabled: !isPast24HoursMode,
-    },
   });
-
-  // Past minutes data for sparklines
-  const { data: pastMinutesData } = useGetOverviewBucketedPastMinutes({
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
-    site,
-    bucket,
-    props: {
-      enabled: isPast24HoursMode,
-    },
-  });
-
-  // Use the appropriate data source based on mode
-  const data = isPast24HoursMode ? pastMinutesData : regularData;
 
   // Filter and format sparklines data
   const sparklinesData =
     data?.data
       ?.filter((d) => {
-        // For last-24-hours mode, ensure we only show data within the last 24 hours
-        if (isPast24HoursMode) {
+        // For past-minutes mode, ensure we only show data within the specified time range
+        if (time.mode === "past-minutes") {
           const timestamp = new Date(d.time);
           const now = new Date();
-          const twentyFourHoursAgo = new Date(
-            now.getTime() - 24 * 60 * 60 * 1000
+          const startTime = new Date(
+            now.getTime() - time.pastMinutesStart * 60 * 1000
           );
-          return timestamp >= twentyFourHoursAgo && timestamp <= now;
+          return timestamp >= startTime && timestamp <= now;
         }
         return true;
       })
@@ -176,64 +152,24 @@ const Stat = ({
 };
 
 export function Overview() {
-  const { site, time } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const { site } = useStore();
 
-  // Regular time-based queries
+  // Current period - automatically handles both regular time-based and past-minutes queries
   const {
-    data: regularOverviewData,
-    isFetching: isRegularOverviewFetching,
-    isLoading: isRegularOverviewLoading,
-    error: regularOverviewError,
-  } = useGetOverview({ site });
-
-  const {
-    data: regularOverviewDataPrevious,
-    isLoading: isRegularOverviewLoadingPrevious,
-  } = useGetOverview({ site, periodTime: "previous" });
-
-  // Past minutes-based queries
-  const {
-    data: pastMinutesOverviewData,
-    isFetching: isPastMinutesOverviewFetching,
-    isLoading: isPastMinutesOverviewLoading,
-    error: pastMinutesOverviewError,
-  } = useGetOverviewPastMinutes({
+    data: overviewData,
+    isFetching: isOverviewFetching,
+    isLoading: isOverviewLoading,
+    error: overviewError,
+  } = useGetOverview({
     site,
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
   });
 
-  // Past minutes-based queries for previous period
-  const {
-    data: pastMinutesOverviewDataPrevious,
-    isLoading: isPastMinutesOverviewLoadingPrevious,
-  } = useGetOverviewPastMinutes({
-    site,
-    pastMinutesStart: 48 * 60,
-    pastMinutesEnd: 24 * 60,
-  });
-
-  // Combine the data based on the mode
-  const overviewData = isPast24HoursMode
-    ? pastMinutesOverviewData
-    : regularOverviewData;
-  const overviewDataPrevious = isPast24HoursMode
-    ? pastMinutesOverviewDataPrevious
-    : regularOverviewDataPrevious;
-
-  const isOverviewFetching = isPast24HoursMode
-    ? isPastMinutesOverviewFetching
-    : isRegularOverviewFetching;
-  const isOverviewLoading = isPast24HoursMode
-    ? isPastMinutesOverviewLoading
-    : isRegularOverviewLoading;
-  const isOverviewLoadingPrevious = isPast24HoursMode
-    ? isPastMinutesOverviewLoadingPrevious
-    : isRegularOverviewLoadingPrevious;
-  const overviewError = isPast24HoursMode
-    ? pastMinutesOverviewError
-    : regularOverviewError;
+  // Previous period - automatically handles both regular time-based and past-minutes queries
+  const { data: overviewDataPrevious, isLoading: isOverviewLoadingPrevious } =
+    useGetOverview({
+      site,
+      periodTime: "previous",
+    });
 
   const isLoading = isOverviewLoading || isOverviewLoadingPrevious;
 

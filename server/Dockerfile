@@ -4,12 +4,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Install dependencies
-COPY package*.json ./
+# Copy and build shared package first
+COPY shared ./shared
+WORKDIR /app/shared
+RUN npm install && npm run build
+
+# Install server dependencies
+WORKDIR /app/server
+COPY server/package*.json ./
 RUN npm ci
 
-# Copy source code
-COPY . .
+# Copy server source code
+COPY server/ .
 
 # Build the application
 RUN npm run build
@@ -23,14 +29,15 @@ WORKDIR /app
 RUN apk add --no-cache postgresql-client
 
 # Copy built application and dependencies
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/GeoLite2-City.mmdb ./GeoLite2-City.mmdb
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/docker-entrypoint.sh /docker-entrypoint.sh
-COPY --from=builder /app/drizzle.config.ts ./drizzle.config.ts
-COPY --from=builder /app/public ./public
-COPY --from=builder /app/src ./src
+COPY --from=builder /app/server/package*.json ./
+COPY --from=builder /app/server/GeoLite2-City.mmdb ./GeoLite2-City.mmdb
+COPY --from=builder /app/server/dist ./dist
+COPY --from=builder /app/server/node_modules ./node_modules
+COPY --from=builder /app/server/docker-entrypoint.sh /docker-entrypoint.sh
+COPY --from=builder /app/server/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /app/server/public ./public
+COPY --from=builder /app/server/src ./src
+COPY --from=builder /app/shared ./shared
 
 # Make the entrypoint executable
 RUN chmod +x /docker-entrypoint.sh

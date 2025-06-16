@@ -1,3 +1,4 @@
+import { FilterParameter, FilterType } from "@rybbit/shared";
 import { X } from "lucide-react";
 import {
   Tooltip,
@@ -6,8 +7,6 @@ import {
 } from "../../../../../components/ui/tooltip";
 import { useGetRegionName } from "../../../../../lib/geo";
 import {
-  FilterParameter,
-  FilterType,
   removeFilter,
   updateFilter,
   useStore,

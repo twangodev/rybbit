@@ -1,4 +1,5 @@
 import { Steps } from "nextra/components"
+import { Callout } from "nextra/components"
 
 # Next.js
 
@@ -114,7 +115,7 @@ and where you are using the script:
 ```
 
 Note that this rewrite will consume the bandwidth of your server, as all tracking requests will be proxied through your Next.js application. Consider this when evaluating your hosting costs and server capacity requirements.
-import { Callout } from "nextra/components"
+
 
 <Callout type="info">
   **Page View Tracking in Next.js**: Rybbit's tracking script is designed to automatically detect route changes when using Next.js's `&lt;Link&gt;` component or `router.push()` and track them as page views. If you encounter a rare scenario where page views are not being tracked correctly after client-side navigation, you might need to manually trigger page views using `window.rybbit.trackPageview()`. However, test the default behavior first, as manual tracking is typically not necessary.

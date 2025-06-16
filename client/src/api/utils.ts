@@ -1,5 +1,8 @@
 import { DateTime } from "luxon";
 import { Time } from "../components/DateSelector/types";
+import axios, { AxiosRequestConfig } from "axios";
+import { BACKEND_URL } from "../lib/const";
+import { timeZone } from "../lib/dateTimeUtils";
 
 export function getStartAndEndDate(time: Time) {
   if (time.mode === "range") {
@@ -23,78 +26,65 @@ export function getStartAndEndDate(time: Time) {
       endDate: DateTime.fromISO(time.year).endOf("year").toISODate(),
     };
   }
-  if (time.mode === "all-time") {
-    return { startDate: null, endDate: null };
-  }
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "all-time" || time.mode === "past-minutes") {
     return { startDate: null, endDate: null };
   }
   return { startDate: time.day, endDate: time.day };
 }
 
-/**
- * Builds a URL with query parameters from an object
- * @param url Base URL
- * @param params Object containing query parameters
- * @returns URL with query parameters
- */
-export function buildUrl(url: string, params?: Record<string, any>): string {
-  if (!params) return url;
+export function getQueryParams(
+  time: Time,
+  additionalParams: Record<string, any> = {}
+): Record<string, any> {
+  if (time.mode === "past-minutes") {
+    return {
+      timeZone,
+      pastMinutesStart: time.pastMinutesStart,
+      pastMinutesEnd: time.pastMinutesEnd,
+      ...additionalParams,
+    };
+  }
 
-  const searchParams = new URLSearchParams();
-
-  Object.entries(params).forEach(([key, value]) => {
-    if (value === undefined || value === null) return;
-
-    if (typeof value === "object") {
-      searchParams.append(key, JSON.stringify(value));
-    } else {
-      searchParams.append(key, String(value));
-    }
-  });
-
-  const queryString = searchParams.toString();
-  return queryString ? `${url}?${queryString}` : url;
+  // Regular date-based approach
+  return {
+    ...getStartAndEndDate(time),
+    timeZone,
+    ...additionalParams,
+  };
 }
 
-export async function authedFetch(
+export async function authedFetch<T>(
   url: string,
-  paramsOrOpts?: Record<string, any> | RequestInit,
-  opts: RequestInit = {}
-) {
-  // Handle overloaded function signature
-  if (
-    paramsOrOpts &&
-    ("method" in paramsOrOpts ||
-      "headers" in paramsOrOpts ||
-      "body" in paramsOrOpts)
-  ) {
-    // If paramsOrOpts looks like RequestInit, treat it as options
-    return fetch(url, {
-      credentials: "include",
-      ...(paramsOrOpts as RequestInit),
+  params?: Record<string, any>,
+  config: AxiosRequestConfig = {}
+): Promise<T> {
+  const fullUrl = url.startsWith("http") ? url : `${BACKEND_URL}${url}`;
+
+  // Process params to handle arrays correctly for backend JSON parsing
+  let processedParams = params;
+  if (params) {
+    processedParams = { ...params };
+    Object.entries(processedParams).forEach(([key, value]) => {
+      if (Array.isArray(value)) {
+        // Convert arrays to JSON strings for backend parsing
+        processedParams![key] = JSON.stringify(value);
+      }
     });
   }
 
-  // Otherwise treat it as params
-  const fullUrl = buildUrl(url, paramsOrOpts as Record<string, any>);
+  try {
+    const response = await axios({
+      url: fullUrl,
+      params: processedParams,
+      withCredentials: true,
+      ...config,
+    });
 
-  return fetch(fullUrl, {
-    credentials: "include",
-    ...opts,
-  });
-}
-
-export async function authedFetchWithError<T>(
-  url: string,
-  opts: RequestInit = {}
-): Promise<T> {
-  const res = await fetch(url, {
-    credentials: "include",
-    ...opts,
-  });
-  if (!res.ok) {
-    throw new Error(await res.text());
+    return response.data;
+  } catch (error: any) {
+    if (error?.response?.data?.error) {
+      throw new Error(error.response.data.error);
+    }
+    throw error;
   }
-  return res.json();
 }

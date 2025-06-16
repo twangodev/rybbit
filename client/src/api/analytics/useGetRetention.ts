@@ -1,5 +1,4 @@
 import { useQuery } from "@tanstack/react-query";
-import { BACKEND_URL } from "../../lib/const";
 import { useStore } from "../../lib/store";
 import { authedFetch } from "../utils";
 
@@ -20,11 +19,11 @@ export function useGetRetention(
   const { site } = useStore();
   return useQuery<ProcessedRetentionData>({
     queryKey: ["retention", site, mode, range],
-    queryFn: () =>
-      authedFetch(
-        `${BACKEND_URL}/retention/${site}?mode=${mode}&range=${range}`
-      )
-        .then((res) => res.json())
-        .then((data) => data.data),
+    queryFn: async () => {
+      const response = await authedFetch<{
+        data: ProcessedRetentionData;
+      }>(`/retention/${site}`, { mode, range });
+      return response.data;
+    },
   });
 }

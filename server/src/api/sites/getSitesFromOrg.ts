@@ -1,6 +1,6 @@
 import { eq, and } from "drizzle-orm";
 import { FastifyRequest, FastifyReply } from "fastify";
-import clickhouse from "../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { db } from "../../db/postgres/postgres.js";
 import { sites, member, organization } from "../../db/postgres/schema.js";
 import { getSessionFromReq, getIsUserAdmin } from "../../lib/auth-utils.js";

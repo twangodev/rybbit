@@ -124,7 +124,11 @@ export function PricingSection() {
                   href="https://app.rybbit.io/signup"
                   className="w-full block"
                 >
-                  <button className="w-full bg-neutral-700 hover:bg-neutral-600 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer">
+                  <button
+                    data-rybbit-event="signup"
+                    data-rybbit-prop-location="free"
+                    className="w-full bg-neutral-700 hover:bg-neutral-600 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer"
+                  >
                     Start for free
                   </button>
                 </Link>
@@ -272,7 +276,11 @@ export function PricingSection() {
                     href="https://app.rybbit.io/signup"
                     className="w-full block"
                   >
-                    <button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer">
+                    <button
+                      data-rybbit-event="signup"
+                      data-rybbit-prop-location="pro"
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer"
+                    >
                       Try for free
                     </button>
                   </Link>

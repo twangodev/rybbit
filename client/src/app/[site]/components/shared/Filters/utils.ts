@@ -1,4 +1,4 @@
-import { Filter, FilterParameter, FilterType } from "../../../../../lib/store";
+import { Filter, FilterParameter, FilterType } from "@rybbit/shared";
 import { getCountryName } from "../../../../../lib/utils";
 
 export function getParameterNameLabel(parameter: FilterParameter) {

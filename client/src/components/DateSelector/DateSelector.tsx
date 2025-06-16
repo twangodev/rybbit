@@ -24,8 +24,12 @@ const getLabel = (time: Time) => {
     return `${startFormatted} - ${endFormatted}`;
   }
 
-  if (time.mode === "last-24-hours") {
-    return "Past 24 Hours";
+  if (time.mode === "past-minutes") {
+    if (time.pastMinutesStart >= 60) {
+      const hours = Math.floor(time.pastMinutesStart / 60);
+      return `Last ${hours} ${hours === 1 ? "Hour" : "Hours"}`;
+    }
+    return `Last ${time.pastMinutesStart} minutes`;
   }
 
   if (time.mode === "day") {
@@ -79,11 +83,11 @@ const getLabel = (time: Time) => {
 export function DateSelector({
   time,
   setTime,
-  past24HoursEnabled = true,
+  pastMinutesEnabled = true,
 }: {
   time: Time;
   setTime: (time: Time) => void;
-  past24HoursEnabled?: boolean;
+  pastMinutesEnabled?: boolean;
 }) {
   return (
     <DropdownMenu>
@@ -105,17 +109,6 @@ export function DateSelector({
         >
           Today
         </DropdownMenuItem>
-        {past24HoursEnabled && (
-          <DropdownMenuItem
-            onClick={() =>
-              setTime({
-                mode: "last-24-hours",
-              })
-            }
-          >
-            Last 24 Hours
-          </DropdownMenuItem>
-        )}
         <DropdownMenuItem
           onClick={() =>
             setTime({
@@ -176,6 +169,55 @@ export function DateSelector({
         >
           Last 60 Days
         </DropdownMenuItem>
+        {pastMinutesEnabled && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              onClick={() =>
+                setTime({
+                  mode: "past-minutes",
+                  pastMinutesStart: 30,
+                  pastMinutesEnd: 0,
+                })
+              }
+            >
+              Last 30 Minutes
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                setTime({
+                  mode: "past-minutes",
+                  pastMinutesStart: 60,
+                  pastMinutesEnd: 0,
+                })
+              }
+            >
+              Last 1 Hour
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                setTime({
+                  mode: "past-minutes",
+                  pastMinutesStart: 360,
+                  pastMinutesEnd: 0,
+                })
+              }
+            >
+              Last 6 Hours
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={() =>
+                setTime({
+                  mode: "past-minutes",
+                  pastMinutesStart: 1440,
+                  pastMinutesEnd: 0,
+                })
+              }
+            >
+              Last 24 Hours
+            </DropdownMenuItem>
+          </>
+        )}
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() =>

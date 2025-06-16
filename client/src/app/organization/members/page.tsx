@@ -148,9 +148,9 @@ function Organization({
                         {member.role}
                       </TableCell>
                       <TableCell>
-                        {DateTime.fromSQL(member.createdAt).toLocaleString(
-                          DateTime.DATE_SHORT
-                        )}
+                        {DateTime.fromSQL(member.createdAt, { zone: "utc" })
+                          .toLocal()
+                          .toLocaleString(DateTime.DATE_SHORT)}
                       </TableCell>
                       {isOwner && (
                         <TableCell className="text-right">
