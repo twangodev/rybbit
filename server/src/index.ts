@@ -170,6 +170,7 @@ server.addHook("onRequest", async (request, reply) => {
 
   let processedUrl = url;
 
+  console.info(processedUrl, PUBLIC_ROUTES);
   // Bypass auth for public routes (now including the prepended /api)
   if (PUBLIC_ROUTES.some((route) => processedUrl.includes(route))) {
     return;
