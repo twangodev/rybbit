@@ -57,6 +57,11 @@ export class Tracker {
       payload.user_id = this.customUserId;
     }
 
+    // Include API key if configured
+    if (this.config.apiKey) {
+      payload.api_key = this.config.apiKey;
+    }
+
     return payload;
   }
 

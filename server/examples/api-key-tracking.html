@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API Key Tracking Example</title>
+</head>
+<body>
+    <h1>Rybbit Analytics - API Key Tracking Example</h1>
+    
+    <h2>Setup Instructions:</h2>
+    <ol>
+        <li>First, generate an API key for your site:
+            <pre><code>POST /api/site/{siteId}/api-config
+{
+  "action": "generate_api_key"
+}</code></pre>
+        </li>
+        
+        <li>Include the script with the API key:
+            <pre><code>&lt;script 
+  defer 
+  src="https://your-analytics-host.com/script.js" 
+  data-site-id="YOUR_SITE_ID" 
+  data-api-key="YOUR_API_KEY"&gt;
+&lt;/script&gt;</code></pre>
+        </li>
+    </ol>
+    
+    <h2>Test Tracking:</h2>
+    <button onclick="window.rybbit.event('button_click', { button: 'test' })">
+        Send Test Event
+    </button>
+    
+    <p>This example shows how to track events using an API key, which bypasses origin validation.</p>
+    
+    <h2>Use Cases:</h2>
+    <ul>
+        <li>Local development (localhost)</li>
+        <li>Staging environments</li>
+        <li>Server-side tracking (coming soon)</li>
+        <li>CI/CD testing</li>
+    </ul>
+    
+    <h2>Security Notes:</h2>
+    <ul>
+        <li>Keep API keys secret - treat them like passwords</li>
+        <li>Use environment variables to store API keys</li>
+        <li>Revoke API keys when no longer needed</li>
+        <li>API keys bypass all origin validation</li>
+    </ul>
+
+    <!-- Example analytics script inclusion -->
+    <script 
+        defer 
+        src="http://localhost:4005/script.js" 
+        data-site-id="1" 
+        data-api-key="YOUR_API_KEY_HERE">
+    </script>
+</body>
+</html>

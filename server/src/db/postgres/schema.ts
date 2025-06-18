@@ -62,6 +62,7 @@ export const sites = pgTable(
     public: boolean().default(false),
     saltUserIds: boolean().default(false),
     blockBots: boolean().default(true).notNull(),
+    apiKey: text("api_key"),
   },
   (table) => [
     foreignKey({
