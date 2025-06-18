@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { sites } from "../../db/postgres/schema.js";
 import { eq, and } from "drizzle-orm";
+import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
 
 export async function getSiteApiConfig(
   request: FastifyRequest,
@@ -19,18 +20,21 @@ export async function getSiteApiConfig(
       return reply.status(400).send({ success: false, error: "Invalid site ID" });
     }
 
-    // Check if user has access to the site
+    const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(
+      request,
+      String(parsedSiteId)
+    );
+    if (!userHasAdminAccessToSite) {
+      return reply.status(403).send({ error: "Forbidden" });
+    }
+
+    // Get site data
     const site = await db
       .select({
         apiKey: sites.apiKey,
       })
       .from(sites)
-      .where(
-        and(
-          eq(sites.siteId, parsedSiteId),
-          eq(sites.createdBy, request.user.id)
-        )
-      )
+      .where(eq(sites.siteId, parsedSiteId))
       .limit(1);
 
     if (site.length === 0) {

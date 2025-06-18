@@ -4,6 +4,7 @@ import { sites } from "../../db/postgres/schema.js";
 import { eq, and } from "drizzle-orm";
 import { z } from "zod";
 import { siteConfig } from "../../lib/siteConfig.js";
+import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
 import crypto from "crypto";
 
 // Schema for updating API configuration
@@ -27,6 +28,14 @@ export async function updateSiteApiConfig(
       return reply.status(400).send({ success: false, error: "Invalid site ID" });
     }
 
+    const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(
+      request,
+      String(parsedSiteId)
+    );
+    if (!userHasAdminAccessToSite) {
+      return reply.status(403).send({ error: "Forbidden" });
+    }
+
     // Validate request body
     const validationResult = updateApiConfigSchema.safeParse(request.body);
     if (!validationResult.success) {
@@ -38,22 +47,6 @@ export async function updateSiteApiConfig(
     }
 
     const { action } = validationResult.data;
-
-    // Check if user has access to the site
-    const site = await db
-      .select()
-      .from(sites)
-      .where(
-        and(
-          eq(sites.siteId, parsedSiteId),
-          eq(sites.createdBy, request.user.id)
-        )
-      )
-      .limit(1);
-
-    if (site.length === 0) {
-      return reply.status(404).send({ success: false, error: "Site not found" });
-    }
 
     let updateData: any = {};
 

@@ -51,16 +51,14 @@ export function ApiKeyManager({
         <h4 className="text-sm font-semibold text-foreground">API Key</h4>
         <p className="text-xs text-muted-foreground mt-1">
           Generate an API key to track events from localhost during development.
-          API keys bypass origin validation. ⚠️ Remove before deploying to production!
+          API keys bypass origin validation. ⚠️ Remove before deploying to
+          production!
         </p>
       </div>
 
       {isLoadingApiConfig ? (
-        <div className="space-y-4">
-          <Skeleton className="h-10 w-full" />
-          <div className="flex space-x-2">
-            <Skeleton className="h-9 w-32" />
-          </div>
+        <div className="flex space-x-2">
+          <Skeleton className="h-9 w-32" />
         </div>
       ) : apiKey ? (
         <div className="space-y-4">
@@ -151,34 +149,27 @@ export function ApiKeyManager({
           </div>
         </div>
       ) : (
-        <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">
-            No API key has been generated for this site.
-          </p>
-          <Button
-            onClick={async () => {
-              try {
-                const result = await generateApiKey.mutateAsync(siteId);
-                if (result.apiKey) {
-                  setShowApiKey(true);
-                  toast.success("API key generated successfully");
-                }
-              } catch (error) {
-                toast.error("Failed to generate API key");
+        <Button
+          onClick={async () => {
+            try {
+              const result = await generateApiKey.mutateAsync(siteId);
+              if (result.apiKey) {
+                setShowApiKey(true);
+                toast.success("API key generated successfully");
               }
-            }}
-            disabled={disabled || generateApiKey.isPending}
-          >
-            <Key className="h-4 w-4 mr-2" />
-            Generate API Key
-          </Button>
-        </div>
+            } catch (error) {
+              toast.error("Failed to generate API key");
+            }
+          }}
+          disabled={disabled || generateApiKey.isPending}
+        >
+          <Key className="h-4 w-4 mr-2" />
+          Generate API Key
+        </Button>
       )}
 
       <div className="pt-4 border-t space-y-3">
-        <h5 className="text-xs font-semibold text-foreground">
-          Usage Example
-        </h5>
+        <h5 className="text-xs font-semibold text-foreground">Usage Example</h5>
         <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
           {`<script
   defer
