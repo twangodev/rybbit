@@ -9,7 +9,7 @@ export default {
   "track-events": "",
   sdks: "SDKs",
   guides: "",
-  "api-key-tracking": "",
+  "localhost-tracking": "",
   "hiding-own-traffic": "",
   _4: {
     type: "separator",
