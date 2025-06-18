@@ -40,7 +40,7 @@ export async function getSiteApiConfig(
     return reply.send({
       success: true,
       data: {
-        hasApiKey: !!site[0].apiKey,
+        apiKey: site[0].apiKey,
       },
     });
   } catch (error) {

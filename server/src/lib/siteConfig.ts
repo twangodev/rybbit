@@ -97,13 +97,10 @@ class SiteConfig {
    * Update the public status of a site in the cache
    */
   updateSitePublicStatus(siteId: number, isPublic: boolean): void {
-    const config = this.siteConfigMap.get(siteId) || {
-      public: false,
-      saltUserIds: false,
-      domain: "",
-      blockBots: true,
-      apiKey: null,
-    };
+    const config = this.siteConfigMap.get(siteId);
+    if (!config) {
+      return;
+    }
     config.public = isPublic;
     this.siteConfigMap.set(siteId, config);
   }
@@ -112,12 +109,10 @@ class SiteConfig {
    * Update the salt user IDs setting of a site in the cache
    */
   updateSiteSaltSetting(siteId: number, saltUserIds: boolean): void {
-    const config = this.siteConfigMap.get(siteId) || {
-      public: false,
-      saltUserIds: false,
-      domain: "",
-      blockBots: true,
-    };
+    const config = this.siteConfigMap.get(siteId);
+    if (!config) {
+      return;
+    }
     config.saltUserIds = saltUserIds;
     this.siteConfigMap.set(siteId, config);
   }
@@ -126,12 +121,10 @@ class SiteConfig {
    * Update the bot blocking setting of a site in the cache
    */
   updateSiteBlockBotsSetting(siteId: number, blockBots: boolean): void {
-    const config = this.siteConfigMap.get(siteId) || {
-      public: false,
-      saltUserIds: false,
-      domain: "",
-      blockBots: true,
-    };
+    const config = this.siteConfigMap.get(siteId);
+    if (!config) {
+      return;
+    }
     config.blockBots = blockBots;
     this.siteConfigMap.set(siteId, config);
   }
@@ -140,12 +133,10 @@ class SiteConfig {
    * Update the domain of a site in the cache
    */
   updateSiteDomain(siteId: number, domain: string): void {
-    const config = this.siteConfigMap.get(siteId) || {
-      public: false,
-      saltUserIds: false,
-      domain: "",
-      blockBots: true,
-    };
+    const config = this.siteConfigMap.get(siteId);
+    if (!config) {
+      return;
+    }
     config.domain = domain;
     this.siteConfigMap.set(siteId, config);
   }

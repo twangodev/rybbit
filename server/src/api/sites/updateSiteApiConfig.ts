@@ -59,8 +59,8 @@ export async function updateSiteApiConfig(
 
     switch (action) {
       case "generate_api_key":
-        // Generate a secure random API key
-        const apiKey = crypto.randomBytes(32).toString('hex');
+        // Generate a secure random API key with rb_ prefix
+        const apiKey = `rb_${crypto.randomBytes(16).toString('hex')}`;
         updateData.apiKey = apiKey;
         break;
 

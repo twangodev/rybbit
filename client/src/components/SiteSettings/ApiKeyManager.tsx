@@ -17,6 +17,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 
 import {
   useGenerateApiKey,
@@ -34,13 +35,15 @@ export function ApiKeyManager({
   disabled = false,
 }: ApiKeyManagerProps) {
   const [showApiKey, setShowApiKey] = useState(false);
-  const [apiKey, setApiKey] = useState<string | null>(null);
 
   // API key hooks
   const { data: apiConfig, isLoading: isLoadingApiConfig } =
     useGetApiConfig(siteId);
   const generateApiKey = useGenerateApiKey();
   const revokeApiKey = useRevokeApiKey();
+
+  // Use the API key from config or from newly generated key
+  const apiKey = apiConfig?.apiKey || null;
 
   return (
     <div className="space-y-4">
@@ -54,15 +57,24 @@ export function ApiKeyManager({
       </div>
 
       {isLoadingApiConfig ? (
-        <div className="text-sm text-muted-foreground">Loading...</div>
-      ) : apiConfig?.hasApiKey || apiKey ? (
+        <div className="space-y-4">
+          <Skeleton className="h-10 w-full" />
+          <div className="flex space-x-2">
+            <Skeleton className="h-9 w-32" />
+          </div>
+        </div>
+      ) : apiKey ? (
         <div className="space-y-4">
           <div className="flex items-center space-x-2">
             <div className="flex-1">
               <div className="relative">
                 <Input
                   type={showApiKey ? "text" : "password"}
-                  value={apiKey || "••••••••••••••••••••••••••••••••"}
+                  value={
+                    showApiKey && apiKey
+                      ? apiKey
+                      : "rb_••••••••••••••••••••••••••••••••••"
+                  }
                   readOnly
                   className="pr-20 font-mono text-xs"
                 />
@@ -99,15 +111,6 @@ export function ApiKeyManager({
             </div>
           </div>
 
-          {apiKey && (
-            <div className="rounded-md bg-yellow-50 dark:bg-yellow-900/20 p-3">
-              <p className="text-xs text-yellow-800 dark:text-yellow-200">
-                <strong>Important:</strong> Copy this API key now. You won't be
-                able to see it again.
-              </p>
-            </div>
-          )}
-
           <div>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -133,7 +136,6 @@ export function ApiKeyManager({
                     onClick={async () => {
                       try {
                         await revokeApiKey.mutateAsync(siteId);
-                        setApiKey(null);
                         setShowApiKey(false);
                         toast.success("API key revoked successfully");
                       } catch (error) {
@@ -159,7 +161,6 @@ export function ApiKeyManager({
               try {
                 const result = await generateApiKey.mutateAsync(siteId);
                 if (result.apiKey) {
-                  setApiKey(result.apiKey);
                   setShowApiKey(true);
                   toast.success("API key generated successfully");
                 }
@@ -174,30 +175,6 @@ export function ApiKeyManager({
           </Button>
         </div>
       )}
-
-      <div className="pt-4 border-t border-neutral-700 space-y-3">
-        <h5 className="text-xs font-semibold text-foreground">Usage Example</h5>
-        <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
-          {`<script
-  defer
-  src="${window.location.origin}/api/script.js"
-  data-site-id="${siteId}"
-  data-api-key="YOUR_API_KEY">
-</script>`}
-        </pre>
-        <p className="text-xs text-muted-foreground">
-          Learn more about{" "}
-          <a
-            href="https://docs.rybbit.io/api-key-tracking"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            API key tracking
-          </a>
-          .
-        </p>
-      </div>
     </div>
   );
 }

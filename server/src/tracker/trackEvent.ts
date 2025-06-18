@@ -32,7 +32,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     event_name: z.string().max(256).optional(),
     properties: z.string().max(2048).optional(),
     user_id: z.string().max(255).optional(),
-    api_key: z.string().max(64).optional(),
+    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
   }),
   z.object({
     type: z.literal("custom_event"),
@@ -62,7 +62,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
       )
       .optional(), // Optional but must be valid JSON if present
     user_id: z.string().max(255).optional(),
-    api_key: z.string().max(64).optional(),
+    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
   }),
   z.object({
     type: z.literal("performance"),
@@ -78,7 +78,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     event_name: z.string().max(256).optional(),
     properties: z.string().max(2048).optional(),
     user_id: z.string().max(255).optional(),
-    api_key: z.string().max(64).optional(),
+    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
     // Performance metrics (can be null if not collected)
     lcp: z.number().positive().nullable().optional(),
     cls: z.number().min(0).nullable().optional(),

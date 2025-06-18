@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authedFetch } from "../utils";
 
 interface ApiConfigResponse {
-  hasApiKey: boolean;
+  apiKey: string | null;
 }
 
 interface UpdateApiConfigResponse {
