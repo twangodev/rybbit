@@ -50,9 +50,8 @@ export function ApiKeyManager({
       <div>
         <h4 className="text-sm font-semibold text-foreground">API Key</h4>
         <p className="text-xs text-muted-foreground mt-1">
-          Generate an API key to track events from localhost during development.
-          API keys bypass origin validation. ⚠️ Remove before deploying to
-          production!
+          Generate an API key to track events using the API endpoint or from
+          localhost during development.
         </p>
       </div>
 
@@ -167,30 +166,6 @@ export function ApiKeyManager({
           Generate API Key
         </Button>
       )}
-
-      <div className="pt-4 border-t space-y-3">
-        <h5 className="text-xs font-semibold text-foreground">Usage Example</h5>
-        <pre className="text-xs bg-muted p-3 rounded-md overflow-x-auto">
-          {`<script
-  defer
-  src="${window.location.origin}/api/script.js"
-  data-site-id="${siteId}"
-  data-api-key="YOUR_API_KEY">
-</script>`}
-        </pre>
-        <p className="text-xs text-muted-foreground">
-          Learn more about{" "}
-          <a
-            href="https://docs.rybbit.io/localhost-tracking"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            localhost tracking
-          </a>
-          .
-        </p>
-      </div>
     </div>
   );
 }
