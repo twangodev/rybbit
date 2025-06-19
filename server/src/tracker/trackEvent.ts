@@ -146,24 +146,6 @@ async function updateSession(
   await db.insert(activeSessions).values(insertData);
 }
 
-// Process tracking event and add to queue
-async function processTrackingEvent(
-  payload: TotalTrackingPayload,
-  existingSession: any | null,
-  isPageview: boolean = true
-): Promise<void> {
-  // If session exists, use its ID instead of generated one
-  if (existingSession) {
-    payload.sessionId = existingSession.sessionId;
-  }
-
-  // Add to queue for processing
-  await pageviewQueue.add(payload);
-
-  // Update session data
-  await updateSession(payload, existingSession, isPageview);
-}
-
 /**
  * Validates if the request's origin matches the registered domain for the site
  * @param siteId The site ID from the tracking payload
@@ -330,8 +312,13 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       payload.site_id
     );
 
-    // Process the event
-    await processTrackingEvent(
+    if (existingSession) {
+      payload.sessionId = existingSession.sessionId;
+    }
+
+    // Add to queue for processing
+    pageviewQueue.add(payload);
+    await updateSession(
       payload,
       existingSession,
       validatedPayload.type === "pageview"
