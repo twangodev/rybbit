@@ -32,6 +32,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     event_name: z.string().max(256).optional(),
     properties: z.string().max(2048).optional(),
     user_id: z.string().max(255).optional(),
+    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
   }),
   z.object({
     type: z.literal("custom_event"),
@@ -61,6 +62,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
       )
       .optional(), // Optional but must be valid JSON if present
     user_id: z.string().max(255).optional(),
+    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
   }),
   z.object({
     type: z.literal("performance"),
@@ -76,6 +78,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     event_name: z.string().max(256).optional(),
     properties: z.string().max(2048).optional(),
     user_id: z.string().max(255).optional(),
+    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
     // Performance metrics (can be null if not collected)
     lcp: z.number().positive().nullable().optional(),
     cls: z.number().min(0).nullable().optional(),
@@ -86,7 +89,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
 ]);
 
 // Update session for both pageviews and events
-export async function updateSession(
+async function updateSession(
   payload: TotalTrackingPayload,
   existingSession: any | null,
   isPageview: boolean = true
@@ -138,7 +141,7 @@ export async function updateSession(
 }
 
 // Process tracking event and add to queue
-export async function processTrackingEvent(
+async function processTrackingEvent(
   payload: TotalTrackingPayload,
   existingSession: any | null,
   isPageview: boolean = true
@@ -161,7 +164,7 @@ export async function processTrackingEvent(
  * @param requestOrigin The origin header from the request
  * @returns An object with success status and optional error message
  */
-async function validateOrigin(siteId: string, requestOrigin?: string) {
+async function validateOrigin(siteId: string, requestOrigin?: string, apiKey?: string) {
   try {
     // If origin checking is disabled, return success
     if (DISABLE_ORIGIN_CHECK) {
@@ -179,13 +182,13 @@ async function validateOrigin(siteId: string, requestOrigin?: string) {
     // Convert siteId to number
     const numericSiteId = parseInt(siteId, 10);
 
-    // Get the domain associated with this site
-    const siteDomain = siteConfig.getSiteDomain(numericSiteId);
-
-    if (!siteDomain) {
+    // Get the site configuration
+    const site = await siteConfig.getSiteConfig(numericSiteId);
+    
+    if (!site) {
       return {
         success: false,
-        error: "Site not found or has no registered domain",
+        error: "Site not found",
       };
     }
 
@@ -200,6 +203,17 @@ async function validateOrigin(siteId: string, requestOrigin?: string) {
     try {
       // Parse the origin into URL components
       const originUrl = new URL(requestOrigin);
+
+      // Check if this is a request with valid API key
+      if (apiKey && site.apiKey && apiKey === site.apiKey) {
+        console.info(
+          `[Tracking] Allowing API key authenticated request for site ${siteId} from origin: ${requestOrigin}`
+        );
+        return { success: true };
+      }
+
+      // Get the domain associated with this site
+      const siteDomain = site.domain;
 
       // Normalize domains by removing all subdomain prefixes
       const normalizedOriginHost = normalizeOrigin(requestOrigin);
@@ -249,7 +263,8 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Validate that the request is coming from the expected origin
     const originValidation = await validateOrigin(
       validatedPayload.site_id,
-      request.headers.origin as string
+      request.headers.origin as string,
+      validatedPayload.api_key
     );
 
     if (!originValidation.success) {

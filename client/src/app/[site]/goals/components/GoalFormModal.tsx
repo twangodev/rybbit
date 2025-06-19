@@ -2,7 +2,7 @@
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { FileText, MousePointerClick } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useCreateGoal } from "../../../../api/analytics/goals/useCreateGoal";
@@ -74,6 +74,15 @@ export default function GoalFormModal({
   const [useProperties, setUseProperties] = useState(
     !!goal?.config.eventPropertyKey && !!goal?.config.eventPropertyValue
   );
+
+  // Reinitialize useProperties when goal changes or modal opens
+  useEffect(() => {
+    if (isOpen) {
+      setUseProperties(
+        !!goal?.config.eventPropertyKey && !!goal?.config.eventPropertyValue
+      );
+    }
+  }, [isOpen, goal?.config.eventPropertyKey, goal?.config.eventPropertyValue]);
 
   const onClose = () => {
     setIsOpen(false);

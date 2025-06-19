@@ -2,12 +2,13 @@ import { clsx, type ClassValue } from "clsx";
 import { countries } from "countries-list";
 import { Duration } from "luxon";
 import { twMerge } from "tailwind-merge";
+import { userLocale } from "./dateTimeUtils";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export const formatter = Intl.NumberFormat("en", {
+export const formatter = Intl.NumberFormat(userLocale, {
   notation: "compact",
 }).format;
 

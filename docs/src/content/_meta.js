@@ -9,6 +9,7 @@ export default {
   "track-events": "",
   sdks: "SDKs",
   guides: "",
+  "localhost-tracking": "",
   "hiding-own-traffic": "",
   _4: {
     type: "separator",

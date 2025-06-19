@@ -16,47 +16,25 @@ type PeriodTime = "current" | "previous";
 type UseGetOverviewOptions = {
   periodTime?: PeriodTime;
   site?: number | string;
-  // Optional parameters for custom past minutes (for backward compatibility)
-  pastMinutesStart?: number;
-  pastMinutesEnd?: number;
+  overrideTime?:
+    | { mode: "past-minutes"; pastMinutesStart: number; pastMinutesEnd: number }
+    | { mode: "range"; startDate: string; endDate: string };
 };
 
 export function useGetOverview({
   periodTime,
   site,
-  pastMinutesStart,
-  pastMinutesEnd,
+  overrideTime,
 }: UseGetOverviewOptions) {
   const { time, previousTime, filters } = useStore();
-  const timeToUse = periodTime === "previous" ? previousTime : time;
 
-  // Use custom past minutes if provided, otherwise use the time-based approach
-  const queryParams =
-    pastMinutesStart !== undefined && pastMinutesEnd !== undefined
-      ? getQueryParams(
-          timeToUse,
-          { filters },
-          { pastMinutesStart, pastMinutesEnd }
-        )
-      : getQueryParams(timeToUse, { filters });
+  // Use overrideTime if provided, otherwise use store time
+  const baseTime = overrideTime || time;
+  const timeToUse = periodTime === "previous" ? previousTime : baseTime;
 
-  // Create appropriate query key based on the parameters used
-  const queryKey =
-    pastMinutesStart !== undefined && pastMinutesEnd !== undefined
-      ? [
-          "overview-past-minutes",
-          pastMinutesStart,
-          pastMinutesEnd,
-          site,
-          filters,
-        ]
-      : [
-          "overview",
-          timeToUse,
-          site,
-          filters,
-          timeToUse.mode === "last-24-hours" ? "past-minutes" : "date-range",
-        ];
+  const queryParams = getQueryParams(timeToUse, { filters });
+
+  const queryKey = ["overview", timeToUse, site, filters];
 
   return useQuery({
     queryKey,
@@ -66,7 +44,7 @@ export function useGetOverview({
         queryParams
       );
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
       const prevQueryKey = query.queryKey;

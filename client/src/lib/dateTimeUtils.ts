@@ -1,4 +1,5 @@
-import { Duration, DurationLikeObject, Settings } from "luxon";
+import { TimeBucket } from "@rybbit/shared";
+import { DateTime, Duration, DurationLikeObject, Settings } from "luxon";
 
 // Detect user locale from the browser environment (fallback to 'en-US' on server)
 export const userLocale =
@@ -23,7 +24,7 @@ Settings.defaultLocale = userLocale;
  * @param format - The weekday format: "narrow" | "short" | "long".
  * @returns An array of localized weekday names from Monday to Sunday.
  */
-export function getLocalizedWeekdayNames(
+function getLocalizedWeekdayNames(
   locale: string,
   format: "narrow" | "short" | "long" = "long"
 ): string[] {
@@ -67,7 +68,7 @@ export function getLocalizedWeekdayNames(
  * @param options - Intl.DateTimeFormat options (e.g., { hour: "numeric", hour12: true }).
  * @returns An array of 24 formatted hour strings.
  */
-export function getLocalizedTimeLabels(
+function getLocalizedTimeLabels(
   locale: string,
   options: Intl.DateTimeFormatOptions
 ): string[] {
@@ -174,3 +175,37 @@ export const hourMinuteLabels: string[] = getLocalizedTimeLabels(userLocale, {
   minute: "2-digit",
   hour12: hour12,
 });
+
+export const formatChartDateTime = (dt: DateTime, bucket: TimeBucket) => {
+  const showMinutes = [
+    "minute",
+    "five_minutes",
+    "ten_minutes",
+    "fifteen_minutes",
+    "hour",
+  ].includes(bucket);
+  const options: Intl.DateTimeFormatOptions = {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    hour12: hour12,
+  };
+  if (showMinutes && !hour12) {
+    options.minute = "numeric";
+  }
+  if (bucket === "day") {
+    options.minute = undefined;
+    options.hour = undefined;
+    options.month = "long";
+  }
+  if (
+    bucket === "fifteen_minutes" ||
+    bucket === "ten_minutes" ||
+    bucket === "five_minutes" ||
+    bucket === "minute"
+  ) {
+    options.minute = "numeric";
+    options.hour = "numeric";
+  }
+  return new Intl.DateTimeFormat(userLocale, options).format(dt.toJSDate());
+};

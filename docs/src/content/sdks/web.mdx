@@ -39,22 +39,22 @@ rybbit.init({
 
 ### Configuration Options
 
-<Callout type="default">
-The SDK is currently does not have all features of the tracking script. Currently web vitals and tracking events data attributes are not supported.
-</Callout>
-
-| Option (`init`)      | Type               | Default | Description                                                                                                                                                             |
-| :------------------- | :----------------- | :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `analyticsHost`      | `string`           | -       | **Required.** URL of your Rybbit analytics instance (e.g., `https://rybbit.yourdomain.com/api`).                                                                        |
-| `siteId`             | `string \| number` | -       | **Required.** The Site ID for your website obtained from your Rybbit instance.                                                                                          |
-| `debounce`           | `number`           | `500`   | Debounce time in milliseconds for tracking SPA pageviews after route changes. Set to `0` to disable debouncing (track immediately).                                     |
-| `autoTrackPageviews` | `boolean`          | `true`  | If `true`, automatically tracks pageviews on initial load and (if `autoTrackSpaRoutes` is `true`) on SPA navigation.                                                    |
-| `autoTrackSpaRoutes` | `boolean`          | `true`  | If `true` (and `autoTrackPageviews` is `true`), automatically tracks pageviews when browser history changes (`pushState`, `popstate`).                                  |
-| `trackQuerystring`   | `boolean`          | `true`  | If `true`, includes the URL's query string (e.g., `?utm_source=google`) in the tracked `querystring` data.                                                              |
-| `trackOutboundLinks` | `boolean`          | `true`  | If `true`, automatically tracks clicks on anchor (`<a>`) tags that link to external domains.                                                                            |
-| `skipPatterns`       | `string[]`         | `[]`    | Array of path patterns. Pageviews whose path matches any pattern will **not** be tracked. See [Path Matching](#path-matching).                                          |
-| `maskPatterns`       | `string[]`         | `[]`    | Array of path patterns. For matching pageview paths, the original path will be **replaced** by the pattern itself in tracked data. See [Path Matching](#path-matching). |
-| `debug`              | `boolean`          | `false` | If `true`, enables detailed logging to the browser console.                                                                                                             |
+| Option (`init`)       | Type               | Default | Description                                                                                                                                                             |
+| :-------------------- | :----------------- | :------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `analyticsHost`       | `string`           | -       | **Required.** URL of your Rybbit analytics instance (e.g., `https://rybbit.yourdomain.com/api`).                                                                        |
+| `siteId`              | `string \| number` | -       | **Required.** The Site ID for your website obtained from your Rybbit instance.                                                                                          |
+| `debounce`            | `number`           | `500`   | Debounce time in milliseconds for tracking pageviews after route changes. Set to `0` to disable debouncing (track immediately).                                         |
+| `autoTrackPageviews`  | `boolean`          | `true`  | Track pageviews on initial load.                                                                                                                                        |
+| `autoTrackSpaRoutes`  | `boolean`          | `true`  | Track pageviews on SPA navigation (if `autoTrackPageviews` is `true`).                                                                                                  |
+| `trackQuerystring`    | `boolean`          | `true`  | Include the URL's query string (e.g., `?utm_source=google`) in the tracked `querystring` data.                                                                          |
+| `trackOutboundLinks`  | `boolean`          | `true`  | Track clicks on anchor (`<a>`) tags that link to external domains.                                                                                                      |
+| `trackHashRoutes`     | `boolean`          | `true`  | Track URL hash changes.                                                                                                                                                 |
+| `trackDataAttributes` | `boolean`          | `true`  | Track clicks on elements with a `data-rybbit-event` attribute.                                                                                                          |
+| `trackWebVitals`      | `boolean`          | `false`  | Track website performance metrics.                                                                                                                                      |
+| `webVitalsTimeout`    | `number`           | `20000` | Timeout in milliseconds for sending web vitals.                                                                                                                         |
+| `skipPatterns`        | `string[]`         | `[]`    | Array of path patterns. Pageviews whose path matches any pattern will **not** be tracked. See [Path Matching](#path-matching).                                          |
+| `maskPatterns`        | `string[]`         | `[]`    | Array of path patterns. For matching pageview paths, the original path will be **replaced** by the pattern itself in tracked data. See [Path Matching](#path-matching). |
+| `debug`               | `boolean`          | `false` | Enable detailed logging to the browser console.                                                                                                                         |
 
 ## Tracking Pageviews
 
@@ -71,14 +71,14 @@ rybbit.pageview(path?: string);
 - **`path`** (`string`, Optional):
   - Replaces the detected URL path (`window.location.pathname`) and query string (`window.location.search`) for this specific pageview event.
   - Should start with a `/` (e.g., `/virtual/my-custom-page`).
-  - If `path` includes its own query string (e.g., `/virtual/step?id=123&source=email`), that query string will be used for the event. If `path` has no query string, the `querystring` property for the event will be empty.
+  - If `path` includes its own query string (e.g., `/virtual/step?id=123`), that query string will be used for the event. If `path` has no query string, the `querystring` property will be empty.
   - `skipPatterns` and `maskPatterns` will be applied to `path`.
 
 ### When to Use Manually
 
 - **Automatic tracking disabled:** If you set `autoTrackPageviews: false` during initialization.
 - **Virtual Pageviews:** In SPAs where a significant view change occurs without a URL change.
-- **Specific Timing:** If you need to ensure a pageview is tracked only after certain conditions are met or specific data is available.
+- **Specific Timing:** If you need to ensure a pageview is tracked only after certain conditions are met.
 
 ### Example
 
@@ -95,7 +95,7 @@ openUserDetailsModal("user-abc", "contact-info");
 
 // Example: Track a virtual pageview with its own query parameters
 function showFilteredProductList(category, sortBy) {
-   const virtualPathWithQuery = `/products/category/${category}?sort=${sortBy}&view=grid`;
+   let virtualPathWithQuery = `/products/category/${category}?sort=${sortBy}&view=grid`;
    rybbit.pageview(virtualPathWithQuery);
 }
 showFilteredProductList("electronics", "price_desc");
@@ -103,20 +103,24 @@ showFilteredProductList("electronics", "price_desc");
 
 ## Tracking Custom Events
 
-Use custom events to track specific user interactions or milestones beyond simple page navigation. Examples include button clicks, form submissions, video plays, item purchases, etc.
+Use custom events to track specific user interactions. Examples include button clicks, form submissions, or adding an item to a cart.
 
-### Syntax
+### Programmatic Tracking
+
+You can trigger events from your JavaScript code.
+
+#### Syntax
 
 ```typescript
 rybbit.event(name: string, properties?: TrackProperties);
 ```
 
-### Parameters
+#### Parameters
 
 - **`name`** (`string`, Required): The name of the event you want to track.
-- **`properties`** (`object`, Optional): An object containing additional key-value pairs related to the event. Values should ideally be strings, numbers, or booleans. Keep the structure flat.
+- **`properties`** (`object`, Optional): An object containing additional key-value pairs related to the event.
 
-### Example
+#### Example
 
 ```javascript
 // Track a simple button click
@@ -124,16 +128,7 @@ document.getElementById("cta-button")?.addEventListener("click", () => {
   rybbit.event("cta_click");
 });
 
-// Track a signup event with properties
-function handleSignup(formData) {
-  // ... process signup ...
-  rybbit.event("signup_complete", {
-    plan: formData.plan,
-    method: "email"
-  });
-}
-
-// Track adding an item to a shopping cart
+// Track adding an item to a shopping cart with properties
 function addToCart(item) {
   // ... add item ...
   rybbit.event("add_to_cart", {
@@ -145,14 +140,36 @@ function addToCart(item) {
 }
 ```
 
-{/* ## Tracking Outbound Links
+### Declarative Tracking with Data Attributes
+
+If `trackDataAttributes` is enabled (default), you can track events directly from your HTML. The SDK will automatically listen for clicks on elements with the `data-rybbit-event` attribute.
+
+- `data-rybbit-event="<event-name>"`: This attribute makes the element trackable. The value is used as the event name.
+- `data-rybbit-prop-<property-name>="<value>"`: You can add multiple properties to the event by using this attribute format. The SDK collects all attributes starting with `data-rybbit-prop-` and includes them as key-value pairs in the event data.
+
+#### Example
+
+```html
+<button data-rybbit-event="cta_click">Click Me</button>
+
+<button
+  data-rybbit-event="add_to_cart"
+  data-rybbit-prop-item_id="product-123"
+  data-rybbit-prop-item_name="Classic T-Shirt"
+  data-rybbit-prop-price="29.99"
+>
+  Add to Cart
+</button>
+```
+
+## Tracking Outbound Links
 
 Outbound links (links to external domains) are tracked automatically by default if `trackOutboundLinks` is enabled. The SDK attaches a global click listener to capture clicks on `<a>` tags with external `href` attributes.
 
 ### Syntax
 
 ```typescript
-rybbit.trackOutboundLink(url: string, text?: string, target?: string);
+rybbit.outbound(url: string, text?: string, target?: string);
 ```
 
 ### Parameters
@@ -164,7 +181,6 @@ rybbit.trackOutboundLink(url: string, text?: string, target?: string);
 ### When to Use Manually
 
 - **Automatic tracking disabled:** If you set `trackOutboundLinks: false` during init.
-- **Dynamically generated links:** If links are added to the DOM after the initial page load and you want to ensure they are tracked immediately upon interaction.
 - **Non-anchor elements:** If you trigger navigation to an external site using JavaScript from an element that isn't an `<a>` tag.
 
 ### Example
@@ -172,32 +188,90 @@ rybbit.trackOutboundLink(url: string, text?: string, target?: string);
 ```javascript
 // Manually track an outbound click triggered by a button
 document.getElementById("external-service-button")?.addEventListener("click", () => {
-  const url = "https://external-service.com";
-  rybbit.trackOutboundLink(url, "Visit External Service", "_blank");
+  let url = "https://external-service.com";
+  rybbit.outbound(url, "Visit External Service", "_blank");
   // Optionally navigate after tracking
   window.open(url, "_blank");
 });
-``` */}
+```
+
+## User Identification
+
+You can associate tracking events with a specific user ID. The ID is persisted in `localStorage` and will be attached to all subsequent tracking events for that user.
+
+### `identify`
+
+Assigns a user ID.
+
+```typescript
+rybbit.identify(userId: string);
+```
+
+**Example:**
+
+```javascript
+// After a user logs in
+rybbit.identify("user-xzy-123");
+```
+
+### `clearUserId`
+
+Clears the stored user ID.
+
+```typescript
+rybbit.clearUserId();
+```
+
+**Example:**
+
+```javascript
+// When a user logs out
+rybbit.clearUserId();
+```
+
+### `getUserId`
+
+Retrieves the currently stored user ID.
+
+```typescript
+rybbit.getUserId(): string | null;
+```
+
+**Example:**
+
+```javascript
+let currentUserId = rybbit.getUserId();
+console.log("Current Rybbit User ID:", currentUserId);
+```
+
+## Cleanup
+
+In Single Page Applications or other dynamic environments, you may need to manually clean up the listeners that the SDK sets up.
+
+### Syntax
+
+```typescript
+rybbit.cleanup();
+```
 
 ## Path Matching
 
-These configuration options allow you to control which page paths are tracked and how they appear in your analytics data using wildcard patterns passed in the `rybbit.init()` configuration object.
+These options allow you to control which page paths are tracked and how they appear in your analytics data using wildcard patterns.
 
 ### Wildcards
 
 - `*`: Matches any sequence of characters **except** the forward slash (`/`). Useful for matching single path segments.
-- `**`: Matches any sequence of characters **including** the forward slash (`/`). Useful for matching multiple path segments or arbitrary endings.
+- `**`: Matches any sequence of characters **including** the forward slash (`/`). Useful for matching multiple path segments.
 
 ### `skipPatterns`
 
-If a page's path (`window.location.pathname`) matches any pattern in the `skipPatterns` array, the pageview event (and any associated data) for that path will **not** be sent to Rybbit.
+If a page's path matches any pattern in `skipPatterns`, the pageview for that path will **not** be sent.
 
 **Examples:**
 
 - `"/admin/*"`: Skips `/admin/login`, `/admin/users`, but **not** `/admin/settings/profile`.
 - `"/admin/**"`: Skips `/admin/login`, `/admin/users`, *and* `/admin/settings/profile`.
 - `"/users/*/profile"`: Skips `/users/123/profile`, `/users/abc/profile`, but **not** `/users/123/settings`.
-- `"/private"`: Skips only the exact path `/private`.
 
 ```javascript filename="Example skipPatterns in init"
 rybbit.init({
@@ -212,7 +286,7 @@ rybbit.init({
 
 ### `maskPatterns`
 
-If a page's path matches a pattern in the `maskPatterns` array, the pageview event **will** be sent, but the `pathname` property in the tracked data will be **replaced** by the pattern string itself. This is useful for grouping similar pages or hiding sensitive information like IDs in URLs while still tracking the view.
+If a page's path matches a pattern in `maskPatterns`, the pageview **will** be sent, but the `pathname` will be **replaced** by the pattern string itself. This is useful for grouping similar pages or hiding sensitive IDs.
 
 <Callout type="warning">
 If a path matches both a `skipPatterns` and a `maskPatterns` pattern, **skipping takes priority**.
@@ -221,11 +295,9 @@ If a path matches both a `skipPatterns` and a `maskPatterns` pattern, **skipping
 **Examples:**
 
 - Pattern: `"/users/*/profile"`
-  - `/users/123/profile` is tracked as `pathname: "/users/*/profile"`
-  - `/users/abc/profile` is tracked as `pathname: "/users/*/profile"`
+  - `/users/123/profile` is tracked as `pathname: "/users/*/profile"`.
 - Pattern: `"/products/**"`
-  - `/products/electronics/tv-123` is tracked as `pathname: "/products/**"`
-  - `/products/clothing/shirt-xyz` is tracked as `pathname: "/products/**"`
+  - `/products/electronics/tv-123` is tracked as `pathname: "/products/**"`.
 
 ```javascript filename="Example maskPatterns in init"
 rybbit.init({

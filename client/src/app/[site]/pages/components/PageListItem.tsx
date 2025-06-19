@@ -7,6 +7,7 @@ import { usePageMetadata } from "@/api/usePageMetadata";
 import { Card, CardContent } from "@/components/ui/card";
 import { Filter } from "@rybbit/shared";
 import { useStore } from "@/lib/store";
+import { MINUTES_IN_24_HOURS } from "@/lib/const";
 import { truncateString } from "@/lib/utils";
 import { formatShortDuration } from "@/lib/dateTimeUtils";
 import { ExternalLink } from "lucide-react";
@@ -31,7 +32,7 @@ export function PageListItem({
   const { data: siteMetadata } = useGetSite();
   const { site, time, bucket } = useStore(); // Get time and bucket from store
 
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const isPastMinutesMode = time.mode === "past-minutes";
 
   // Create a pathname filter for this specific page
   const pageSpecificFilter: Filter = {
@@ -47,15 +48,13 @@ export function PageListItem({
       bucket,
       dynamicFilters: [pageSpecificFilter],
       props: {
-        enabled: !isPast24HoursMode,
+        enabled: !isPastMinutesMode,
       },
     });
 
   // Past minutes data for sparklines
   const { data: pastMinutesData, isLoading: isLoadingPastMinutes } =
     useGetOverviewBucketed({
-      pastMinutesStart: 24 * 60,
-      pastMinutesEnd: 0,
       site,
       bucket,
       dynamicFilters: [
@@ -66,13 +65,13 @@ export function PageListItem({
         },
       ],
       props: {
-        enabled: isPast24HoursMode,
+        enabled: isPastMinutesMode,
       },
     });
 
   // Use the appropriate data source based on mode
-  const pageTrafficData = isPast24HoursMode ? pastMinutesData : regularData;
-  const isLoadingTrafficData = isPast24HoursMode
+  const pageTrafficData = isPastMinutesMode ? pastMinutesData : regularData;
+  const isLoadingTrafficData = isPastMinutesMode
     ? isLoadingPastMinutes
     : isLoadingRegular;
 

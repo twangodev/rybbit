@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import clickhouse from "../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getUserHasAccessToSitePublic } from "../../lib/auth-utils.js";
 import { processResults } from "./utils.js";
 
@@ -124,6 +124,7 @@ FROM events
 WHERE
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
+    AND type != 'performance'
     ${timeFilterWithConnector}
     `;
 
@@ -143,6 +144,7 @@ FROM events
 WHERE
     site_id = {siteId:Int32}
     AND session_id = {sessionId:String}
+    AND type != 'performance'
     ${timeFilterWithConnector}
 ORDER BY timestamp ASC
 LIMIT {limit:Int32}
@@ -221,5 +223,3 @@ OFFSET {offset:Int32}
     return res.status(500).send({ error: "Failed to fetch session data" });
   }
 }
-
-export default { getSession };

@@ -30,29 +30,24 @@ export function useSingleCol({
   const { time, previousTime, site, filters } = useStore();
   const timeToUse = periodTime === "previous" ? previousTime : time;
 
-  const queryParams = getQueryParams(
-    timeToUse,
-    {
-      parameter,
-      limit,
-      filters: useFilters ? filters : undefined,
-    },
-    {
-      pastMinutesStart: periodTime === "previous" ? 48 * 60 : 24 * 60,
-      pastMinutesEnd: periodTime === "previous" ? 24 * 60 : 0,
-    }
-  );
+  // For "previous" periods in past-minutes mode, we need to modify the time object
+  // to use doubled duration for the start and the original start as the end
+  const timeForQuery =
+    timeToUse.mode === "past-minutes" && periodTime === "previous"
+      ? {
+          ...timeToUse,
+          pastMinutesStart: timeToUse.pastMinutesStart * 2,
+          pastMinutesEnd: timeToUse.pastMinutesStart,
+        }
+      : timeToUse;
 
-  // Use a consistent query key format that includes the mode
-  const queryKey = [
+  const queryParams = getQueryParams(timeForQuery, {
     parameter,
-    timeToUse,
-    site,
-    filters,
     limit,
-    useFilters,
-    timeToUse.mode === "last-24-hours" ? "past-minutes" : "date-range",
-  ];
+    filters: useFilters ? filters : undefined,
+  });
+
+  const queryKey = [parameter, timeForQuery, site, filters, limit, useFilters];
 
   return useQuery({
     queryKey,
@@ -62,7 +57,7 @@ export function useSingleCol({
       }>(`/single-col/${site}`, queryParams);
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
       const prevQueryKey = query.queryKey as [string, string, string];

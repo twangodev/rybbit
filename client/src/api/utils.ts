@@ -26,10 +26,7 @@ export function getStartAndEndDate(time: Time) {
       endDate: DateTime.fromISO(time.year).endOf("year").toISODate(),
     };
   }
-  if (time.mode === "all-time") {
-    return { startDate: null, endDate: null };
-  }
-  if (time.mode === "last-24-hours") {
+  if (time.mode === "all-time" || time.mode === "past-minutes") {
     return { startDate: null, endDate: null };
   }
   return { startDate: time.day, endDate: time.day };
@@ -37,26 +34,23 @@ export function getStartAndEndDate(time: Time) {
 
 export function getQueryParams(
   time: Time,
-  additionalParams: Record<string, any> = {},
-  options: {
-    pastMinutesStart?: number;
-    pastMinutesEnd?: number;
-  } = {}
+  additionalParams: Record<string, any> = {}
 ): Record<string, any> {
-  return options.pastMinutesStart || options.pastMinutesEnd
-    ? {
-        // Past minutes approach for last-24-hours mode
-        timeZone,
-        pastMinutesStart: options.pastMinutesStart ?? 24 * 60, // 24 hours ago by default
-        pastMinutesEnd: options.pastMinutesEnd ?? 0, // now by default
-        ...additionalParams,
-      }
-    : {
-        // Regular date-based approach
-        ...getStartAndEndDate(time),
-        timeZone,
-        ...additionalParams,
-      };
+  if (time.mode === "past-minutes") {
+    return {
+      timeZone,
+      pastMinutesStart: time.pastMinutesStart,
+      pastMinutesEnd: time.pastMinutesEnd,
+      ...additionalParams,
+    };
+  }
+
+  // Regular date-based approach
+  return {
+    ...getStartAndEndDate(time),
+    timeZone,
+    ...additionalParams,
+  };
 }
 
 export async function authedFetch<T>(

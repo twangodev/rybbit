@@ -5,7 +5,6 @@ import {
   useQuery,
 } from "@tanstack/react-query";
 import { usePerformanceStore } from "../../../app/[site]/performance/performanceStore";
-import { timeZone } from "../../../lib/dateTimeUtils";
 import { useStore } from "../../../lib/store";
 import { APIResponse } from "../../types";
 import { authedFetch, getQueryParams } from "../../utils";
@@ -77,7 +76,6 @@ export function useGetPerformanceTimeSeries({
       site,
       combinedFilters,
       selectedPerformanceMetric,
-      timeToUse.mode === "last-24-hours" ? "past-minutes" : "date-range",
     ],
     queryFn: () => {
       return authedFetch<APIResponse<GetPerformanceTimeSeriesResponse>>(

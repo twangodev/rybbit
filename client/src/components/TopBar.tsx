@@ -2,10 +2,11 @@
 
 import { useQueryClient } from "@tanstack/react-query";
 import { User } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "../lib/auth";
-import { Logo } from "./Logo";
+import { IS_DEMO } from "../lib/const";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -14,7 +15,6 @@ import {
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
 import { Skeleton } from "./ui/skeleton";
-import { IS_DEMO } from "../lib/const";
 
 export function TopBar() {
   const { data: session, isPending } = authClient.useSession();
@@ -26,7 +26,12 @@ export function TopBar() {
       <div className="flex items-center justify-between flex-1">
         <div className="flex items-center space-x-4">
           <Link href={session ? "/" : "https://rybbit.io"}>
-            <Logo size="small" />
+            <Image
+              src="/rybbit-text.svg"
+              alt="Rybbit"
+              width={100}
+              height={22}
+            />
           </Link>
         </div>
         {session ? (

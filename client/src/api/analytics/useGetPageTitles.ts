@@ -1,7 +1,5 @@
-import { FilterParameter } from "@rybbit/shared";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { timeZone } from "@/lib/dateTimeUtils";
 import { useStore } from "@/lib/store";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { APIResponse } from "../types";
 import { authedFetch, getQueryParams } from "../utils";
 
@@ -50,15 +48,7 @@ export function useGetPageTitlesPaginated({
   };
 
   return useQuery({
-    queryKey: [
-      "page-titles",
-      time,
-      site,
-      filters,
-      limit,
-      page,
-      time.mode === "last-24-hours" ? "past-minutes" : "date-range",
-    ],
+    queryKey: ["page-titles", time, site, filters, limit, page],
     queryFn: () => {
       return authedFetch<APIResponse<PageTitlesPaginatedResponse>>(
         `/page-titles/${site}`,

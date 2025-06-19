@@ -27,8 +27,7 @@ export function useGetOverviewBucketed({
   bucket = "hour",
   dynamicFilters = [],
   refetchInterval,
-  pastMinutesStart,
-  pastMinutesEnd,
+  overrideTime,
   props,
 }: {
   periodTime?: PeriodTime;
@@ -36,41 +35,48 @@ export function useGetOverviewBucketed({
   bucket?: TimeBucket;
   dynamicFilters?: Filter[];
   refetchInterval?: number;
-  pastMinutesStart?: number;
-  pastMinutesEnd?: number;
+  overrideTime?:
+    | { mode: "past-minutes"; pastMinutesStart: number; pastMinutesEnd: number }
+    | { mode: "range"; startDate: string; endDate: string };
   props?: Partial<UseQueryOptions<APIResponse<GetOverviewBucketedResponse>>>;
 }): UseQueryResult<APIResponse<GetOverviewBucketedResponse>> {
   const { time, previousTime, filters: globalFilters } = useStore();
 
-  const timeToUse = periodTime === "previous" ? previousTime : time;
+  // Use overrideTime if provided, otherwise use store time
+  const baseTime = overrideTime || time;
+  const timeToUse = periodTime === "previous" ? previousTime : baseTime;
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
+  // For "previous" periods in past-minutes mode, we need to modify the time object
+  // to use doubled duration for the start and the original start as the end
+  const timeForQuery =
+    timeToUse.mode === "past-minutes" && periodTime === "previous"
+      ? {
+          ...timeToUse,
+          pastMinutesStart: timeToUse.pastMinutesStart * 2,
+          pastMinutesEnd: timeToUse.pastMinutesStart,
+        }
+      : timeToUse;
+
   // Use getQueryParams utility to handle conditional logic
-  const queryParams = getQueryParams(
-    timeToUse,
-    {
-      timeZone,
-      bucket,
-      filters: combinedFilters,
-    },
-    {
-      pastMinutesStart,
-      pastMinutesEnd,
-    }
-  );
+  const queryParams = getQueryParams(timeForQuery, {
+    timeZone,
+    bucket,
+    filters: combinedFilters,
+  });
 
   // Generate appropriate query key based on whether we're using past minutes or regular time
   const queryKey =
-    pastMinutesStart !== undefined && pastMinutesEnd !== undefined
+    timeForQuery.mode === "past-minutes"
       ? [
           "overview-bucketed-past-minutes",
-          pastMinutesStart,
-          pastMinutesEnd,
+          timeForQuery.pastMinutesStart,
+          timeForQuery.pastMinutesEnd,
           site,
           bucket,
           combinedFilters,
         ]
-      : ["overview-bucketed", timeToUse, bucket, site, combinedFilters];
+      : ["overview-bucketed", timeForQuery, bucket, site, combinedFilters];
 
   return useQuery({
     queryKey,
@@ -92,7 +98,7 @@ export function useGetOverviewBucketed({
       }
       return undefined;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     ...props,
   });
 }

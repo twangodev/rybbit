@@ -32,7 +32,7 @@ export interface AdminOrganizationData {
   }[];
 }
 
-export async function getAdminOrganizations() {
+async function getAdminOrganizations() {
   return authedFetch<AdminOrganizationData[]>("/admin/organizations");
 }
 

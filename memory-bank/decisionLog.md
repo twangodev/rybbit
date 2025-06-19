@@ -152,3 +152,39 @@ User requested to make the existing `FilterParams` interface generic so it could
 - Enables type-safe extension of filtering parameters across the analytics API
 - Maintains backward compatibility with existing code
 - Fixes TypeScript errors in files like [`getPerformanceTimeSeries.ts`](server/src/api/analytics/performance/getPerformanceTimeSeries.ts:187) that use extended filter parameters
+
+[2025-06-12 21:10:00] - **Web Vitals Opt-in Flag Implementation**
+
+## Decision
+
+Added a `data-web-vitals` flag to the Rybbit tracking script that disables Web Vitals collection by default and only enables it when explicitly set to `"true"`.
+
+## Rationale
+
+This decision was made to:
+
+- Reduce the default script size and network overhead by not loading the Web Vitals library unless needed
+- Give users explicit control over performance metrics collection
+- Improve initial page load performance for users who don't need Web Vitals data
+- Follow privacy-by-design principles by making performance tracking opt-in
+
+## Implementation Details
+
+- Added `enableWebVitals` flag that checks for `data-web-vitals="true"` attribute
+- Modified Web Vitals library loading to only occur when flag is enabled
+- Updated `initWebVitals()` function to respect the flag setting
+- Web Vitals are now disabled by default (breaking change from previous always-on behavior)
+- Updated documentation in [`docs/src/content/script.mdx`](docs/src/content/script.mdx:1) to include the new flag
+- Added comprehensive Web Vitals section explaining the feature and usage
+
+## Files Modified
+
+- [`server/public/script-full.js`](server/public/script-full.js:1) - Added web vitals flag logic
+- [`docs/src/content/script.mdx`](docs/src/content/script.mdx:1) - Updated documentation with new flag and Web Vitals section
+
+## Impact
+
+- Users upgrading will need to add `data-web-vitals="true"` to continue collecting Web Vitals
+- New installations will have better performance by default
+- Reduced bandwidth usage for users who don't need performance metrics
+- More granular control over tracking features

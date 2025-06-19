@@ -8,11 +8,17 @@ import { useStore } from "../../../../lib/store";
 export function RealtimeChart() {
   const { site } = useStore();
 
-  const { data, isLoading } = useGetOverviewBucketed({
+  // Create a time object for the last 30 minutes for realtime data
+  const realtimeTime = {
+    mode: "past-minutes" as const,
     pastMinutesStart: 30,
     pastMinutesEnd: 0,
+  };
+
+  const { data, isLoading } = useGetOverviewBucketed({
     site,
     bucket: "minute",
+    overrideTime: realtimeTime,
     refetchInterval: 10000,
   });
 

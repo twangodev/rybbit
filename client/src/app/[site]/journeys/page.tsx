@@ -441,7 +441,7 @@ export default function JourneysPage() {
           <DateSelector
             time={time}
             setTime={setTime}
-            past24HoursEnabled={false}
+            pastMinutesEnabled={false}
           />
           <Select
             value={steps.toString()}

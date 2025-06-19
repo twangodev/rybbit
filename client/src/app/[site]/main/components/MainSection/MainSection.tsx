@@ -32,75 +32,22 @@ export function MainSection() {
 
   const { selectedStat, time, site, bucket } = useStore();
 
-  // Use the past minutes API when in last-24-hours mode
-  const isPast24HoursMode = time.mode === "last-24-hours";
-
-  // Regular date-based queries
-  const {
-    data: regularData,
-    isFetching: isRegularFetching,
-    error: regularError,
-  } = useGetOverviewBucketed({
+  // Current period data
+  const { data, isFetching, error } = useGetOverviewBucketed({
     site,
     bucket,
-    props: {
-      enabled: !isPast24HoursMode,
-    },
   });
 
+  // Previous period data
   const {
-    data: regularPreviousData,
-    isFetching: isRegularPreviousFetching,
-    error: regularPreviousError,
+    data: previousData,
+    isFetching: isPreviousFetching,
+    error: previousError,
   } = useGetOverviewBucketed({
     periodTime: "previous",
     site,
     bucket,
-    props: {
-      enabled: !isPast24HoursMode,
-    },
   });
-
-  // Past minutes-based queries (for 24 hour mode)
-  const {
-    data: pastMinutesData,
-    isFetching: isPastMinutesFetching,
-    error: pastMinutesError,
-  } = useGetOverviewBucketed({
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
-    site,
-    bucket,
-    props: {
-      enabled: isPast24HoursMode,
-    },
-  });
-
-  const {
-    data: pastMinutesPreviousData,
-    isFetching: isPastMinutesPreviousFetching,
-    error: pastMinutesPreviousError,
-  } = useGetOverviewBucketed({
-    pastMinutesStart: 48 * 60,
-    pastMinutesEnd: 24 * 60,
-    site,
-    bucket,
-    props: {
-      enabled: isPast24HoursMode,
-    },
-  });
-
-  // Combine the data based on the mode
-  const data = isPast24HoursMode ? pastMinutesData : regularData;
-  const previousData = isPast24HoursMode
-    ? pastMinutesPreviousData
-    : regularPreviousData;
-  const isFetching = isPast24HoursMode
-    ? isPastMinutesFetching
-    : isRegularFetching;
-  const isPreviousFetching = isPast24HoursMode
-    ? isPastMinutesPreviousFetching
-    : isRegularPreviousFetching;
 
   const { isFetching: isOverviewFetching } = useGetOverview({ site });
   const { isFetching: isOverviewFetchingPrevious } = useGetOverview({
@@ -133,7 +80,7 @@ export function MainSection() {
                   tilt_wrap.className
                 )}
               >
-                <Image src="/rybbit.png" alt="Rybbit" width={20} height={20} />
+                <Image src="/rybbit.svg" alt="Rybbit" width={20} height={20} />
                 rybbit.io
               </Link>
             </div>

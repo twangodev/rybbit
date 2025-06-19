@@ -1,10 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  useGetGoals,
-  useGetGoalsPastMinutes,
-} from "../../../api/analytics/goals/useGetGoals";
+import { useGetGoals } from "../../../api/analytics/goals/useGetGoals";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
 import { NothingFound } from "../../../components/NothingFound";
 import { Pagination } from "../../../components/pagination";
@@ -17,23 +14,16 @@ import GoalsList from "./components/GoalsList";
 export default function GoalsPage() {
   useSetPageTitle("Rybbit · Goals");
 
-  const { time, site } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const { site } = useStore();
   const [pagination, setPagination] = useState({
     pageIndex: 0, // TablePagination uses 0-based indexing
     pageSize: 10, // Show 10 goals per page
   });
 
-  // Use the appropriate hook based on the mode
-  const { data: goalsData, isLoading } = isPast24HoursMode
-    ? useGetGoalsPastMinutes({
-        page: pagination.pageIndex + 1, // API uses 1-based indexing
-        pageSize: pagination.pageSize,
-      })
-    : useGetGoals({
-        page: pagination.pageIndex + 1, // API uses 1-based indexing
-        pageSize: pagination.pageSize,
-      });
+  const { data: goalsData, isLoading } = useGetGoals({
+    page: pagination.pageIndex + 1, // API uses 1-based indexing
+    pageSize: pagination.pageSize,
+  });
 
   // Create pagination controller for TablePagination
   const paginationController = {

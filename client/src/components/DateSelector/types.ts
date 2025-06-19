@@ -34,8 +34,10 @@ export type AllTimeMode = {
   mode: "all-time";
 };
 
-export type Past24HoursMode = {
-  mode: "last-24-hours";
+export type PastMinutesMode = {
+  mode: "past-minutes";
+  pastMinutesStart: number;
+  pastMinutesEnd: number;
 };
 
 export type Time =
@@ -45,4 +47,4 @@ export type Time =
   | MonthMode
   | YearMode
   | AllTimeMode
-  | Past24HoursMode;
+  | PastMinutesMode;

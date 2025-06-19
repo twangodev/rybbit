@@ -83,7 +83,7 @@ export default function ResetPasswordPage() {
     <div className="flex justify-center items-center h-screen w-full p-4">
       <Card className="w-full max-w-sm p-1">
         <CardHeader>
-          <Image src="/rybbit.png" alt="Rybbit" width={32} height={32} />
+          <Image src="/rybbit.svg" alt="Rybbit" width={32} height={32} />
           <CardTitle className="text-2xl flex justify-center">
             {resetSuccess
               ? "Password Reset Successful"

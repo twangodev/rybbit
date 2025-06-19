@@ -67,7 +67,7 @@ export const getMetricUnit = (
 /**
  * Get the chart color for a performance metric (used in charts)
  */
-export const getMetricChartColor = (metric: PerformanceMetric): string => {
+const getMetricChartColor = (metric: PerformanceMetric): string => {
   switch (metric) {
     case "lcp":
       return "#3b82f6"; // blue

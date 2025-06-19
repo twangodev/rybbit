@@ -91,7 +91,6 @@ export function useGetPerformanceByDimension({
       selectedPercentile,
       limit,
       page,
-      time.mode === "last-24-hours" ? "past-minutes" : "date-range",
       additionalFilters,
       sortBy,
       sortOrder,
@@ -115,15 +114,5 @@ export function useGetPerformanceByDimension({
       return undefined;
     },
     enabled,
-  });
-}
-
-// Keep the old hook for backward compatibility
-export function useGetPerformanceByPath(
-  options: Omit<UseGetPerformanceByDimensionOptions, "dimension">
-) {
-  return useGetPerformanceByDimension({
-    ...options,
-    dimension: "pathname",
   });
 }

@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import clickhouse from "../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { getLocation } from "../db/geolocation/geolocation.js";
 import { TrackingPayload } from "../types.js";
 import { getDeviceType } from "../utils.js";

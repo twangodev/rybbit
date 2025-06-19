@@ -1,9 +1,8 @@
-import { Filter, FilterParameter } from "@rybbit/shared";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
 import { SingleColResponse } from "@/api/analytics/useSingleCol";
 import { authedFetch, getQueryParams } from "@/api/utils";
-import { timeZone } from "@/lib/dateTimeUtils";
 import { useStore } from "@/lib/store";
+import { Filter, FilterParameter } from "@rybbit/shared";
+import { useQuery, UseQueryResult } from "@tanstack/react-query";
 
 type UsePaginatedSingleColOptions = {
   parameter: FilterParameter;
@@ -38,16 +37,7 @@ export function usePaginatedSingleCol({
   };
 
   return useQuery({
-    queryKey: [
-      parameter,
-      time,
-      site,
-      filters,
-      limit,
-      page,
-      time.mode === "last-24-hours" ? "past-minutes" : "date-range",
-      additionalFilters,
-    ],
+    queryKey: [parameter, time, site, filters, limit, page, additionalFilters],
     queryFn: async () => {
       const response = await authedFetch<{ data: PaginatedResponse }>(
         `/single-col/${site}`,
@@ -55,7 +45,7 @@ export function usePaginatedSingleCol({
       );
       return response.data;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
     placeholderData: (_, query: any) => {
       if (!query?.queryKey) return undefined;
       const prevQueryKey = query.queryKey;

@@ -32,7 +32,7 @@ function AuthComponent() {
   return (
     <Card className="w-full max-w-md p-1">
       <CardHeader>
-        <Image src="/rybbit.png" alt="Rybbit" width={32} height={32} />
+        <Image src="/rybbit.svg" alt="Rybbit" width={32} height={32} />
         <CardTitle className="text-2xl flex justify-center">
           Join {organization}
         </CardTitle>
@@ -94,7 +94,7 @@ function AcceptInvitationInner() {
   return (
     <Card className="w-full max-w-md">
       <CardHeader>
-        <Image src="/rybbit.png" alt="Rybbit" width={32} height={32} />
+        <Image src="/rybbit.svg" alt="Rybbit" width={32} height={32} />
         <CardTitle className="text-2xl flex justify-center">
           Invitation
         </CardTitle>

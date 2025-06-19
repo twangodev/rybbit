@@ -6,8 +6,7 @@ import {
   useStore,
 } from "../../lib/store";
 import { APIResponse } from "../types";
-import { authedFetch, getStartAndEndDate } from "../utils";
-import { getQueryTimeParams } from "./utils";
+import { authedFetch, getQueryParams } from "../utils";
 
 export type UserSessionsResponse = {
   session_id: string;
@@ -29,7 +28,7 @@ export type UserSessionsResponse = {
 
 export function useGetUserSessions(userId: string) {
   const { time, site, filters } = useStore();
-  const { startDate, endDate } = getStartAndEndDate(time);
+  const timeParams = getQueryParams(time);
 
   return useQuery({
     queryKey: ["user-sessions", userId, time, site, filters],
@@ -37,9 +36,7 @@ export function useGetUserSessions(userId: string) {
       return authedFetch<UserSessionsResponse>(
         `/user/${userId}/sessions/${site}`,
         {
-          startDate,
-          endDate,
-          timeZone,
+          ...timeParams,
           filters,
         }
       );
@@ -76,12 +73,9 @@ export type GetSessionsResponse = {
 
 export function useGetSessionsInfinite(userId?: string) {
   const { time, site, filters } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
 
-  // Get the appropriate time parameters
-  const timeParams = isPast24HoursMode
-    ? Object.fromEntries(new URLSearchParams(getQueryTimeParams(time)))
-    : getStartAndEndDate(time);
+  // Get the appropriate time parameters using getQueryParams
+  const timeParams = getQueryParams(time);
 
   const filteredFilters = getFilteredFilters(SESSION_PAGE_FILTERS);
 
@@ -101,8 +95,7 @@ export function useGetSessionsInfinite(userId?: string) {
       }
 
       // Add time parameters
-      if (isPast24HoursMode) {
-        // Add minutes parameter for last-24-hours mode
+      if (time.mode === "past-minutes") {
         Object.assign(requestParams, timeParams);
       } else if (!userId) {
         // Only add date parameters if not filtering by userId
@@ -176,10 +169,15 @@ export interface SessionPageviewsAndEvents {
 
 export function useGetSessionDetailsInfinite(sessionId: string | null) {
   const { site, time } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
+  const pastMinutesMode = time.mode === "past-minutes";
 
-  // Get minutes for last-24-hours mode
-  const minutes = isPast24HoursMode ? 24 * 60 : undefined;
+  // Get minutes based on the time mode
+  let minutes: number | undefined;
+  if (pastMinutesMode) {
+    if (time.mode === "past-minutes") {
+      minutes = time.pastMinutesStart; // Use the dynamic value
+    }
+  }
 
   return useInfiniteQuery<APIResponse<SessionPageviewsAndEvents>>({
     queryKey: ["session-details-infinite", sessionId, site, minutes],
@@ -193,8 +191,7 @@ export function useGetSessionDetailsInfinite(sessionId: string | null) {
         offset: pageParam,
       };
 
-      // Add minutes parameter for last-24-hours mode
-      if (isPast24HoursMode && minutes) {
+      if (pastMinutesMode && minutes) {
         queryParams.minutes = minutes;
       }
 

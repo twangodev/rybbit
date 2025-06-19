@@ -1,14 +1,14 @@
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useRef } from "react";
 import { useGetOverview } from "../api/analytics/useGetOverview";
 import { useGetOverviewBucketed } from "../api/analytics/useGetOverviewBucketed";
 import { useInView } from "../hooks/useInView";
+import { MINUTES_IN_24_HOURS } from "../lib/const";
 import { Favicon } from "./Favicon";
 import { SiteSessionChart } from "./SiteSessionChart";
 import { Button } from "./ui/button";
 import { Skeleton } from "./ui/skeleton";
-import { SiteSettings } from "./SiteSettings/SiteSettings";
-import { useRef } from "react";
 
 interface SiteCardProps {
   siteId: number;
@@ -27,10 +27,13 @@ export function SiteCard({ siteId, domain }: SiteCardProps) {
   const hasLoadedData = useRef(false);
 
   const { data, isLoading, isSuccess } = useGetOverviewBucketed({
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
     site: siteId,
     bucket: "hour",
+    overrideTime: {
+      mode: "past-minutes",
+      pastMinutesStart: 1440,
+      pastMinutesEnd: 0,
+    },
     props: {
       enabled: isInView,
     },
@@ -42,8 +45,11 @@ export function SiteCard({ siteId, domain }: SiteCardProps) {
     isSuccess: isOverviewSuccess,
   } = useGetOverview({
     site: siteId,
-    pastMinutesStart: 24 * 60,
-    pastMinutesEnd: 0,
+    overrideTime: {
+      mode: "past-minutes",
+      pastMinutesStart: 1440,
+      pastMinutesEnd: 0,
+    },
   });
 
   // Update the hasLoadedData ref when data loads successfully

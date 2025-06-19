@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
-import { useStore } from "../../../lib/store";
 import { usePerformanceStore } from "../../../app/[site]/performance/performanceStore";
+import { useStore } from "../../../lib/store";
 import { authedFetch, getQueryParams } from "../../utils";
-import { timeZone } from "../../../lib/dateTimeUtils";
 
 export type GetPerformanceOverviewResponse = {
   current: {
@@ -46,7 +45,6 @@ export function useGetPerformanceOverview({
       site,
       filters,
       selectedPercentile,
-      timeToUse.mode === "last-24-hours" ? "past-minutes" : "date-range",
     ],
     queryFn: () => {
       return authedFetch<{ data: GetPerformanceOverviewResponse }>(

@@ -8,7 +8,7 @@ import {
 } from "../../lib/store";
 import { authedFetch, getStartAndEndDate } from "../utils";
 import { APIResponse } from "../types";
-import { getQueryTimeParams } from "./utils";
+import { getQueryParams } from "../utils";
 
 export type UsersResponse = {
   user_id: string;
@@ -36,12 +36,8 @@ export interface GetUsersOptions {
 
 export function useGetUsers(options: GetUsersOptions) {
   const { time, site } = useStore();
-  const isPast24HoursMode = time.mode === "last-24-hours";
-
-  // Get the appropriate time parameters
-  const timeParams = isPast24HoursMode
-    ? Object.fromEntries(new URLSearchParams(getQueryTimeParams(time)))
-    : getStartAndEndDate(time);
+  // Get the appropriate time parameters using getQueryParams
+  const timeParams = getQueryParams(time);
 
   const { page, pageSize, sortBy, sortOrder } = options;
   const filteredFilters = getFilteredFilters(USER_PAGE_FILTERS);
@@ -74,14 +70,8 @@ export function useGetUsers(options: GetUsersOptions) {
         sortOrder,
       };
 
-      // Add time parameters
-      if (isPast24HoursMode) {
-        // Add minutes parameter for last-24-hours mode
-        Object.assign(requestParams, timeParams);
-      } else {
-        requestParams.startDate = timeParams.startDate;
-        requestParams.endDate = timeParams.endDate;
-      }
+      // Add time parameters (getQueryParams handles both past-minutes and regular modes)
+      Object.assign(requestParams, timeParams);
 
       return authedFetch<
         APIResponse<UsersResponse[]> & {

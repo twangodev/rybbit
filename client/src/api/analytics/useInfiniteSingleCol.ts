@@ -30,15 +30,7 @@ export function useInfiniteSingleCol({
   const { time, site, filters } = useStore();
 
   return useInfiniteQuery({
-    queryKey: [
-      parameter,
-      time,
-      site,
-      filters,
-      limit,
-      time.mode === "last-24-hours" ? "past-minutes" : "date-range",
-      "infinite-single-col",
-    ],
+    queryKey: [parameter, time, site, filters, limit, "infinite-single-col"],
     queryFn: async ({ pageParam = 1 }) => {
       const queryParams = {
         ...getQueryParams(time),
@@ -68,6 +60,6 @@ export function useInfiniteSingleCol({
 
       return allPages.length + 1;
     },
-    staleTime: Infinity,
+    staleTime: 60_000,
   });
 }

@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../../db/postgres/postgres.js";
 import { goals } from "../../../db/postgres/schema.js";
-import clickhouse from "../../../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../../db/clickhouse/clickhouse.js";
 import { getUserHasAccessToSitePublic } from "../../../lib/auth-utils.js";
 import { eq, desc, asc, sql } from "drizzle-orm";
 import {
