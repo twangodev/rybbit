@@ -34,6 +34,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     user_id: z.string().max(255).optional(),
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
     ip_address: z.string().ip().optional(), // Custom IP for geolocation
+    user_agent: z.string().max(512).optional(), // Custom user agent
   }),
   z.object({
     type: z.literal("custom_event"),
@@ -65,6 +66,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     user_id: z.string().max(255).optional(),
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
     ip_address: z.string().ip().optional(), // Custom IP for geolocation
+    user_agent: z.string().max(512).optional(), // Custom user agent
   }),
   z.object({
     type: z.literal("performance"),
@@ -82,6 +84,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     user_id: z.string().max(255).optional(),
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
     ip_address: z.string().ip().optional(), // Custom IP for geolocation
+    user_agent: z.string().max(512).optional(), // Custom user agent
     // Performance metrics (can be null if not collected)
     lcp: z.number().positive().nullable().optional(),
     cls: z.number().min(0).nullable().optional(),
@@ -147,6 +150,41 @@ async function updateSession(
 }
 
 /**
+ * Validates API key for the site
+ * @param siteId The site ID from the tracking payload
+ * @param apiKey The API key from the payload
+ * @returns An object with success status and optional error message
+ */
+async function validateApiKey(
+  siteId: string,
+  apiKey?: string
+) {
+  if (!apiKey) {
+    return { success: false, error: null };
+  }
+
+  try {
+    await siteConfig.ensureInitialized();
+    const numericSiteId = typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
+    const site = await siteConfig.getSiteConfig(numericSiteId);
+    
+    if (!site) {
+      return { success: false, error: "Site not found" };
+    }
+
+    if (site.apiKey && apiKey === site.apiKey) {
+      console.info(`[Tracking] Valid API key for site ${siteId}`);
+      return { success: true };
+    }
+
+    return { success: false, error: "Invalid API key" };
+  } catch (error) {
+    console.error("Error validating API key:", error);
+    return { success: false, error: "Failed to validate API key" };
+  }
+}
+
+/**
  * Validates if the request's origin matches the registered domain for the site
  * @param siteId The site ID from the tracking payload
  * @param requestOrigin The origin header from the request
@@ -154,8 +192,7 @@ async function updateSession(
  */
 async function validateOrigin(
   siteId: string,
-  requestOrigin?: string,
-  apiKey?: string
+  requestOrigin?: string
 ) {
   try {
     // If origin checking is disabled, return success
@@ -185,15 +222,7 @@ async function validateOrigin(
       };
     }
 
-    // Check if this is a request with valid API key (bypass origin check)
-    if (apiKey && site.apiKey && apiKey === site.apiKey) {
-      console.info(
-        `[Tracking] Allowing API key authenticated request for site ${siteId} from origin: ${requestOrigin || "none"}`
-      );
-      return { success: true };
-    }
-
-    // If no origin header and no valid API key, reject the request
+    // If no origin header, reject the request
     if (!requestOrigin) {
       return {
         success: false,
@@ -250,29 +279,49 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Use validated data
     const validatedPayload = validationResult.data;
 
-    // Validate that the request is coming from the expected origin
-    const originValidation = await validateOrigin(
+    // First check if API key is provided and valid
+    const apiKeyValidation = await validateApiKey(
       validatedPayload.site_id,
-      request.headers.origin as string,
       validatedPayload.api_key
     );
 
-    if (!originValidation.success) {
+    // If API key validation failed with an error, reject the request
+    if (apiKeyValidation.error) {
       console.warn(
-        `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
+        `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${apiKeyValidation.error}`
       );
       return reply.status(403).send({
         success: false,
-        error: originValidation.error,
+        error: apiKeyValidation.error,
       });
+    }
+
+    // If no valid API key, validate origin
+    if (!apiKeyValidation.success) {
+      const originValidation = await validateOrigin(
+        validatedPayload.site_id,
+        request.headers.origin as string
+      );
+
+      if (!originValidation.success) {
+        console.warn(
+          `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
+        );
+        return reply.status(403).send({
+          success: false,
+          error: originValidation.error,
+        });
+      }
     }
 
     // Make sure the site config is loaded
     await siteConfig.ensureInitialized();
 
     // Check if bot blocking is enabled for this site and if the request is from a bot
-    if (siteConfig.shouldBlockBots(validatedPayload.site_id)) {
-      const userAgent = request.headers["user-agent"] as string;
+    // Skip bot check for API key authenticated requests
+    if (!validatedPayload.api_key && siteConfig.shouldBlockBots(validatedPayload.site_id)) {
+      // Use custom user agent if provided, otherwise fall back to header
+      const userAgent = validatedPayload.user_agent || (request.headers["user-agent"] as string);
       if (userAgent && isbot(userAgent)) {
         console.log(
           `[Tracking] Bot request filtered for site ${validatedPayload.site_id} from User-Agent: ${userAgent}`

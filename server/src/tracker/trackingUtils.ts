@@ -117,7 +117,8 @@ export function createBasePayload(
   eventType: "pageview" | "custom_event" | "performance" = "pageview",
   validatedBody: ValidatedTrackingPayload
 ): TotalTrackingPayload {
-  const userAgent = request.headers["user-agent"] || "";
+  // Use custom user agent if provided, otherwise fall back to header
+  const userAgent = validatedBody.user_agent || request.headers["user-agent"] || "";
   const ipAddress = getIpAddress(request);
   const siteId = validatedBody.site_id;
 

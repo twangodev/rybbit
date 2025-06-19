@@ -10,6 +10,11 @@ Track events from server-side applications, mobile apps, or any platform using t
 
 The `/api/track` endpoint accepts tracking requests with API key authentication, bypassing domain validation. This enables server-side tracking, mobile app analytics, and programmatic event collection.
 
+### Data Enrichment
+
+- **Geolocation**: IP addresses are resolved to country, region, city, and coordinates using MaxMind GeoLite2 database
+- **Device Info**: User agent strings are parsed to extract browser, operating system, and device type information
+
 ## Authentication
 
 <Steps>
@@ -46,6 +51,7 @@ curl -X POST 'https://app.rybbit.io/api/track' \
     "pathname": "/api/users",
     "hostname": "api.example.com",
     "page_title": "User API Endpoint",
+    "user_agent": "MyApp/1.0 (Linux; x64)",
     "ip_address": "192.168.1.1"
   }'
 ```
@@ -71,15 +77,16 @@ curl -X POST 'https://app.rybbit.io/api/track' \
 ### Required
 - `api_key` - Your generated API key (starts with `rb_`)
 - `site_id` - Your site ID (string)
-- `type` - Event type: `pageview` or `custom_event`
-- `pathname` - Page path (string)
 
 ### Optional
+- `type` - Event type: `pageview` or `custom_event` (defaults to `pageview`)
+- `pathname` - Page path (string)
 - `hostname` - Domain name
 - `page_title` - Page title (max 512 chars)
 - `referrer` - Referrer URL (max 2048 chars)
 - `user_id` - Custom user identifier (max 255 chars)
-- `ip_address` - Custom IP for geolocation
+- `user_agent` - Custom user agent string (max 512 chars) - will be parsed for browser/OS/device info
+- `ip_address` - Custom IP for geolocation - will be resolved to location data
 - `querystring` - Query parameters
 - `language` - Language code (e.g., "en")
 - `screenWidth` - Screen width in pixels
