@@ -23,13 +23,13 @@ Paste your Rybbit tracking script into this new file:
 ```html
 {{/* layouts/partials/rybbit-analytics.html */}}
 {{ if not .Site.IsServer }} {{/* Only include in production builds */}}
-  <script async defer src="https://your-rybbit-instance.com/api/script.js" data-site-id="YOUR_SITE_ID"></script>
+  <script async defer src="https://app.rybbit.io/api/script.js" data-site-id="YOUR_SITE_ID"></script>
 {{ end }}
 ```
 
 **Explanation:**
 - `{{ if not .Site.IsServer }}`: This Hugo condition ensures that the tracking script is only included when you build your site for production (`hugo`) and not during local development (`hugo server`). This prevents tracking your own local page views.
-- Replace `https://your-rybbit-instance.com` and `YOUR_SITE_ID` with your actual details.
+- Replace `https://app.rybbit.io` and `YOUR_SITE_ID` with your actual details.
 
 ## 3. Include the Partial in Your Footer
 

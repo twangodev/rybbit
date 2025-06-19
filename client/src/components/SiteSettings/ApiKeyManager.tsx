@@ -50,8 +50,7 @@ export function ApiKeyManager({
       <div>
         <h4 className="text-sm font-semibold text-foreground">API Key</h4>
         <p className="text-xs text-muted-foreground mt-1">
-          Generate an API key to track events using the API endpoint or from
-          localhost during development.
+          Generate an API key to track events from localhost, server-side applications, or mobile apps using the API endpoint.
         </p>
       </div>
 
@@ -107,7 +106,25 @@ export function ApiKeyManager({
             </div>
           </div>
 
-          <div>
+          <div className="space-y-4">
+            <div>
+              <h5 className="text-xs font-medium text-foreground mb-2">Usage Examples</h5>
+              <div className="space-y-2 text-xs text-muted-foreground">
+                <div>
+                  <span className="font-medium">Localhost tracking:</span>
+                  <br />
+                  Add <code className="bg-muted px-1 rounded">data-api-key="{apiKey || 'your-api-key'}"</code> to your script tag
+                </div>
+                <div>
+                  <span className="font-medium">Server-side tracking:</span>
+                  <br />
+                  <code className="bg-muted px-1 rounded text-[10px]">
+                    POST /api/track (JSON body with api_key field)
+                  </code>
+                </div>
+              </div>
+            </div>
+            
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button

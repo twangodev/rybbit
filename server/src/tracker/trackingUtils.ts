@@ -6,18 +6,14 @@ import { z } from "zod";
 import { sitesOverLimit } from "../cron/monthly-usage-checker.js";
 import { db } from "../db/postgres/postgres.js";
 import { activeSessions } from "../db/postgres/schema.js";
-import { TrackingPayload } from "../types.js";
 import { trackingPayloadSchema } from "./trackEvent.js";
 import { siteConfig } from "../lib/siteConfig.js";
+import { TrackingPayload } from "./types.js";
 
-// Define extended payload types
-type BaseTrackingPayload = TrackingPayload & {
+export type TotalTrackingPayload = TrackingPayload & {
   type?: string;
   event_name?: string;
   properties?: string;
-};
-
-export type TotalTrackingPayload = BaseTrackingPayload & {
   userId: string;
   timestamp: string;
   sessionId: string;

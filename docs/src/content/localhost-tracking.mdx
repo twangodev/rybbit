@@ -9,7 +9,7 @@ By default, Rybbit validates tracking events come from your registered domain. D
   **Important**: Remember to remove the API key before deploying to production!
 </Callout>
 
-## Setup
+## Localhost Tracking
 
 <Steps>
 ### Generate API Key
@@ -21,7 +21,7 @@ In your site dashboard: Settings → API Key tab → Generate API Key
 ```html
 <script 
   defer 
-  src="https://your-rybbit-instance.com/api/script.js" 
+  src="https://app.rybbit.io/api/script.js" 
   data-site-id="YOUR_SITE_ID" 
   data-api-key="rb_your_api_key_here">
 </script>
@@ -37,12 +37,16 @@ In your site dashboard: Settings → API Key tab → Generate API Key
 <!-- Production: NO API KEY -->
 <script 
   defer 
-  src="https://your-rybbit-instance.com/api/script.js" 
+  src="https://app.rybbit.io/api/script.js" 
   data-site-id="YOUR_SITE_ID">
 </script>
 ```
 
 </Steps>
+
+## Server-Side & Mobile Tracking
+
+For server-side applications, mobile apps, or API-based tracking, see the dedicated [API](/api) documentation.
 
 ## Best Practice: Environment Variables
 
@@ -56,7 +60,7 @@ export function Analytics() {
   return (
     <script
       defer
-      src="https://your-rybbit-instance.com/api/script.js"
+      src="https://app.rybbit.io/api/script.js"
       data-site-id={process.env.NEXT_PUBLIC_RYBBIT_SITE_ID}
       {...(isDev && { 'data-api-key': process.env.NEXT_PUBLIC_RYBBIT_API_KEY })}
     />
@@ -68,7 +72,7 @@ export function Analytics() {
 // Vanilla JS example
 const script = document.createElement('script');
 script.defer = true;
-script.src = 'https://your-rybbit-instance.com/api/script.js';
+script.src = 'https://app.rybbit.io/api/script.js';
 script.setAttribute('data-site-id', 'YOUR_SITE_ID');
 
 // Only add API key in development

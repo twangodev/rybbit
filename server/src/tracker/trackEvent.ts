@@ -33,6 +33,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     properties: z.string().max(2048).optional(),
     user_id: z.string().max(255).optional(),
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+    ip_address: z.string().ip().optional(), // Custom IP for geolocation
   }),
   z.object({
     type: z.literal("custom_event"),
@@ -63,6 +64,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
       .optional(), // Optional but must be valid JSON if present
     user_id: z.string().max(255).optional(),
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+    ip_address: z.string().ip().optional(), // Custom IP for geolocation
   }),
   z.object({
     type: z.literal("performance"),
@@ -79,6 +81,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     properties: z.string().max(2048).optional(),
     user_id: z.string().max(255).optional(),
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+    ip_address: z.string().ip().optional(), // Custom IP for geolocation
     // Performance metrics (can be null if not collected)
     lcp: z.number().positive().nullable().optional(),
     cls: z.number().min(0).nullable().optional(),
@@ -167,7 +170,11 @@ async function processTrackingEvent(
  * @param requestOrigin The origin header from the request
  * @returns An object with success status and optional error message
  */
-async function validateOrigin(siteId: string, requestOrigin?: string, apiKey?: string) {
+async function validateOrigin(
+  siteId: string,
+  requestOrigin?: string,
+  apiKey?: string
+) {
   try {
     // If origin checking is disabled, return success
     if (DISABLE_ORIGIN_CHECK) {
@@ -188,7 +195,7 @@ async function validateOrigin(siteId: string, requestOrigin?: string, apiKey?: s
 
     // Get the site configuration
     const site = await siteConfig.getSiteConfig(numericSiteId);
-    
+
     if (!site) {
       return {
         success: false,
@@ -196,7 +203,15 @@ async function validateOrigin(siteId: string, requestOrigin?: string, apiKey?: s
       };
     }
 
-    // If no origin header, reject the request
+    // Check if this is a request with valid API key (bypass origin check)
+    if (apiKey && site.apiKey && apiKey === site.apiKey) {
+      console.info(
+        `[Tracking] Allowing API key authenticated request for site ${siteId} from origin: ${requestOrigin || "none"}`
+      );
+      return { success: true };
+    }
+
+    // If no origin header and no valid API key, reject the request
     if (!requestOrigin) {
       return {
         success: false,
@@ -205,17 +220,6 @@ async function validateOrigin(siteId: string, requestOrigin?: string, apiKey?: s
     }
 
     try {
-      // Parse the origin into URL components
-      const originUrl = new URL(requestOrigin);
-
-      // Check if this is a request with valid API key
-      if (apiKey && site.apiKey && apiKey === site.apiKey) {
-        console.info(
-          `[Tracking] Allowing API key authenticated request for site ${siteId} from origin: ${requestOrigin}`
-        );
-        return { success: true };
-      }
-
       // Get the domain associated with this site
       const siteDomain = site.domain;
 
@@ -314,6 +318,11 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       validatedPayload.type,
       validatedPayload // Add validated payload back
     );
+
+    // Override IP if provided in payload
+    if (validatedPayload.ip_address) {
+      payload.ipAddress = validatedPayload.ip_address;
+    }
 
     // Get existing session
     const existingSession = await getExistingSession(
