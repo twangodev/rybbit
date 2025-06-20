@@ -15,6 +15,7 @@ import { getDeviceType, normalizeOrigin } from "../utils.js";
 import { pageviewQueue } from "./pageviewQueue.js";
 import { siteConfig } from "../lib/siteConfig.js";
 import { DISABLE_ORIGIN_CHECK } from "./const.js";
+import { apiKeyRateLimiter } from "../lib/rateLimiter.js";
 
 // Define Zod schema for validation
 export const trackingPayloadSchema = z.discriminatedUnion("type", [
@@ -295,6 +296,19 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
         success: false,
         error: apiKeyValidation.error,
       });
+    }
+
+    // Check rate limit for API key authenticated requests
+    if (apiKeyValidation.success && validatedPayload.api_key) {
+      if (!apiKeyRateLimiter.isAllowed(validatedPayload.api_key)) {
+        console.warn(
+          `[Tracking] Rate limit exceeded for API key ${validatedPayload.api_key} on site ${validatedPayload.site_id}`
+        );
+        return reply.status(429).send({
+          success: false,
+          error: "Rate limit exceeded. Maximum 20 requests per second per API key.",
+        });
+      }
     }
 
     // If no valid API key, validate origin

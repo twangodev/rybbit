@@ -824,14 +824,23 @@ class _MyAppState extends State<MyApp> {
 }
 ```
 
+## Rate Limiting
+
+API key authenticated requests are rate limited to **20 requests per second per API key** on Rybbit Cloud. Self-hosted instances have no rate limits.
+
+When you exceed the rate limit, you'll receive a `429` status code:
+
+```json
+{
+  "success": false,
+  "error": "Rate limit exceeded. Maximum 20 requests per second per API key."
+}
+```
+
 ## Best Practices
 
 <Callout type="info">
 **Environment Variables**: Store your API key and site ID as environment variables to keep them secure.
-</Callout>
-
-<Callout type="warning">
-**Rate Limiting**: The API doesn't enforce rate limits, but avoid sending excessive requests to maintain performance.
 </Callout>
 
 <Callout type="error">
@@ -845,4 +854,5 @@ Common error scenarios:
 - **Site not found**: Verify your site ID is correct
 - **Invalid payload**: Ensure required fields are present and data types match
 - **JSON parsing errors**: For custom events, ensure properties field contains valid JSON
+- **Rate limit exceeded**: Reduce request frequency or implement request queuing with delays
 
