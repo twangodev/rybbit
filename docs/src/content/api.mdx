@@ -98,7 +98,7 @@ curl -X POST 'https://app.rybbit.io/api/track' \
 
 ## Language Examples
 
-<Tabs items={['Node.js', 'Python', 'Go']}>
+<Tabs items={['Node.js', 'Python', 'Go', 'Java', 'PHP', 'Ruby', 'C#/.NET', 'Rust', 'iOS (Swift)', 'Android (Kotlin)', 'Flutter']}>
   <Tabs.Tab>
 ```javascript
 const trackEvent = async (eventData) => {
@@ -227,6 +227,550 @@ func main() {
         EventName:  "purchase",
         Properties: `{"amount": 99.99, "currency": "USD"}`,
     })
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```java
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Map;
+import java.util.HashMap;
+
+public class RybbitTracker {
+    private static final String API_URL = "https://app.rybbit.io/api/track";
+    private static final String API_KEY = System.getenv("RYBBIT_API_KEY");
+    private static final String SITE_ID = System.getenv("RYBBIT_SITE_ID");
+    
+    private final HttpClient httpClient = HttpClient.newHttpClient();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+    
+    public void trackEvent(Map<String, Object> eventData) throws Exception {
+        eventData.put("api_key", API_KEY);
+        eventData.put("site_id", SITE_ID);
+        
+        String json = objectMapper.writeValueAsString(eventData);
+        
+        HttpRequest request = HttpRequest.newBuilder()
+            .uri(URI.create(API_URL))
+            .header("Content-Type", "application/json")
+            .POST(HttpRequest.BodyPublishers.ofString(json))
+            .build();
+            
+        HttpResponse<String> response = httpClient.send(request, 
+            HttpResponse.BodyHandlers.ofString());
+            
+        if (response.statusCode() != 200) {
+            throw new Exception("Tracking failed: " + response.body());
+        }
+    }
+    
+    public static void main(String[] args) throws Exception {
+        RybbitTracker tracker = new RybbitTracker();
+        
+        // Track a pageview
+        Map<String, Object> pageview = new HashMap<>();
+        pageview.put("type", "pageview");
+        pageview.put("pathname", "/api/users");
+        pageview.put("hostname", "api.example.com");
+        tracker.trackEvent(pageview);
+        
+        // Track a custom event
+        Map<String, Object> customEvent = new HashMap<>();
+        customEvent.put("type", "custom_event");
+        customEvent.put("pathname", "/checkout");
+        customEvent.put("event_name", "purchase");
+        customEvent.put("properties", "{\"amount\": 99.99, \"currency\": \"USD\"}");
+        tracker.trackEvent(customEvent);
+    }
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```php
+<?php
+
+class RybbitTracker {
+    private $apiUrl = 'https://app.rybbit.io/api/track';
+    private $apiKey;
+    private $siteId;
+    
+    public function __construct() {
+        $this->apiKey = getenv('RYBBIT_API_KEY');
+        $this->siteId = getenv('RYBBIT_SITE_ID');
+    }
+    
+    public function trackEvent($eventData) {
+        $eventData['api_key'] = $this->apiKey;
+        $eventData['site_id'] = $this->siteId;
+        
+        $ch = curl_init($this->apiUrl);
+        curl_setopt($ch, CURLOPT_POST, 1);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($eventData));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, ['Content-Type: application/json']);
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode !== 200) {
+            throw new Exception('Tracking failed: ' . $response);
+        }
+        
+        return json_decode($response, true);
+    }
+}
+
+// Usage
+$tracker = new RybbitTracker();
+
+// Track a pageview
+$tracker->trackEvent([
+    'type' => 'pageview',
+    'pathname' => '/api/users',
+    'hostname' => 'api.example.com'
+]);
+
+// Track a custom event
+$tracker->trackEvent([
+    'type' => 'custom_event',
+    'pathname' => '/checkout',
+    'event_name' => 'purchase',
+    'properties' => json_encode(['amount' => 99.99, 'currency' => 'USD'])
+]);
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```ruby
+require 'net/http'
+require 'json'
+require 'uri'
+
+class RybbitTracker
+  API_URL = 'https://app.rybbit.io/api/track'
+  
+  def initialize
+    @api_key = ENV['RYBBIT_API_KEY']
+    @site_id = ENV['RYBBIT_SITE_ID']
+  end
+  
+  def track_event(event_data)
+    event_data[:api_key] = @api_key
+    event_data[:site_id] = @site_id
+    
+    uri = URI(API_URL)
+    http = Net::HTTP.new(uri.host, uri.port)
+    http.use_ssl = true
+    
+    request = Net::HTTP::Post.new(uri.path)
+    request['Content-Type'] = 'application/json'
+    request.body = event_data.to_json
+    
+    response = http.request(request)
+    
+    unless response.code == '200'
+      raise "Tracking failed: #{response.body}"
+    end
+    
+    JSON.parse(response.body)
+  end
+end
+
+# Usage
+tracker = RybbitTracker.new
+
+# Track a pageview
+tracker.track_event({
+  type: 'pageview',
+  pathname: '/api/users',
+  hostname: 'api.example.com'
+})
+
+# Track a custom event
+tracker.track_event({
+  type: 'custom_event',
+  pathname: '/checkout',
+  event_name: 'purchase',
+  properties: JSON.generate({ amount: 99.99, currency: 'USD' })
+})
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```csharp
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Text.Json;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+
+public class RybbitTracker
+{
+    private readonly HttpClient _httpClient;
+    private readonly string _apiKey;
+    private readonly string _siteId;
+    private const string ApiUrl = "https://app.rybbit.io/api/track";
+    
+    public RybbitTracker()
+    {
+        _httpClient = new HttpClient();
+        _apiKey = Environment.GetEnvironmentVariable("RYBBIT_API_KEY");
+        _siteId = Environment.GetEnvironmentVariable("RYBBIT_SITE_ID");
+    }
+    
+    public async Task TrackEventAsync(Dictionary<string, object> eventData)
+    {
+        eventData["api_key"] = _apiKey;
+        eventData["site_id"] = _siteId;
+        
+        var json = JsonSerializer.Serialize(eventData);
+        var content = new StringContent(json, Encoding.UTF8, "application/json");
+        
+        var response = await _httpClient.PostAsync(ApiUrl, content);
+        
+        if (!response.IsSuccessStatusCode)
+        {
+            var error = await response.Content.ReadAsStringAsync();
+            throw new Exception($"Tracking failed: {error}");
+        }
+    }
+    
+    static async Task Main(string[] args)
+    {
+        var tracker = new RybbitTracker();
+        
+        // Track a pageview
+        await tracker.TrackEventAsync(new Dictionary<string, object>
+        {
+            ["type"] = "pageview",
+            ["pathname"] = "/api/users",
+            ["hostname"] = "api.example.com"
+        });
+        
+        // Track a custom event
+        await tracker.TrackEventAsync(new Dictionary<string, object>
+        {
+            ["type"] = "custom_event",
+            ["pathname"] = "/checkout",
+            ["event_name"] = "purchase",
+            ["properties"] = JsonSerializer.Serialize(new { amount = 99.99, currency = "USD" })
+        });
+    }
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```rust
+use reqwest;
+use serde_json::{json, Value};
+use std::env;
+
+#[derive(Clone)]
+struct RybbitTracker {
+    client: reqwest::Client,
+    api_key: String,
+    site_id: String,
+    api_url: String,
+}
+
+impl RybbitTracker {
+    fn new() -> Self {
+        Self {
+            client: reqwest::Client::new(),
+            api_key: env::var("RYBBIT_API_KEY").expect("RYBBIT_API_KEY not set"),
+            site_id: env::var("RYBBIT_SITE_ID").expect("RYBBIT_SITE_ID not set"),
+            api_url: "https://app.rybbit.io/api/track".to_string(),
+        }
+    }
+    
+    async fn track_event(&self, mut event_data: Value) -> Result<(), Box<dyn std::error::Error>> {
+        event_data["api_key"] = json!(self.api_key);
+        event_data["site_id"] = json!(self.site_id);
+        
+        let response = self.client
+            .post(&self.api_url)
+            .json(&event_data)
+            .send()
+            .await?;
+            
+        if !response.status().is_success() {
+            let error_text = response.text().await?;
+            return Err(format!("Tracking failed: {}", error_text).into());
+        }
+        
+        Ok(())
+    }
+}
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let tracker = RybbitTracker::new();
+    
+    // Track a pageview
+    tracker.track_event(json!({
+        "type": "pageview",
+        "pathname": "/api/users",
+        "hostname": "api.example.com"
+    })).await?;
+    
+    // Track a custom event
+    tracker.track_event(json!({
+        "type": "custom_event",
+        "pathname": "/checkout",
+        "event_name": "purchase",
+        "properties": r#"{"amount": 99.99, "currency": "USD"}"#
+    })).await?;
+    
+    Ok(())
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```swift
+import Foundation
+
+class RybbitTracker {
+    static let shared = RybbitTracker()
+    
+    private let apiUrl = "https://app.rybbit.io/api/track"
+    private let apiKey = ProcessInfo.processInfo.environment["RYBBIT_API_KEY"] ?? ""
+    private let siteId = ProcessInfo.processInfo.environment["RYBBIT_SITE_ID"] ?? ""
+    
+    func trackEvent(_ eventData: [String: Any]) async throws {
+        var data = eventData
+        data["api_key"] = apiKey
+        data["site_id"] = siteId
+        
+        // Add device info
+        data["user_agent"] = getUserAgent()
+        data["screenWidth"] = Int(UIScreen.main.bounds.width)
+        data["screenHeight"] = Int(UIScreen.main.bounds.height)
+        data["language"] = Locale.current.languageCode ?? "en"
+        
+        var request = URLRequest(url: URL(string: apiUrl)!)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.httpBody = try JSONSerialization.data(withJSONObject: data)
+        
+        let (_, response) = try await URLSession.shared.data(for: request)
+        
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw NSError(domain: "RybbitTracker", code: 1, userInfo: [NSLocalizedDescriptionKey: "Tracking failed"])
+        }
+    }
+    
+    private func getUserAgent() -> String {
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+        let osVersion = UIDevice.current.systemVersion
+        let model = UIDevice.current.model
+        return "MyApp/\(appVersion) (iOS \(osVersion); \(model))"
+    }
+}
+
+// Usage
+Task {
+    // Track a pageview
+    try await RybbitTracker.shared.trackEvent([
+        "type": "pageview",
+        "pathname": "/home",
+        "page_title": "Home Screen"
+    ])
+    
+    // Track a custom event
+    try await RybbitTracker.shared.trackEvent([
+        "type": "custom_event",
+        "pathname": "/shop",
+        "event_name": "add_to_cart",
+        "properties": "{\"product_id\": \"123\", \"price\": 29.99}"
+    ])
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```kotlin
+import kotlinx.coroutines.*
+import okhttp3.*
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONObject
+import android.content.Context
+import android.os.Build
+import java.util.Locale
+
+class RybbitTracker(private val context: Context) {
+    companion object {
+        private const val API_URL = "https://app.rybbit.io/api/track"
+        private val JSON = "application/json; charset=utf-8".toMediaType()
+    }
+    
+    private val client = OkHttpClient()
+    private val apiKey = BuildConfig.RYBBIT_API_KEY // Set in build.gradle
+    private val siteId = BuildConfig.RYBBIT_SITE_ID
+    
+    suspend fun trackEvent(eventData: Map<String, Any>) = withContext(Dispatchers.IO) {
+        val data = eventData.toMutableMap().apply {
+            put("api_key", apiKey)
+            put("site_id", siteId)
+            put("user_agent", getUserAgent())
+            put("screenWidth", context.resources.displayMetrics.widthPixels)
+            put("screenHeight", context.resources.displayMetrics.heightPixels)
+            put("language", Locale.getDefault().language)
+        }
+        
+        val json = JSONObject(data).toString()
+        val body = json.toRequestBody(JSON)
+        
+        val request = Request.Builder()
+            .url(API_URL)
+            .post(body)
+            .build()
+            
+        client.newCall(request).execute().use { response ->
+            if (!response.isSuccessful) {
+                throw Exception("Tracking failed: ${response.code}")
+            }
+        }
+    }
+    
+    private fun getUserAgent(): String {
+        val appVersion = context.packageManager
+            .getPackageInfo(context.packageName, 0).versionName
+        return "MyApp/$appVersion (Android ${Build.VERSION.RELEASE}; ${Build.MODEL})"
+    }
+}
+
+// Usage
+class MainActivity : AppCompatActivity() {
+    private val tracker = RybbitTracker(this)
+    
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        
+        lifecycleScope.launch {
+            // Track a pageview
+            tracker.trackEvent(mapOf(
+                "type" to "pageview",
+                "pathname" to "/home",
+                "page_title" to "Home Screen"
+            ))
+            
+            // Track a custom event
+            tracker.trackEvent(mapOf(
+                "type" to "custom_event",
+                "pathname" to "/shop",
+                "event_name" to "add_to_cart",
+                "properties" to """{"product_id": "123", "price": 29.99}"""
+            ))
+        }
+    }
+}
+```
+  </Tabs.Tab>
+  <Tabs.Tab>
+
+```dart
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/material.dart';
+import 'package:device_info_plus/device_info_plus.dart';
+
+class RybbitTracker {
+  static final RybbitTracker _instance = RybbitTracker._internal();
+  factory RybbitTracker() => _instance;
+  RybbitTracker._internal();
+  
+  static const String _apiUrl = 'https://app.rybbit.io/api/track';
+  static const String _apiKey = String.fromEnvironment('RYBBIT_API_KEY');
+  static const String _siteId = String.fromEnvironment('RYBBIT_SITE_ID');
+  
+  final _deviceInfoPlugin = DeviceInfoPlugin();
+  
+  Future<void> trackEvent(Map<String, dynamic> eventData) async {
+    final data = Map<String, dynamic>.from(eventData);
+    data['api_key'] = _apiKey;
+    data['site_id'] = _siteId;
+    
+    // Add device info
+    data['user_agent'] = await _getUserAgent();
+    data['screenWidth'] = WidgetsBinding.instance.window.physicalSize.width.toInt();
+    data['screenHeight'] = WidgetsBinding.instance.window.physicalSize.height.toInt();
+    data['language'] = Platform.localeName.split('_')[0];
+    
+    final response = await http.post(
+      Uri.parse(_apiUrl),
+      headers: {'Content-Type': 'application/json'},
+      body: json.encode(data),
+    );
+    
+    if (response.statusCode != 200) {
+      throw Exception('Tracking failed: ${response.statusCode}');
+    }
+  }
+  
+  Future<String> _getUserAgent() async {
+    const appVersion = '1.0.0'; // Get from package_info_plus if needed
+    
+    if (Platform.isAndroid) {
+      final androidInfo = await _deviceInfoPlugin.androidInfo;
+      return 'MyApp/$appVersion (Android ${androidInfo.version.release}; ${androidInfo.model})';
+    } else if (Platform.isIOS) {
+      final iosInfo = await _deviceInfoPlugin.iosInfo;
+      return 'MyApp/$appVersion (iOS ${iosInfo.systemVersion}; ${iosInfo.model})';
+    }
+    
+    return 'MyApp/$appVersion (${Platform.operatingSystem})';
+  }
+}
+
+// Usage
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  final tracker = RybbitTracker();
+  
+  @override
+  Widget build(BuildContext context) {
+    // Track app launch
+    tracker.trackEvent({
+      'type': 'pageview',
+      'pathname': '/app/launch',
+      'page_title': 'App Launch',
+    });
+    
+    return MaterialApp(
+      home: Scaffold(
+        body: Center(
+          child: ElevatedButton(
+            onPressed: () {
+              // Track button press
+              tracker.trackEvent({
+                'type': 'custom_event',
+                'pathname': '/home',
+                'event_name': 'button_pressed',
+                'properties': json.encode({'button_id': 'main_cta'}),
+              });
+            },
+            child: Text('Track Event'),
+          ),
+        ),
+      ),
+    );
+  }
 }
 ```
   </Tabs.Tab>
