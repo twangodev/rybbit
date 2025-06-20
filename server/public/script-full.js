@@ -84,6 +84,7 @@
       scriptTag.getAttribute("data-mask-patterns"),
       []
     );
+    const apiKey = scriptTag.getAttribute("data-api-key") || void 0;
     return {
       analyticsHost,
       siteId,
@@ -94,7 +95,8 @@
       trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
       enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
       skipPatterns,
-      maskPatterns
+      maskPatterns,
+      apiKey
     };
   }
 
@@ -140,6 +142,9 @@
       };
       if (this.customUserId) {
         payload.user_id = this.customUserId;
+      }
+      if (this.config.apiKey) {
+        payload.api_key = this.config.apiKey;
       }
       return payload;
     }

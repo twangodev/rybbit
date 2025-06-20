@@ -233,3 +233,25 @@ This file tracks the project's progress using a task list format.
   - Conditional script attribute generation (`data-web-vitals="true"` only when enabled)
   - Consistent with existing opt-in behavior (disabled by default)
 - **Impact**: Users can now easily enable Web Vitals performance metrics collection through the ScriptBuilder UI, matching the functionality documented in the script documentation
+
+[2025-06-19 19:28:32] - **COMPLETED: API Documentation Language Examples Fixes**
+
+- **Task**: Fix potential issues in language examples in API documentation
+- **Status**: ✅ COMPLETED
+- **Issues Fixed**:
+  1. **Screen Pixel Type Clarification**: Updated API documentation to specify "logical pixels (density-independent pixels)" for screenWidth/screenHeight parameters
+  2. **Swift Example Modernization**:
+     - Replaced deprecated `UIScreen.main` with modern `UIWindowScene.screen` approach
+     - Added proper API key validation to prevent empty string errors
+     - Updated example data to match server-side examples for consistency
+  3. **Kotlin Example Consistency**:
+     - Changed from physical pixels to logical pixels using density conversion
+     - Updated example data to match server-side examples
+  4. **Flutter Example Improvements**:
+     - Changed from physical pixels to logical pixels using devicePixelRatio
+     - Moved app launch tracking from `build()` method to `initState()` to prevent multiple triggers
+     - Updated example data to match server-side examples
+     - Changed from StatelessWidget to StatefulWidget for proper lifecycle management
+- **Files Modified**:
+  - [`docs/src/content/api.mdx`](docs/src/content/api.mdx:78) - API parameter documentation and all mobile platform examples
+- **Impact**: Improved consistency across platform examples, modernized deprecated APIs, and clarified pixel type expectations for mobile developers

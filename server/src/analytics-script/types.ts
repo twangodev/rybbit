@@ -9,6 +9,7 @@ export interface ScriptConfig {
   enableWebVitals: boolean;
   skipPatterns: string[];
   maskPatterns: string[];
+  apiKey?: string;
 }
 
 export interface BasePayload {
@@ -22,6 +23,7 @@ export interface BasePayload {
   page_title: string;
   referrer: string;
   user_id?: string;
+  api_key?: string;
 }
 
 export interface TrackingPayload extends BasePayload {

@@ -149,6 +149,9 @@ export default async function RootLayout({ children }) {
     />
   );
   const pageMap = await getPageMap();
+
+  const isDev = process.env.NODE_ENV === "development";
+
   return (
     <html lang="en" dir="ltr" suppressHydrationWarning>
       <Head
@@ -158,23 +161,14 @@ export default async function RootLayout({ children }) {
           lightness: 51,
         }}
       />
-      {/* <script
-        src="https://app.rybbit.io/api/script.js"
-        site-id="2"
-        defer
-        data-enable-replay="true"
-      /> */}
       <script
         src="https://demo.rybbit.io/api/script.js"
         data-site-id="21"
         defer
         data-enable-replay="true"
-      ></script>
-      <script
-        src="https://amdtest.tomato.gg/api/script.js"
-        data-site-id="2"
-        defer
-        data-enable-replay="true"
+        {...(isDev && {
+          "data-api-key": process.env.NEXT_PUBLIC_RYBBIT_API_KEY,
+        })}
       ></script>
       <body>
         <PostHogProvider>

@@ -46,6 +46,8 @@ import { getSite } from "./api/sites/getSite.js";
 import { getSiteHasData } from "./api/sites/getSiteHasData.js";
 import { getSiteIsPublic } from "./api/sites/getSiteIsPublic.js";
 import { getSitesFromOrg } from "./api/sites/getSitesFromOrg.js";
+import { getSiteApiConfig } from "./api/sites/getSiteApiConfig.js";
+import { updateSiteApiConfig } from "./api/sites/updateSiteApiConfig.js";
 import { createCheckoutSession } from "./api/stripe/createCheckoutSession.js";
 import { createPortalSession } from "./api/stripe/createPortalSession.js";
 import { getSubscription } from "./api/stripe/getSubscription.js";
@@ -257,6 +259,8 @@ server.post("/api/change-site-block-bots", changeSiteBlockBots);
 server.post("/api/delete-site/:id", deleteSite);
 server.get("/api/get-sites-from-org/:organizationId", getSitesFromOrg);
 server.get("/api/get-site/:id", getSite);
+server.get("/api/site/:siteId/api-config", getSiteApiConfig);
+server.post("/api/site/:siteId/api-config", updateSiteApiConfig);
 server.get(
   "/api/list-organization-members/:organizationId",
   listOrganizationMembers

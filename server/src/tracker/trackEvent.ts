@@ -15,74 +15,90 @@ import { getDeviceType, normalizeOrigin } from "../utils.js";
 import { pageviewQueue } from "./pageviewQueue.js";
 import { siteConfig } from "../lib/siteConfig.js";
 import { DISABLE_ORIGIN_CHECK } from "./const.js";
+import { apiKeyRateLimiter } from "../lib/rateLimiter.js";
 
 // Define Zod schema for validation
 export const trackingPayloadSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("pageview"),
-    site_id: z.string().min(1),
-    hostname: z.string().max(253).optional(),
-    pathname: z.string().max(2048).optional(),
-    querystring: z.string().max(2048).optional(),
-    screenWidth: z.number().int().positive().optional(),
-    screenHeight: z.number().int().positive().optional(),
-    language: z.string().max(35).optional(),
-    page_title: z.string().max(512).optional(),
-    referrer: z.string().max(2048).optional(),
-    event_name: z.string().max(256).optional(),
-    properties: z.string().max(2048).optional(),
-    user_id: z.string().max(255).optional(),
-  }),
-  z.object({
-    type: z.literal("custom_event"),
-    site_id: z.string().min(1),
-    hostname: z.string().max(253).optional(),
-    pathname: z.string().max(2048).optional(),
-    querystring: z.string().max(2048).optional(),
-    screenWidth: z.number().int().positive().optional(),
-    screenHeight: z.number().int().positive().optional(),
-    language: z.string().max(35).optional(),
-    page_title: z.string().max(512).optional(),
-    referrer: z.string().max(2048).optional(),
-    event_name: z.string().min(1).max(256),
-    properties: z
-      .string()
-      .max(2048)
-      .refine(
-        (val) => {
-          try {
-            JSON.parse(val);
-            return true;
-          } catch (e) {
-            return false;
-          }
-        },
-        { message: "Properties must be a valid JSON string" }
-      )
-      .optional(), // Optional but must be valid JSON if present
-    user_id: z.string().max(255).optional(),
-  }),
-  z.object({
-    type: z.literal("performance"),
-    site_id: z.string().min(1),
-    hostname: z.string().max(253).optional(),
-    pathname: z.string().max(2048).optional(),
-    querystring: z.string().max(2048).optional(),
-    screenWidth: z.number().int().positive().optional(),
-    screenHeight: z.number().int().positive().optional(),
-    language: z.string().max(35).optional(),
-    page_title: z.string().max(512).optional(),
-    referrer: z.string().max(2048).optional(),
-    event_name: z.string().max(256).optional(),
-    properties: z.string().max(2048).optional(),
-    user_id: z.string().max(255).optional(),
-    // Performance metrics (can be null if not collected)
-    lcp: z.number().positive().nullable().optional(),
-    cls: z.number().min(0).nullable().optional(),
-    inp: z.number().positive().nullable().optional(),
-    fcp: z.number().positive().nullable().optional(),
-    ttfb: z.number().positive().nullable().optional(),
-  }),
+  z
+    .object({
+      type: z.literal("pageview"),
+      site_id: z.string().min(1),
+      hostname: z.string().max(253).optional(),
+      pathname: z.string().max(2048).optional(),
+      querystring: z.string().max(2048).optional(),
+      screenWidth: z.number().int().positive().optional(),
+      screenHeight: z.number().int().positive().optional(),
+      language: z.string().max(35).optional(),
+      page_title: z.string().max(512).optional(),
+      referrer: z.string().max(2048).optional(),
+      event_name: z.string().max(256).optional(),
+      properties: z.string().max(2048).optional(),
+      user_id: z.string().max(255).optional(),
+      api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+      ip_address: z.string().ip().optional(), // Custom IP for geolocation
+      user_agent: z.string().max(512).optional(), // Custom user agent
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal("custom_event"),
+      site_id: z.string().min(1),
+      hostname: z.string().max(253).optional(),
+      pathname: z.string().max(2048).optional(),
+      querystring: z.string().max(2048).optional(),
+      screenWidth: z.number().int().positive().optional(),
+      screenHeight: z.number().int().positive().optional(),
+      language: z.string().max(35).optional(),
+      page_title: z.string().max(512).optional(),
+      referrer: z.string().max(2048).optional(),
+      event_name: z.string().min(1).max(256),
+      properties: z
+        .string()
+        .max(2048)
+        .refine(
+          (val) => {
+            try {
+              JSON.parse(val);
+              return true;
+            } catch (e) {
+              return false;
+            }
+          },
+          { message: "Properties must be a valid JSON string" }
+        )
+        .optional(), // Optional but must be valid JSON if present
+      user_id: z.string().max(255).optional(),
+      api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+      ip_address: z.string().ip().optional(), // Custom IP for geolocation
+      user_agent: z.string().max(512).optional(), // Custom user agent
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal("performance"),
+      site_id: z.string().min(1),
+      hostname: z.string().max(253).optional(),
+      pathname: z.string().max(2048).optional(),
+      querystring: z.string().max(2048).optional(),
+      screenWidth: z.number().int().positive().optional(),
+      screenHeight: z.number().int().positive().optional(),
+      language: z.string().max(35).optional(),
+      page_title: z.string().max(512).optional(),
+      referrer: z.string().max(2048).optional(),
+      event_name: z.string().max(256).optional(),
+      properties: z.string().max(2048).optional(),
+      user_id: z.string().max(255).optional(),
+      api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+      ip_address: z.string().ip().optional(), // Custom IP for geolocation
+      user_agent: z.string().max(512).optional(), // Custom user agent
+      // Performance metrics (can be null if not collected)
+      lcp: z.number().positive().nullable().optional(),
+      cls: z.number().min(0).nullable().optional(),
+      inp: z.number().positive().nullable().optional(),
+      fcp: z.number().positive().nullable().optional(),
+      ttfb: z.number().positive().nullable().optional(),
+    })
+    .strict(),
 ]);
 
 // Update session for both pageviews and events
@@ -140,22 +156,37 @@ async function updateSession(
   await db.insert(activeSessions).values(insertData);
 }
 
-// Process tracking event and add to queue
-async function processTrackingEvent(
-  payload: TotalTrackingPayload,
-  existingSession: any | null,
-  isPageview: boolean = true
-): Promise<void> {
-  // If session exists, use its ID instead of generated one
-  if (existingSession) {
-    payload.sessionId = existingSession.sessionId;
+/**
+ * Validates API key for the site
+ * @param siteId The site ID from the tracking payload
+ * @param apiKey The API key from the payload
+ * @returns An object with success status and optional error message
+ */
+async function validateApiKey(siteId: string, apiKey?: string) {
+  if (!apiKey) {
+    return { success: false, error: null };
   }
 
-  // Add to queue for processing
-  await pageviewQueue.add(payload);
+  try {
+    await siteConfig.ensureInitialized();
+    const numericSiteId =
+      typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
+    const site = await siteConfig.getSiteConfig(numericSiteId);
 
-  // Update session data
-  await updateSession(payload, existingSession, isPageview);
+    if (!site) {
+      return { success: false, error: "Site not found" };
+    }
+
+    if (site.apiKey && apiKey === site.apiKey) {
+      console.info(`[Tracking] Valid API key for site ${siteId}`);
+      return { success: true };
+    }
+
+    return { success: false, error: "Invalid API key" };
+  } catch (error) {
+    console.error("Error validating API key:", error);
+    return { success: false, error: "Failed to validate API key" };
+  }
 }
 
 /**
@@ -183,13 +214,13 @@ async function validateOrigin(siteId: string, requestOrigin?: string) {
     const numericSiteId =
       typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
 
-    // Get the domain associated with this site
-    const siteDomain = siteConfig.getSiteDomain(numericSiteId);
+    // Get the site configuration
+    const site = await siteConfig.getSiteConfig(numericSiteId);
 
-    if (!siteDomain) {
+    if (!site) {
       return {
         success: false,
-        error: "Site not found or has no registered domain",
+        error: "Site not found",
       };
     }
 
@@ -202,8 +233,8 @@ async function validateOrigin(siteId: string, requestOrigin?: string) {
     }
 
     try {
-      // Parse the origin into URL components
-      const originUrl = new URL(requestOrigin);
+      // Get the domain associated with this site
+      const siteDomain = site.domain;
 
       // Normalize domains by removing all subdomain prefixes
       const normalizedOriginHost = normalizeOrigin(requestOrigin);
@@ -250,28 +281,67 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Use validated data
     const validatedPayload = validationResult.data;
 
-    // Validate that the request is coming from the expected origin
-    const originValidation = await validateOrigin(
+    // First check if API key is provided and valid
+    const apiKeyValidation = await validateApiKey(
       validatedPayload.site_id,
-      request.headers.origin as string
+      validatedPayload.api_key
     );
 
-    if (!originValidation.success) {
+    // If API key validation failed with an error, reject the request
+    if (apiKeyValidation.error) {
       console.warn(
-        `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
+        `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${apiKeyValidation.error}`
       );
       return reply.status(403).send({
         success: false,
-        error: originValidation.error,
+        error: apiKeyValidation.error,
       });
+    }
+
+    // Check rate limit for API key authenticated requests
+    if (apiKeyValidation.success && validatedPayload.api_key) {
+      if (!apiKeyRateLimiter.isAllowed(validatedPayload.api_key)) {
+        console.warn(
+          `[Tracking] Rate limit exceeded for API key ${validatedPayload.api_key} on site ${validatedPayload.site_id}`
+        );
+        return reply.status(429).send({
+          success: false,
+          error: "Rate limit exceeded. Maximum 20 requests per second per API key.",
+        });
+      }
+    }
+
+    // If no valid API key, validate origin
+    if (!apiKeyValidation.success) {
+      const originValidation = await validateOrigin(
+        validatedPayload.site_id,
+        request.headers.origin as string
+      );
+
+      if (!originValidation.success) {
+        console.warn(
+          `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
+        );
+        return reply.status(403).send({
+          success: false,
+          error: originValidation.error,
+        });
+      }
     }
 
     // Make sure the site config is loaded
     await siteConfig.ensureInitialized();
 
     // Check if bot blocking is enabled for this site and if the request is from a bot
-    if (siteConfig.shouldBlockBots(validatedPayload.site_id)) {
-      const userAgent = request.headers["user-agent"] as string;
+    // Skip bot check for API key authenticated requests
+    if (
+      !validatedPayload.api_key &&
+      siteConfig.shouldBlockBots(validatedPayload.site_id)
+    ) {
+      // Use custom user agent if provided, otherwise fall back to header
+      const userAgent =
+        validatedPayload.user_agent ||
+        (request.headers["user-agent"] as string);
       if (userAgent && isbot(userAgent)) {
         console.log(
           `[Tracking] Bot request filtered for site ${validatedPayload.site_id} from User-Agent: ${userAgent}`
@@ -306,8 +376,13 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       payload.site_id
     );
 
-    // Process the event
-    await processTrackingEvent(
+    if (existingSession) {
+      payload.sessionId = existingSession.sessionId;
+    }
+
+    // Add to queue for processing
+    pageviewQueue.add(payload);
+    await updateSession(
       payload,
       existingSession,
       validatedPayload.type === "pageview"

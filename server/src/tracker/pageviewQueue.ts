@@ -1,10 +1,10 @@
 import { DateTime } from "luxon";
 import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { getLocation } from "../db/geolocation/geolocation.js";
-import { TrackingPayload } from "../types.js";
 import { getDeviceType } from "../utils.js";
 import { getChannel } from "./getChannel.js";
 import { clearSelfReferrer, getAllUrlParams } from "./trackingUtils.js";
+import { TrackingPayload } from "./types.js";
 
 type TotalPayload = TrackingPayload & {
   userId: string;

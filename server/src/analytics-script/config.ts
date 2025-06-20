@@ -37,6 +37,8 @@ export function parseScriptConfig(scriptTag: HTMLScriptElement): ScriptConfig | 
     []
   );
 
+  const apiKey = scriptTag.getAttribute('data-api-key') || undefined;
+
   return {
     analyticsHost,
     siteId,
@@ -48,5 +50,6 @@ export function parseScriptConfig(scriptTag: HTMLScriptElement): ScriptConfig | 
     enableWebVitals: scriptTag.getAttribute('data-web-vitals') === 'true',
     skipPatterns,
     maskPatterns,
+    apiKey,
   };
 }

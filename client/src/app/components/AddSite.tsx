@@ -26,6 +26,7 @@ import { IS_CLOUD } from "../../lib/const";
 import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 import { resetStore, useStore } from "../../lib/store";
 import { useRouter } from "next/navigation";
+import { normalizeDomain } from "../../lib/utils";
 
 /**
  * A simple domain validation function:
@@ -83,10 +84,16 @@ export function AddSite({
     }
 
     try {
-      const site = await addSite(domain, domain, activeOrganization.id, {
-        isPublic,
-        saltUserIds,
-      });
+      const normalizedDomain = normalizeDomain(domain);
+      const site = await addSite(
+        normalizedDomain,
+        normalizedDomain,
+        activeOrganization.id,
+        {
+          isPublic,
+          saltUserIds,
+        }
+      );
 
       resetStore();
       setSite(site.siteId.toString());

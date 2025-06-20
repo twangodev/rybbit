@@ -6,18 +6,14 @@ import { z } from "zod";
 import { sitesOverLimit } from "../cron/monthly-usage-checker.js";
 import { db } from "../db/postgres/postgres.js";
 import { activeSessions } from "../db/postgres/schema.js";
-import { TrackingPayload } from "../types.js";
 import { trackingPayloadSchema } from "./trackEvent.js";
 import { siteConfig } from "../lib/siteConfig.js";
+import { TrackingPayload } from "./types.js";
 
-// Define extended payload types
-type BaseTrackingPayload = TrackingPayload & {
+export type TotalTrackingPayload = TrackingPayload & {
   type?: string;
   event_name?: string;
   properties?: string;
-};
-
-export type TotalTrackingPayload = BaseTrackingPayload & {
   userId: string;
   timestamp: string;
   sessionId: string;
@@ -121,8 +117,11 @@ export function createBasePayload(
   eventType: "pageview" | "custom_event" | "performance" = "pageview",
   validatedBody: ValidatedTrackingPayload
 ): TotalTrackingPayload {
-  const userAgent = request.headers["user-agent"] || "";
-  const ipAddress = getIpAddress(request);
+  // Use custom user agent if provided, otherwise fall back to header
+  const userAgent =
+    validatedBody.user_agent || request.headers["user-agent"] || "";
+  // Override IP if provided in payload
+  const ipAddress = validatedBody.ip_address || getIpAddress(request);
   const siteId = validatedBody.site_id;
 
   // Use custom user ID if provided, otherwise generate one

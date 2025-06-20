@@ -30,7 +30,7 @@ import { authClient } from "../../lib/auth";
 import { useConfigs } from "../../lib/configs";
 import { IS_CLOUD } from "../../lib/const";
 import { userStore } from "../../lib/userStore";
-import { cn } from "../../lib/utils";
+import { cn, normalizeDomain } from "../../lib/utils";
 
 // Animation variants for step transitions
 const contentVariants = {
@@ -175,7 +175,12 @@ export default function SignupPage() {
       }
 
       try {
-        const response = await addSite(domain, domain, organizationId);
+        const normalizedDomain = normalizeDomain(domain);
+        const response = await addSite(
+          normalizedDomain,
+          normalizedDomain,
+          organizationId
+        );
         setSiteId(response.siteId);
         setCurrentStep(4);
       } catch (error) {

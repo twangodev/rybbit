@@ -58,3 +58,23 @@ export const getLanguageName = (languageCode: string) => {
     return languageCode;
   }
 };
+
+export function normalizeDomain(domain: string): string {
+  if (!domain) return domain;
+  
+  let normalized = domain.trim();
+  
+  // Remove protocol (http:// or https://)
+  normalized = normalized.replace(/^https?:\/\//, '');
+  
+  // Remove www. prefix
+  normalized = normalized.replace(/^www\./, '');
+  
+  // Remove trailing slash and any path
+  normalized = normalized.split('/')[0];
+  
+  // Remove trailing dots
+  normalized = normalized.replace(/\.+$/, '');
+  
+  return normalized;
+}
