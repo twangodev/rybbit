@@ -24,23 +24,8 @@ In your site dashboard: Settings → API Key tab → Generate API Key
 
 ### Include in Requests
 
-Add the `api_key` field to your request payload:
-
-```json
-{
-  "api_key": "rb_your_api_key_here",
-  "site_id": "123",
-  "type": "pageview",
-  "pathname": "/page"
-}
-```
-
-</Steps>
-
-## Tracking Events
-
-### Pageview Tracking
-
+<Tabs items={['Pageview', 'Custom Event']}>
+  <Tabs.Tab>
 ```bash
 curl -X POST 'https://app.rybbit.io/api/track' \
   -H 'Content-Type: application/json' \
@@ -55,9 +40,8 @@ curl -X POST 'https://app.rybbit.io/api/track' \
     "ip_address": "192.168.1.1"
   }'
 ```
-
-### Custom Events
-
+  </Tabs.Tab>
+  <Tabs.Tab>
 ```bash
 curl -X POST 'https://app.rybbit.io/api/track' \
   -H 'Content-Type: application/json' \
@@ -70,31 +54,31 @@ curl -X POST 'https://app.rybbit.io/api/track' \
     "properties": "{\"amount\": 99.99, \"currency\": \"USD\", \"product_id\": \"abc123\"}"
   }'
 ```
+  </Tabs.Tab>
+</Tabs>
 
+</Steps>
 
 ## Parameters
 
-### Required
-- `api_key` - Your generated API key (starts with `rb_`)
-- `site_id` - Your site ID (string)
-
-### Optional
-- `type` - Event type: `pageview` or `custom_event` (defaults to `pageview`)
-- `pathname` - Page path (string)
-- `hostname` - Domain name
-- `page_title` - Page title (max 512 chars)
-- `referrer` - Referrer URL (max 2048 chars)
-- `user_id` - Custom user identifier (max 255 chars)
-- `user_agent` - Custom user agent string (max 512 chars) - will be parsed for browser/OS/device info
-- `ip_address` - Custom IP for geolocation - will be resolved to location data
-- `querystring` - Query parameters
-- `language` - Language code (e.g., "en")
-- `screenWidth` - Screen width in pixels
-- `screenHeight` - Screen height in pixels
-
-### Custom Events Only
-- `event_name` - Event name (required for custom events, max 256 chars)
-- `properties` - JSON string with event data (max 2048 chars)
+| Parameter | Type | Required | Description |
+| :-------- | :--- | :------- | :---------- |
+| `api_key` | string | **Required** | Your generated API key (starts with `rb_`) |
+| `site_id` | string | **Required** | Your site ID |
+| `type` | string | Optional | Event type: `pageview` or `custom_event` (defaults to `pageview`) |
+| `pathname` | string | Optional | Page path |
+| `hostname` | string | Optional | Domain name |
+| `page_title` | string | Optional | Page title (max 512 chars) |
+| `referrer` | string | Optional | Referrer URL (max 2048 chars) |
+| `user_id` | string | Optional | Custom user identifier (max 255 chars) |
+| `user_agent` | string | Optional | Custom user agent string (max 512 chars) - will be parsed for browser/OS/device info |
+| `ip_address` | string | Optional | Custom IP for geolocation - will be resolved to location data |
+| `querystring` | string | Optional | Query parameters |
+| `language` | string | Optional | Language code (e.g., "en") |
+| `screenWidth` | number | Optional | Screen width in pixels |
+| `screenHeight` | number | Optional | Screen height in pixels |
+| `event_name` | string | **Custom events only** | Event name (required for custom events, max 256 chars) |
+| `properties` | string | **Custom events only** | JSON string with event data (max 2048 chars) |
 
 ## Language Examples
 
@@ -820,29 +804,3 @@ Common error scenarios:
 - **Invalid payload**: Ensure required fields are present and data types match
 - **JSON parsing errors**: For custom events, ensure properties field contains valid JSON
 
-## Mobile App Integration
-
-For mobile apps, track user sessions and key events:
-
-```javascript
-// Track app launch
-trackEvent({
-  type: 'custom_event',
-  pathname: '/app/launch',
-  event_name: 'app_launch',
-  properties: JSON.stringify({
-    platform: 'ios',
-    version: '1.2.3'
-  })
-});
-
-// Track feature usage
-trackEvent({
-  type: 'custom_event',
-  pathname: '/app/feature/camera',
-  event_name: 'camera_used',
-  properties: JSON.stringify({
-    filter_applied: 'vintage'
-  })
-});
-```
