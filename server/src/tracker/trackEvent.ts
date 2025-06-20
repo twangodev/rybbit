@@ -18,80 +18,86 @@ import { DISABLE_ORIGIN_CHECK } from "./const.js";
 
 // Define Zod schema for validation
 export const trackingPayloadSchema = z.discriminatedUnion("type", [
-  z.object({
-    type: z.literal("pageview"),
-    site_id: z.string().min(1),
-    hostname: z.string().max(253).optional(),
-    pathname: z.string().max(2048).optional(),
-    querystring: z.string().max(2048).optional(),
-    screenWidth: z.number().int().positive().optional(),
-    screenHeight: z.number().int().positive().optional(),
-    language: z.string().max(35).optional(),
-    page_title: z.string().max(512).optional(),
-    referrer: z.string().max(2048).optional(),
-    event_name: z.string().max(256).optional(),
-    properties: z.string().max(2048).optional(),
-    user_id: z.string().max(255).optional(),
-    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
-    ip_address: z.string().ip().optional(), // Custom IP for geolocation
-    user_agent: z.string().max(512).optional(), // Custom user agent
-  }).strict(),
-  z.object({
-    type: z.literal("custom_event"),
-    site_id: z.string().min(1),
-    hostname: z.string().max(253).optional(),
-    pathname: z.string().max(2048).optional(),
-    querystring: z.string().max(2048).optional(),
-    screenWidth: z.number().int().positive().optional(),
-    screenHeight: z.number().int().positive().optional(),
-    language: z.string().max(35).optional(),
-    page_title: z.string().max(512).optional(),
-    referrer: z.string().max(2048).optional(),
-    event_name: z.string().min(1).max(256),
-    properties: z
-      .string()
-      .max(2048)
-      .refine(
-        (val) => {
-          try {
-            JSON.parse(val);
-            return true;
-          } catch (e) {
-            return false;
-          }
-        },
-        { message: "Properties must be a valid JSON string" }
-      )
-      .optional(), // Optional but must be valid JSON if present
-    user_id: z.string().max(255).optional(),
-    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
-    ip_address: z.string().ip().optional(), // Custom IP for geolocation
-    user_agent: z.string().max(512).optional(), // Custom user agent
-  }).strict(),
-  z.object({
-    type: z.literal("performance"),
-    site_id: z.string().min(1),
-    hostname: z.string().max(253).optional(),
-    pathname: z.string().max(2048).optional(),
-    querystring: z.string().max(2048).optional(),
-    screenWidth: z.number().int().positive().optional(),
-    screenHeight: z.number().int().positive().optional(),
-    language: z.string().max(35).optional(),
-    page_title: z.string().max(512).optional(),
-    referrer: z.string().max(2048).optional(),
-    event_name: z.string().max(256).optional(),
-    properties: z.string().max(2048).optional(),
-    user_id: z.string().max(255).optional(),
-    api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
-    ip_address: z.string().ip().optional(), // Custom IP for geolocation
-    user_agent: z.string().max(512).optional(), // Custom user agent
-    // Performance metrics (can be null if not collected)
-    lcp: z.number().positive().nullable().optional(),
-    cls: z.number().min(0).nullable().optional(),
-    inp: z.number().positive().nullable().optional(),
-    fcp: z.number().positive().nullable().optional(),
-    ttfb: z.number().positive().nullable().optional(),
-  }).strict(),
+  z
+    .object({
+      type: z.literal("pageview"),
+      site_id: z.string().min(1),
+      hostname: z.string().max(253).optional(),
+      pathname: z.string().max(2048).optional(),
+      querystring: z.string().max(2048).optional(),
+      screenWidth: z.number().int().positive().optional(),
+      screenHeight: z.number().int().positive().optional(),
+      language: z.string().max(35).optional(),
+      page_title: z.string().max(512).optional(),
+      referrer: z.string().max(2048).optional(),
+      event_name: z.string().max(256).optional(),
+      properties: z.string().max(2048).optional(),
+      user_id: z.string().max(255).optional(),
+      api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+      ip_address: z.string().ip().optional(), // Custom IP for geolocation
+      user_agent: z.string().max(512).optional(), // Custom user agent
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal("custom_event"),
+      site_id: z.string().min(1),
+      hostname: z.string().max(253).optional(),
+      pathname: z.string().max(2048).optional(),
+      querystring: z.string().max(2048).optional(),
+      screenWidth: z.number().int().positive().optional(),
+      screenHeight: z.number().int().positive().optional(),
+      language: z.string().max(35).optional(),
+      page_title: z.string().max(512).optional(),
+      referrer: z.string().max(2048).optional(),
+      event_name: z.string().min(1).max(256),
+      properties: z
+        .string()
+        .max(2048)
+        .refine(
+          (val) => {
+            try {
+              JSON.parse(val);
+              return true;
+            } catch (e) {
+              return false;
+            }
+          },
+          { message: "Properties must be a valid JSON string" }
+        )
+        .optional(), // Optional but must be valid JSON if present
+      user_id: z.string().max(255).optional(),
+      api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+      ip_address: z.string().ip().optional(), // Custom IP for geolocation
+      user_agent: z.string().max(512).optional(), // Custom user agent
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal("performance"),
+      site_id: z.string().min(1),
+      hostname: z.string().max(253).optional(),
+      pathname: z.string().max(2048).optional(),
+      querystring: z.string().max(2048).optional(),
+      screenWidth: z.number().int().positive().optional(),
+      screenHeight: z.number().int().positive().optional(),
+      language: z.string().max(35).optional(),
+      page_title: z.string().max(512).optional(),
+      referrer: z.string().max(2048).optional(),
+      event_name: z.string().max(256).optional(),
+      properties: z.string().max(2048).optional(),
+      user_id: z.string().max(255).optional(),
+      api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+      ip_address: z.string().ip().optional(), // Custom IP for geolocation
+      user_agent: z.string().max(512).optional(), // Custom user agent
+      // Performance metrics (can be null if not collected)
+      lcp: z.number().positive().nullable().optional(),
+      cls: z.number().min(0).nullable().optional(),
+      inp: z.number().positive().nullable().optional(),
+      fcp: z.number().positive().nullable().optional(),
+      ttfb: z.number().positive().nullable().optional(),
+    })
+    .strict(),
 ]);
 
 // Update session for both pageviews and events
@@ -155,19 +161,17 @@ async function updateSession(
  * @param apiKey The API key from the payload
  * @returns An object with success status and optional error message
  */
-async function validateApiKey(
-  siteId: string,
-  apiKey?: string
-) {
+async function validateApiKey(siteId: string, apiKey?: string) {
   if (!apiKey) {
     return { success: false, error: null };
   }
 
   try {
     await siteConfig.ensureInitialized();
-    const numericSiteId = typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
+    const numericSiteId =
+      typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
     const site = await siteConfig.getSiteConfig(numericSiteId);
-    
+
     if (!site) {
       return { success: false, error: "Site not found" };
     }
@@ -190,10 +194,7 @@ async function validateApiKey(
  * @param requestOrigin The origin header from the request
  * @returns An object with success status and optional error message
  */
-async function validateOrigin(
-  siteId: string,
-  requestOrigin?: string
-) {
+async function validateOrigin(siteId: string, requestOrigin?: string) {
   try {
     // If origin checking is disabled, return success
     if (DISABLE_ORIGIN_CHECK) {
@@ -319,9 +320,14 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
 
     // Check if bot blocking is enabled for this site and if the request is from a bot
     // Skip bot check for API key authenticated requests
-    if (!validatedPayload.api_key && siteConfig.shouldBlockBots(validatedPayload.site_id)) {
+    if (
+      !validatedPayload.api_key &&
+      siteConfig.shouldBlockBots(validatedPayload.site_id)
+    ) {
       // Use custom user agent if provided, otherwise fall back to header
-      const userAgent = validatedPayload.user_agent || (request.headers["user-agent"] as string);
+      const userAgent =
+        validatedPayload.user_agent ||
+        (request.headers["user-agent"] as string);
       if (userAgent && isbot(userAgent)) {
         console.log(
           `[Tracking] Bot request filtered for site ${validatedPayload.site_id} from User-Agent: ${userAgent}`
@@ -349,11 +355,6 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       validatedPayload.type,
       validatedPayload // Add validated payload back
     );
-
-    // Override IP if provided in payload
-    if (validatedPayload.ip_address) {
-      payload.ipAddress = validatedPayload.ip_address;
-    }
 
     // Get existing session
     const existingSession = await getExistingSession(

@@ -118,9 +118,13 @@ export function createBasePayload(
   validatedBody: ValidatedTrackingPayload
 ): TotalTrackingPayload {
   // Use custom user agent if provided, otherwise fall back to header
-  const userAgent = validatedBody.user_agent || request.headers["user-agent"] || "";
-  const ipAddress = getIpAddress(request);
+  const userAgent =
+    validatedBody.user_agent || request.headers["user-agent"] || "";
+  // Override IP if provided in payload
+  const ipAddress = validatedBody.ip_address || getIpAddress(request);
   const siteId = validatedBody.site_id;
+
+  console.log("ipAddress", ipAddress);
 
   // Use custom user ID if provided, otherwise generate one
   const userId = validatedBody.user_id
