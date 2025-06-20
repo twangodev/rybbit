@@ -15,7 +15,7 @@ The `/api/track` endpoint accepts tracking requests with API key authentication,
 - **Geolocation**: IP addresses are resolved to country, region, city, and coordinates using MaxMind GeoLite2 database
 - **Device Info**: User agent strings are parsed to extract browser, operating system, and device type information
 
-## Authentication
+## Steps
 
 <Steps>
 ### Generate API Key
@@ -75,8 +75,8 @@ curl -X POST 'https://app.rybbit.io/api/track' \
 | `ip_address` | string | Optional | Custom IP for geolocation - will be resolved to location data |
 | `querystring` | string | Optional | Query parameters |
 | `language` | string | Optional | Language code (e.g., "en") |
-| `screenWidth` | number | Optional | Screen width in pixels |
-| `screenHeight` | number | Optional | Screen height in pixels |
+| `screenWidth` | number | Optional | Screen width in logical pixels (density-independent pixels) |
+| `screenHeight` | number | Optional | Screen height in logical pixels (density-independent pixels) |
 | `event_name` | string | **Custom events only** | Event name (required for custom events, max 256 chars) |
 | `properties` | string | **Custom events only** | JSON string with event data (max 2048 chars) |
 
@@ -522,13 +522,26 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 ```swift
 import Foundation
+import UIKit
 
 class RybbitTracker {
     static let shared = RybbitTracker()
     
     private let apiUrl = "https://app.rybbit.io/api/track"
-    private let apiKey = ProcessInfo.processInfo.environment["RYBBIT_API_KEY"] ?? ""
-    private let siteId = ProcessInfo.processInfo.environment["RYBBIT_SITE_ID"] ?? ""
+    private let apiKey: String
+    private let siteId: String
+    
+    init() {
+        // Ensure API key and site ID are available
+        guard let apiKey = ProcessInfo.processInfo.environment["RYBBIT_API_KEY"],
+              !apiKey.isEmpty,
+              let siteId = ProcessInfo.processInfo.environment["RYBBIT_SITE_ID"],
+              !siteId.isEmpty else {
+            fatalError("RYBBIT_API_KEY and RYBBIT_SITE_ID environment variables must be set")
+        }
+        self.apiKey = apiKey
+        self.siteId = siteId
+    }
     
     func trackEvent(_ eventData: [String: Any]) async throws {
         var data = eventData
@@ -537,8 +550,19 @@ class RybbitTracker {
         
         // Add device info
         data["user_agent"] = getUserAgent()
-        data["screenWidth"] = Int(UIScreen.main.bounds.width)
-        data["screenHeight"] = Int(UIScreen.main.bounds.height)
+        
+        // Get screen dimensions in logical pixels (points)
+        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+            let bounds = windowScene.screen.bounds
+            data["screenWidth"] = Int(bounds.width)
+            data["screenHeight"] = Int(bounds.height)
+        } else {
+            // Fallback for older iOS versions
+            let bounds = UIScreen.main.bounds
+            data["screenWidth"] = Int(bounds.width)
+            data["screenHeight"] = Int(bounds.height)
+        }
+        
         data["language"] = Locale.current.languageCode ?? "en"
         
         var request = URLRequest(url: URL(string: apiUrl)!)
@@ -567,16 +591,17 @@ Task {
     // Track a pageview
     try await RybbitTracker.shared.trackEvent([
         "type": "pageview",
-        "pathname": "/home",
-        "page_title": "Home Screen"
+        "pathname": "/api/users",
+        "hostname": "api.example.com",
+        "page_title": "User API Endpoint"
     ])
     
     // Track a custom event
     try await RybbitTracker.shared.trackEvent([
         "type": "custom_event",
-        "pathname": "/shop",
-        "event_name": "add_to_cart",
-        "properties": "{\"product_id\": \"123\", \"price\": 29.99}"
+        "pathname": "/checkout",
+        "event_name": "purchase",
+        "properties": "{\"amount\": 99.99, \"currency\": \"USD\"}"
     ])
 }
 ```
@@ -608,8 +633,11 @@ class RybbitTracker(private val context: Context) {
             put("api_key", apiKey)
             put("site_id", siteId)
             put("user_agent", getUserAgent())
-            put("screenWidth", context.resources.displayMetrics.widthPixels)
-            put("screenHeight", context.resources.displayMetrics.heightPixels)
+            
+            // Get screen dimensions in logical pixels (density-independent pixels)
+            val displayMetrics = context.resources.displayMetrics
+            put("screenWidth", (displayMetrics.widthPixels / displayMetrics.density).toInt())
+            put("screenHeight", (displayMetrics.heightPixels / displayMetrics.density).toInt())
             put("language", Locale.getDefault().language)
         }
         
@@ -646,16 +674,17 @@ class MainActivity : AppCompatActivity() {
             // Track a pageview
             tracker.trackEvent(mapOf(
                 "type" to "pageview",
-                "pathname" to "/home",
-                "page_title" to "Home Screen"
+                "pathname" to "/api/users",
+                "hostname" to "api.example.com",
+                "page_title" to "User API Endpoint"
             ))
             
             // Track a custom event
             tracker.trackEvent(mapOf(
                 "type" to "custom_event",
-                "pathname" to "/shop",
-                "event_name" to "add_to_cart",
-                "properties" to """{"product_id": "123", "price": 29.99}"""
+                "pathname" to "/checkout",
+                "event_name" to "purchase",
+                "properties" to """{"amount": 99.99, "currency": "USD"}"""
             ))
         }
     }
@@ -689,8 +718,11 @@ class RybbitTracker {
     
     // Add device info
     data['user_agent'] = await _getUserAgent();
-    data['screenWidth'] = WidgetsBinding.instance.window.physicalSize.width.toInt();
-    data['screenHeight'] = WidgetsBinding.instance.window.physicalSize.height.toInt();
+    
+    // Get screen dimensions in logical pixels (density-independent pixels)
+    final view = WidgetsBinding.instance.platformDispatcher.views.first;
+    data['screenWidth'] = (view.physicalSize.width / view.devicePixelRatio).round();
+    data['screenHeight'] = (view.physicalSize.height / view.devicePixelRatio).round();
     data['language'] = Platform.localeName.split('_')[0];
     
     final response = await http.post(
@@ -724,29 +756,39 @@ void main() {
   runApp(MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
+  @override
+  _MyAppState createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
   final tracker = RybbitTracker();
   
   @override
-  Widget build(BuildContext context) {
-    // Track app launch
+  void initState() {
+    super.initState();
+    // Track app launch once when the app initializes
     tracker.trackEvent({
       'type': 'pageview',
-      'pathname': '/app/launch',
-      'page_title': 'App Launch',
+      'pathname': '/api/users',
+      'hostname': 'api.example.com',
+      'page_title': 'User API Endpoint',
     });
-    
+  }
+  
+  @override
+  Widget build(BuildContext context) {
     return MaterialApp(
       home: Scaffold(
         body: Center(
           child: ElevatedButton(
             onPressed: () {
-              // Track button press
+              // Track custom event
               tracker.trackEvent({
                 'type': 'custom_event',
-                'pathname': '/home',
-                'event_name': 'button_pressed',
-                'properties': json.encode({'button_id': 'main_cta'}),
+                'pathname': '/checkout',
+                'event_name': 'purchase',
+                'properties': json.encode({'amount': 99.99, 'currency': 'USD'}),
               });
             },
             child: Text('Track Event'),

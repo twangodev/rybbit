@@ -29,3 +29,16 @@ This file tracks the project's current status, including recent changes, current
 - **Solution**: Added form.reset() and setUseProperties(false) after successful submission in onSubmit function
 - **Files Modified**: [`client/src/app/[site]/goals/components/GoalFormModal.tsx`](client/src/app/[site]/goals/components/GoalFormModal.tsx:162)
 - **Impact**: Form now properly clears all fields and state after successful goal creation/editing
+
+[2025-06-19 19:29:31] - **COMPLETED: API Documentation Language Examples Review and Fixes**
+
+- **Task**: Review and fix potential issues in language examples in API documentation
+- **Status**: ✅ COMPLETED
+- **Key Issues Addressed**:
+  1. Screen pixel type inconsistencies across mobile platforms
+  2. Deprecated iOS UIScreen.main API usage
+  3. Poor Flutter app launch event tracking placement
+  4. Inconsistent example data between platforms
+  5. Poor API key handling in Swift example
+- **Impact**: All mobile platform examples now use consistent logical pixels, modern APIs, and standardized example data
+- **Files Modified**: [`docs/src/content/api.mdx`](docs/src/content/api.mdx:78)

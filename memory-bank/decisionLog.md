@@ -188,3 +188,47 @@ This decision was made to:
 - New installations will have better performance by default
 - Reduced bandwidth usage for users who don't need performance metrics
 - More granular control over tracking features
+
+[2025-06-19 19:29:17] - **API Documentation Mobile Platform Consistency**
+
+## Decision
+
+Standardized mobile platform examples in API documentation to use logical pixels consistently and modernized deprecated APIs across Swift, Kotlin, and Flutter examples.
+
+## Rationale
+
+This decision was made to:
+
+- Ensure consistency across all mobile platform examples in the API documentation
+- Replace deprecated iOS APIs with modern alternatives to prevent future compatibility issues
+- Clarify pixel type expectations for mobile developers to prevent implementation confusion
+- Improve code quality and best practices in documentation examples
+- Standardize example data across all platforms for better learning experience
+
+## Implementation Details
+
+- **Screen Pixel Type Clarification**: Updated API parameter documentation to specify "logical pixels (density-independent pixels)" for screenWidth/screenHeight parameters
+- **Swift Example Modernization**:
+  - Replaced deprecated `UIScreen.main` with modern `UIWindowScene.screen` approach with proper fallback
+  - Added API key validation to prevent empty string errors
+  - Standardized example data to match server-side examples
+- **Kotlin Example Updates**:
+  - Changed from physical pixels to logical pixels using `resources.displayMetrics.density` conversion
+  - Updated example data for consistency across platforms
+- **Flutter Example Improvements**:
+  - Changed from physical pixels to logical pixels using `MediaQuery.of(context).devicePixelRatio`
+  - Moved app launch tracking from `build()` method to `initState()` to prevent multiple triggers
+  - Changed from StatelessWidget to StatefulWidget for proper lifecycle management
+  - Updated example data to match other platforms
+
+## Files Modified
+
+- [`docs/src/content/api.mdx`](docs/src/content/api.mdx:78) - API parameter documentation and all mobile platform examples
+
+## Impact
+
+- Improved consistency and accuracy across all mobile platform documentation
+- Modernized deprecated APIs to ensure future compatibility
+- Clarified pixel type expectations to prevent developer confusion
+- Enhanced code quality and best practices in documentation examples
+- Provided standardized learning experience across all supported platforms

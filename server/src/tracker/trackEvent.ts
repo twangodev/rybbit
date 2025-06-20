@@ -35,7 +35,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
     ip_address: z.string().ip().optional(), // Custom IP for geolocation
     user_agent: z.string().max(512).optional(), // Custom user agent
-  }),
+  }).strict(),
   z.object({
     type: z.literal("custom_event"),
     site_id: z.string().min(1),
@@ -67,7 +67,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
     ip_address: z.string().ip().optional(), // Custom IP for geolocation
     user_agent: z.string().max(512).optional(), // Custom user agent
-  }),
+  }).strict(),
   z.object({
     type: z.literal("performance"),
     site_id: z.string().min(1),
@@ -91,7 +91,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     inp: z.number().positive().nullable().optional(),
     fcp: z.number().positive().nullable().optional(),
     ttfb: z.number().positive().nullable().optional(),
-  }),
+  }).strict(),
 ]);
 
 // Update session for both pageviews and events
