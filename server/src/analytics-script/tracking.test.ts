@@ -254,6 +254,138 @@ describe("Tracker", () => {
 
       consoleSpy.mockRestore();
     });
+
+    describe("error tracking", () => {
+      it("should track first-party errors", () => {
+        // Enable error tracking for this test
+        const errorConfig = { ...config, trackErrors: true };
+        const tracker = new Tracker(errorConfig);
+        const sendSpy = vi
+          .spyOn(tracker, "sendTrackingData")
+          .mockResolvedValue();
+
+        const error = new Error("Test error");
+        error.stack =
+          "Error: Test error\n    at https://example.com/app.js:10:5";
+
+        tracker.trackError(error, {
+          filename: "https://example.com/app.js",
+          lineno: 10,
+          colno: 5,
+        });
+
+        expect(sendSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "error",
+            event_name: "Error",
+            properties: expect.stringContaining("Test error"),
+          })
+        );
+      });
+
+      it("should filter out third-party errors by filename", () => {
+        const errorConfig = { ...config, trackErrors: true };
+        const tracker = new Tracker(errorConfig);
+        const sendSpy = vi
+          .spyOn(tracker, "sendTrackingData")
+          .mockResolvedValue();
+
+        // Mock window.location.origin to ensure we have a proper origin for comparison
+        Object.defineProperty(window, "location", {
+          value: {
+            ...mockLocation,
+            origin: "https://example.com",
+          },
+          configurable: true,
+          writable: true,
+        });
+
+        const error = new Error("Third party error");
+        // Clear the stack to avoid test environment paths interfering
+        error.stack = undefined;
+
+        tracker.trackError(error, {
+          filename: "https://ads.google.com/script.js",
+          lineno: 1,
+          colno: 1,
+        });
+
+        expect(sendSpy).not.toHaveBeenCalled();
+      });
+
+      it("should filter out third-party errors by stack trace", () => {
+        const errorConfig = { ...config, trackErrors: true };
+        const tracker = new Tracker(errorConfig);
+        const sendSpy = vi
+          .spyOn(tracker, "sendTrackingData")
+          .mockResolvedValue();
+
+        const error = new Error("Third party error");
+        error.stack =
+          "Error: Third party error\n    at https://ads.google.com/script.js:1:1";
+
+        tracker.trackError(error, {
+          lineno: 1,
+          colno: 1,
+        });
+
+        expect(sendSpy).not.toHaveBeenCalled();
+      });
+
+      it("should track errors with unknown origin (e.g., NetworkError)", () => {
+        const errorConfig = { ...config, trackErrors: true };
+        const tracker = new Tracker(errorConfig);
+        const sendSpy = vi
+          .spyOn(tracker, "sendTrackingData")
+          .mockResolvedValue();
+
+        const error = new Error(
+          "NetworkError when attempting to fetch resource"
+        );
+        error.name = "TypeError";
+        // Clear stack to avoid test environment paths
+        error.stack = undefined;
+
+        tracker.trackError(error, {
+          type: "unhandledrejection",
+        });
+
+        expect(sendSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "error",
+            event_name: "TypeError",
+            properties: expect.stringContaining("NetworkError"),
+          })
+        );
+      });
+
+      it("should handle invalid filename URLs gracefully", () => {
+        const errorConfig = { ...config, trackErrors: true };
+        const tracker = new Tracker(errorConfig);
+        const sendSpy = vi
+          .spyOn(tracker, "sendTrackingData")
+          .mockResolvedValue();
+
+        const error = new Error("Test error");
+        error.stack =
+          "Error: Test error\n    at https://example.com/app.js:10:5";
+
+        tracker.trackError(error, {
+          filename: "invalid-url",
+          lineno: 10,
+          colno: 5,
+        });
+
+        // Should fall back to stack trace check and track the error
+        expect(sendSpy).toHaveBeenCalledWith(
+          expect.objectContaining({
+            type: "error",
+            event_name: "Error",
+            properties: expect.stringContaining("Test error"),
+          })
+        );
+      });
+    });
   });
 
   describe("user identification", () => {

@@ -154,19 +154,39 @@ export class Tracker {
   }
 
   trackError(error: Error, additionalInfo: Record<string, any> = {}): void {
-    // Only track errors from the same origin to avoid noise from third-party scripts
+    // Industry-standard filtering: Only track errors from the same origin to avoid noise from third-party scripts
     const currentOrigin = window.location.origin;
+    const filename = additionalInfo.filename || "";
     const errorStack = error.stack || "";
 
-    // Check if error is from a different origin
-    if (errorStack && !errorStack.includes(currentOrigin)) {
-      return;
+    // Primary check: Use filename if available (most reliable)
+    if (filename) {
+      try {
+        const fileUrl = new URL(filename);
+        if (fileUrl.origin !== currentOrigin) {
+          return; // Skip third-party script errors
+        }
+      } catch (e) {
+        // If filename is not a valid URL, it might be a relative path or browser-generated
+        // In this case, we'll continue to the stack check
+      }
     }
+
+    // Fallback check: Use stack trace if filename check was inconclusive
+    else if (errorStack) {
+      // Check if stack contains any reference to the current origin
+      if (!errorStack.includes(currentOrigin)) {
+        return; // Skip third-party script errors
+      }
+    }
+
+    // If neither filename nor stack can determine origin, track the error
+    // This covers cases like NetworkError where the source is unclear but could be first-party
 
     const errorProperties = {
       message: error.message?.substring(0, 500) || "Unknown error", // Truncate to 500 chars
       stack: errorStack.substring(0, 2000) || "", // Truncate to 2000 chars
-      filename: additionalInfo.filename || "",
+      filename: filename,
       lineno: additionalInfo.lineno || 0,
       colno: additionalInfo.colno || 0,
       ...additionalInfo,

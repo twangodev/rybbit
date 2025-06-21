@@ -209,16 +209,27 @@
     }
     trackError(error, additionalInfo = {}) {
       const currentOrigin = window.location.origin;
+      const filename = additionalInfo.filename || "";
       const errorStack = error.stack || "";
-      if (errorStack && !errorStack.includes(currentOrigin)) {
-        return;
+      if (filename) {
+        try {
+          const fileUrl = new URL(filename);
+          if (fileUrl.origin !== currentOrigin) {
+            return;
+          }
+        } catch (e2) {
+        }
+      } else if (errorStack) {
+        if (!errorStack.includes(currentOrigin)) {
+          return;
+        }
       }
       const errorProperties = {
         message: error.message?.substring(0, 500) || "Unknown error",
         // Truncate to 500 chars
         stack: errorStack.substring(0, 2e3) || "",
         // Truncate to 2000 chars
-        filename: additionalInfo.filename || "",
+        filename,
         lineno: additionalInfo.lineno || 0,
         colno: additionalInfo.colno || 0,
         ...additionalInfo
