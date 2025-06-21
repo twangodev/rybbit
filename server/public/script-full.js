@@ -181,7 +181,7 @@
         ...basePayload,
         type: eventType,
         event_name: eventName,
-        properties: eventType === "custom_event" || eventType === "outbound" ? JSON.stringify(properties) : void 0
+        properties: eventType === "custom_event" || eventType === "outbound" || eventType === "error" ? JSON.stringify(properties) : void 0
       };
       this.sendTrackingData(payload);
     }

@@ -111,7 +111,9 @@ export class Tracker {
       type: eventType,
       event_name: eventName,
       properties:
-        eventType === "custom_event" || eventType === "outbound"
+        eventType === "custom_event" ||
+        eventType === "outbound" ||
+        eventType === "error"
           ? JSON.stringify(properties)
           : undefined,
     };
