@@ -72,7 +72,9 @@
     }
     const siteId = scriptTag.getAttribute("data-site-id") || scriptTag.getAttribute("site-id");
     if (!siteId || isNaN(Number(siteId))) {
-      console.error("Please provide a valid site ID using the data-site-id attribute");
+      console.error(
+        "Please provide a valid site ID using the data-site-id attribute"
+      );
       return null;
     }
     const debounceDuration = scriptTag.getAttribute("data-debounce") ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce"))) : 500;
@@ -94,6 +96,7 @@
       trackQuerystring: scriptTag.getAttribute("data-track-query") !== "false",
       trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
       enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
+      trackErrors: scriptTag.getAttribute("data-track-errors") === "true",
       skipPatterns,
       maskPatterns,
       apiKey
@@ -165,7 +168,9 @@
     }
     track(eventType, eventName = "", properties = {}) {
       if (eventType === "custom_event" && (!eventName || typeof eventName !== "string")) {
-        console.error("Event name is required and must be a string for custom events");
+        console.error(
+          "Event name is required and must be a string for custom events"
+        );
         return;
       }
       const basePayload = this.createBasePayload();
@@ -201,6 +206,24 @@
         ...vitals
       };
       this.sendTrackingData(payload);
+    }
+    trackError(error, additionalInfo = {}) {
+      const currentOrigin = window.location.origin;
+      const errorStack = error.stack || "";
+      if (errorStack && !errorStack.includes(currentOrigin)) {
+        return;
+      }
+      const errorProperties = {
+        message: error.message?.substring(0, 500) || "Unknown error",
+        // Truncate to 500 chars
+        stack: errorStack.substring(0, 2e3) || "",
+        // Truncate to 2000 chars
+        filename: additionalInfo.filename || "",
+        lineno: additionalInfo.lineno || 0,
+        colno: additionalInfo.colno || 0,
+        ...additionalInfo
+      };
+      this.track("error", error.name || "Error", errorProperties);
     }
     identify(userId) {
       if (typeof userId !== "string" || userId.trim() === "") {
@@ -547,10 +570,27 @@
     }
     const tracker = new Tracker(config);
     if (config.enableWebVitals) {
-      const webVitalsCollector = new WebVitalsCollector((vitals) => {
-        tracker.trackWebVitals(vitals);
-      });
+      const webVitalsCollector = new WebVitalsCollector(
+        (vitals) => {
+          tracker.trackWebVitals(vitals);
+        }
+      );
       webVitalsCollector.initialize();
+    }
+    if (config.trackErrors) {
+      window.addEventListener("error", (event) => {
+        tracker.trackError(event.error || new Error(event.message), {
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno
+        });
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+        tracker.trackError(error, {
+          type: "unhandledrejection"
+        });
+      });
     }
     const trackPageview = () => tracker.trackPageview();
     const debouncedTrackPageview = config.debounceDuration > 0 ? debounce(trackPageview, config.debounceDuration) : trackPageview;
@@ -575,7 +615,9 @@
           target = target.parentElement;
         }
         if (config.trackOutbound) {
-          const link = e2.target.closest("a");
+          const link = e2.target.closest(
+            "a"
+          );
           if (link?.href && isOutboundLink(link.href)) {
             tracker.trackOutbound(
               link.href,
