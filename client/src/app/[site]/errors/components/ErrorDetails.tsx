@@ -252,26 +252,64 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
   if (isLoading) {
     return (
       <div className="p-4 bg-neutral-900 border-t border-neutral-800">
-        <div className="space-y-4">
+        <div className="space-y-3">
           {Array.from({ length: 3 }).map((_, index) => (
             <div
               key={index}
-              className="border border-neutral-800 rounded-lg p-4"
+              className="border border-neutral-800 rounded-lg p-4 bg-neutral-900/50"
             >
+              {/* Header with timestamp and icons */}
               <div className="flex items-center justify-between mb-3">
-                <Skeleton className="h-4 w-32" />
-                <div className="flex gap-2">
-                  <Skeleton className="h-5 w-16" />
-                  <Skeleton className="h-5 w-16" />
+                <div className="flex items-center gap-4">
+                  <Skeleton className="h-4 w-20" /> {/* Timestamp */}
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-4 rounded" />{" "}
+                    {/* Country flag */}
+                    <Skeleton className="h-4 w-4 rounded" />{" "}
+                    {/* Browser icon */}
+                    <Skeleton className="h-4 w-4 rounded" /> {/* OS icon */}
+                    <Skeleton className="h-4 w-4 rounded" /> {/* Device icon */}
+                  </div>
+                  <Skeleton className="h-4 w-48" /> {/* URL */}
+                </div>
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-5 w-16 rounded-full" />{" "}
+                  {/* Session badge */}
+                  <Skeleton className="h-5 w-16 rounded-full" />{" "}
+                  {/* User badge */}
                 </div>
               </div>
-              <Skeleton className="h-4 w-full mb-2" />
-              <Skeleton className="h-4 w-3/4 mb-3" />
-              <div className="flex gap-4">
-                <Skeleton className="h-3 w-20" />
-                <Skeleton className="h-3 w-24" />
-                <Skeleton className="h-3 w-16" />
+
+              {/* Error message section */}
+              <div className="mb-3">
+                <div className="flex items-start gap-2">
+                  <Skeleton className="h-4 w-4 mt-0.5" /> {/* Error icon */}
+                  <div className="flex-1 min-w-0">
+                    <Skeleton className="h-4 w-12 mb-1" /> {/* "Error" label */}
+                    <Skeleton className="h-4 w-full mb-1" />{" "}
+                    {/* Error message line 1 */}
+                    <Skeleton className="h-4 w-3/4" />{" "}
+                    {/* Error message line 2 */}
+                  </div>
+                </div>
               </div>
+
+              {/* Stack trace section (randomly show/hide) */}
+              {Math.random() > 0.5 && (
+                <div className="mt-3 pt-3 border-t border-neutral-700">
+                  <div className="flex items-start gap-2">
+                    <Skeleton className="h-4 w-4 mt-0.5" /> {/* Code icon */}
+                    <div className="flex-1 min-w-0">
+                      <Skeleton className="h-4 w-20 mb-1" />{" "}
+                      {/* "Stack Trace:" label */}
+                      <Skeleton className="h-4 w-64 mb-2" />{" "}
+                      {/* File name and line */}
+                      <Skeleton className="h-16 w-full rounded" />{" "}
+                      {/* Stack trace code block */}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -342,30 +380,3 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
     </div>
   );
 }
-
-export const ErrorDetailsSkeleton = memo(() => {
-  return (
-    <div className="p-4 bg-neutral-900 border-t border-neutral-800">
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, index) => (
-          <div key={index} className="border border-neutral-800 rounded-lg p-4">
-            <div className="flex items-center justify-between mb-3">
-              <Skeleton className="h-4 w-32" />
-              <div className="flex gap-2">
-                <Skeleton className="h-5 w-16" />
-                <Skeleton className="h-5 w-16" />
-              </div>
-            </div>
-            <Skeleton className="h-4 w-full mb-2" />
-            <Skeleton className="h-4 w-3/4 mb-3" />
-            <div className="flex gap-4">
-              <Skeleton className="h-3 w-20" />
-              <Skeleton className="h-3 w-24" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-});
