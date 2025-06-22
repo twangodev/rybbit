@@ -6,12 +6,12 @@ import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { ErrorDetails } from "./ErrorDetails";
 
-// Maximum length for error names
-const MAX_ERROR_NAME_LENGTH = 80;
+// Maximum length for error messages
+const MAX_ERROR_MESSAGE_LENGTH = 80;
 
 type ErrorListItemProps = {
   errorData: {
-    value: string; // Error name
+    value: string; // Error message
     count: number; // Total occurrences
     session_count: number; // Unique sessions affected
     percentage: number;
@@ -33,12 +33,12 @@ export function ErrorListItem({
     <div className="mb-3 rounded-lg bg-neutral-900 border border-neutral-800 overflow-hidden">
       <div className="p-3 cursor-pointer" onClick={handleCardClick}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
-          {/* Left side: Error name with icon */}
+          {/* Left side: Error message with icon */}
           <div className="flex gap-3 flex-1 min-w-0">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-medium truncate">
-                  {truncateString(errorData.value, MAX_ERROR_NAME_LENGTH)}
+                  {truncateString(errorData.value, MAX_ERROR_MESSAGE_LENGTH)}
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground">JavaScript Error</p>
@@ -102,7 +102,7 @@ export function ErrorListItem({
       </div>
 
       {/* Expanded content using ErrorDetails component */}
-      {expanded && <ErrorDetails errorName={errorData.value} />}
+      {expanded && <ErrorDetails errorMessage={errorData.value} />}
     </div>
   );
 }

@@ -41,7 +41,7 @@ export type ErrorEventsPaginatedResponse = {
 export type ErrorEventsStandardResponse = ErrorEvent[];
 
 type UseGetErrorEventsOptions = {
-  errorName: string;
+  errorMessage: string;
   limit?: number;
   page?: number;
   useFilters?: boolean;
@@ -50,7 +50,7 @@ type UseGetErrorEventsOptions = {
 
 // Hook for paginated fetching
 export function useGetErrorEventsPaginated({
-  errorName,
+  errorMessage,
   limit = 20,
   page = 1,
   useFilters = true,
@@ -62,28 +62,28 @@ export function useGetErrorEventsPaginated({
 
   const queryParams = {
     ...getQueryParams(time),
-    errorName,
+    errorMessage,
     limit,
     page,
     filters: useFilters ? filters : undefined,
   };
 
   return useQuery({
-    queryKey: ["error-events", time, site, filters, errorName, limit, page],
+    queryKey: ["error-events", time, site, filters, errorMessage, limit, page],
     queryFn: () => {
       return authedFetch<APIResponse<ErrorEventsPaginatedResponse>>(
         `/error-events/${site}`,
         queryParams
       );
     },
-    enabled: enabled && !!errorName && !!site,
+    enabled: enabled && !!errorMessage && !!site,
     staleTime: Infinity,
   });
 }
 
 // Hook for standard (non-paginated) fetching
 export function useGetErrorEvents({
-  errorName,
+  errorMessage,
   limit = 20,
   useFilters = true,
   enabled = true,
@@ -94,20 +94,20 @@ export function useGetErrorEvents({
 
   const queryParams = {
     ...getQueryParams(time),
-    errorName,
+    errorMessage,
     limit,
     filters: useFilters ? filters : undefined,
   };
 
   return useQuery({
-    queryKey: ["error-events", time, site, filters, errorName, limit],
+    queryKey: ["error-events", time, site, filters, errorMessage, limit],
     queryFn: () => {
       return authedFetch<APIResponse<ErrorEventsStandardResponse>>(
         `/error-events/${site}`,
         queryParams
       );
     },
-    enabled: enabled && !!errorName && !!site,
+    enabled: enabled && !!errorMessage && !!site,
     staleTime: Infinity,
   });
 }
@@ -118,7 +118,25 @@ export function parseErrorProperties(
 ): ParsedErrorProperties {
   console.log("propertiesJson", propertiesJson);
   try {
-    return JSON.parse(propertiesJson);
+    const parsed = JSON.parse(propertiesJson);
+    
+    // Normalize property names to camelCase for backwards compatibility
+    const normalized: ParsedErrorProperties = {
+      message: parsed.message,
+      stack: parsed.stack,
+      fileName: parsed.fileName || parsed.filename,
+      lineNumber: parsed.lineNumber || parsed.lineno,
+      columnNumber: parsed.columnNumber || parsed.colno,
+    };
+    
+    // Copy any other properties
+    for (const key in parsed) {
+      if (!['message', 'stack', 'fileName', 'filename', 'lineNumber', 'lineno', 'columnNumber', 'colno'].includes(key)) {
+        normalized[key] = parsed[key];
+      }
+    }
+    
+    return normalized;
   } catch (e) {
     return { message: "Failed to parse error properties" };
   }

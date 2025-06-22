@@ -186,9 +186,9 @@ export class Tracker {
     const errorProperties = {
       message: error.message?.substring(0, 500) || "Unknown error", // Truncate to 500 chars
       stack: errorStack.substring(0, 2000) || "", // Truncate to 2000 chars
-      filename: filename,
-      lineno: additionalInfo.lineno || 0,
-      colno: additionalInfo.colno || 0,
+      fileName: filename,
+      lineNumber: additionalInfo.lineno || 0,
+      columnNumber: additionalInfo.colno || 0,
       ...additionalInfo,
     };
 

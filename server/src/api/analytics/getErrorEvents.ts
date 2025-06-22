@@ -13,7 +13,7 @@ interface GetErrorEventsRequest {
     site: string;
   };
   Querystring: FilterParams<{
-    errorName: string;
+    errorMessage: string;
     limit?: number;
     page?: number;
   }>;
@@ -52,7 +52,7 @@ const getErrorEventsQuery = (
     endDate,
     timeZone,
     filters,
-    errorName,
+    errorMessage,
     limit,
     page,
     pastMinutesStart,
@@ -95,7 +95,7 @@ const getErrorEventsQuery = (
       WHERE
         site_id = {siteId:Int32}
         AND type = 'error'
-        AND event_name = {errorName:String}
+        AND JSONExtractString(toString(props), 'message') = {errorMessage:String}
         ${filterStatement}
         ${timeStatement}
     `;
@@ -121,7 +121,7 @@ const getErrorEventsQuery = (
     WHERE
       site_id = {siteId:Int32}
       AND type = 'error'
-      AND event_name = {errorName:String}
+      AND JSONExtractString(toString(props), 'message') = {errorMessage:String}
       ${filterStatement}
       ${timeStatement}
     ORDER BY timestamp DESC
@@ -135,10 +135,10 @@ export async function getErrorEvents(
   res: FastifyReply
 ) {
   const site = req.params.site;
-  const { errorName, page } = req.query;
+  const { errorMessage, page } = req.query;
 
-  if (!errorName) {
-    return res.status(400).send({ error: "errorName parameter is required" });
+  if (!errorMessage) {
+    return res.status(400).send({ error: "errorMessage parameter is required" });
   }
 
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
@@ -156,7 +156,7 @@ export async function getErrorEvents(
       format: "JSONEachRow",
       query_params: {
         siteId: Number(site),
-        errorName: errorName,
+        errorMessage: errorMessage,
       },
     });
     const items = await processResults<ErrorEvent>(dataResult);
@@ -173,7 +173,7 @@ export async function getErrorEvents(
         format: "JSONEachRow",
         query_params: {
           siteId: Number(site),
-          errorName: errorName,
+          errorMessage: errorMessage,
         },
       });
       const countData = await processResults<{ totalCount: number }>(

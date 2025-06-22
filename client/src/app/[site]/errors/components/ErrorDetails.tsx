@@ -33,9 +33,10 @@ import {
   parseErrorProperties,
   useGetErrorEvents,
 } from "@/api/analytics/errors/useGetErrorEvents";
+import Link from "next/link";
 
 interface ErrorDetailsProps {
-  errorName: string;
+  errorMessage: string;
 }
 
 // DeviceIcon component for displaying mobile/desktop icons
@@ -59,7 +60,6 @@ function truncateText(text: string | null, maxLength: number = 50) {
 // Component to display individual error event
 function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
   const { getRegionName } = useGetRegionName();
-  console.log("errorEvent", errorEvent);
   const errorProps = parseErrorProperties(errorEvent.properties);
 
   const getFullLocation = (event: ErrorEvent) => {
@@ -79,19 +79,67 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
   const formatTimestamp = (timestamp: string) => {
     return DateTime.fromSQL(timestamp, { zone: "utc" })
       .setLocale(userLocale)
-      .toLocal()
-      .toFormat(hour12 ? "MMM d, h:mm:ss a" : "dd MMM, HH:mm:ss");
+      .toRelative();
   };
 
   return (
     <div className="border border-neutral-800 rounded-lg p-4 bg-neutral-900/50">
       {/* Header with timestamp and basic info */}
       <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-2">
-          <AlertTriangle className="w-4 h-4 text-red-500" />
-          <span className="text-sm font-medium">
+        <div className="flex items-center gap-4">
+          <span className="text-sm text-gray-200">
             {formatTimestamp(errorEvent.timestamp)}
           </span>
+          <div className="flex items-center gap-2">
+            {errorEvent.country && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <CountryFlag country={errorEvent.country} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{getFullLocation(errorEvent)}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {errorEvent.browser && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Browser browser={errorEvent.browser} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{errorEvent.browser}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            {errorEvent.operating_system && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <OperatingSystem os={errorEvent.operating_system} />
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>{errorEvent.operating_system}</p>
+                </TooltipContent>
+              </Tooltip>
+            )}
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <DeviceIcon deviceType={errorEvent.device_type} />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{errorEvent.device_type || "Unknown device"}</p>
+              </TooltipContent>
+            </Tooltip>
+          </div>
+          <Link
+            href={`https://${errorEvent.hostname}${errorEvent.pathname}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-sm text-gray-300 break-words hover:underline"
+          >
+            {errorEvent.hostname && errorEvent.pathname
+              ? `${errorEvent.hostname}${errorEvent.pathname}`
+              : errorEvent.pathname || errorEvent.hostname || "Unknown page"}
+          </Link>
         </div>
         <div className="flex items-center gap-2">
           {/* Session ID */}
@@ -160,88 +208,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
         </div>
       )}
 
-      {/* Page info */}
-      <div className="mb-3">
-        <div className="flex items-start gap-2">
-          <Globe className="w-4 h-4 text-green-400 mt-0.5 flex-shrink-0" />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-green-400 mb-1">Page:</p>
-            <p className="text-sm text-gray-300 break-words">
-              {errorEvent.hostname && errorEvent.pathname
-                ? `${errorEvent.hostname}${errorEvent.pathname}`
-                : errorEvent.pathname || errorEvent.hostname || "Unknown page"}
-            </p>
-            {errorEvent.page_title && (
-              <p className="text-xs text-gray-400 mt-1">
-                "{truncateText(errorEvent.page_title, 80)}"
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* Browser and device info */}
-      <div className="flex items-center gap-4 text-xs text-gray-400">
-        {/* Country */}
-        {errorEvent.country && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1">
-                <CountryFlag country={errorEvent.country} />
-                <MapPin className="w-3 h-3" />
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{getFullLocation(errorEvent)}</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {/* Browser */}
-        {errorEvent.browser && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1">
-                <Browser browser={errorEvent.browser} />
-                <span>{errorEvent.browser}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{errorEvent.browser}</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {/* OS */}
-        {errorEvent.operating_system && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <div className="flex items-center gap-1">
-                <OperatingSystem os={errorEvent.operating_system} />
-                <span>{errorEvent.operating_system}</span>
-              </div>
-            </TooltipTrigger>
-            <TooltipContent>
-              <p>{errorEvent.operating_system}</p>
-            </TooltipContent>
-          </Tooltip>
-        )}
-
-        {/* Device Type */}
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <div className="flex items-center gap-1">
-              <DeviceIcon deviceType={errorEvent.device_type} />
-              <span>{errorEvent.device_type || "Unknown"}</span>
-            </div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>{errorEvent.device_type || "Unknown device"}</p>
-          </TooltipContent>
-        </Tooltip>
-
-        {JSON.stringify(errorProps, null, 2)}
-      </div>
+      <pre>{JSON.stringify(errorProps, null, 2)}</pre>
 
       {/* Stack trace if available */}
       {errorProps.stack && (
@@ -263,16 +230,16 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
   );
 }
 
-export function ErrorDetails({ errorName }: ErrorDetailsProps) {
+export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
   const {
     data: apiResponse,
     isLoading,
     isError,
     error,
   } = useGetErrorEvents({
-    errorName,
+    errorMessage,
     limit: 10, // Show latest 10 error events
-    enabled: !!errorName,
+    enabled: !!errorMessage,
   });
 
   const errorEvents: ErrorEvent[] | undefined = apiResponse?.data;
@@ -335,14 +302,6 @@ export function ErrorDetails({ errorName }: ErrorDetailsProps) {
 
   return (
     <div className="p-4 bg-neutral-900 border-t border-neutral-800">
-      <div className="mb-3">
-        <h4 className="text-sm font-medium text-gray-300">
-          Recent Error Events ({errorEvents.length})
-        </h4>
-        <p className="text-xs text-gray-400">
-          Showing the latest error occurrences for this error type
-        </p>
-      </div>
       <div className="space-y-3 max-h-96 overflow-y-auto">
         {errorEvents.map((errorEvent, index) => (
           <ErrorEventItem

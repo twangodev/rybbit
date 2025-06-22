@@ -229,9 +229,9 @@
         // Truncate to 500 chars
         stack: errorStack.substring(0, 2e3) || "",
         // Truncate to 2000 chars
-        filename,
-        lineno: additionalInfo.lineno || 0,
-        colno: additionalInfo.colno || 0,
+        fileName: filename,
+        lineNumber: additionalInfo.lineno || 0,
+        columnNumber: additionalInfo.colno || 0,
         ...additionalInfo
       };
       this.track("error", error.name || "Error", errorProperties);

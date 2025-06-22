@@ -123,13 +123,26 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
               if (typeof parsed.message !== "string") return false;
               if (parsed.stack && typeof parsed.stack !== "string")
                 return false;
+              
+              // Support both camelCase and lowercase for backwards compatibility
               if (parsed.fileName && typeof parsed.fileName !== "string")
                 return false;
+              if (parsed.filename && typeof parsed.filename !== "string")
+                return false;
+                
               if (parsed.lineNumber && typeof parsed.lineNumber !== "number")
                 return false;
+              if (parsed.lineno && typeof parsed.lineno !== "number")
+                return false;
+                
               if (
                 parsed.columnNumber &&
                 typeof parsed.columnNumber !== "number"
+              )
+                return false;
+              if (
+                parsed.colno &&
+                typeof parsed.colno !== "number"
               )
                 return false;
 
