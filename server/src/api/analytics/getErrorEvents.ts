@@ -29,7 +29,9 @@ export type ErrorEvent = {
   page_title: string | null;
   referrer: string | null;
   browser: string | null;
+  browser_version: string | null;
   operating_system: string | null;
+  operating_system_version: string | null;
   device_type: string | null;
   country: string | null;
   city: string | null;
@@ -111,7 +113,9 @@ const getErrorEventsQuery = (
         page_title,
         referrer,
         browser,
+        browser_version,
         operating_system,
+        operating_system_version,
         device_type,
         country,
         city,

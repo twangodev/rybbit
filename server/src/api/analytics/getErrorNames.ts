@@ -36,16 +36,7 @@ const getErrorNamesQuery = (
   request: FastifyRequest<GetErrorNamesRequest>,
   isCountQuery: boolean = false
 ) => {
-  const {
-    startDate,
-    endDate,
-    timeZone,
-    filters,
-    limit,
-    page,
-    pastMinutesStart,
-    pastMinutesEnd,
-  } = request.query;
+  const { filters, limit, page } = request.query;
 
   const filterStatement = getFilterStatement(filters);
   const timeStatement = getTimeStatement(request.query);

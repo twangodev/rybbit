@@ -103,7 +103,10 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
                   <Browser browser={errorEvent.browser} />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{errorEvent.browser}</p>
+                  <p>
+                    {errorEvent.browser}
+                    {errorEvent.browser_version && ` ${errorEvent.browser_version}`}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             )}
@@ -113,7 +116,10 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
                   <OperatingSystem os={errorEvent.operating_system} />
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{errorEvent.operating_system}</p>
+                  <p>
+                    {errorEvent.operating_system}
+                    {errorEvent.operating_system_version && ` ${errorEvent.operating_system_version}`}
+                  </p>
                 </TooltipContent>
               </Tooltip>
             )}
