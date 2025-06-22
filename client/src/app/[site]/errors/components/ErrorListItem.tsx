@@ -13,13 +13,9 @@ const MAX_ERROR_MESSAGE_LENGTH = 80;
 
 type ErrorListItemProps = {
   errorData: ErrorNameItem;
-  isLoading?: boolean;
 };
 
-export function ErrorListItem({
-  errorData,
-  isLoading = false,
-}: ErrorListItemProps) {
+export function ErrorListItem({ errorData }: ErrorListItemProps) {
   const [expanded, setExpanded] = useState(false);
   const [isHovering, setIsHovering] = useState(false);
 

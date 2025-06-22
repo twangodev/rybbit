@@ -300,7 +300,7 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
   }
 
   return (
-    <div className="p-4 bg-neutral-900 border-t border-neutral-800 space-y-3 max-h-96 overflow-y-auto">
+    <div className="p-4 bg-neutral-900 border-t border-neutral-800 space-y-3 max-h-[70vh] overflow-y-auto">
       {errorEvents.map((errorEvent, index) => (
         <ErrorEventItem
           key={`${errorEvent.session_id}-${errorEvent.timestamp}-${index}`}
