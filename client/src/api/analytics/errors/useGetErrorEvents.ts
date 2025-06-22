@@ -1,5 +1,5 @@
 import { useStore } from "@/lib/store";
-import { useQuery, UseQueryResult } from "@tanstack/react-query";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { APIResponse } from "../../types";
 import { authedFetch, getQueryParams } from "../../utils";
 
@@ -50,64 +50,40 @@ type UseGetErrorEventsOptions = {
   enabled?: boolean;
 };
 
-// Hook for paginated fetching
-export function useGetErrorEventsPaginated({
-  errorMessage,
-  limit = 20,
-  page = 1,
-  useFilters = true,
-  enabled = true,
-}: UseGetErrorEventsOptions): UseQueryResult<
-  APIResponse<ErrorEventsPaginatedResponse>
-> {
+// Hook for infinite scrolling
+export function useGetErrorEventsInfinite(
+  errorMessage: string,
+  enabled: boolean = true
+) {
   const { time, site, filters } = useStore();
 
-  const queryParams = {
-    ...getQueryParams(time),
-    errorMessage,
-    limit,
-    page,
-    filters: useFilters ? filters : undefined,
-  };
+  return useInfiniteQuery({
+    queryKey: ["error-events-infinite", time, site, filters, errorMessage],
+    queryFn: async ({ pageParam = 1 }) => {
+      const queryParams = {
+        ...getQueryParams(time),
+        errorMessage,
+        limit: 20,
+        page: pageParam,
+        filters,
+      };
 
-  return useQuery({
-    queryKey: ["error-events", time, site, filters, errorMessage, limit, page],
-    queryFn: () => {
       return authedFetch<APIResponse<ErrorEventsPaginatedResponse>>(
         `/error-events/${site}`,
         queryParams
       );
     },
-    enabled: enabled && !!errorMessage && !!site,
-    staleTime: Infinity,
-  });
-}
+    initialPageParam: 1,
+    getNextPageParam: (
+      lastPage: APIResponse<ErrorEventsPaginatedResponse>,
+      allPages
+    ) => {
+      const currentPage = allPages.length;
+      const totalItems = lastPage.data?.totalCount || 0;
+      const itemsPerPage = 20;
+      const totalPages = Math.ceil(totalItems / itemsPerPage);
 
-// Hook for standard (non-paginated) fetching
-export function useGetErrorEvents({
-  errorMessage,
-  limit = 20,
-  useFilters = true,
-  enabled = true,
-}: Omit<UseGetErrorEventsOptions, "page">): UseQueryResult<
-  APIResponse<ErrorEventsStandardResponse>
-> {
-  const { time, site, filters } = useStore();
-
-  const queryParams = {
-    ...getQueryParams(time),
-    errorMessage,
-    limit,
-    filters: useFilters ? filters : undefined,
-  };
-
-  return useQuery({
-    queryKey: ["error-events", time, site, filters, errorMessage, limit],
-    queryFn: () => {
-      return authedFetch<APIResponse<ErrorEventsStandardResponse>>(
-        `/error-events/${site}`,
-        queryParams
-      );
+      return currentPage < totalPages ? currentPage + 1 : undefined;
     },
     enabled: enabled && !!errorMessage && !!site,
     staleTime: Infinity,

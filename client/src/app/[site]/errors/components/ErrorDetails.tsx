@@ -3,9 +3,10 @@
 import {
   ErrorEvent,
   parseErrorProperties,
-  useGetErrorEvents,
+  useGetErrorEventsInfinite,
 } from "@/api/analytics/errors/useGetErrorEvents";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Tooltip,
@@ -20,13 +21,14 @@ import {
   Code,
   Hash,
   Laptop,
+  Loader2,
   Smartphone,
   TriangleAlert,
   User,
 } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
-import { memo } from "react";
+import { memo, useMemo } from "react";
 import { Browser } from "../../components/shared/icons/Browser";
 import { CountryFlag } from "../../components/shared/icons/CountryFlag";
 import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
@@ -231,17 +233,23 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
 
 export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
   const {
-    data: apiResponse,
+    data: errorEventsData,
     isLoading,
     isError,
     error,
-  } = useGetErrorEvents({
-    errorMessage,
-    limit: 10, // Show latest 10 error events
-    enabled: !!errorMessage,
-  });
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+  } = useGetErrorEventsInfinite(errorMessage, !!errorMessage);
 
-  const errorEvents: ErrorEvent[] | undefined = apiResponse?.data;
+  // Flatten all error events into a single array
+  const allErrorEvents = useMemo(() => {
+    if (!errorEventsData?.pages) return [];
+    return errorEventsData.pages.flatMap((page) => page.data?.data || []);
+  }, [errorEventsData?.pages]);
+
+  // Get total count from the first page
+  const totalCount = errorEventsData?.pages?.[0]?.data?.totalCount || 0;
 
   if (isLoading) {
     return (
@@ -285,7 +293,7 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
     );
   }
 
-  if (!errorEvents || errorEvents.length === 0) {
+  if (!allErrorEvents || allErrorEvents.length === 0) {
     return (
       <div className="p-4 bg-neutral-900 border-t border-neutral-800">
         <div className="text-center text-neutral-400">
@@ -301,12 +309,38 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
 
   return (
     <div className="p-4 bg-neutral-900 border-t border-neutral-800 space-y-3 max-h-[70vh] overflow-y-auto">
-      {errorEvents.map((errorEvent, index) => (
+      {allErrorEvents.map((errorEvent, index) => (
         <ErrorEventItem
           key={`${errorEvent.session_id}-${errorEvent.timestamp}-${index}`}
           errorEvent={errorEvent}
         />
       ))}
+
+      {hasNextPage && (
+        <div className="flex justify-center mt-6 mb-4">
+          <Button
+            onClick={() => fetchNextPage()}
+            disabled={isFetchingNextPage}
+            variant="outline"
+            className="flex items-center gap-2"
+          >
+            {isFetchingNextPage ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" />
+                <span>Loading...</span>
+              </>
+            ) : (
+              <span>Load More</span>
+            )}
+          </Button>
+        </div>
+      )}
+
+      {totalCount > 0 && (
+        <div className="text-center text-xs text-gray-500 mt-2">
+          Showing {allErrorEvents.length} of {totalCount} error events
+        </div>
+      )}
     </div>
   );
 }
