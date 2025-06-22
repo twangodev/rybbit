@@ -1,8 +1,9 @@
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
 import { Time } from "../../../components/DateSelector/types";
+import { timeZone } from "../../../lib/dateTimeUtils";
 import { useStore } from "../../../lib/store";
 import { authedFetch, getStartAndEndDate } from "../../utils";
-import { timeZone } from "../../../lib/dateTimeUtils";
 
 export type Event = {
   timestamp: string;
@@ -23,12 +24,13 @@ export type Event = {
 
 export interface EventsResponse {
   data: Event[];
-  pagination: {
+  pagination?: {
     total: number;
     page: number;
     pageSize: number;
     totalPages: number;
   };
+  isRealtime?: boolean;
 }
 
 export interface GetEventsOptions {
@@ -37,18 +39,6 @@ export interface GetEventsOptions {
   pageSize?: number;
   count?: number; // For backward compatibility
   isRealtime?: boolean;
-}
-
-export function useGetEvents(count = 10) {
-  const { site } = useStore();
-  return useQuery({
-    queryKey: ["events", site, count],
-    refetchInterval: 5000,
-    queryFn: () =>
-      authedFetch<{ data: Event[] }>(`/recent-events/${site}`, {
-        count,
-      }).then((res) => res.data),
-  });
 }
 
 // New hook with pagination and filtering support
@@ -97,11 +87,75 @@ export function useGetEventsInfinite(options: GetEventsOptions = {}) {
       return response;
     },
     getNextPageParam: (lastPage: EventsResponse) => {
-      if (lastPage.pagination.page < lastPage.pagination.totalPages) {
+      if (
+        lastPage.pagination &&
+        lastPage.pagination.page < lastPage.pagination.totalPages
+      ) {
         return lastPage.pagination.page + 1;
       }
       return undefined;
     },
     refetchInterval: options.isRealtime ? 5000 : undefined,
   });
+}
+
+// New hook for real-time events with timestamp-based polling
+export function useGetEventsRealtime(options: { pageSize?: number } = {}) {
+  const { site } = useStore();
+  const [events, setEvents] = useState<Event[]>([]);
+  const [lastTimestamp, setLastTimestamp] = useState<string | null>(null);
+  const pageSize = options.pageSize || 50;
+
+  const { data, isLoading, error } = useQuery<EventsResponse>({
+    queryKey: ["events-realtime", site, lastTimestamp, pageSize],
+    queryFn: async () => {
+      const params: Record<string, any> = {
+        pageSize,
+      };
+
+      // If we have a last timestamp, fetch only newer events
+      if (lastTimestamp) {
+        params.afterTimestamp = lastTimestamp;
+      }
+
+      const response = await authedFetch<EventsResponse>(
+        `/events/${site}`,
+        params
+      );
+      return response;
+    },
+    refetchInterval: 1500, // Poll every 1.5 seconds
+    enabled: !!site,
+  });
+
+  // Merge new events with existing ones
+  useEffect(() => {
+    if (data?.data && data.data.length > 0) {
+      if (lastTimestamp) {
+        // Merge new events at the beginning (newest first)
+        setEvents((prev) => {
+          const newEvents = data.data.filter(
+            (event) => !prev.some((e) => e.timestamp === event.timestamp)
+          );
+          return [...newEvents, ...prev].slice(0, 200); // Keep max 200 events
+        });
+      } else {
+        // Initial load
+        setEvents(data.data);
+      }
+
+      // Update last timestamp to the newest event
+      const newestTimestamp = data.data[0].timestamp;
+      if (newestTimestamp && newestTimestamp > (lastTimestamp || "")) {
+        setLastTimestamp(newestTimestamp);
+      }
+    }
+  }, [data, lastTimestamp]);
+
+  return {
+    events,
+    isLoading,
+    error,
+    totalEvents: events.length,
+  };
 }

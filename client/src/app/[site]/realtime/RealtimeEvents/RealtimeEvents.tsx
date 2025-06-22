@@ -8,7 +8,7 @@ import { DateTime } from "luxon";
 import Link from "next/link";
 import {
   Event,
-  useGetEvents,
+  useGetEventsRealtime,
 } from "../../../../api/analytics/events/useGetEvents";
 import { Skeleton } from "../../../../components/ui/skeleton";
 import { cn, getCountryName } from "../../../../lib/utils";
@@ -166,13 +166,13 @@ function EventCard({ event }: { event: Event }) {
 }
 
 export function RealtimeEvents() {
-  const { data, isLoading } = useGetEvents(100);
+  const { events, isLoading } = useGetEventsRealtime({ pageSize: 100 });
 
-  if (isLoading) {
+  if (isLoading && events.length === 0) {
     return <EventCardSkeleton />;
   }
 
-  if (!data || data.length === 0) {
+  if (!events || events.length === 0) {
     return (
       <div className="text-sm text-gray-400 p-4 text-center">
         No events recorded yet
@@ -185,7 +185,7 @@ export function RealtimeEvents() {
       className="overflow-y-auto p-2"
       style={{ height: "calc(100vh - 100px)" }}
     >
-      {data.map((event: Event, index: number) => (
+      {events.map((event: Event, index: number) => (
         <EventCard key={`${event.timestamp}-${index}`} event={event} />
       ))}
     </div>
