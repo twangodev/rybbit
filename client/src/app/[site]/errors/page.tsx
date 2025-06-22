@@ -3,7 +3,7 @@
 import {
   ErrorNameItem,
   useGetErrorNamesPaginated,
-} from "@/api/analytics/useGetErrorNames";
+} from "@/api/analytics/errors/useGetErrorNames";
 import { Pagination } from "@/components/pagination";
 import { useSetPageTitle } from "@/hooks/useSetPageTitle";
 import { useStore } from "@/lib/store";

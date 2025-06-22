@@ -32,7 +32,7 @@ import {
   ErrorEvent,
   parseErrorProperties,
   useGetErrorEvents,
-} from "@/api/analytics/useGetErrorEvents";
+} from "@/api/analytics/errors/useGetErrorEvents";
 
 interface ErrorDetailsProps {
   errorName: string;

@@ -35,10 +35,6 @@ export function ErrorListItem({
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
           {/* Left side: Error name with icon */}
           <div className="flex gap-3 flex-1 min-w-0">
-            <div className="flex-shrink-0 h-12 w-12 flex items-center justify-center rounded-md bg-red-500/10 border border-red-500/20">
-              <AlertTriangle className="h-6 w-6 text-red-500" />
-            </div>
-
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
                 <h3 className="text-base font-medium truncate">

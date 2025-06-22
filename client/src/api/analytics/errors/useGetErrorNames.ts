@@ -1,7 +1,7 @@
 import { useStore } from "@/lib/store";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { APIResponse } from "../types";
-import { authedFetch, getQueryParams } from "../utils";
+import { APIResponse } from "../../types";
+import { authedFetch, getQueryParams } from "../../utils";
 
 // This should match ErrorNameItem from the backend
 export type ErrorNameItem = {
