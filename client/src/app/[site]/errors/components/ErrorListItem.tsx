@@ -70,18 +70,6 @@ export function ErrorListItem({
               </div>
             </div>
 
-            {/* Percentage */}
-            <div className="text-right min-w-[80px]">
-              <div>
-                <span className="text-base font-semibold">
-                  {errorData.percentage.toFixed(1)}%
-                </span>
-              </div>
-              <div>
-                <span className="text-xs text-foreground/70">of sessions</span>
-              </div>
-            </div>
-
             {/* Expand/Collapse icon */}
             <div className="ml-2 flex-shrink-0 flex">
               {expanded ? (
