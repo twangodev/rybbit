@@ -22,6 +22,7 @@ import { getOverviewBucketed } from "./api/analytics/getOverviewBucketed.js";
 import { getPageTitles } from "./api/analytics/getPageTitles.js";
 import { getErrorNames } from "./api/analytics/getErrorNames.js";
 import { getErrorEvents } from "./api/analytics/getErrorEvents.js";
+import { getErrorBucketed } from "./api/analytics/getErrorBucketed.js";
 import { getRetention } from "./api/analytics/getRetention.js";
 import { getSession } from "./api/analytics/getSession.js";
 import { getSessions } from "./api/analytics/getSessions.js";
@@ -140,6 +141,7 @@ const ANALYTICS_ROUTES = [
   "/api/live-user-count/",
   "/api/overview/",
   "/api/overview-bucketed/",
+  "/api/error-bucketed/",
   "/api/single-col/",
   "/api/page-titles/",
   "/api/retention/",
@@ -165,6 +167,9 @@ const ANALYTICS_ROUTES = [
   "/api/performance/time-series/",
   "/api/performance/by-path/",
   "/api/performance/by-dimension/",
+  "/api/error-names/",
+  "/api/error-events/",
+  "/api/error-bucketed/",
 ];
 
 server.addHook("onRequest", async (request, reply) => {
@@ -205,7 +210,7 @@ server.addHook("onRequest", async (request, reply) => {
 });
 
 // Add this with your other routes, around line 273
-server.get("/api/script.js", async (request, reply) => {
+server.get("/api/script.js", async (_, reply) => {
   return reply.sendFile("script.js");
 });
 
@@ -223,6 +228,7 @@ server.get("/api/single-col/:site", getSingleCol);
 server.get("/api/page-titles/:site", getPageTitles);
 server.get("/api/error-names/:site", getErrorNames);
 server.get("/api/error-events/:site", getErrorEvents);
+server.get("/api/error-bucketed/:site", getErrorBucketed);
 server.get("/api/retention/:site", getRetention);
 server.get("/api/site-has-data/:site", getSiteHasData);
 server.get("/api/site-is-public/:site", getSiteIsPublic);

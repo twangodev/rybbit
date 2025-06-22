@@ -47,7 +47,7 @@ export function Sidebar() {
       <div className="p-3 border-b  border-neutral-800 flex flex-col gap-2">
         <SiteSelector />
       </div>
-      <div className="flex flex-col space-y-1 p-3 ">
+      <div className="flex flex-col p-3 ">
         <LiveUserCount />
         <SidebarLink
           label="Main"

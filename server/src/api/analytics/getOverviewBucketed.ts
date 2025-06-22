@@ -8,31 +8,11 @@ import {
   getFilterStatement,
   getTimeStatement,
   processResults,
+  TimeBucketToFn,
+  bucketIntervalMap,
 } from "./utils.js";
+import { TimeBucket } from "./types.js";
 
-const TimeBucketToFn = {
-  minute: "toStartOfMinute",
-  five_minutes: "toStartOfFiveMinutes",
-  ten_minutes: "toStartOfTenMinutes",
-  fifteen_minutes: "toStartOfFifteenMinutes",
-  hour: "toStartOfHour",
-  day: "toStartOfDay",
-  week: "toStartOfWeek",
-  month: "toStartOfMonth",
-  year: "toStartOfYear",
-};
-
-const bucketIntervalMap = {
-  minute: "1 MINUTE",
-  five_minutes: "5 MINUTES",
-  ten_minutes: "10 MINUTES",
-  fifteen_minutes: "15 MINUTES",
-  hour: "1 HOUR",
-  day: "1 DAY",
-  week: "7 DAY",
-  month: "1 MONTH",
-  year: "1 YEAR",
-} as const;
 
 function getTimeStatementFill(params: FilterParams, bucket: TimeBucket) {
   const { params: validatedParams, bucket: validatedBucket } =
@@ -192,16 +172,6 @@ ORDER BY time`;
   return query;
 };
 
-type TimeBucket =
-  | "minute"
-  | "five_minutes"
-  | "ten_minutes"
-  | "fifteen_minutes"
-  | "hour"
-  | "day"
-  | "week"
-  | "month"
-  | "year";
 
 type getOverviewBucketed = { time: string; pageviews: number }[];
 
