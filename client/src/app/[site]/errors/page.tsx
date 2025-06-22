@@ -12,6 +12,7 @@ import { DisabledOverlay } from "../../../components/DisabledOverlay";
 import { SubHeader } from "../components/SubHeader/SubHeader";
 import { ErrorListItem } from "./components/ErrorListItem";
 import { ErrorListSkeleton } from "./components/ErrorListSkeleton";
+import { EnableErrorTracking } from "./components/EnableErrorTracking";
 import { NothingFound } from "../../../components/NothingFound";
 
 // Number of items per page
@@ -115,6 +116,7 @@ export default function Errors() {
     <DisabledOverlay message="errors">
       <div className="p-2 md:p-4 max-w-[1100px] mx-auto space-y-3">
         <SubHeader />
+        <EnableErrorTracking />
 
         {isLoading ? (
           <ErrorListSkeleton count={pagination.pageSize} />

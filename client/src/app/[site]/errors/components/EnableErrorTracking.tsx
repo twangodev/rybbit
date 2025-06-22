@@ -1,6 +1,6 @@
 "use client";
 
-import { BarChart3, ArrowRight } from "lucide-react";
+import { AlertTriangle, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import {
   Alert,
@@ -8,57 +8,38 @@ import {
   AlertTitle,
 } from "../../../../components/ui/alert";
 import { Button } from "../../../../components/ui/button";
-import { useGetPerformanceOverview } from "../../../../api/analytics/performance/useGetPerformanceOverview";
-import { useStore } from "../../../../lib/store";
-import { usePerformanceStore } from "../performanceStore";
+import { useGetErrorNames } from "../../../../api/analytics/errors/useGetErrorNames";
 
-export function EnableWebVitals() {
-  const { site } = useStore();
-  const { selectedPercentile } = usePerformanceStore();
-
+export function EnableErrorTracking() {
   const {
-    data: overviewData,
+    data: errorData,
     isLoading,
     isError,
-  } = useGetPerformanceOverview({ site });
+  } = useGetErrorNames({ limit: 1 });
 
   // Don't show banner while loading or if there's an error
   if (isLoading || isError) return null;
 
-  const currentData = overviewData?.data ?? {};
+  const errors = errorData?.data ?? [];
 
-  // Helper function to get metric value for selected percentile
-  const getMetricValue = (metric: string): number => {
-    const key = `${metric}_${selectedPercentile}`;
-    return (currentData as any)[key] ?? 0;
-  };
-
-  // Check if all web vitals metrics are zero (indicating no data)
-  const hasNoWebVitalsData =
-    getMetricValue("lcp") === 0 &&
-    getMetricValue("cls") === 0 &&
-    getMetricValue("inp") === 0 &&
-    getMetricValue("fcp") === 0 &&
-    getMetricValue("ttfb") === 0;
-
-  // Only show banner if there's no web vitals data
-  if (!hasNoWebVitalsData) return null;
+  // Only show banner if there are no errors tracked
+  if (errors.length > 0) return null;
 
   return (
     <Alert className="p-4 bg-blue-50/50 border-blue-200/50 dark:bg-blue-900/10 dark:border-blue-800/50">
       <div className="flex items-start space-x-3">
-        <BarChart3 className="h-5 w-5 mt-0.5 text-blue-500/80" />
+        <AlertTriangle className="h-5 w-5 mt-0.5 text-blue-500/80" />
         <div className="flex-1">
           <AlertTitle className="text-base font-semibold mb-1 text-blue-700/90 dark:text-blue-400/90">
-            Enable Web Vitals Collection
+            Enable Error Tracking
           </AlertTitle>
           <AlertDescription className="text-sm text-blue-700/80 dark:text-blue-400/80 mb-3">
             Add{" "}
             <code className="bg-blue-100/70 dark:bg-blue-800/50 px-1 py-0.5 rounded text-xs">
-              data-web-vitals="true"
+              data-tracking-errors="true"
             </code>{" "}
-            to your script tag. <strong>Note:</strong> Enabling Web Vitals will
-            increase your event usage.
+            to your script tag. <strong>Note:</strong> Enabling error tracking
+            will increase your event usage.
           </AlertDescription>
 
           <div className="space-y-2">
@@ -70,7 +51,7 @@ export function EnableWebVitals() {
                 className="border-blue-300/70 text-blue-700/90 hover:bg-blue-100/70 dark:border-blue-600/70 dark:text-blue-400/90 dark:hover:bg-blue-800/50"
               >
                 <Link
-                  href="https://rybbit.io/docs/script#web-vitals-performance-metrics"
+                  href="https://rybbit.io/docs/script#error-tracking"
                   target="_blank"
                 >
                   View Documentation <ArrowRight className="ml-1 h-3 w-3" />
