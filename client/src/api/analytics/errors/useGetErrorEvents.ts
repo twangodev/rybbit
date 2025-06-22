@@ -116,10 +116,9 @@ export function useGetErrorEvents({
 export function parseErrorProperties(
   propertiesJson: string
 ): ParsedErrorProperties {
-  console.log("propertiesJson", propertiesJson);
   try {
     const parsed = JSON.parse(propertiesJson);
-    
+
     // Normalize property names to camelCase for backwards compatibility
     const normalized: ParsedErrorProperties = {
       message: parsed.message,
@@ -128,14 +127,25 @@ export function parseErrorProperties(
       lineNumber: parsed.lineNumber || parsed.lineno,
       columnNumber: parsed.columnNumber || parsed.colno,
     };
-    
+
     // Copy any other properties
     for (const key in parsed) {
-      if (!['message', 'stack', 'fileName', 'filename', 'lineNumber', 'lineno', 'columnNumber', 'colno'].includes(key)) {
+      if (
+        ![
+          "message",
+          "stack",
+          "fileName",
+          "filename",
+          "lineNumber",
+          "lineno",
+          "columnNumber",
+          "colno",
+        ].includes(key)
+      ) {
         normalized[key] = parsed[key];
       }
     }
-    
+
     return normalized;
   } catch (e) {
     return { message: "Failed to parse error properties" };

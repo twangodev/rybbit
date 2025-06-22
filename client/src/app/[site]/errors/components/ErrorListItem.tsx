@@ -1,8 +1,7 @@
 "use client";
 
-import { Card, CardContent } from "@/components/ui/card";
 import { truncateString } from "@/lib/utils";
-import { AlertTriangle, ChevronDown, ChevronRight } from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { ErrorDetails } from "./ErrorDetails";
 

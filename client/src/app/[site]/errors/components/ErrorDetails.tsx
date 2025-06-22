@@ -1,5 +1,10 @@
 "use client";
 
+import {
+  ErrorEvent,
+  parseErrorProperties,
+  useGetErrorEvents,
+} from "@/api/analytics/errors/useGetErrorEvents";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -7,33 +12,24 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { cn, getCountryName } from "@/lib/utils";
-import { formatDuration, userLocale, hour12 } from "@/lib/dateTimeUtils";
+import { userLocale } from "@/lib/dateTimeUtils";
 import { useGetRegionName } from "@/lib/geo";
+import { getCountryName } from "@/lib/utils";
 import {
   AlertTriangle,
-  Calendar,
-  Clock,
   Code,
   FileText,
-  Globe,
   Hash,
   Laptop,
-  MapPin,
   Smartphone,
   User,
 } from "lucide-react";
 import { DateTime } from "luxon";
+import Link from "next/link";
 import { memo } from "react";
 import { Browser } from "../../components/shared/icons/Browser";
 import { CountryFlag } from "../../components/shared/icons/CountryFlag";
 import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
-import {
-  ErrorEvent,
-  parseErrorProperties,
-  useGetErrorEvents,
-} from "@/api/analytics/errors/useGetErrorEvents";
-import Link from "next/link";
 
 interface ErrorDetailsProps {
   errorMessage: string;
@@ -93,7 +89,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
           <div className="flex items-center gap-2">
             {errorEvent.country && (
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <CountryFlag country={errorEvent.country} />
                 </TooltipTrigger>
                 <TooltipContent>
@@ -103,7 +99,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
             )}
             {errorEvent.browser && (
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <Browser browser={errorEvent.browser} />
                 </TooltipTrigger>
                 <TooltipContent>
@@ -113,7 +109,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
             )}
             {errorEvent.operating_system && (
               <Tooltip>
-                <TooltipTrigger asChild>
+                <TooltipTrigger>
                   <OperatingSystem os={errorEvent.operating_system} />
                 </TooltipTrigger>
                 <TooltipContent>
@@ -122,7 +118,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
               </Tooltip>
             )}
             <Tooltip>
-              <TooltipTrigger asChild>
+              <TooltipTrigger>
                 <DeviceIcon deviceType={errorEvent.device_type} />
               </TooltipTrigger>
               <TooltipContent>
@@ -299,15 +295,13 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
   }
 
   return (
-    <div className="p-4 bg-neutral-900 border-t border-neutral-800">
-      <div className="space-y-3 max-h-96 overflow-y-auto">
-        {errorEvents.map((errorEvent, index) => (
-          <ErrorEventItem
-            key={`${errorEvent.session_id}-${errorEvent.timestamp}-${index}`}
-            errorEvent={errorEvent}
-          />
-        ))}
-      </div>
+    <div className="p-4 bg-neutral-900 border-t border-neutral-800 space-y-3 max-h-96 overflow-y-auto">
+      {errorEvents.map((errorEvent, index) => (
+        <ErrorEventItem
+          key={`${errorEvent.session_id}-${errorEvent.timestamp}-${index}`}
+          errorEvent={errorEvent}
+        />
+      ))}
     </div>
   );
 }
