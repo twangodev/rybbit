@@ -51,7 +51,7 @@ export function ErrorListItem({
                 </h3>
               </div>
               <p className="text-sm text-muted-foreground">
-                {errorData.error_name || "JavaScript Error"}
+                {errorData.errorName || "JavaScript Error"}
               </p>
             </div>
           </div>
@@ -88,7 +88,7 @@ export function ErrorListItem({
               <div className="text-center min-w-[80px]">
                 <div>
                   <span className="text-base font-semibold">
-                    {errorData.session_count.toLocaleString()}
+                    {errorData.sessionCount.toLocaleString()}
                   </span>
                 </div>
                 <div>

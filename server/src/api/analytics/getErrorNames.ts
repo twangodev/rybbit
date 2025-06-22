@@ -21,9 +21,9 @@ interface GetErrorNamesRequest {
 // This type represents a single error item in the array
 export type ErrorNameItem = {
   value: string; // Error message
-  error_name: string; // Error type (TypeError, ReferenceError, etc.)
+  errorName: string; // Error type (TypeError, ReferenceError, etc.)
   count: number; // Total occurrences
-  session_count: number; // Unique sessions affected
+  sessionCount: number; // Unique sessions affected
   percentage: number;
 };
 
@@ -74,7 +74,7 @@ const getErrorNamesQuery = (
     ErrorStats AS (
         SELECT
             JSONExtractString(toString(props), 'message') as value,
-            any(event_name) as error_name,
+            any(event_name) as errorName,
             count(*) as total_occurrences,
             count(DISTINCT session_id) as unique_sessions
         FROM events
@@ -102,9 +102,9 @@ const getErrorNamesQuery = (
     WITH ${baseCteQuery}
     SELECT
         value,
-        error_name,
+        errorName,
         total_occurrences as count,
-        unique_sessions as session_count,
+        unique_sessions as sessionCount,
         ROUND(
             unique_sessions * 100.0 / SUM(unique_sessions) OVER (),
             2

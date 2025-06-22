@@ -31,7 +31,6 @@ export function useGetErrorBucketed({
     queryFn: () => {
       return authedFetch<any>(`/error-bucketed/${site}`, queryParams).then(
         (res) => {
-          console.info(res);
           return res.data;
         }
       );

@@ -18,10 +18,10 @@ import { getCountryName } from "@/lib/utils";
 import {
   AlertTriangle,
   Code,
-  FileText,
   Hash,
   Laptop,
   Smartphone,
+  TriangleAlert,
   User,
 } from "lucide-react";
 import { DateTime } from "luxon";
@@ -83,7 +83,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
       {/* Header with timestamp and basic info */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-200">
+          <span className="text-sm text-neutral-200">
             {formatTimestamp(errorEvent.timestamp)}
           </span>
           <div className="flex items-center gap-2">
@@ -105,7 +105,8 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
                 <TooltipContent>
                   <p>
                     {errorEvent.browser}
-                    {errorEvent.browser_version && ` ${errorEvent.browser_version}`}
+                    {errorEvent.browser_version &&
+                      ` ${errorEvent.browser_version}`}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -118,7 +119,8 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
                 <TooltipContent>
                   <p>
                     {errorEvent.operating_system}
-                    {errorEvent.operating_system_version && ` ${errorEvent.operating_system_version}`}
+                    {errorEvent.operating_system_version &&
+                      ` ${errorEvent.operating_system_version}`}
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -136,7 +138,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
             href={`https://${errorEvent.hostname}${errorEvent.pathname}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="text-sm text-gray-300 break-words hover:underline"
+            className="text-sm text-neutral-300 break-words hover:underline"
           >
             {errorEvent.hostname && errorEvent.pathname
               ? `${errorEvent.hostname}${errorEvent.pathname}`
@@ -172,43 +174,16 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
 
       {/* Error message */}
       <div className="mb-3">
-        <div className="flex items-start gap-2">
-          <Code className="w-4 h-4 text-red-400 mt-0.5 flex-shrink-0" />
+        <div className="flex items-start gap-2 text-red-400">
+          <TriangleAlert className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium text-red-400 mb-1">
-              Error Message:
-            </p>
-            <p className="text-sm text-gray-300 break-words">
+            <p className="text-sm font-medium mb-1">Error</p>
+            <p className="text-sm text-neutral-300 break-words">
               {errorProps.message || "No message available"}
             </p>
           </div>
         </div>
       </div>
-
-      {/* File and line info */}
-      {(errorProps.fileName || errorProps.lineNumber) && (
-        <div className="mb-3">
-          <div className="flex items-start gap-2">
-            <FileText className="w-4 h-4 text-blue-400 mt-0.5 flex-shrink-0" />
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-blue-400 mb-1">
-                Location:
-              </p>
-              <p className="text-sm text-gray-300 break-words">
-                {errorProps.fileName && (
-                  <span>{truncateText(errorProps.fileName, 100)}</span>
-                )}
-                {errorProps.lineNumber && (
-                  <span className="text-amber-400">
-                    :{errorProps.lineNumber}
-                    {errorProps.columnNumber && `:${errorProps.columnNumber}`}
-                  </span>
-                )}
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Stack trace if available */}
       {errorProps.stack && (
@@ -219,7 +194,31 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
               <p className="text-sm font-medium text-orange-400 mb-1">
                 Stack Trace:
               </p>
-              <pre className="text-xs text-gray-300 bg-neutral-800 p-2 rounded overflow-x-auto whitespace-pre-wrap break-words">
+              {/* File and line info */}
+              {(errorProps.fileName || errorProps.lineNumber) && (
+                <div className="mb-2">
+                  <div className="flex-1 min-w-0">
+                    <Link
+                      href={`${errorProps.fileName}`}
+                      className="text-sm text-neutral-300 break-words hover:underline"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {errorProps.fileName && (
+                        <span>{truncateText(errorProps.fileName, 100)}</span>
+                      )}
+                      {errorProps.lineNumber && (
+                        <span className="text-amber-400">
+                          :{errorProps.lineNumber}
+                          {errorProps.columnNumber &&
+                            `:${errorProps.columnNumber}`}
+                        </span>
+                      )}
+                    </Link>
+                  </div>
+                </div>
+              )}
+              <pre className="text-xs text-neutral-100 bg-neutral-800 p-2 rounded overflow-x-auto whitespace-pre-wrap break-words">
                 {errorProps.stack}
               </pre>
             </div>
@@ -280,7 +279,7 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
         <div className="text-center text-red-400">
           <AlertTriangle className="w-6 h-6 mx-auto mb-2" />
           <p>Error loading error details</p>
-          <p className="text-sm text-gray-400">{error?.toString()}</p>
+          <p className="text-sm text-neutral-400">{error?.toString()}</p>
         </div>
       </div>
     );
@@ -289,7 +288,7 @@ export function ErrorDetails({ errorMessage }: ErrorDetailsProps) {
   if (!errorEvents || errorEvents.length === 0) {
     return (
       <div className="p-4 bg-neutral-900 border-t border-neutral-800">
-        <div className="text-center text-gray-400">
+        <div className="text-center text-neutral-400">
           <AlertTriangle className="w-6 h-6 mx-auto mb-2" />
           <p>No error events found</p>
           <p className="text-sm">
