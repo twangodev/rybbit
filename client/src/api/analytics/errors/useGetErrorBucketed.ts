@@ -1,6 +1,5 @@
 import { useStore } from "@/lib/store";
 import { useQuery, UseQueryResult } from "@tanstack/react-query";
-import { APIResponse } from "../../types";
 import { authedFetch, getQueryParams } from "../../utils";
 
 // This should match GetErrorBucketedResponse from the backend
@@ -17,9 +16,7 @@ type UseGetErrorBucketedOptions = {
 export function useGetErrorBucketed({
   errorMessage,
   enabled = true,
-}: UseGetErrorBucketedOptions): UseQueryResult<
-  APIResponse<GetErrorBucketedResponse>
-> {
+}: UseGetErrorBucketedOptions): UseQueryResult<GetErrorBucketedResponse> {
   const { time, site, filters, bucket } = useStore();
 
   const queryParams = {
@@ -32,9 +29,9 @@ export function useGetErrorBucketed({
   return useQuery({
     queryKey: ["error-bucketed", time, site, filters, bucket, errorMessage],
     queryFn: () => {
-      console.info(queryParams);
       return authedFetch<any>(`/error-bucketed/${site}`, queryParams).then(
         (res) => {
+          console.info(res);
           return res.data;
         }
       );

@@ -9,9 +9,9 @@ import {
   getTimeStatement,
   TimeBucketToFn,
   bucketIntervalMap,
+  processResults,
 } from "./utils.js";
 import { TimeBucket } from "./types.js";
-
 
 function getTimeStatementFill(params: FilterParams, bucket: TimeBucket) {
   const { params: validatedParams, bucket: validatedBucket } =
@@ -69,7 +69,6 @@ interface GetErrorBucketedRequest {
   }>;
 }
 
-
 export type GetErrorBucketedResponse = {
   time: string;
   error_count: number;
@@ -83,7 +82,9 @@ export async function getErrorBucketed(
   const { bucket, errorMessage } = req.query;
 
   if (!errorMessage) {
-    return res.status(400).send({ error: "errorMessage parameter is required" });
+    return res
+      .status(400)
+      .send({ error: "errorMessage parameter is required" });
   }
 
   const numericSiteId = Number(site);
@@ -116,13 +117,14 @@ export async function getErrorBucketed(
 
     const result = await clickhouse.query({
       query,
+      format: "JSONEachRow",
       query_params: {
         siteId: numericSiteId,
         errorMessage: errorMessage,
       },
     });
 
-    const data = await result.json<GetErrorBucketedResponse>();
+    const data = await processResults<GetErrorBucketedResponse>(result);
 
     return res.send({
       success: true,

@@ -38,10 +38,6 @@ export function ErrorListItem({
       enabled: true,
     });
 
-  if (!isLoadingBucketed) {
-    console.info(errorBucketedData);
-  }
-
   return (
     <div
       className="mb-3 rounded-lg bg-neutral-900 border border-neutral-800 overflow-hidden"
