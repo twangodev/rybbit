@@ -12,6 +12,7 @@ import { DisabledOverlay } from "../../../components/DisabledOverlay";
 import { SubHeader } from "../components/SubHeader/SubHeader";
 import { ErrorListItem } from "./components/ErrorListItem";
 import { ErrorListSkeleton } from "./components/ErrorListSkeleton";
+import { NothingFound } from "../../../components/NothingFound";
 
 // Number of items per page
 const PAGE_SIZE = 10;
@@ -142,13 +143,12 @@ export default function Errors() {
             )}
           </>
         ) : !isLoadingErrors && !isFetching ? (
-          <div className="text-center py-12 text-muted-foreground">
-            <p>No errors data found for the selected period.</p>
-            <p className="text-sm mt-2">
-              Errors will appear here once error tracking is enabled and errors
-              occur on your site.
-            </p>
-          </div>
+          <NothingFound
+            title={"No error events found"}
+            description={
+              "Errors will appear here once error tracking is enabled and errors occur on your site."
+            }
+          />
         ) : null}
       </div>
     </DisabledOverlay>
