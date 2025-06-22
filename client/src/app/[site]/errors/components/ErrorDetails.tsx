@@ -2,7 +2,6 @@
 
 import {
   ErrorEvent,
-  parseErrorProperties,
   useGetErrorEventsInfinite,
 } from "@/api/analytics/errors/useGetErrorEvents";
 import { Badge } from "@/components/ui/badge";
@@ -58,7 +57,6 @@ function truncateText(text: string | null, maxLength: number = 50) {
 // Component to display individual error event
 function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
   const { getRegionName } = useGetRegionName();
-  const errorProps = parseErrorProperties(errorEvent.properties);
 
   const getFullLocation = (event: ErrorEvent) => {
     let location = "";
@@ -181,14 +179,14 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
           <div className="flex-1 min-w-0">
             <p className="text-sm font-medium mb-1">Error</p>
             <p className="text-sm text-neutral-300 break-words">
-              {errorProps.message || "No message available"}
+              {errorEvent.message || "No message available"}
             </p>
           </div>
         </div>
       </div>
 
       {/* Stack trace if available */}
-      {errorProps.stack && (
+      {errorEvent.stack && (
         <div className="mt-3 pt-3 border-t border-neutral-700">
           <div className="flex items-start gap-2">
             <Code className="w-4 h-4 text-neutral-100 mt-0.5 flex-shrink-0" />
@@ -197,23 +195,23 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
                 Stack Trace:
               </p>
               {/* File and line info */}
-              {(errorProps.fileName || errorProps.lineNumber) && (
+              {(errorEvent.fileName || errorEvent.lineNumber) && (
                 <div className="mb-2">
                   <div className="flex-1 min-w-0">
                     <Link
-                      href={`${errorProps.fileName}`}
+                      href={`${errorEvent.fileName}`}
                       className="text-sm text-neutral-300 break-words hover:underline"
                       target="_blank"
                       rel="noopener noreferrer"
                     >
-                      {errorProps.fileName && (
-                        <span>{truncateText(errorProps.fileName, 100)}</span>
+                      {errorEvent.fileName && (
+                        <span>{truncateText(errorEvent.fileName, 100)}</span>
                       )}
-                      {errorProps.lineNumber && (
+                      {errorEvent.lineNumber && (
                         <span className="text-neutral-100">
-                          :{errorProps.lineNumber}
-                          {errorProps.columnNumber &&
-                            `:${errorProps.columnNumber}`}
+                          :{errorEvent.lineNumber}
+                          {errorEvent.columnNumber &&
+                            `:${errorEvent.columnNumber}`}
                         </span>
                       )}
                     </Link>
@@ -221,7 +219,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
                 </div>
               )}
               <pre className="text-xs text-neutral-100 bg-neutral-800 p-2 rounded overflow-x-auto whitespace-pre-wrap break-words">
-                {errorProps.stack}
+                {errorEvent.stack}
               </pre>
             </div>
           </div>

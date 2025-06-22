@@ -36,7 +36,12 @@ export type ErrorEvent = {
   country: string | null;
   city: string | null;
   region: string | null;
-  properties: string; // JSON string containing error details
+  // Parsed error properties
+  message: string;
+  stack: string | null;
+  fileName: string | null;
+  lineNumber: number | null;
+  columnNumber: number | null;
 };
 
 // Structure for paginated response
@@ -120,7 +125,22 @@ const getErrorEventsQuery = (
         country,
         city,
         region,
-        toString(props) as properties
+        JSONExtractString(toString(props), 'message') as message,
+        JSONExtractString(toString(props), 'stack') as stack,
+        COALESCE(
+          JSONExtractString(toString(props), 'fileName'),
+          JSONExtractString(toString(props), 'filename')
+        ) as fileName,
+        CASE
+          WHEN JSONHas(toString(props), 'lineNumber') THEN JSONExtractInt(toString(props), 'lineNumber')
+          WHEN JSONHas(toString(props), 'lineno') THEN JSONExtractInt(toString(props), 'lineno')
+          ELSE NULL
+        END as lineNumber,
+        CASE
+          WHEN JSONHas(toString(props), 'columnNumber') THEN JSONExtractInt(toString(props), 'columnNumber')
+          WHEN JSONHas(toString(props), 'colno') THEN JSONExtractInt(toString(props), 'colno')
+          ELSE NULL
+        END as columnNumber
     FROM events
     WHERE
       site_id = {siteId:Int32}
@@ -164,11 +184,6 @@ export async function getErrorEvents(
       },
     });
     const items = await processResults<ErrorEvent>(dataResult);
-
-    // Debug logging to verify properties are being returned correctly
-    if (items.length > 0) {
-      console.log("Sample error event properties:", items[0].properties);
-    }
 
     if (isPaginatedRequest) {
       const countQuery = getErrorEventsQuery(req, true);

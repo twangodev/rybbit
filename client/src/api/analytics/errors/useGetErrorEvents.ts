@@ -20,16 +20,12 @@ export type ErrorEvent = {
   country: string | null;
   city: string | null;
   region: string | null;
-  properties: string; // JSON string containing error details
-};
-
-// Parsed error properties for easier use in components
-export type ParsedErrorProperties = {
+  // Parsed error properties (now from backend)
   message: string;
-  stack?: string;
-  fileName?: string;
-  lineNumber?: number;
-  columnNumber?: number;
+  stack: string | null;
+  fileName: string | null;
+  lineNumber: number | null;
+  columnNumber: number | null;
 };
 
 // This should match the paginated response structure from getErrorEvents.ts
@@ -89,14 +85,3 @@ export function useGetErrorEventsInfinite(
   });
 }
 
-// Helper function to parse error properties JSON
-export function parseErrorProperties(
-  propertiesJson: string
-): ParsedErrorProperties {
-  try {
-    const parsed = JSON.parse(propertiesJson);
-    return parsed as unknown as ParsedErrorProperties;
-  } catch (e) {
-    return { message: "Failed to parse error properties" };
-  }
-}
