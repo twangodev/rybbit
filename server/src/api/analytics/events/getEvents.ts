@@ -33,6 +33,7 @@ interface GetEventsRequest {
     page?: string;
     pageSize?: string;
     count?: string; // Keeping for backward compatibility
+    afterTimestamp?: string; // ISO timestamp to fetch events after
   }>;
 }
 
@@ -49,6 +50,7 @@ export async function getEvents(
     page = "1",
     pageSize = "20",
     count,
+    afterTimestamp,
   } = req.query;
 
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
@@ -61,36 +63,49 @@ export async function getEvents(
   const offset = (parseInt(page, 10) - 1) * limit;
 
   // Get time and filter statements if parameters are provided
-  const timeStatement =
-    startDate || endDate
-      ? getTimeStatement(req.query)
-      : "AND timestamp > now() - INTERVAL 30 MINUTE"; // Default to last 30 minutes if no time range specified
+  let timeStatement = "";
+  
+  if (afterTimestamp) {
+    // If afterTimestamp is provided, use it as the lower bound
+    timeStatement = `AND timestamp > parseDateTimeBestEffort({afterTimestamp:String})`;
+  } else if (startDate || endDate) {
+    timeStatement = getTimeStatement(req.query);
+  } else {
+    timeStatement = "AND timestamp > now() - INTERVAL 30 MINUTE"; // Default to last 30 minutes if no time range specified
+  }
 
   const filterStatement = filters ? getFilterStatement(filters) : "";
 
   try {
-    // First, get the total count for pagination metadata
-    const countQuery = `
-      SELECT
-        COUNT(*) as total
-      FROM events
-      WHERE
-        site_id = {siteId:Int32}
-        AND (type = 'custom_event' OR type = 'pageview')
-        ${timeStatement}
-        ${filterStatement}
-    `;
+    // Skip count query when using afterTimestamp (real-time mode)
+    let totalCount = 0;
+    
+    if (!afterTimestamp) {
+      // First, get the total count for pagination metadata
+      const countQuery = `
+        SELECT
+          COUNT(*) as total
+        FROM events
+        WHERE
+          site_id = {siteId:Int32}
+          AND (type = 'custom_event' OR type = 'pageview')
+          ${timeStatement}
+          ${filterStatement}
+      `;
 
-    const countResult = await clickhouse.query({
-      query: countQuery,
-      format: "JSONEachRow",
-      query_params: {
+      const countQueryParams: any = {
         siteId: Number(site),
-      },
-    });
+      };
 
-    const countData = await processResults<{ total: number }>(countResult);
-    const totalCount = countData[0]?.total || 0;
+      const countResult = await clickhouse.query({
+        query: countQuery,
+        format: "JSONEachRow",
+        query_params: countQueryParams,
+      });
+
+      const countData = await processResults<{ total: number }>(countResult);
+      totalCount = countData[0]?.total || 0;
+    }
 
     // Then, get the actual events with pagination
     const eventsQuery = `
@@ -116,31 +131,49 @@ export async function getEvents(
         ${timeStatement}
         ${filterStatement}
       ORDER BY timestamp DESC
-      LIMIT {limit:Int32} OFFSET {offset:Int32}
+      LIMIT {limit:Int32}${afterTimestamp ? '' : ' OFFSET {offset:Int32}'}
     `;
+
+    const eventsQueryParams: any = {
+      siteId: Number(site),
+      limit: Number(limit),
+    };
+    
+    // Only add offset if not using afterTimestamp
+    if (!afterTimestamp) {
+      eventsQueryParams.offset = Number(offset);
+    } else {
+      eventsQueryParams.afterTimestamp = afterTimestamp;
+    }
 
     const eventsResult = await clickhouse.query({
       query: eventsQuery,
       format: "JSONEachRow",
-      query_params: {
-        siteId: Number(site),
-        limit: Number(limit),
-        offset: Number(offset),
-      },
+      query_params: eventsQueryParams,
     });
 
     const events =
       await processResults<GetEventsResponse[number]>(eventsResult);
 
-    return res.send({
-      data: events,
-      pagination: {
-        total: totalCount,
-        page: parseInt(page, 10),
-        pageSize: limit,
-        totalPages: Math.ceil(totalCount / limit),
-      },
-    });
+    // Return different response structure based on mode
+    if (afterTimestamp) {
+      // Real-time mode: just return events
+      return res.send({
+        data: events,
+        isRealtime: true,
+      });
+    } else {
+      // Regular mode: include pagination
+      return res.send({
+        data: events,
+        pagination: {
+          total: totalCount,
+          page: parseInt(page, 10),
+          pageSize: limit,
+          totalPages: Math.ceil(totalCount / limit),
+        },
+      });
+    }
   } catch (error) {
     console.error("Error fetching events:", error);
     return res.status(500).send({ error: "Failed to fetch events" });

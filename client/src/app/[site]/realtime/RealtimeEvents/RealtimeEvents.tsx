@@ -6,6 +6,7 @@ import {
 import { FileText, Laptop, MousePointerClick, Smartphone } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Event,
   useGetEventsRealtime,
@@ -50,12 +51,55 @@ function EventCard({ event }: { event: Event }) {
   }`;
 
   return (
-    <Link
-      href={`user/${event.user_id}`}
-      target="_blank"
-      rel="noopener noreferrer"
+    <motion.div
+      initial={{ 
+        opacity: 0, 
+        y: -20, 
+        scale: 0.95,
+        filter: "blur(10px)"
+      }}
+      animate={{ 
+        opacity: 1, 
+        y: 0, 
+        scale: 1,
+        filter: "blur(0px)"
+      }}
+      exit={{ 
+        opacity: 0, 
+        scale: 0.95,
+        filter: "blur(10px)"
+      }}
+      transition={{
+        duration: 0.4,
+        ease: [0.23, 1, 0.32, 1], // Bezier curve for smooth easing
+      }}
+      layout
     >
-      <div className="mb-3 rounded-lg bg-neutral-850/50 border border-neutral-800 overflow-hidden p-3 flex flex-col filter backdrop-blur-sm hover:bg-neutral-800/70 transition-all duration-200">
+      <Link
+        href={`user/${event.user_id}`}
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <motion.div 
+          className="mb-3 rounded-lg bg-neutral-850/50 border border-neutral-800 overflow-hidden p-3 flex flex-col filter backdrop-blur-sm hover:bg-neutral-800/70 transition-all duration-200 relative"
+          whileHover={{ scale: 1.02 }}
+          initial={{ 
+            boxShadow: "0 0 0 0 rgba(59, 130, 246, 0.5)"
+          }}
+          animate={{ 
+            boxShadow: [
+              "0 0 0 0 rgba(59, 130, 246, 0.5)",
+              "0 0 20px 10px rgba(59, 130, 246, 0)",
+              "0 0 0 0 rgba(59, 130, 246, 0)"
+            ]
+          }}
+          transition={{
+            boxShadow: {
+              duration: 1.5,
+              ease: "easeOut"
+            }
+          }}
+        >
         <div className="flex items-center gap-2 text-sm text-neutral-100 mb-2">
           <div className="flex items-center gap-2">
             {isPageview ? (
@@ -160,8 +204,9 @@ function EventCard({ event }: { event: Event }) {
             <span className="text-gray-400">{eventTime.toRelative()}</span>
           </div>
         </div>
-      </div>
+        </motion.div>
     </Link>
+    </motion.div>
   );
 }
 
@@ -185,9 +230,11 @@ export function RealtimeEvents() {
       className="overflow-y-auto p-2"
       style={{ height: "calc(100vh - 100px)" }}
     >
-      {events.map((event: Event, index: number) => (
-        <EventCard key={`${event.timestamp}-${index}`} event={event} />
-      ))}
+      <AnimatePresence mode="popLayout">
+        {events.map((event: Event) => (
+          <EventCard key={event.timestamp} event={event} />
+        ))}
+      </AnimatePresence>
     </div>
   );
 }

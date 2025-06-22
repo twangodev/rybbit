@@ -104,6 +104,7 @@ export function useGetEventsRealtime(options: { pageSize?: number } = {}) {
   const { site } = useStore();
   const [events, setEvents] = useState<Event[]>([]);
   const [lastTimestamp, setLastTimestamp] = useState<string | null>(null);
+  const [newEventsCount, setNewEventsCount] = useState(0);
   const pageSize = options.pageSize || 50;
 
   const { data, isLoading, error } = useQuery<EventsResponse>({
@@ -137,6 +138,13 @@ export function useGetEventsRealtime(options: { pageSize?: number } = {}) {
           const newEvents = data.data.filter(
             (event) => !prev.some((e) => e.timestamp === event.timestamp)
           );
+          
+          if (newEvents.length > 0) {
+            setNewEventsCount(newEvents.length);
+            // Reset the counter after 3 seconds
+            setTimeout(() => setNewEventsCount(0), 3000);
+          }
+          
           return [...newEvents, ...prev].slice(0, 200); // Keep max 200 events
         });
       } else {
@@ -145,7 +153,7 @@ export function useGetEventsRealtime(options: { pageSize?: number } = {}) {
       }
 
       // Update last timestamp to the newest event
-      const newestTimestamp = data.data[0].timestamp;
+      const newestTimestamp = data.data[0]?.timestamp;
       if (newestTimestamp && newestTimestamp > (lastTimestamp || "")) {
         setLastTimestamp(newestTimestamp);
       }
@@ -157,5 +165,6 @@ export function useGetEventsRealtime(options: { pageSize?: number } = {}) {
     isLoading,
     error,
     totalEvents: events.length,
+    newEventsCount,
   };
 }
