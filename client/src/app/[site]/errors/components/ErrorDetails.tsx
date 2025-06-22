@@ -194,7 +194,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
               </p>
               <p className="text-sm text-gray-300 break-words">
                 {errorProps.fileName && (
-                  <span>{truncateText(errorProps.fileName, 60)}</span>
+                  <span>{truncateText(errorProps.fileName, 100)}</span>
                 )}
                 {errorProps.lineNumber && (
                   <span className="text-amber-400">
@@ -207,8 +207,6 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
           </div>
         </div>
       )}
-
-      <pre>{JSON.stringify(errorProps, null, 2)}</pre>
 
       {/* Stack trace if available */}
       {errorProps.stack && (

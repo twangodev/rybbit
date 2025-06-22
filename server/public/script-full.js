@@ -227,13 +227,29 @@
       const errorProperties = {
         message: error.message?.substring(0, 500) || "Unknown error",
         // Truncate to 500 chars
-        stack: errorStack.substring(0, 2e3) || "",
+        stack: errorStack.substring(0, 2e3) || ""
         // Truncate to 2000 chars
-        fileName: filename,
-        lineNumber: additionalInfo.lineno || 0,
-        columnNumber: additionalInfo.colno || 0,
-        ...additionalInfo
       };
+      if (filename) {
+        errorProperties.fileName = filename;
+      }
+      if (additionalInfo.lineno) {
+        const lineNum = typeof additionalInfo.lineno === "string" ? parseInt(additionalInfo.lineno, 10) : additionalInfo.lineno;
+        if (lineNum && lineNum !== 0) {
+          errorProperties.lineNumber = lineNum;
+        }
+      }
+      if (additionalInfo.colno) {
+        const colNum = typeof additionalInfo.colno === "string" ? parseInt(additionalInfo.colno, 10) : additionalInfo.colno;
+        if (colNum && colNum !== 0) {
+          errorProperties.columnNumber = colNum;
+        }
+      }
+      for (const key in additionalInfo) {
+        if (!["lineno", "colno"].includes(key) && additionalInfo[key] !== void 0) {
+          errorProperties[key] = additionalInfo[key];
+        }
+      }
       this.track("error", error.name || "Error", errorProperties);
     }
     identify(userId) {

@@ -183,14 +183,40 @@ export class Tracker {
     // If neither filename nor stack can determine origin, track the error
     // This covers cases like NetworkError where the source is unclear but could be first-party
 
-    const errorProperties = {
+    const errorProperties: Record<string, any> = {
       message: error.message?.substring(0, 500) || "Unknown error", // Truncate to 500 chars
       stack: errorStack.substring(0, 2000) || "", // Truncate to 2000 chars
-      fileName: filename,
-      lineNumber: additionalInfo.lineno || 0,
-      columnNumber: additionalInfo.colno || 0,
-      ...additionalInfo,
     };
+
+    // Only include properties if they have meaningful values
+    if (filename) {
+      errorProperties.fileName = filename;
+    }
+    
+    if (additionalInfo.lineno) {
+      const lineNum = typeof additionalInfo.lineno === 'string' 
+        ? parseInt(additionalInfo.lineno, 10) 
+        : additionalInfo.lineno;
+      if (lineNum && lineNum !== 0) {
+        errorProperties.lineNumber = lineNum;
+      }
+    }
+    
+    if (additionalInfo.colno) {
+      const colNum = typeof additionalInfo.colno === 'string' 
+        ? parseInt(additionalInfo.colno, 10) 
+        : additionalInfo.colno;
+      if (colNum && colNum !== 0) {
+        errorProperties.columnNumber = colNum;
+      }
+    }
+    
+    // Add any other additional info
+    for (const key in additionalInfo) {
+      if (!['lineno', 'colno'].includes(key) && additionalInfo[key] !== undefined) {
+        errorProperties[key] = additionalInfo[key];
+      }
+    }
 
     this.track("error", error.name || "Error", errorProperties);
   }
