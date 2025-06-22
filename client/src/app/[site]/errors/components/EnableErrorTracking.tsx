@@ -26,16 +26,16 @@ export function EnableErrorTracking() {
   if (errors.length > 0) return null;
 
   return (
-    <Alert className="p-4 bg-blue-50/50 border-blue-200/50 dark:bg-blue-900/10 dark:border-blue-800/50">
+    <Alert className="p-4 bg-amber-50/50 border-amber-200/50 dark:bg-amber-900/10 dark:border-amber-800/50">
       <div className="flex items-start space-x-3">
-        <AlertTriangle className="h-5 w-5 mt-0.5 text-blue-500/80" />
+        <AlertTriangle className="h-5 w-5 mt-0.5 text-amber-500/80" />
         <div className="flex-1">
-          <AlertTitle className="text-base font-semibold mb-1 text-blue-700/90 dark:text-blue-400/90">
+          <AlertTitle className="text-base font-semibold mb-1 text-amber-700/90 dark:text-amber-400/90">
             Enable Error Tracking
           </AlertTitle>
-          <AlertDescription className="text-sm text-blue-700/80 dark:text-blue-400/80 mb-3">
+          <AlertDescription className="text-sm text-amber-700/80 dark:text-amber-400/80 mb-3">
             Add{" "}
-            <code className="bg-blue-100/70 dark:bg-blue-800/50 px-1 py-0.5 rounded text-xs">
+            <code className="bg-amber-100/70 dark:bg-amber-800/50 px-1 py-0.5 rounded text-xs">
               data-tracking-errors="true"
             </code>{" "}
             to your script tag. <strong>Note:</strong> Enabling error tracking
@@ -48,7 +48,7 @@ export function EnableErrorTracking() {
                 asChild
                 variant="outline"
                 size="sm"
-                className="border-blue-300/70 text-blue-700/90 hover:bg-blue-100/70 dark:border-blue-600/70 dark:text-blue-400/90 dark:hover:bg-blue-800/50"
+                className="border-amber-300/70 text-amber-700/90 hover:bg-amber-100/70 dark:border-amber-600/70 dark:text-amber-400/90 dark:hover:bg-amber-800/50"
               >
                 <Link
                   href="https://rybbit.io/docs/script#error-tracking"
