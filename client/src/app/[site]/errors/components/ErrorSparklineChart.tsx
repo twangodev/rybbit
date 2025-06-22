@@ -61,7 +61,7 @@ export function ErrorSparklineChart({
       padding={0.3}
       valueScale={{ type: "linear" }}
       indexScale={{ type: "band", round: true }}
-      colors={[isHovering ? "hsl(var(--destructive))" : "hsl(var(--destructive)/0.7)"]}
+      colors={[isHovering ? "hsl(var(--dataviz-2))" : "hsl(var(--dataviz))"]}
       theme={nivoTheme}
       axisTop={null}
       axisRight={null}
@@ -87,13 +87,17 @@ export function ErrorSparklineChart({
         const currentY = Number(value);
 
         return (
-          <div className="bg-neutral-950 p-2 rounded-md text-xs border border-neutral-700">
+          <div
+            className="bg-neutral-850 p-2 rounded-md text-xs border border-neutral-750 shadow-lg"
+            style={{ zIndex: 9999, position: "relative" }}
+          >
             <div className="font-semibold mb-1 text-neutral-200">
               {formatDateTime(currentTime)}
             </div>
             <div className="flex justify-between items-center">
               <span className="font-medium text-red-400">
-                {currentY.toLocaleString()} {currentY === 1 ? "error" : "errors"}
+                {currentY.toLocaleString()}{" "}
+                {currentY === 1 ? "error" : "errors"}
               </span>
             </div>
           </div>

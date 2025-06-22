@@ -5,7 +5,8 @@ import { authedFetch, getQueryParams } from "../../utils";
 
 // This should match ErrorNameItem from the backend
 export type ErrorNameItem = {
-  value: string; // The error name (TypeError, ReferenceError, etc.)
+  value: string; // Error message
+  error_name: string; // Error type (TypeError, ReferenceError, etc.)
   count: number; // Total occurrences
   session_count: number; // Unique sessions affected
   percentage: number;

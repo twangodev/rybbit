@@ -6,17 +6,13 @@ import { useState } from "react";
 import { ErrorDetails } from "./ErrorDetails";
 import { ErrorSparklineChart } from "./ErrorSparklineChart";
 import { useGetErrorBucketed } from "@/api/analytics/errors/useGetErrorBucketed";
+import { ErrorNameItem } from "../../../../api/analytics/errors/useGetErrorNames";
 
 // Maximum length for error messages
 const MAX_ERROR_MESSAGE_LENGTH = 80;
 
 type ErrorListItemProps = {
-  errorData: {
-    value: string; // Error message
-    count: number; // Total occurrences
-    session_count: number; // Unique sessions affected
-    percentage: number;
-  };
+  errorData: ErrorNameItem;
   isLoading?: boolean;
 };
 
@@ -40,7 +36,7 @@ export function ErrorListItem({
 
   return (
     <div
-      className="mb-3 rounded-lg bg-neutral-900 border border-neutral-800 overflow-hidden"
+      className="mb-3 rounded-lg bg-neutral-900 border border-neutral-800"
       onMouseEnter={() => setIsHovering(true)}
       onMouseLeave={() => setIsHovering(false)}
     >
@@ -54,14 +50,16 @@ export function ErrorListItem({
                   {truncateString(errorData.value, MAX_ERROR_MESSAGE_LENGTH)}
                 </h3>
               </div>
-              <p className="text-sm text-muted-foreground">JavaScript Error</p>
+              <p className="text-sm text-muted-foreground">
+                {errorData.error_name || "JavaScript Error"}
+              </p>
             </div>
           </div>
 
           {/* Right side: Sparkline chart and error statistics */}
-          <div className="flex items-center gap-0 w-full md:w-auto">
+          <div className="flex items-center gap-2 w-full md:w-auto">
             {/* Sparkline chart */}
-            <div className="h-12 w-40">
+            <div className="h-12 w-56 relative overflow-visible">
               <ErrorSparklineChart
                 data={errorBucketedData}
                 isHovering={isHovering}
@@ -71,9 +69,9 @@ export function ErrorListItem({
             </div>
 
             {/* Error statistics */}
-            <div className="flex items-center gap-6">
+            <div className="flex items-center ">
               {/* Occurrences */}
-              <div className="text-center min-w-[100px]">
+              <div className="text-center min-w-[80px]">
                 <div>
                   <span className="text-base font-semibold">
                     {errorData.count.toLocaleString()}
@@ -87,7 +85,7 @@ export function ErrorListItem({
               </div>
 
               {/* Sessions affected */}
-              <div className="text-center min-w-[100px]">
+              <div className="text-center min-w-[80px]">
                 <div>
                   <span className="text-base font-semibold">
                     {errorData.session_count.toLocaleString()}

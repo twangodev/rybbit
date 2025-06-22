@@ -127,12 +127,7 @@ export default function Errors() {
             {errorsDataArray.map((errorItem: ErrorNameItem, index: number) => (
               <ErrorListItem
                 key={`${errorItem.value}-${index}-${pagination.pageIndex}`}
-                errorData={{
-                  value: errorItem.value,
-                  count: errorItem.count,
-                  session_count: errorItem.session_count,
-                  percentage: errorItem.percentage,
-                }}
+                errorData={errorItem}
               />
             ))}
             {totalPages > 0 && (
