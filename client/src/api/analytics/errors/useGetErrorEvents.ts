@@ -30,7 +30,6 @@ export type ParsedErrorProperties = {
   fileName?: string;
   lineNumber?: number;
   columnNumber?: number;
-  [key: string]: any;
 };
 
 // This should match the paginated response structure from getErrorEvents.ts
@@ -96,35 +95,7 @@ export function parseErrorProperties(
 ): ParsedErrorProperties {
   try {
     const parsed = JSON.parse(propertiesJson);
-
-    // Normalize property names to camelCase for backwards compatibility
-    const normalized: ParsedErrorProperties = {
-      message: parsed.message,
-      stack: parsed.stack,
-      fileName: parsed.fileName || parsed.filename,
-      lineNumber: parsed.lineNumber || parsed.lineno,
-      columnNumber: parsed.columnNumber || parsed.colno,
-    };
-
-    // Copy any other properties
-    for (const key in parsed) {
-      if (
-        ![
-          "message",
-          "stack",
-          "fileName",
-          "filename",
-          "lineNumber",
-          "lineno",
-          "columnNumber",
-          "colno",
-        ].includes(key)
-      ) {
-        normalized[key] = parsed[key];
-      }
-    }
-
-    return normalized;
+    return parsed as unknown as ParsedErrorProperties;
   } catch (e) {
     return { message: "Failed to parse error properties" };
   }
