@@ -189,9 +189,9 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
       {errorProps.stack && (
         <div className="mt-3 pt-3 border-t border-neutral-700">
           <div className="flex items-start gap-2">
-            <Code className="w-4 h-4 text-orange-400 mt-0.5 flex-shrink-0" />
+            <Code className="w-4 h-4 text-neutral-100 mt-0.5 flex-shrink-0" />
             <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-orange-400 mb-1">
+              <p className="text-sm font-medium text-neutral-100 mb-1">
                 Stack Trace:
               </p>
               {/* File and line info */}
@@ -208,7 +208,7 @@ function ErrorEventItem({ errorEvent }: { errorEvent: ErrorEvent }) {
                         <span>{truncateText(errorProps.fileName, 100)}</span>
                       )}
                       {errorProps.lineNumber && (
-                        <span className="text-amber-400">
+                        <span className="text-neutral-100">
                           :{errorProps.lineNumber}
                           {errorProps.columnNumber &&
                             `:${errorProps.columnNumber}`}

@@ -9,7 +9,7 @@ import { useGetErrorBucketed } from "@/api/analytics/errors/useGetErrorBucketed"
 import { ErrorNameItem } from "../../../../api/analytics/errors/useGetErrorNames";
 
 // Maximum length for error messages
-const MAX_ERROR_MESSAGE_LENGTH = 80;
+const MAX_ERROR_MESSAGE_LENGTH = 150;
 
 type ErrorListItemProps = {
   errorData: ErrorNameItem;
@@ -39,17 +39,13 @@ export function ErrorListItem({ errorData }: ErrorListItemProps) {
       <div className="p-3 cursor-pointer" onClick={handleCardClick}>
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center w-full gap-4">
           {/* Left side: Error message with icon */}
-          <div className="flex gap-3 flex-1 min-w-0">
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-medium truncate">
-                  {truncateString(errorData.value, MAX_ERROR_MESSAGE_LENGTH)}
-                </h3>
-              </div>
-              <p className="text-sm text-muted-foreground">
-                {errorData.errorName || "JavaScript Error"}
-              </p>
-            </div>
+          <div className="flex-1 min-w-0 space-y-1">
+            <h3 className="text-sm font-medium truncate">
+              {errorData.errorName || "JavaScript Error"}
+            </h3>
+            <p className="text-xs text-muted-foreground">
+              {truncateString(errorData.value, MAX_ERROR_MESSAGE_LENGTH)}
+            </p>
           </div>
 
           {/* Right side: Sparkline chart and error statistics */}
