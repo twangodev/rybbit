@@ -279,7 +279,24 @@ export class SessionReplayService {
       format: "JSONEachRow",
     });
 
-    const finalResults = await processResults<SessionReplayListItem>(result);
+    const rawResults = await processResults<any>(result);
+    console.log("Raw results count:", rawResults.length);
+    
+    // Transform snake_case to camelCase
+    const finalResults = rawResults.map((item: any) => ({
+      sessionId: item.session_id,
+      userId: item.user_id,
+      startTime: item.start_time,
+      endTime: item.end_time,
+      durationMs: item.duration_ms,
+      pageUrl: item.page_url,
+      eventCount: item.event_count,
+      recordingStatus: item.recording_status,
+      country: item.country,
+      browser: item.browser,
+      deviceType: item.device_type,
+    }));
+    
     console.log("Final results count:", finalResults.length);
     return finalResults;
   }
