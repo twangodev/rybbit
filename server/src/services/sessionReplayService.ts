@@ -100,8 +100,7 @@ export class SessionReplayService {
           device_type,
           channel,
           hostname,
-          referrer,
-          user_agent
+          referrer
         FROM events
         WHERE site_id = {siteId:UInt16} 
           AND session_id = {sessionId:String}
@@ -126,7 +125,6 @@ export class SessionReplayService {
       channel?: string;
       hostname?: string;
       referrer?: string;
-      user_agent?: string;
     };
 
     const mainResults = await processResults<MainSessionData>(mainSessionData);
@@ -151,7 +149,7 @@ export class SessionReplayService {
           event_count: sessionReplayData.event_count || 0,
           compressed_size_bytes: sessionReplayData.compressed_size_bytes || 0,
           page_url: metadata.pageUrl || "",
-          user_agent: sessionData.user_agent || "",
+          user_agent: "", // User agent not available in events table
           country: sessionData.country || "",
           region: sessionData.region || "",
           city: sessionData.city || "",
