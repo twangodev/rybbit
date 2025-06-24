@@ -5,7 +5,8 @@ import {
   SessionReplayListItem,
   GetSessionReplayEventsResponse,
 } from "../types/sessionReplay.js";
-import { processResults } from "../api/analytics/utils.js";
+import { processResults, getTimeStatement } from "../api/analytics/utils.js";
+import { FilterParams } from "@rybbit/shared";
 
 export class SessionReplayService {
   async recordEvents(
@@ -78,33 +79,32 @@ export class SessionReplayService {
     };
 
     const sessionResults = await processResults<SessionInfoResult>(sessionInfo);
-    
+
     if (!sessionResults || sessionResults.length === 0) return;
-    
+
     const sessionReplayData = sessionResults[0];
 
     // Get additional session data from main events table
     const mainSessionData = await clickhouse.query({
       query: `
         SELECT 
-          browser,
-          browser_version,
-          operating_system,
-          operating_system_version,
-          country,
-          region,
-          city,
-          lat,
-          lon,
-          language,
-          device_type,
-          channel,
-          hostname,
-          referrer
+          argMax(browser, timestamp) as browser,
+          argMax(browser_version, timestamp) as browser_version,
+          argMax(operating_system, timestamp) as operating_system,
+          argMax(operating_system_version, timestamp) as operating_system_version,
+          argMax(country, timestamp) as country,
+          argMax(region, timestamp) as region,
+          argMax(city, timestamp) as city,
+          argMax(lat, timestamp) as lat,
+          argMax(lon, timestamp) as lon,
+          argMax(language, timestamp) as language,
+          argMax(device_type, timestamp) as device_type,
+          argMax(channel, timestamp) as channel,
+          argMax(hostname, timestamp) as hostname,
+          argMin(referrer, timestamp) as referrer
         FROM events
         WHERE site_id = {siteId:UInt16} 
           AND session_id = {sessionId:String}
-        LIMIT 1
       `,
       query_params: { siteId, sessionId },
       format: "JSONEachRow",
@@ -129,10 +129,14 @@ export class SessionReplayService {
 
     const mainResults = await processResults<MainSessionData>(mainSessionData);
     const sessionData = mainResults[0] || {};
+    
+    console.log("Session data from events table:", sessionData);
 
     // Calculate duration
     const startTime = new Date(sessionReplayData.start_time);
-    const endTime = sessionReplayData.end_time ? new Date(sessionReplayData.end_time) : null;
+    const endTime = sessionReplayData.end_time
+      ? new Date(sessionReplayData.end_time)
+      : null;
     const durationMs = endTime ? endTime.getTime() - startTime.getTime() : null;
 
     // Insert or update metadata
@@ -150,20 +154,20 @@ export class SessionReplayService {
           compressed_size_bytes: sessionReplayData.compressed_size_bytes || 0,
           page_url: metadata.pageUrl || "",
           user_agent: "", // User agent not available in events table
-          country: sessionData.country || "",
-          region: sessionData.region || "",
-          city: sessionData.city || "",
+          country: sessionData.country?.replace(/\0/g, '') || "", // Remove null bytes
+          region: sessionData.region?.replace(/\0/g, '') || "",
+          city: sessionData.city?.replace(/\0/g, '') || "",
           lat: sessionData.lat || 0,
           lon: sessionData.lon || 0,
-          browser: sessionData.browser || "",
+          browser: sessionData.browser || "Unknown",
           browser_version: sessionData.browser_version || "",
-          operating_system: sessionData.operating_system || "",
+          operating_system: sessionData.operating_system || "Unknown",
           operating_system_version: sessionData.operating_system_version || "",
           language: sessionData.language || "",
           screen_width: sessionReplayData.screen_width || 0,
           screen_height: sessionReplayData.screen_height || 0,
-          device_type: sessionData.device_type || "",
-          channel: sessionData.channel || "",
+          device_type: sessionData.device_type || "desktop",
+          channel: sessionData.channel || "direct",
           hostname: sessionData.hostname || "",
           referrer: sessionData.referrer || "",
           has_replay_data: 1,
@@ -174,10 +178,7 @@ export class SessionReplayService {
     });
   }
 
-  async markSessionComplete(
-    siteId: number,
-    sessionId: string
-  ): Promise<void> {
+  async markSessionComplete(siteId: number, sessionId: string): Promise<void> {
     // Update recording status
     await clickhouse.query({
       query: `
@@ -212,25 +213,25 @@ export class SessionReplayService {
     options: {
       limit?: number;
       offset?: number;
-      startDate?: Date;
-      endDate?: Date;
       userId?: string;
-    }
+    } & Pick<
+      FilterParams,
+      | "startDate"
+      | "endDate"
+      | "timeZone"
+      | "pastMinutesStart"
+      | "pastMinutesEnd"
+    >
   ): Promise<SessionReplayListItem[]> {
-    const { limit = 50, offset = 0, startDate, endDate, userId } = options;
+    const { limit = 50, offset = 0, userId } = options;
+
+    const timeStatement = getTimeStatement(options).replace(
+      /timestamp/g,
+      "start_time"
+    );
 
     let whereConditions = [`site_id = {siteId:UInt16}`];
     const queryParams: any = { siteId, limit, offset };
-
-    if (startDate) {
-      whereConditions.push(`start_time >= {startDate:DateTime}`);
-      queryParams.startDate = startDate;
-    }
-
-    if (endDate) {
-      whereConditions.push(`start_time <= {endDate:DateTime}`);
-      queryParams.endDate = endDate;
-    }
 
     if (userId) {
       whereConditions.push(`user_id = {userId:String}`);
@@ -252,18 +253,35 @@ export class SessionReplayService {
         device_type
       FROM session_replay_metadata
       WHERE ${whereConditions.join(" AND ")}
+      ${timeStatement}
       ORDER BY start_time DESC
       LIMIT {limit:UInt32}
       OFFSET {offset:UInt32}
     `;
 
+    console.log("SessionReplay Query:", query);
+    console.log("Query Params:", queryParams);
+    console.log("Time Statement:", timeStatement);
+    
+    // First, let's check if there's any data in the table at all
+    const countQuery = `SELECT COUNT(*) as total FROM session_replay_metadata WHERE site_id = {siteId:UInt16}`;
+    const countResult = await clickhouse.query({
+      query: countQuery,
+      query_params: { siteId },
+      format: "JSONEachRow",
+    });
+    const countData = await processResults<{total: number}>(countResult);
+    console.log("Total session replay metadata records for site:", countData[0]?.total || 0);
+    
     const result = await clickhouse.query({
       query,
       query_params: queryParams,
       format: "JSONEachRow",
     });
 
-    return await processResults<SessionReplayListItem>(result);
+    const finalResults = await processResults<SessionReplayListItem>(result);
+    console.log("Final results count:", finalResults.length);
+    return finalResults;
   }
 
   async getSessionReplayEvents(
@@ -283,7 +301,8 @@ export class SessionReplayService {
       format: "JSONEachRow",
     });
 
-    const metadataResults = await processResults<SessionReplayMetadata>(metadataResult);
+    const metadataResults =
+      await processResults<SessionReplayMetadata>(metadataResult);
     const metadata = metadataResults[0];
 
     if (!metadata) {

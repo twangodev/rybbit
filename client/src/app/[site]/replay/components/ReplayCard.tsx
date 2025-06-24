@@ -26,6 +26,7 @@ export function ReplayCard({
   replay: SessionReplayListItem;
   siteId: number;
 }) {
+  console.log(replay);
   const startTime = DateTime.fromISO(replay.startTime);
   const duration = replay.durationMs
     ? Math.ceil(replay.durationMs / 1000)
@@ -38,7 +39,7 @@ export function ReplayCard({
   };
 
   const getDeviceIcon = (deviceType: string) => {
-    switch (deviceType.toLowerCase()) {
+    switch (deviceType?.toLowerCase()) {
       case "mobile":
         return <Globe className="w-4 h-4" />;
       case "tablet":
@@ -85,7 +86,9 @@ export function ReplayCard({
                 {formatDuration(duration)}
               </div>
             )}
-            <div className={`text-xs ${getStatusColor(replay.recordingStatus)}`}>
+            <div
+              className={`text-xs ${getStatusColor(replay.recordingStatus)}`}
+            >
               {replay.recordingStatus}
             </div>
           </div>
@@ -113,9 +116,7 @@ export function ReplayCard({
             {getDeviceIcon(replay.deviceType)}
             <span>{replay.deviceType}</span>
           </div>
-          <div className="ml-auto text-xs">
-            {replay.eventCount} events
-          </div>
+          <div className="ml-auto text-xs">{replay.eventCount} events</div>
         </div>
       </div>
     </Link>

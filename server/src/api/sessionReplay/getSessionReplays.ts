@@ -1,30 +1,36 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import { FilterParams } from "@rybbit/shared";
 import { SessionReplayService } from "../../services/sessionReplayService.js";
 
 export async function getSessionReplays(
   request: FastifyRequest<{
     Params: { site: string };
-    Querystring: {
+    Querystring: FilterParams<{
       limit?: string;
       offset?: string;
-      startDate?: string;
-      endDate?: string;
       userId?: string;
-    };
+    }>;
   }>,
   reply: FastifyReply
 ) {
   try {
     const siteId = Number(request.params.site);
-    const { limit, offset, startDate, endDate, userId } = request.query;
+    const { limit, offset, userId } = request.query;
 
     const sessionReplayService = new SessionReplayService();
     const replays = await sessionReplayService.getSessionReplayList(siteId, {
       limit: limit ? Number(limit) : 50,
       offset: offset ? Number(offset) : 0,
-      startDate: startDate ? new Date(startDate) : undefined,
-      endDate: endDate ? new Date(endDate) : undefined,
       userId: userId || undefined,
+      startDate: request.query.startDate,
+      endDate: request.query.endDate,
+      timeZone: request.query.timeZone,
+      pastMinutesStart: request.query.pastMinutesStart
+        ? Number(request.query.pastMinutesStart)
+        : undefined,
+      pastMinutesEnd: request.query.pastMinutesEnd
+        ? Number(request.query.pastMinutesEnd)
+        : undefined,
     });
 
     return reply.send({ data: replays });
