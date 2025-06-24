@@ -59,7 +59,7 @@ export class Tracker {
 
   private async sendSessionReplayBatch(batch: SessionReplayBatch): Promise<void> {
     try {
-      await fetch(`${this.config.analyticsHost}/api/session-replay/record/${this.config.siteId}`, {
+      await fetch(`${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
