@@ -19,7 +19,7 @@ export class SessionReplayService {
       site_id: siteId,
       session_id: sessionId,
       user_id: userId,
-      timestamp: new Date(event.timestamp),
+      timestamp: Math.floor(event.timestamp / 1000), // Convert to Unix timestamp (seconds)
       event_type: event.type,
       event_data: JSON.stringify(event.data),
       sequence_number: index,
