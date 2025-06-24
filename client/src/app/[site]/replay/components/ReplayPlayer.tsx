@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import { useQuery } from "@tanstack/react-query";
 import rrwebPlayer from "rrweb-player";
 import "rrweb-player/dist/style.css";
 import { Button } from "../../../../components/ui/button";
@@ -15,6 +14,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { DateTime } from "luxon";
+import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
 
 interface ReplayPlayerProps {
   siteId: number;
@@ -28,25 +28,14 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
   const [duration, setDuration] = useState(0);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data, isLoading, error } = useQuery({
-    queryKey: ["session-replay-events", siteId, sessionId],
-    queryFn: async () => {
-      const response = await fetch(
-        `/api/session-replay/${siteId}/${sessionId}`,
-        {
-          credentials: "include",
-        }
-      );
+  const { data, isLoading, error } = useGetSessionReplayEvents(
+    siteId,
+    sessionId
+  );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch replay events");
-      }
-
-      return response.json();
-    },
-    staleTime: 1000 * 60 * 10, // 10 minutes
-    refetchOnWindowFocus: false,
-  });
+  console.log("Replay data:", data);
+  console.log("Events:", data?.events);
+  console.log("Event types:", data?.events?.map(e => ({ type: e.type, timestamp: e.timestamp })));
 
   useEffect(() => {
     if (data?.events && playerContainerRef.current) {
@@ -54,7 +43,7 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
       const newPlayer = new rrwebPlayer({
         target: playerContainerRef.current,
         props: {
-          events: data.events,
+          events: data.events as any, // Cast to any to handle type compatibility with rrweb
           width: 1024,
           height: 576,
           autoPlay: false,
@@ -164,7 +153,7 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
 
   const metadata = data?.metadata;
   const startTime = metadata
-    ? DateTime.fromISO(metadata.startTime)
+    ? DateTime.fromISO(metadata.startTime.toString())
     : DateTime.now();
 
   return (

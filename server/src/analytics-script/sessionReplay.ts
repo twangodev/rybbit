@@ -62,8 +62,11 @@ export class SessionReplayRecorder {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       script.src = "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
-      script.async = true;
-      script.onload = () => resolve();
+      script.async = false; // Load synchronously to ensure immediate availability
+      script.onload = () => {
+        console.log("[Session Replay] rrweb loaded successfully");
+        resolve();
+      };
       script.onerror = () => reject(new Error("Failed to load rrweb"));
       document.head.appendChild(script);
     });
@@ -71,8 +74,16 @@ export class SessionReplayRecorder {
 
   public startRecording(): void {
     if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+      console.log("[Session Replay] Cannot start recording:", {
+        isRecording: this.isRecording,
+        hasRrweb: !!window.rrweb,
+        enableSessionReplay: this.config.enableSessionReplay
+      });
       return;
     }
+
+    console.log("[Session Replay] Starting recording at", new Date().toISOString());
+    console.log("[Session Replay] Document ready state:", document.readyState);
 
     try {
       this.stopRecordingFn = window.rrweb.record({

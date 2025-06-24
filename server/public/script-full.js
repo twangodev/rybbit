@@ -135,16 +135,26 @@
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
         script.src = "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
-        script.async = true;
-        script.onload = () => resolve();
+        script.async = false;
+        script.onload = () => {
+          console.log("[Session Replay] rrweb loaded successfully");
+          resolve();
+        };
         script.onerror = () => reject(new Error("Failed to load rrweb"));
         document.head.appendChild(script);
       });
     }
     startRecording() {
       if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+        console.log("[Session Replay] Cannot start recording:", {
+          isRecording: this.isRecording,
+          hasRrweb: !!window.rrweb,
+          enableSessionReplay: this.config.enableSessionReplay
+        });
         return;
       }
+      console.log("[Session Replay] Starting recording at", (/* @__PURE__ */ new Date()).toISOString());
+      console.log("[Session Replay] Document ready state:", document.readyState);
       try {
         this.stopRecordingFn = window.rrweb.record({
           emit: (event) => {

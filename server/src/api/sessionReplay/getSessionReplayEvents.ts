@@ -11,11 +11,15 @@ export async function getSessionReplayEvents(
     const siteId = Number(request.params.site);
     const { sessionId } = request.params;
 
+    console.log("Getting session replay events for:", { siteId, sessionId });
+
     const sessionReplayService = new SessionReplayService();
     const replayData = await sessionReplayService.getSessionReplayEvents(
       siteId,
       sessionId
     );
+
+    console.log("Reply data metadata sample:", Object.keys(replayData.metadata));
 
     return reply.send(replayData);
   } catch (error) {

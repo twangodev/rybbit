@@ -318,13 +318,45 @@ export class SessionReplayService {
       format: "JSONEachRow",
     });
 
-    const metadataResults =
-      await processResults<SessionReplayMetadata>(metadataResult);
-    const metadata = metadataResults[0];
+    const metadataResults = await processResults<any>(metadataResult);
+    const rawMetadata = metadataResults[0];
 
-    if (!metadata) {
+    if (!rawMetadata) {
       throw new Error("Session replay not found");
     }
+
+    // Transform snake_case to camelCase for metadata
+    const metadata = {
+      siteId: rawMetadata.site_id,
+      sessionId: rawMetadata.session_id,
+      userId: rawMetadata.user_id,
+      startTime: rawMetadata.start_time,
+      endTime: rawMetadata.end_time,
+      durationMs: rawMetadata.duration_ms,
+      eventCount: rawMetadata.event_count,
+      compressedSizeBytes: rawMetadata.compressed_size_bytes,
+      pageUrl: rawMetadata.page_url,
+      userAgent: rawMetadata.user_agent,
+      country: rawMetadata.country,
+      region: rawMetadata.region,
+      city: rawMetadata.city,
+      lat: rawMetadata.lat,
+      lon: rawMetadata.lon,
+      browser: rawMetadata.browser,
+      browserVersion: rawMetadata.browser_version,
+      operatingSystem: rawMetadata.operating_system,
+      operatingSystemVersion: rawMetadata.operating_system_version,
+      language: rawMetadata.language,
+      screenWidth: rawMetadata.screen_width,
+      screenHeight: rawMetadata.screen_height,
+      deviceType: rawMetadata.device_type,
+      channel: rawMetadata.channel,
+      hostname: rawMetadata.hostname,
+      referrer: rawMetadata.referrer,
+      hasReplayData: rawMetadata.has_replay_data,
+      recordingStatus: rawMetadata.recording_status,
+      createdAt: rawMetadata.created_at,
+    };
 
     // Get events
     const eventsResult = await clickhouse.query({
@@ -349,11 +381,27 @@ export class SessionReplayService {
     };
 
     const eventsResults = await processResults<EventRow>(eventsResult);
-    const events = eventsResults.map((event) => ({
-      timestamp: new Date(event.timestamp).getTime(),
-      type: event.type,
-      data: JSON.parse(event.data),
-    }));
+    console.log("Raw event timestamps from DB:", eventsResults.map(e => ({ timestamp: e.timestamp, type: e.type })));
+    
+    const events = eventsResults.map((event) => {
+      // The timestamp from ClickHouse is already in seconds (Unix timestamp)
+      // We need to convert it to milliseconds for rrweb
+      const timestamp = new Date(event.timestamp).getTime();
+      console.log(`Converting timestamp: ${event.timestamp} -> ${timestamp}`);
+      
+      return {
+        timestamp,
+        type: event.type, // Keep as string for now to match interface
+        data: JSON.parse(event.data),
+      };
+    });
+
+    console.log(`Session ${sessionId} has ${events.length} events`);
+    console.log("Final events:", events.map(e => ({ type: e.type, timestamp: e.timestamp })));
+    
+    // Check if we have a FullSnapshot event (type 2)
+    const hasFullSnapshot = events.some(e => e.type === "2" || e.type.toString() === "2");
+    console.log("Has FullSnapshot (type 2):", hasFullSnapshot);
 
     return {
       events,
