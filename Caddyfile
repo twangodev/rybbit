@@ -3,8 +3,8 @@
     # Enable compression
     encode zstd gzip
 
+    request_body max_size 10MB
     handle /api/* {
-        max_size 10MB
         reverse_proxy backend:3001
     }
 
