@@ -266,6 +266,8 @@
       const events = [...this.eventBuffer];
       this.eventBuffer = [];
       console.log(`[Session Replay] Sending batch with ${events.length} events to server`);
+      console.log(`[Session Replay] Event types in batch:`, events.map((e2) => `Type ${e2.type}`).join(", "));
+      console.log(`[Session Replay] Batch size:`, JSON.stringify(events).length, "characters");
       const batch = {
         sessionId: this.sessionId,
         userId: this.userId,
@@ -281,6 +283,16 @@
         console.log(`[Session Replay] Successfully sent batch with ${events.length} events`);
       } catch (error) {
         console.error("Failed to send session replay batch:", error);
+        console.error("Failed batch details:", {
+          eventCount: events.length,
+          eventTypes: events.map((e2) => e2.type),
+          batchSize: JSON.stringify(batch).length,
+          sessionId: this.sessionId,
+          userId: this.userId,
+          url: window.location.href
+        });
+        console.log(`[Session Replay] Re-queuing ${events.length} failed events for retry`);
+        this.eventBuffer.unshift(...events);
       }
     }
     // Update session/user IDs when they change

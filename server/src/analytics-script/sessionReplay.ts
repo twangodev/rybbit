@@ -205,6 +205,8 @@ export class SessionReplayRecorder {
     this.eventBuffer = [];
 
     console.log(`[Session Replay] Sending batch with ${events.length} events to server`);
+    console.log(`[Session Replay] Event types in batch:`, events.map(e => `Type ${e.type}`).join(', '));
+    console.log(`[Session Replay] Batch size:`, JSON.stringify(events).length, 'characters');
 
     const batch: SessionReplayBatch = {
       sessionId: this.sessionId,
@@ -222,7 +224,18 @@ export class SessionReplayRecorder {
       console.log(`[Session Replay] Successfully sent batch with ${events.length} events`);
     } catch (error) {
       console.error("Failed to send session replay batch:", error);
-      // Optionally re-queue events for retry
+      console.error("Failed batch details:", {
+        eventCount: events.length,
+        eventTypes: events.map(e => e.type),
+        batchSize: JSON.stringify(batch).length,
+        sessionId: this.sessionId,
+        userId: this.userId,
+        url: window.location.href
+      });
+      
+      // Re-queue the events for retry since this batch failed
+      console.log(`[Session Replay] Re-queuing ${events.length} failed events for retry`);
+      this.eventBuffer.unshift(...events);
     }
   }
 
