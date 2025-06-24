@@ -5,7 +5,7 @@ import { Button } from "../../../../components/ui/button";
 import { NothingFound } from "../../../../components/NothingFound";
 import { ReplayCard, ReplayCardSkeleton } from "./ReplayCard";
 import { useStore } from "../../../../lib/store";
-import { DateTime } from "luxon";
+import { getStartAndEndDate } from "../../../../api/utils";
 
 interface SessionReplayListItem {
   sessionId: string;
@@ -24,15 +24,17 @@ interface SessionReplayListItem {
 export default function ReplayList() {
   const params = useParams();
   const siteId = Number(params.site);
-  const { datePickerRange } = useStore();
+  const { time } = useStore();
 
   const fetchReplays = async ({ pageParam = 0 }) => {
+    const { startDate, endDate } = getStartAndEndDate(time);
     const queryParams = new URLSearchParams({
       limit: "20",
       offset: String(pageParam),
-      startDate: DateTime.fromJSDate(datePickerRange.from).toISO(),
-      endDate: DateTime.fromJSDate(datePickerRange.to).toISO(),
     });
+
+    if (startDate) queryParams.set("startDate", startDate);
+    if (endDate) queryParams.set("endDate", endDate);
 
     const response = await fetch(
       `/api/session-replay/list/${siteId}?${queryParams}`,
@@ -56,8 +58,9 @@ export default function ReplayList() {
     hasNextPage,
     isFetchingNextPage,
   } = useInfiniteQuery({
-    queryKey: ["session-replays", siteId, datePickerRange],
+    queryKey: ["session-replays", siteId, time],
     queryFn: fetchReplays,
+    initialPageParam: 0,
     getNextPageParam: (lastPage, pages) => {
       const totalFetched = pages.reduce(
         (acc, page) => acc + (page.data?.length || 0),

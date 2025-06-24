@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useSetPageTitle } from "../../../../../hooks/useSetPageTitle";
+import { useSetPageTitle } from "../../../../hooks/useSetPageTitle";
 import ReplayPlayer from "../components/ReplayPlayer";
 
 export default function SessionReplayPlayerPage() {
