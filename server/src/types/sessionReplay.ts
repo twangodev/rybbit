@@ -48,7 +48,7 @@ export interface RecordSessionReplayRequest {
   sessionId: string;
   userId: string;
   events: Array<{
-    type: string;
+    type: string | number;
     data: any;
     timestamp: number;
   }>;

@@ -8,7 +8,7 @@ const recordSessionReplaySchema = z.object({
   userId: z.string(),
   events: z.array(
     z.object({
-      type: z.string(),
+      type: z.union([z.string(), z.number()]),
       data: z.any(),
       timestamp: z.number(),
     })

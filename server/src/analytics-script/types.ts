@@ -63,7 +63,7 @@ export interface RybbitAPI {
 }
 
 export interface SessionReplayEvent {
-  type: string;
+  type: string | number;
   data: any;
   timestamp: number;
 }
