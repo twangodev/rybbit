@@ -75,6 +75,7 @@ export class SessionReplayRecorder {
     try {
       this.stopRecordingFn = window.rrweb.record({
         emit: (event) => {
+          console.log(`[Session Replay] Event collected: ${event.type} at ${new Date(event.timestamp || Date.now()).toISOString()}`);
           this.addEvent({
             type: event.type,
             data: event.data,
@@ -144,9 +145,11 @@ export class SessionReplayRecorder {
 
   private addEvent(event: SessionReplayEvent): void {
     this.eventBuffer.push(event);
+    console.log(`[Session Replay] Event added to buffer (${this.eventBuffer.length}/${this.config.sessionReplayBatchSize})`);
 
     // Auto-flush if buffer is full
     if (this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
+      console.log(`[Session Replay] Buffer full, flushing ${this.eventBuffer.length} events`);
       this.flushEvents();
     }
   }
@@ -155,6 +158,7 @@ export class SessionReplayRecorder {
     this.clearBatchTimer();
     this.batchTimer = window.setInterval(() => {
       if (this.eventBuffer.length > 0) {
+        console.log(`[Session Replay] Timer triggered, flushing ${this.eventBuffer.length} events`);
         this.flushEvents();
       }
     }, this.config.sessionReplayBatchInterval);
@@ -175,6 +179,8 @@ export class SessionReplayRecorder {
     const events = [...this.eventBuffer];
     this.eventBuffer = [];
 
+    console.log(`[Session Replay] Sending batch with ${events.length} events to server`);
+
     const batch: SessionReplayBatch = {
       sessionId: this.sessionId,
       userId: this.userId,
@@ -188,6 +194,7 @@ export class SessionReplayRecorder {
 
     try {
       await this.sendBatch(batch);
+      console.log(`[Session Replay] Successfully sent batch with ${events.length} events`);
     } catch (error) {
       console.error("Failed to send session replay batch:", error);
       // Optionally re-queue events for retry
