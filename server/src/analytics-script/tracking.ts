@@ -3,16 +3,25 @@ import {
   ScriptConfig,
   TrackingPayload,
   WebVitalsData,
+  SessionReplayBatch,
 } from "./types.js";
 import { findMatchingPattern } from "./utils.js";
+import { SessionReplayRecorder } from "./sessionReplay.js";
 
 export class Tracker {
   private config: ScriptConfig;
   private customUserId: string | null = null;
+  private sessionId: string;
+  private sessionReplayRecorder?: SessionReplayRecorder;
 
   constructor(config: ScriptConfig) {
     this.config = config;
+    this.sessionId = this.generateSessionId();
     this.loadUserId();
+    
+    if (config.enableSessionReplay) {
+      this.initializeSessionReplay();
+    }
   }
 
   private loadUserId(): void {
@@ -23,6 +32,45 @@ export class Tracker {
       }
     } catch (e) {
       // localStorage not available
+    }
+  }
+
+  private generateSessionId(): string {
+    return Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  private async initializeSessionReplay(): Promise<void> {
+    try {
+      this.sessionReplayRecorder = new SessionReplayRecorder(
+        this.config,
+        this.sessionId,
+        this.customUserId || this.generateUserId(),
+        (batch) => this.sendSessionReplayBatch(batch)
+      );
+      await this.sessionReplayRecorder.initialize();
+    } catch (error) {
+      console.error("Failed to initialize session replay:", error);
+    }
+  }
+
+  private generateUserId(): string {
+    return "anon_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+  }
+
+  private async sendSessionReplayBatch(batch: SessionReplayBatch): Promise<void> {
+    try {
+      await fetch(`${this.config.analyticsHost}/api/session-replay/record/${this.config.siteId}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(batch),
+        mode: "cors",
+        keepalive: true,
+      });
+    } catch (error) {
+      console.error("Failed to send session replay batch:", error);
+      throw error;
     }
   }
 
@@ -233,6 +281,11 @@ export class Tracker {
     } catch (e) {
       console.warn("Could not persist user ID to localStorage");
     }
+
+    // Update session replay recorder with new user ID
+    if (this.sessionReplayRecorder) {
+      this.sessionReplayRecorder.updateUserId(this.customUserId);
+    }
   }
 
   clearUserId(): void {
@@ -246,5 +299,38 @@ export class Tracker {
 
   getUserId(): string | null {
     return this.customUserId;
+  }
+
+  // Session Replay methods
+  startSessionReplay(): void {
+    if (this.sessionReplayRecorder) {
+      this.sessionReplayRecorder.startRecording();
+    } else {
+      console.warn("Session replay not initialized");
+    }
+  }
+
+  stopSessionReplay(): void {
+    if (this.sessionReplayRecorder) {
+      this.sessionReplayRecorder.stopRecording();
+    }
+  }
+
+  isSessionReplayActive(): boolean {
+    return this.sessionReplayRecorder?.isActive() ?? false;
+  }
+
+  // Handle page changes for SPA
+  onPageChange(): void {
+    if (this.sessionReplayRecorder) {
+      this.sessionReplayRecorder.onPageChange();
+    }
+  }
+
+  // Cleanup
+  cleanup(): void {
+    if (this.sessionReplayRecorder) {
+      this.sessionReplayRecorder.cleanup();
+    }
   }
 }

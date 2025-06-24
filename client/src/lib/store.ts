@@ -32,6 +32,19 @@ export const SESSION_PAGE_FILTERS: FilterParameter[] = [
   "utm_content",
 ];
 
+export const SESSION_REPLAY_PAGE_FILTERS: FilterParameter[] = [
+  "hostname",
+  "browser",
+  "operating_system",
+  "language",
+  "country",
+  "region",
+  "city",
+  "device_type",
+  "referrer",
+  "channel",
+];
+
 export const EVENT_FILTERS: FilterParameter[] = [
   // "event_name",
   // "browser",

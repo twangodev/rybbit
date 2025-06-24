@@ -44,6 +44,14 @@ export function parseScriptConfig(
 
   const apiKey = scriptTag.getAttribute("data-api-key") || undefined;
 
+  const sessionReplayBatchSize = scriptTag.getAttribute("data-replay-batch-size")
+    ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size")!))
+    : 50;
+
+  const sessionReplayBatchInterval = scriptTag.getAttribute("data-replay-batch-interval")
+    ? Math.max(1000, parseInt(scriptTag.getAttribute("data-replay-batch-interval")!))
+    : 5000;
+
   return {
     analyticsHost,
     siteId,
@@ -55,6 +63,9 @@ export function parseScriptConfig(
     trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
     enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
     trackErrors: scriptTag.getAttribute("data-track-errors") === "true",
+    enableSessionReplay: scriptTag.getAttribute("data-session-replay") === "true",
+    sessionReplayBatchSize,
+    sessionReplayBatchInterval,
     skipPatterns,
     maskPatterns,
     apiKey,

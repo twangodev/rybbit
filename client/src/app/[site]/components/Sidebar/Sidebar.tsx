@@ -13,6 +13,7 @@ import {
   Split,
   User,
   File,
+  Play,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -107,6 +108,14 @@ export function Sidebar() {
           href={getTabPath("sessions")}
           icon={<Rewind className="w-4 h-4" />}
         />
+        {IS_CLOUD && (
+          <SidebarLink
+            label="Replay"
+            active={isActiveTab("replay")}
+            href={getTabPath("replay")}
+            icon={<Play className="w-4 h-4" />}
+          />
+        )}
         <SidebarLink
           label="Users"
           active={isActiveTab("users")}

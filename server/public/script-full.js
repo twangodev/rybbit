@@ -87,6 +87,8 @@
       []
     );
     const apiKey = scriptTag.getAttribute("data-api-key") || void 0;
+    const sessionReplayBatchSize = scriptTag.getAttribute("data-replay-batch-size") ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 50;
+    const sessionReplayBatchInterval = scriptTag.getAttribute("data-replay-batch-interval") ? Math.max(1e3, parseInt(scriptTag.getAttribute("data-replay-batch-interval"))) : 5e3;
     return {
       analyticsHost,
       siteId,
@@ -97,18 +99,189 @@
       trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
       enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
       trackErrors: scriptTag.getAttribute("data-track-errors") === "true",
+      enableSessionReplay: scriptTag.getAttribute("data-session-replay") === "true",
+      sessionReplayBatchSize,
+      sessionReplayBatchInterval,
       skipPatterns,
       maskPatterns,
       apiKey
     };
   }
 
+  // sessionReplay.ts
+  var SessionReplayRecorder = class {
+    constructor(config, sessionId, userId, sendBatch) {
+      this.isRecording = false;
+      this.eventBuffer = [];
+      this.config = config;
+      this.sessionId = sessionId;
+      this.userId = userId;
+      this.sendBatch = sendBatch;
+    }
+    async initialize() {
+      if (!this.config.enableSessionReplay) {
+        return;
+      }
+      if (!window.rrweb) {
+        await this.loadRrweb();
+      }
+      if (window.rrweb) {
+        this.startRecording();
+      } else {
+        console.warn("Failed to load rrweb, session replay disabled");
+      }
+    }
+    async loadRrweb() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
+        script.async = true;
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error("Failed to load rrweb"));
+        document.head.appendChild(script);
+      });
+    }
+    startRecording() {
+      if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+        return;
+      }
+      try {
+        this.stopRecordingFn = window.rrweb.record({
+          emit: (event) => {
+            this.addEvent({
+              type: event.type,
+              data: event.data,
+              timestamp: event.timestamp || Date.now()
+            });
+          },
+          checkoutEveryNms: 3e4,
+          // Checkout every 30 seconds
+          checkoutEveryNth: 200,
+          // Checkout every 200 events
+          maskAllInputs: true,
+          // Mask all input values for privacy
+          maskInputOptions: {
+            password: true,
+            email: true
+          },
+          slimDOMOptions: {
+            script: false,
+            comment: true,
+            headFavicon: true,
+            headWhitespace: true,
+            headMetaDescKeywords: true,
+            headMetaSocial: true,
+            headMetaRobots: true,
+            headMetaHttpEquiv: true,
+            headMetaAuthorship: true,
+            headMetaVerification: true
+          },
+          sampling: {
+            // Optional: reduce recording frequency to save bandwidth
+            mousemove: false,
+            // Don't record every mouse move
+            mouseInteraction: true,
+            scroll: 150,
+            // Sample scroll events every 150ms
+            input: "last"
+            // Only record the final input value
+          }
+        });
+        this.isRecording = true;
+        this.setupBatchTimer();
+        console.log("Session replay recording started");
+      } catch (error) {
+        console.error("Failed to start session replay recording:", error);
+      }
+    }
+    stopRecording() {
+      if (!this.isRecording) {
+        return;
+      }
+      if (this.stopRecordingFn) {
+        this.stopRecordingFn();
+      }
+      this.isRecording = false;
+      this.clearBatchTimer();
+      if (this.eventBuffer.length > 0) {
+        this.flushEvents();
+      }
+      console.log("Session replay recording stopped");
+    }
+    isActive() {
+      return this.isRecording;
+    }
+    addEvent(event) {
+      this.eventBuffer.push(event);
+      if (this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
+        this.flushEvents();
+      }
+    }
+    setupBatchTimer() {
+      this.clearBatchTimer();
+      this.batchTimer = window.setInterval(() => {
+        if (this.eventBuffer.length > 0) {
+          this.flushEvents();
+        }
+      }, this.config.sessionReplayBatchInterval);
+    }
+    clearBatchTimer() {
+      if (this.batchTimer) {
+        clearInterval(this.batchTimer);
+        this.batchTimer = void 0;
+      }
+    }
+    async flushEvents() {
+      if (this.eventBuffer.length === 0) {
+        return;
+      }
+      const events = [...this.eventBuffer];
+      this.eventBuffer = [];
+      const batch = {
+        sessionId: this.sessionId,
+        userId: this.userId,
+        events,
+        metadata: {
+          pageUrl: window.location.href,
+          viewportWidth: window.innerWidth,
+          viewportHeight: window.innerHeight
+        }
+      };
+      try {
+        await this.sendBatch(batch);
+      } catch (error) {
+        console.error("Failed to send session replay batch:", error);
+      }
+    }
+    // Update session/user IDs when they change
+    updateSessionId(sessionId) {
+      this.sessionId = sessionId;
+    }
+    updateUserId(userId) {
+      this.userId = userId;
+    }
+    // Handle page navigation for SPAs
+    onPageChange() {
+      if (this.isRecording) {
+        this.flushEvents();
+      }
+    }
+    // Cleanup on page unload
+    cleanup() {
+      this.stopRecording();
+    }
+  };
+
   // tracking.ts
   var Tracker = class {
     constructor(config) {
       this.customUserId = null;
       this.config = config;
+      this.sessionId = this.generateSessionId();
       this.loadUserId();
+      if (config.enableSessionReplay) {
+        this.initializeSessionReplay();
+      }
     }
     loadUserId() {
       try {
@@ -117,6 +290,41 @@
           this.customUserId = storedUserId;
         }
       } catch (e2) {
+      }
+    }
+    generateSessionId() {
+      return Math.random().toString(36).substring(2) + Date.now().toString(36);
+    }
+    async initializeSessionReplay() {
+      try {
+        this.sessionReplayRecorder = new SessionReplayRecorder(
+          this.config,
+          this.sessionId,
+          this.customUserId || this.generateUserId(),
+          (batch) => this.sendSessionReplayBatch(batch)
+        );
+        await this.sessionReplayRecorder.initialize();
+      } catch (error) {
+        console.error("Failed to initialize session replay:", error);
+      }
+    }
+    generateUserId() {
+      return "anon_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    }
+    async sendSessionReplayBatch(batch) {
+      try {
+        await fetch(`${this.config.analyticsHost}/api/session-replay/record/${this.config.siteId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(batch),
+          mode: "cors",
+          keepalive: true
+        });
+      } catch (error) {
+        console.error("Failed to send session replay batch:", error);
+        throw error;
       }
     }
     createBasePayload() {
@@ -263,6 +471,9 @@
       } catch (e2) {
         console.warn("Could not persist user ID to localStorage");
       }
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.updateUserId(this.customUserId);
+      }
     }
     clearUserId() {
       this.customUserId = null;
@@ -273,6 +484,34 @@
     }
     getUserId() {
       return this.customUserId;
+    }
+    // Session Replay methods
+    startSessionReplay() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.startRecording();
+      } else {
+        console.warn("Session replay not initialized");
+      }
+    }
+    stopSessionReplay() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.stopRecording();
+      }
+    }
+    isSessionReplayActive() {
+      return this.sessionReplayRecorder?.isActive() ?? false;
+    }
+    // Handle page changes for SPA
+    onPageChange() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.onPageChange();
+      }
+    }
+    // Cleanup
+    cleanup() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.cleanup();
+      }
     }
   };
 
@@ -587,7 +826,12 @@
         },
         clearUserId: () => {
         },
-        getUserId: () => null
+        getUserId: () => null,
+        startSessionReplay: () => {
+        },
+        stopSessionReplay: () => {
+        },
+        isSessionReplayActive: () => false
       };
       return;
     }
@@ -660,13 +904,21 @@
         history.pushState = function(...args) {
           originalPushState.apply(this, args);
           debouncedTrackPageview();
+          tracker.onPageChange();
         };
         history.replaceState = function(...args) {
           originalReplaceState.apply(this, args);
           debouncedTrackPageview();
+          tracker.onPageChange();
         };
-        window.addEventListener("popstate", debouncedTrackPageview);
-        window.addEventListener("hashchange", debouncedTrackPageview);
+        window.addEventListener("popstate", () => {
+          debouncedTrackPageview();
+          tracker.onPageChange();
+        });
+        window.addEventListener("hashchange", () => {
+          debouncedTrackPageview();
+          tracker.onPageChange();
+        });
       }
     }
     window.rybbit = {
@@ -675,9 +927,15 @@
       trackOutbound: (url, text = "", target = "_self") => tracker.trackOutbound(url, text, target),
       identify: (userId) => tracker.identify(userId),
       clearUserId: () => tracker.clearUserId(),
-      getUserId: () => tracker.getUserId()
+      getUserId: () => tracker.getUserId(),
+      startSessionReplay: () => tracker.startSessionReplay(),
+      stopSessionReplay: () => tracker.stopSessionReplay(),
+      isSessionReplayActive: () => tracker.isSessionReplayActive()
     };
     setupEventListeners();
+    window.addEventListener("beforeunload", () => {
+      tracker.cleanup();
+    });
     if (config.autoTrackPageview) {
       tracker.trackPageview();
     }

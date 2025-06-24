@@ -31,6 +31,9 @@ declare global {
       identify: () => {},
       clearUserId: () => {},
       getUserId: () => null,
+      startSessionReplay: () => {},
+      stopSessionReplay: () => {},
+      isSessionReplayActive: () => false,
     };
     return;
   }
@@ -132,15 +135,23 @@ declare global {
       history.pushState = function (...args) {
         originalPushState.apply(this, args);
         debouncedTrackPageview();
+        tracker.onPageChange();
       };
 
       history.replaceState = function (...args) {
         originalReplaceState.apply(this, args);
         debouncedTrackPageview();
+        tracker.onPageChange();
       };
 
-      window.addEventListener("popstate", debouncedTrackPageview);
-      window.addEventListener("hashchange", debouncedTrackPageview);
+      window.addEventListener("popstate", () => {
+        debouncedTrackPageview();
+        tracker.onPageChange();
+      });
+      window.addEventListener("hashchange", () => {
+        debouncedTrackPageview();
+        tracker.onPageChange();
+      });
     }
   }
 
@@ -154,10 +165,18 @@ declare global {
     identify: (userId: string) => tracker.identify(userId),
     clearUserId: () => tracker.clearUserId(),
     getUserId: () => tracker.getUserId(),
+    startSessionReplay: () => tracker.startSessionReplay(),
+    stopSessionReplay: () => tracker.stopSessionReplay(),
+    isSessionReplayActive: () => tracker.isSessionReplayActive(),
   };
 
   // Initialize
   setupEventListeners();
+
+  // Setup cleanup on page unload
+  window.addEventListener("beforeunload", () => {
+    tracker.cleanup();
+  });
 
   // Track initial pageview if enabled
   if (config!.autoTrackPageview) {

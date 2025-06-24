@@ -38,6 +38,10 @@ import { updateGoal } from "./api/analytics/goals/updateGoal.js";
 import { getPerformanceByDimension } from "./api/analytics/performance/getPerformanceByDimension.js";
 import { getPerformanceOverview } from "./api/analytics/performance/getPerformanceOverview.js";
 import { getPerformanceTimeSeries } from "./api/analytics/performance/getPerformanceTimeSeries.js";
+import { recordSessionReplay } from "./api/sessionReplay/recordSessionReplay.js";
+import { getSessionReplays } from "./api/sessionReplay/getSessionReplays.js";
+import { getSessionReplayEvents } from "./api/sessionReplay/getSessionReplayEvents.js";
+import { markSessionComplete } from "./api/sessionReplay/markSessionComplete.js";
 import { getConfig } from "./api/getConfig.js";
 import { addSite } from "./api/sites/addSite.js";
 import { changeSiteBlockBots } from "./api/sites/changeSiteBlockBots.js";
@@ -134,6 +138,7 @@ const PUBLIC_ROUTES: string[] = [
   "/api/auth/callback/google",
   "/api/auth/callback/github",
   "/api/stripe/webhook",
+  "/api/session-replay/record",
 ];
 
 // Define analytics routes that can be public
@@ -169,6 +174,8 @@ const ANALYTICS_ROUTES = [
   "/api/error-names/",
   "/api/error-events/",
   "/api/error-bucketed/",
+  "/api/session-replay/list/",
+  "/api/session-replay/",
 ];
 
 server.addHook("onRequest", async (request, reply) => {
@@ -256,6 +263,12 @@ server.get("/api/org-event-count/:organizationId", getOrgEventCount);
 server.get("/api/performance/overview/:site", getPerformanceOverview);
 server.get("/api/performance/time-series/:site", getPerformanceTimeSeries);
 server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
+
+// Session Replay
+server.post("/api/session-replay/record/:site", recordSessionReplay);
+server.get("/api/session-replay/list/:site", getSessionReplays);
+server.get("/api/session-replay/:site/:sessionId", getSessionReplayEvents);
+server.post("/api/session-replay/complete/:site/:sessionId", markSessionComplete);
 
 // Administrative
 server.get("/api/config", getConfig);
