@@ -3,12 +3,6 @@
     # Enable compression
     encode zstd gzip
 
-    # General timeouts
-    timeouts {
-        read_body 30s
-        write 30s
-    }
-
     handle /api/* {
         max_size 10MB
         reverse_proxy backend:3001
