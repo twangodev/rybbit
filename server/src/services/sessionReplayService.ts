@@ -143,8 +143,8 @@ export class SessionReplayService {
           site_id: siteId,
           session_id: sessionId,
           user_id: userId,
-          start_time: startTime,
-          end_time: endTime,
+          start_time: Math.floor(startTime.getTime() / 1000), // Convert to Unix timestamp
+          end_time: endTime ? Math.floor(endTime.getTime() / 1000) : null, // Convert to Unix timestamp
           duration_ms: durationMs,
           event_count: sessionReplayData.event_count || 0,
           compressed_size_bytes: sessionReplayData.compressed_size_bytes || 0,
