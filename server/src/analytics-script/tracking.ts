@@ -74,7 +74,7 @@ export class Tracker {
           },
           body: JSON.stringify(batch),
           mode: "cors",
-          keepalive: true,
+          keepalive: false, // Disable keepalive for large session replay requests
         }
       );
     } catch (error) {

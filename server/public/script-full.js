@@ -1,36 +1,19 @@
 "use strict";
 (() => {
   var __defProp = Object.defineProperty;
-  var __defNormalProp = (obj, key, value) =>
-    key in obj
-      ? __defProp(obj, key, {
-          enumerable: true,
-          configurable: true,
-          writable: true,
-          value,
-        })
-      : (obj[key] = value);
-  var __publicField = (obj, key, value) =>
-    __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
 
   // utils.ts
   function patternToRegex(pattern) {
     const DOUBLE_WILDCARD_TOKEN = "__DOUBLE_ASTERISK_TOKEN__";
     const SINGLE_WILDCARD_TOKEN = "__SINGLE_ASTERISK_TOKEN__";
-    let tokenized = pattern
-      .replace(/\*\*/g, DOUBLE_WILDCARD_TOKEN)
-      .replace(/\*/g, SINGLE_WILDCARD_TOKEN);
+    let tokenized = pattern.replace(/\*\*/g, DOUBLE_WILDCARD_TOKEN).replace(/\*/g, SINGLE_WILDCARD_TOKEN);
     let escaped = tokenized.replace(/[.+?^${}()|[\]\\]/g, "\\$&");
-    escaped = escaped.replace(
-      new RegExp(`/${DOUBLE_WILDCARD_TOKEN}/`, "g"),
-      "/(?:.+/)?"
-    );
+    escaped = escaped.replace(new RegExp(`/${DOUBLE_WILDCARD_TOKEN}/`, "g"), "/(?:.+/)?");
     escaped = escaped.replace(new RegExp(DOUBLE_WILDCARD_TOKEN, "g"), ".*");
     escaped = escaped.replace(/\//g, "\\/");
-    let regexPattern = escaped.replace(
-      new RegExp(SINGLE_WILDCARD_TOKEN, "g"),
-      "[^/]+"
-    );
+    let regexPattern = escaped.replace(new RegExp(SINGLE_WILDCARD_TOKEN, "g"), "[^/]+");
     return new RegExp("^" + regexPattern + "$");
   }
   function findMatchingPattern(path, patterns) {
@@ -68,9 +51,7 @@
     if (!value) return fallback;
     try {
       const parsed = JSON.parse(value);
-      return Array.isArray(fallback) && !Array.isArray(parsed)
-        ? fallback
-        : parsed;
+      return Array.isArray(fallback) && !Array.isArray(parsed) ? fallback : parsed;
     } catch (e2) {
       console.error("Error parsing JSON:", e2);
       return fallback;
@@ -89,18 +70,14 @@
       console.error("Please provide a valid analytics host");
       return null;
     }
-    const siteId =
-      scriptTag.getAttribute("data-site-id") ||
-      scriptTag.getAttribute("site-id");
+    const siteId = scriptTag.getAttribute("data-site-id") || scriptTag.getAttribute("site-id");
     if (!siteId || isNaN(Number(siteId))) {
       console.error(
         "Please provide a valid site ID using the data-site-id attribute"
       );
       return null;
     }
-    const debounceDuration = scriptTag.getAttribute("data-debounce")
-      ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce")))
-      : 500;
+    const debounceDuration = scriptTag.getAttribute("data-debounce") ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce"))) : 500;
     const skipPatterns = parseJsonSafely(
       scriptTag.getAttribute("data-skip-patterns"),
       []
@@ -112,35 +89,30 @@
     const apiKey = scriptTag.getAttribute("data-api-key") || void 0;
     const sessionReplayBatchSize = scriptTag.getAttribute(
       "data-replay-batch-size"
-    )
-      ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size")))
-      : 50;
+    ) ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 3;
     const sessionReplayBatchInterval = scriptTag.getAttribute(
       "data-replay-batch-interval"
-    )
-      ? Math.max(
-          1e3,
-          parseInt(scriptTag.getAttribute("data-replay-batch-interval"))
-        )
-      : 5e3;
+    ) ? Math.max(
+      1e3,
+      parseInt(scriptTag.getAttribute("data-replay-batch-interval"))
+    ) : 2e3;
+    console.info(scriptTag);
     return {
       analyticsHost,
       siteId,
       debounceDuration,
-      autoTrackPageview:
-        scriptTag.getAttribute("data-auto-track-pageview") !== "false",
+      autoTrackPageview: scriptTag.getAttribute("data-auto-track-pageview") !== "false",
       autoTrackSpa: scriptTag.getAttribute("data-track-spa") !== "false",
       trackQuerystring: scriptTag.getAttribute("data-track-query") !== "false",
       trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
       enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
       trackErrors: scriptTag.getAttribute("data-track-errors") === "true",
-      enableSessionReplay:
-        scriptTag.getAttribute("data-session-replay") === "true",
+      enableSessionReplay: scriptTag.getAttribute("data-session-replay") === "true",
       sessionReplayBatchSize,
       sessionReplayBatchInterval,
       skipPatterns,
       maskPatterns,
-      apiKey,
+      apiKey
     };
   }
 
@@ -170,8 +142,7 @@
     async loadRrweb() {
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src =
-          "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
+        script.src = "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
         script.async = false;
         script.onload = () => {
           console.log("[Session Replay] rrweb loaded successfully");
@@ -182,26 +153,16 @@
       });
     }
     startRecording() {
-      if (
-        this.isRecording ||
-        !window.rrweb ||
-        !this.config.enableSessionReplay
-      ) {
+      if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
         console.log("[Session Replay] Cannot start recording:", {
           isRecording: this.isRecording,
           hasRrweb: !!window.rrweb,
-          enableSessionReplay: this.config.enableSessionReplay,
+          enableSessionReplay: this.config.enableSessionReplay
         });
         return;
       }
-      console.log(
-        "[Session Replay] Starting recording at",
-        /* @__PURE__ */ new Date().toISOString()
-      );
-      console.log(
-        "[Session Replay] Document ready state:",
-        document.readyState
-      );
+      console.log("[Session Replay] Starting recording at", (/* @__PURE__ */ new Date()).toISOString());
+      console.log("[Session Replay] Document ready state:", document.readyState);
       try {
         this.stopRecordingFn = window.rrweb.record({
           emit: (event) => {
@@ -212,17 +173,14 @@
               3: "IncrementalSnapshot",
               4: "Meta",
               5: "Custom",
-              6: "Plugin",
+              6: "Plugin"
             };
-            const typeName =
-              eventTypeNames[event.type] || `Unknown(${event.type})`;
-            console.log(
-              `[Session Replay] Event collected: Type ${event.type} (${typeName}) at ${new Date(event.timestamp || Date.now()).toISOString()}`
-            );
+            const typeName = eventTypeNames[event.type] || `Unknown(${event.type})`;
+            console.log(`[Session Replay] Event collected: Type ${event.type} (${typeName}) at ${new Date(event.timestamp || Date.now()).toISOString()}`);
             this.addEvent({
               type: event.type,
               data: event.data,
-              timestamp: event.timestamp || Date.now(),
+              timestamp: event.timestamp || Date.now()
             });
           },
           recordCanvas: true,
@@ -237,7 +195,7 @@
           // Mask all input values for privacy
           maskInputOptions: {
             password: true,
-            email: true,
+            email: true
           },
           slimDOMOptions: {
             script: false,
@@ -249,7 +207,7 @@
             headMetaRobots: true,
             headMetaHttpEquiv: true,
             headMetaAuthorship: true,
-            headMetaVerification: true,
+            headMetaVerification: true
           },
           sampling: {
             // Optional: reduce recording frequency to save bandwidth
@@ -258,9 +216,9 @@
             mouseInteraction: true,
             scroll: 150,
             // Sample scroll events every 150ms
-            input: "last",
+            input: "last"
             // Only record the final input value
-          },
+          }
         });
         this.isRecording = true;
         this.setupBatchTimer();
@@ -288,13 +246,9 @@
     }
     addEvent(event) {
       this.eventBuffer.push(event);
-      console.log(
-        `[Session Replay] Event added to buffer (${this.eventBuffer.length}/${this.config.sessionReplayBatchSize})`
-      );
+      console.log(`[Session Replay] Event added to buffer (${this.eventBuffer.length}/${this.config.sessionReplayBatchSize})`);
       if (this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
-        console.log(
-          `[Session Replay] Buffer full, flushing ${this.eventBuffer.length} events`
-        );
+        console.log(`[Session Replay] Buffer full, flushing ${this.eventBuffer.length} events`);
         this.flushEvents();
       }
     }
@@ -302,9 +256,7 @@
       this.clearBatchTimer();
       this.batchTimer = window.setInterval(() => {
         if (this.eventBuffer.length > 0) {
-          console.log(
-            `[Session Replay] Timer triggered, flushing ${this.eventBuffer.length} events`
-          );
+          console.log(`[Session Replay] Timer triggered, flushing ${this.eventBuffer.length} events`);
           this.flushEvents();
         }
       }, this.config.sessionReplayBatchInterval);
@@ -321,18 +273,9 @@
       }
       const events = [...this.eventBuffer];
       this.eventBuffer = [];
-      console.log(
-        `[Session Replay] Sending batch with ${events.length} events to server`
-      );
-      console.log(
-        `[Session Replay] Event types in batch:`,
-        events.map((e2) => `Type ${e2.type}`).join(", ")
-      );
-      console.log(
-        `[Session Replay] Batch size:`,
-        JSON.stringify(events).length,
-        "characters"
-      );
+      console.log(`[Session Replay] Sending batch with ${events.length} events to server`);
+      console.log(`[Session Replay] Event types in batch:`, events.map((e2) => `Type ${e2.type}`).join(", "));
+      console.log(`[Session Replay] Batch size:`, JSON.stringify(events).length, "characters");
       const batch = {
         sessionId: this.sessionId,
         userId: this.userId,
@@ -340,14 +283,12 @@
         metadata: {
           pageUrl: window.location.href,
           viewportWidth: window.innerWidth,
-          viewportHeight: window.innerHeight,
-        },
+          viewportHeight: window.innerHeight
+        }
       };
       try {
         await this.sendBatch(batch);
-        console.log(
-          `[Session Replay] Successfully sent batch with ${events.length} events`
-        );
+        console.log(`[Session Replay] Successfully sent batch with ${events.length} events`);
       } catch (error) {
         console.error("Failed to send session replay batch:", error);
         console.error("Failed batch details:", {
@@ -356,11 +297,9 @@
           batchSize: JSON.stringify(batch).length,
           sessionId: this.sessionId,
           userId: this.userId,
-          url: window.location.href,
+          url: window.location.href
         });
-        console.log(
-          `[Session Replay] Re-queuing ${events.length} failed events for retry`
-        );
+        console.log(`[Session Replay] Re-queuing ${events.length} failed events for retry`);
         this.eventBuffer.unshift(...events);
       }
     }
@@ -400,7 +339,8 @@
         if (storedUserId) {
           this.customUserId = storedUserId;
         }
-      } catch (e2) {}
+      } catch (e2) {
+      }
     }
     generateSessionId() {
       return Math.random().toString(36).substring(2) + Date.now().toString(36);
@@ -419,11 +359,7 @@
       }
     }
     generateUserId() {
-      return (
-        "anon_" +
-        Math.random().toString(36).substring(2) +
-        Date.now().toString(36)
-      );
+      return "anon_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
     }
     async sendSessionReplayBatch(batch) {
       try {
@@ -432,11 +368,12 @@
           {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
+              "Content-Type": "application/json"
             },
             body: JSON.stringify(batch),
             mode: "cors",
-            keepalive: true,
+            keepalive: false
+            // Disable keepalive for large session replay requests
           }
         );
       } catch (error) {
@@ -466,7 +403,7 @@
         screenHeight: window.innerHeight,
         language: navigator.language,
         page_title: document.title,
-        referrer: document.referrer,
+        referrer: document.referrer
       };
       if (this.customUserId) {
         payload.user_id = this.customUserId;
@@ -481,21 +418,18 @@
         await fetch(`${this.config.analyticsHost}/track`, {
           method: "POST",
           headers: {
-            "Content-Type": "application/json",
+            "Content-Type": "application/json"
           },
           body: JSON.stringify(payload),
           mode: "cors",
-          keepalive: true,
+          keepalive: true
         });
       } catch (error) {
         console.error("Failed to send tracking data:", error);
       }
     }
     track(eventType, eventName = "", properties = {}) {
-      if (
-        eventType === "custom_event" &&
-        (!eventName || typeof eventName !== "string")
-      ) {
+      if (eventType === "custom_event" && (!eventName || typeof eventName !== "string")) {
         console.error(
           "Event name is required and must be a string for custom events"
         );
@@ -509,12 +443,7 @@
         ...basePayload,
         type: eventType,
         event_name: eventName,
-        properties:
-          eventType === "custom_event" ||
-          eventType === "outbound" ||
-          eventType === "error"
-            ? JSON.stringify(properties)
-            : void 0,
+        properties: eventType === "custom_event" || eventType === "outbound" || eventType === "error" ? JSON.stringify(properties) : void 0
       };
       this.sendTrackingData(payload);
     }
@@ -536,7 +465,7 @@
         ...basePayload,
         type: "performance",
         event_name: "web-vitals",
-        ...vitals,
+        ...vitals
       };
       this.sendTrackingData(payload);
     }
@@ -550,7 +479,8 @@
           if (fileUrl.origin !== currentOrigin) {
             return;
           }
-        } catch (e2) {}
+        } catch (e2) {
+        }
       } else if (errorStack) {
         if (!errorStack.includes(currentOrigin)) {
           return;
@@ -559,35 +489,26 @@
       const errorProperties = {
         message: error.message?.substring(0, 500) || "Unknown error",
         // Truncate to 500 chars
-        stack: errorStack.substring(0, 2e3) || "",
+        stack: errorStack.substring(0, 2e3) || ""
         // Truncate to 2000 chars
       };
       if (filename) {
         errorProperties.fileName = filename;
       }
       if (additionalInfo.lineno) {
-        const lineNum =
-          typeof additionalInfo.lineno === "string"
-            ? parseInt(additionalInfo.lineno, 10)
-            : additionalInfo.lineno;
+        const lineNum = typeof additionalInfo.lineno === "string" ? parseInt(additionalInfo.lineno, 10) : additionalInfo.lineno;
         if (lineNum && lineNum !== 0) {
           errorProperties.lineNumber = lineNum;
         }
       }
       if (additionalInfo.colno) {
-        const colNum =
-          typeof additionalInfo.colno === "string"
-            ? parseInt(additionalInfo.colno, 10)
-            : additionalInfo.colno;
+        const colNum = typeof additionalInfo.colno === "string" ? parseInt(additionalInfo.colno, 10) : additionalInfo.colno;
         if (colNum && colNum !== 0) {
           errorProperties.columnNumber = colNum;
         }
       }
       for (const key in additionalInfo) {
-        if (
-          !["lineno", "colno"].includes(key) &&
-          additionalInfo[key] !== void 0
-        ) {
+        if (!["lineno", "colno"].includes(key) && additionalInfo[key] !== void 0) {
           errorProperties[key] = additionalInfo[key];
         }
       }
@@ -612,7 +533,8 @@
       this.customUserId = null;
       try {
         localStorage.removeItem("rybbit-user-id");
-      } catch (e2) {}
+      } catch (e2) {
+      }
     }
     getUserId() {
       return this.customUserId;
@@ -650,29 +572,14 @@
   // ../../node_modules/web-vitals/dist/web-vitals.js
   var e = -1;
   var t = (t2) => {
-    addEventListener(
-      "pageshow",
-      (n2) => {
-        n2.persisted && ((e = n2.timeStamp), t2(n2));
-      },
-      true
-    );
+    addEventListener("pageshow", (n2) => {
+      n2.persisted && (e = n2.timeStamp, t2(n2));
+    }, true);
   };
   var n = (e2, t2, n2, i2) => {
     let o2, s2;
     return (r2) => {
-      t2.value >= 0 &&
-        (r2 || i2) &&
-        ((s2 = t2.value - (o2 ?? 0)),
-        (s2 || void 0 === o2) &&
-          ((o2 = t2.value),
-          (t2.delta = s2),
-          (t2.rating = ((e3, t3) =>
-            e3 > t3[1] ? "poor" : e3 > t3[0] ? "needs-improvement" : "good")(
-            t2.value,
-            n2
-          )),
-          e2(t2)));
+      t2.value >= 0 && (r2 || i2) && (s2 = t2.value - (o2 ?? 0), (s2 || void 0 === o2) && (o2 = t2.value, t2.delta = s2, t2.rating = ((e3, t3) => e3 > t3[1] ? "poor" : e3 > t3[0] ? "needs-improvement" : "good")(t2.value, n2), e2(t2)));
     };
   };
   var i = (e2) => {
@@ -680,8 +587,7 @@
   };
   var o = () => {
     const e2 = performance.getEntriesByType("navigation")[0];
-    if (e2 && e2.responseStart > 0 && e2.responseStart < performance.now())
-      return e2;
+    if (e2 && e2.responseStart > 0 && e2.responseStart < performance.now()) return e2;
   };
   var s = () => {
     const e2 = o();
@@ -690,23 +596,8 @@
   var r = (t2, n2 = -1) => {
     const i2 = o();
     let r2 = "navigate";
-    e >= 0
-      ? (r2 = "back-forward-cache")
-      : i2 &&
-        (document.prerendering || s() > 0
-          ? (r2 = "prerender")
-          : document.wasDiscarded
-            ? (r2 = "restore")
-            : i2.type && (r2 = i2.type.replace(/_/g, "-")));
-    return {
-      name: t2,
-      value: n2,
-      rating: "good",
-      delta: 0,
-      entries: [],
-      id: `v5-${Date.now()}-${Math.floor(8999999999999 * Math.random()) + 1e12}`,
-      navigationType: r2,
-    };
+    e >= 0 ? r2 = "back-forward-cache" : i2 && (document.prerendering || s() > 0 ? r2 = "prerender" : document.wasDiscarded ? r2 = "restore" : i2.type && (r2 = i2.type.replace(/_/g, "-")));
+    return { name: t2, value: n2, rating: "good", delta: 0, entries: [], id: `v5-${Date.now()}-${Math.floor(8999999999999 * Math.random()) + 1e12}`, navigationType: r2 };
   };
   var c = /* @__PURE__ */ new WeakMap();
   function a(e2, t2) {
@@ -720,16 +611,8 @@
     }
     h(e2) {
       if (e2.hadRecentInput) return;
-      const t2 = this.o[0],
-        n2 = this.o.at(-1);
-      this.i &&
-      t2 &&
-      n2 &&
-      e2.startTime - n2.startTime < 1e3 &&
-      e2.startTime - t2.startTime < 5e3
-        ? ((this.i += e2.value), this.o.push(e2))
-        : ((this.i = e2.value), (this.o = [e2])),
-        this.t?.(e2);
+      const t2 = this.o[0], n2 = this.o.at(-1);
+      this.i && t2 && n2 && e2.startTime - n2.startTime < 1e3 && e2.startTime - t2.startTime < 5e3 ? (this.i += e2.value, this.o.push(e2)) : (this.i = e2.value, this.o = [e2]), this.t?.(e2);
     }
   };
   var h = (e2, t2, n2 = {}) => {
@@ -742,132 +625,82 @@
         });
         return i2.observe({ type: e2, buffered: true, ...n2 }), i2;
       }
-    } catch {}
+    } catch {
+    }
   };
   var f = (e2) => {
     let t2 = false;
     return () => {
-      t2 || (e2(), (t2 = true));
+      t2 || (e2(), t2 = true);
     };
   };
   var u = -1;
-  var l = () =>
-    "hidden" !== document.visibilityState || document.prerendering ? 1 / 0 : 0;
+  var l = () => "hidden" !== document.visibilityState || document.prerendering ? 1 / 0 : 0;
   var m = (e2) => {
-    "hidden" === document.visibilityState &&
-      u > -1 &&
-      ((u = "visibilitychange" === e2.type ? e2.timeStamp : 0), v());
+    "hidden" === document.visibilityState && u > -1 && (u = "visibilitychange" === e2.type ? e2.timeStamp : 0, v());
   };
   var g = () => {
-    addEventListener("visibilitychange", m, true),
-      addEventListener("prerenderingchange", m, true);
+    addEventListener("visibilitychange", m, true), addEventListener("prerenderingchange", m, true);
   };
   var v = () => {
-    removeEventListener("visibilitychange", m, true),
-      removeEventListener("prerenderingchange", m, true);
+    removeEventListener("visibilitychange", m, true), removeEventListener("prerenderingchange", m, true);
   };
   var p = () => {
     if (u < 0) {
-      const e2 = s(),
-        n2 = document.prerendering
-          ? void 0
-          : globalThis.performance
-              .getEntriesByType("visibility-state")
-              .filter((t2) => "hidden" === t2.name && t2.startTime > e2)[0]
-              ?.startTime;
-      (u = n2 ?? l()),
-        g(),
-        t(() => {
-          setTimeout(() => {
-            (u = l()), g();
-          });
+      const e2 = s(), n2 = document.prerendering ? void 0 : globalThis.performance.getEntriesByType("visibility-state").filter((t2) => "hidden" === t2.name && t2.startTime > e2)[0]?.startTime;
+      u = n2 ?? l(), g(), t(() => {
+        setTimeout(() => {
+          u = l(), g();
         });
+      });
     }
-    return {
-      get firstHiddenTime() {
-        return u;
-      },
-    };
+    return { get firstHiddenTime() {
+      return u;
+    } };
   };
   var y = (e2) => {
-    document.prerendering
-      ? addEventListener("prerenderingchange", () => e2(), true)
-      : e2();
+    document.prerendering ? addEventListener("prerenderingchange", () => e2(), true) : e2();
   };
   var b = [1800, 3e3];
   var P = (e2, o2 = {}) => {
     y(() => {
       const c2 = p();
-      let a2,
-        d2 = r("FCP");
+      let a2, d2 = r("FCP");
       const f2 = h("paint", (e3) => {
-        for (const t2 of e3)
-          "first-contentful-paint" === t2.name &&
-            (f2.disconnect(),
-            t2.startTime < c2.firstHiddenTime &&
-              ((d2.value = Math.max(t2.startTime - s(), 0)),
-              d2.entries.push(t2),
-              a2(true)));
+        for (const t2 of e3) "first-contentful-paint" === t2.name && (f2.disconnect(), t2.startTime < c2.firstHiddenTime && (d2.value = Math.max(t2.startTime - s(), 0), d2.entries.push(t2), a2(true)));
       });
-      f2 &&
-        ((a2 = n(e2, d2, b, o2.reportAllChanges)),
-        t((t2) => {
-          (d2 = r("FCP")),
-            (a2 = n(e2, d2, b, o2.reportAllChanges)),
-            i(() => {
-              (d2.value = performance.now() - t2.timeStamp), a2(true);
-            });
-        }));
+      f2 && (a2 = n(e2, d2, b, o2.reportAllChanges), t((t2) => {
+        d2 = r("FCP"), a2 = n(e2, d2, b, o2.reportAllChanges), i(() => {
+          d2.value = performance.now() - t2.timeStamp, a2(true);
+        });
+      }));
     });
   };
   var T = [0.1, 0.25];
   var E = (e2, o2 = {}) => {
-    P(
-      f(() => {
-        let s2,
-          c2 = r("CLS", 0);
-        const f2 = a(o2, d),
-          u2 = (e3) => {
-            for (const t2 of e3) f2.h(t2);
-            f2.i > c2.value && ((c2.value = f2.i), (c2.entries = f2.o), s2());
-          },
-          l2 = h("layout-shift", u2);
-        l2 &&
-          ((s2 = n(e2, c2, T, o2.reportAllChanges)),
-          document.addEventListener("visibilitychange", () => {
-            "hidden" === document.visibilityState &&
-              (u2(l2.takeRecords()), s2(true));
-          }),
-          t(() => {
-            (f2.i = 0),
-              (c2 = r("CLS", 0)),
-              (s2 = n(e2, c2, T, o2.reportAllChanges)),
-              i(() => s2());
-          }),
-          setTimeout(s2));
-      })
-    );
+    P(f(() => {
+      let s2, c2 = r("CLS", 0);
+      const f2 = a(o2, d), u2 = (e3) => {
+        for (const t2 of e3) f2.h(t2);
+        f2.i > c2.value && (c2.value = f2.i, c2.entries = f2.o, s2());
+      }, l2 = h("layout-shift", u2);
+      l2 && (s2 = n(e2, c2, T, o2.reportAllChanges), document.addEventListener("visibilitychange", () => {
+        "hidden" === document.visibilityState && (u2(l2.takeRecords()), s2(true));
+      }), t(() => {
+        f2.i = 0, c2 = r("CLS", 0), s2 = n(e2, c2, T, o2.reportAllChanges), i(() => s2());
+      }), setTimeout(s2));
+    }));
   };
   var _ = 0;
   var L = 1 / 0;
   var M = 0;
   var C = (e2) => {
-    for (const t2 of e2)
-      t2.interactionId &&
-        ((L = Math.min(L, t2.interactionId)),
-        (M = Math.max(M, t2.interactionId)),
-        (_ = M ? (M - L) / 7 + 1 : 0));
+    for (const t2 of e2) t2.interactionId && (L = Math.min(L, t2.interactionId), M = Math.max(M, t2.interactionId), _ = M ? (M - L) / 7 + 1 : 0);
   };
   var I;
-  var w = () => (I ? _ : (performance.interactionCount ?? 0));
+  var w = () => I ? _ : performance.interactionCount ?? 0;
   var F = () => {
-    "interactionCount" in performance ||
-      I ||
-      (I = h("event", C, {
-        type: "event",
-        buffered: true,
-        durationThreshold: 0,
-      }));
+    "interactionCount" in performance || I || (I = h("event", C, { type: "event", buffered: true, durationThreshold: 0 }));
   };
   var k = 0;
   var A = class {
@@ -878,31 +711,18 @@
       __publicField(this, "v");
     }
     p() {
-      (k = w()), (this.u.length = 0), this.l.clear();
+      k = w(), this.u.length = 0, this.l.clear();
     }
     P() {
       const e2 = Math.min(this.u.length - 1, Math.floor((w() - k) / 50));
       return this.u[e2];
     }
     h(e2) {
-      if ((this.m?.(e2), !e2.interactionId && "first-input" !== e2.entryType))
-        return;
+      if (this.m?.(e2), !e2.interactionId && "first-input" !== e2.entryType) return;
       const t2 = this.u.at(-1);
       let n2 = this.l.get(e2.interactionId);
       if (n2 || this.u.length < 10 || e2.duration > t2.T) {
-        if (
-          (n2
-            ? e2.duration > n2.T
-              ? ((n2.entries = [e2]), (n2.T = e2.duration))
-              : e2.duration === n2.T &&
-                e2.startTime === n2.entries[0].startTime &&
-                n2.entries.push(e2)
-            : ((n2 = { id: e2.interactionId, entries: [e2], T: e2.duration }),
-              this.l.set(n2.id, n2),
-              this.u.push(n2)),
-          this.u.sort((e3, t3) => t3.T - e3.T),
-          this.u.length > 10)
-        ) {
+        if (n2 ? e2.duration > n2.T ? (n2.entries = [e2], n2.T = e2.duration) : e2.duration === n2.T && e2.startTime === n2.entries[0].startTime && n2.entries.push(e2) : (n2 = { id: e2.interactionId, entries: [e2], T: e2.duration }, this.l.set(n2.id, n2), this.u.push(n2)), this.u.sort((e3, t3) => t3.T - e3.T), this.u.length > 10) {
           const e3 = this.u.splice(10);
           for (const t3 of e3) this.l.delete(t3.id);
         }
@@ -912,46 +732,28 @@
   };
   var B = (e2) => {
     const t2 = globalThis.requestIdleCallback || setTimeout;
-    "hidden" === document.visibilityState
-      ? e2()
-      : ((e2 = f(e2)),
-        document.addEventListener("visibilitychange", e2, { once: true }),
-        t2(() => {
-          e2(), document.removeEventListener("visibilitychange", e2);
-        }));
+    "hidden" === document.visibilityState ? e2() : (e2 = f(e2), document.addEventListener("visibilitychange", e2, { once: true }), t2(() => {
+      e2(), document.removeEventListener("visibilitychange", e2);
+    }));
   };
   var N = [200, 500];
   var S = (e2, i2 = {}) => {
-    globalThis.PerformanceEventTiming &&
-      "interactionId" in PerformanceEventTiming.prototype &&
-      y(() => {
-        F();
-        let o2,
-          s2 = r("INP");
-        const c2 = a(i2, A),
-          d2 = (e3) => {
-            B(() => {
-              for (const t3 of e3) c2.h(t3);
-              const t2 = c2.P();
-              t2 &&
-                t2.T !== s2.value &&
-                ((s2.value = t2.T), (s2.entries = t2.entries), o2());
-            });
-          },
-          f2 = h("event", d2, {
-            durationThreshold: i2.durationThreshold ?? 40,
-          });
-        (o2 = n(e2, s2, N, i2.reportAllChanges)),
-          f2 &&
-            (f2.observe({ type: "first-input", buffered: true }),
-            document.addEventListener("visibilitychange", () => {
-              "hidden" === document.visibilityState &&
-                (d2(f2.takeRecords()), o2(true));
-            }),
-            t(() => {
-              c2.p(), (s2 = r("INP")), (o2 = n(e2, s2, N, i2.reportAllChanges));
-            }));
-      });
+    globalThis.PerformanceEventTiming && "interactionId" in PerformanceEventTiming.prototype && y(() => {
+      F();
+      let o2, s2 = r("INP");
+      const c2 = a(i2, A), d2 = (e3) => {
+        B(() => {
+          for (const t3 of e3) c2.h(t3);
+          const t2 = c2.P();
+          t2 && t2.T !== s2.value && (s2.value = t2.T, s2.entries = t2.entries, o2());
+        });
+      }, f2 = h("event", d2, { durationThreshold: i2.durationThreshold ?? 40 });
+      o2 = n(e2, s2, N, i2.reportAllChanges), f2 && (f2.observe({ type: "first-input", buffered: true }), document.addEventListener("visibilitychange", () => {
+        "hidden" === document.visibilityState && (d2(f2.takeRecords()), o2(true));
+      }), t(() => {
+        c2.p(), s2 = r("INP"), o2 = n(e2, s2, N, i2.reportAllChanges);
+      }));
+    });
   };
   var q = class {
     constructor() {
@@ -965,58 +767,36 @@
   var O = (e2, o2 = {}) => {
     y(() => {
       const c2 = p();
-      let d2,
-        u2 = r("LCP");
-      const l2 = a(o2, q),
-        m2 = (e3) => {
-          o2.reportAllChanges || (e3 = e3.slice(-1));
-          for (const t2 of e3)
-            l2.h(t2),
-              t2.startTime < c2.firstHiddenTime &&
-                ((u2.value = Math.max(t2.startTime - s(), 0)),
-                (u2.entries = [t2]),
-                d2());
-        },
-        g2 = h("largest-contentful-paint", m2);
+      let d2, u2 = r("LCP");
+      const l2 = a(o2, q), m2 = (e3) => {
+        o2.reportAllChanges || (e3 = e3.slice(-1));
+        for (const t2 of e3) l2.h(t2), t2.startTime < c2.firstHiddenTime && (u2.value = Math.max(t2.startTime - s(), 0), u2.entries = [t2], d2());
+      }, g2 = h("largest-contentful-paint", m2);
       if (g2) {
         d2 = n(e2, u2, x, o2.reportAllChanges);
         const s2 = f(() => {
           m2(g2.takeRecords()), g2.disconnect(), d2(true);
         });
-        for (const e3 of ["keydown", "click", "visibilitychange"])
-          addEventListener(e3, () => B(s2), { capture: true, once: true });
+        for (const e3 of ["keydown", "click", "visibilitychange"]) addEventListener(e3, () => B(s2), { capture: true, once: true });
         t((t2) => {
-          (u2 = r("LCP")),
-            (d2 = n(e2, u2, x, o2.reportAllChanges)),
-            i(() => {
-              (u2.value = performance.now() - t2.timeStamp), d2(true);
-            });
+          u2 = r("LCP"), d2 = n(e2, u2, x, o2.reportAllChanges), i(() => {
+            u2.value = performance.now() - t2.timeStamp, d2(true);
+          });
         });
       }
     });
   };
   var $ = [800, 1800];
   var D = (e2) => {
-    document.prerendering
-      ? y(() => D(e2))
-      : "complete" !== document.readyState
-        ? addEventListener("load", () => D(e2), true)
-        : setTimeout(e2);
+    document.prerendering ? y(() => D(e2)) : "complete" !== document.readyState ? addEventListener("load", () => D(e2), true) : setTimeout(e2);
   };
   var H = (e2, i2 = {}) => {
-    let c2 = r("TTFB"),
-      a2 = n(e2, c2, $, i2.reportAllChanges);
+    let c2 = r("TTFB"), a2 = n(e2, c2, $, i2.reportAllChanges);
     D(() => {
       const d2 = o();
-      d2 &&
-        ((c2.value = Math.max(d2.responseStart - s(), 0)),
-        (c2.entries = [d2]),
-        a2(true),
-        t(() => {
-          (c2 = r("TTFB", 0)),
-            (a2 = n(e2, c2, $, i2.reportAllChanges)),
-            a2(true);
-        }));
+      d2 && (c2.value = Math.max(d2.responseStart - s(), 0), c2.entries = [d2], a2(true), t(() => {
+        c2 = r("TTFB", 0), a2 = n(e2, c2, $, i2.reportAllChanges), a2(true);
+      }));
     });
   };
 
@@ -1028,7 +808,7 @@
         cls: null,
         inp: null,
         fcp: null,
-        ttfb: null,
+        ttfb: null
       };
       this.sent = false;
       this.timeout = null;
@@ -1060,9 +840,7 @@
       if (this.sent) return;
       const metricName = metric.name.toLowerCase();
       this.data[metricName] = metric.value;
-      const allCollected = Object.values(this.data).every(
-        (value) => value !== null
-      );
+      const allCollected = Object.values(this.data).every((value) => value !== null);
       if (allCollected) {
         this.sendData();
       }
@@ -1084,26 +862,30 @@
   };
 
   // index.ts
-  (function () {
+  (function() {
     const scriptTag = document.currentScript;
     if (!scriptTag) {
       console.error("Could not find current script tag");
       return;
     }
-    if (
-      window.__RYBBIT_OPTOUT__ ||
-      localStorage.getItem("disable-rybbit") !== null
-    ) {
+    if (window.__RYBBIT_OPTOUT__ || localStorage.getItem("disable-rybbit") !== null) {
       window.rybbit = {
-        pageview: () => {},
-        event: () => {},
-        trackOutbound: () => {},
-        identify: () => {},
-        clearUserId: () => {},
+        pageview: () => {
+        },
+        event: () => {
+        },
+        trackOutbound: () => {
+        },
+        identify: () => {
+        },
+        clearUserId: () => {
+        },
         getUserId: () => null,
-        startSessionReplay: () => {},
-        stopSessionReplay: () => {},
-        isSessionReplayActive: () => false,
+        startSessionReplay: () => {
+        },
+        stopSessionReplay: () => {
+        },
+        isSessionReplayActive: () => false
       };
       return;
     }
@@ -1113,9 +895,11 @@
     }
     const tracker = new Tracker(config);
     if (config.enableWebVitals) {
-      const webVitalsCollector = new WebVitalsCollector((vitals) => {
-        tracker.trackWebVitals(vitals);
-      });
+      const webVitalsCollector = new WebVitalsCollector(
+        (vitals) => {
+          tracker.trackWebVitals(vitals);
+        }
+      );
       webVitalsCollector.initialize();
     }
     if (config.trackErrors) {
@@ -1123,26 +907,20 @@
         tracker.trackError(event.error || new Error(event.message), {
           filename: event.filename,
           lineno: event.lineno,
-          colno: event.colno,
+          colno: event.colno
         });
       });
       window.addEventListener("unhandledrejection", (event) => {
-        const error =
-          event.reason instanceof Error
-            ? event.reason
-            : new Error(String(event.reason));
+        const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
         tracker.trackError(error, {
-          type: "unhandledrejection",
+          type: "unhandledrejection"
         });
       });
     }
     const trackPageview = () => tracker.trackPageview();
-    const debouncedTrackPageview =
-      config.debounceDuration > 0
-        ? debounce(trackPageview, config.debounceDuration)
-        : trackPageview;
+    const debouncedTrackPageview = config.debounceDuration > 0 ? debounce(trackPageview, config.debounceDuration) : trackPageview;
     function setupEventListeners() {
-      document.addEventListener("click", function (e2) {
+      document.addEventListener("click", function(e2) {
         let target = e2.target;
         while (target && target !== document.documentElement) {
           if (target.hasAttribute("data-rybbit-event")) {
@@ -1162,7 +940,9 @@
           target = target.parentElement;
         }
         if (config.trackOutbound) {
-          const link = e2.target.closest("a");
+          const link = e2.target.closest(
+            "a"
+          );
           if (link?.href && isOutboundLink(link.href)) {
             tracker.trackOutbound(
               link.href,
@@ -1175,12 +955,12 @@
       if (config.autoTrackSpa) {
         const originalPushState = history.pushState;
         const originalReplaceState = history.replaceState;
-        history.pushState = function (...args) {
+        history.pushState = function(...args) {
           originalPushState.apply(this, args);
           debouncedTrackPageview();
           tracker.onPageChange();
         };
-        history.replaceState = function (...args) {
+        history.replaceState = function(...args) {
           originalReplaceState.apply(this, args);
           debouncedTrackPageview();
           tracker.onPageChange();
@@ -1198,14 +978,13 @@
     window.rybbit = {
       pageview: () => tracker.trackPageview(),
       event: (name, properties = {}) => tracker.trackEvent(name, properties),
-      trackOutbound: (url, text = "", target = "_self") =>
-        tracker.trackOutbound(url, text, target),
+      trackOutbound: (url, text = "", target = "_self") => tracker.trackOutbound(url, text, target),
       identify: (userId) => tracker.identify(userId),
       clearUserId: () => tracker.clearUserId(),
       getUserId: () => tracker.getUserId(),
       startSessionReplay: () => tracker.startSessionReplay(),
       stopSessionReplay: () => tracker.stopSessionReplay(),
-      isSessionReplayActive: () => tracker.isSessionReplayActive(),
+      isSessionReplayActive: () => tracker.isSessionReplayActive()
     };
     setupEventListeners();
     window.addEventListener("beforeunload", () => {
