@@ -12,6 +12,8 @@ declare global {
         maskInputOptions?: any;
         slimDOMOptions?: any;
         sampling?: any;
+        recordCanvas?: boolean;
+        collectFonts?: boolean;
       }) => () => void;
     };
   }
@@ -75,13 +77,25 @@ export class SessionReplayRecorder {
     try {
       this.stopRecordingFn = window.rrweb.record({
         emit: (event) => {
-          console.log(`[Session Replay] Event collected: ${event.type} at ${new Date(event.timestamp || Date.now()).toISOString()}`);
+          const eventTypeNames = {
+            0: 'DOMContentLoaded',
+            1: 'Load', 
+            2: 'FullSnapshot',
+            3: 'IncrementalSnapshot',
+            4: 'Meta',
+            5: 'Custom',
+            6: 'Plugin'
+          };
+          const typeName = eventTypeNames[event.type as keyof typeof eventTypeNames] || `Unknown(${event.type})`;
+          console.log(`[Session Replay] Event collected: Type ${event.type} (${typeName}) at ${new Date(event.timestamp || Date.now()).toISOString()}`);
           this.addEvent({
             type: event.type,
             data: event.data,
             timestamp: event.timestamp || Date.now(),
           });
         },
+        recordCanvas: true, // Record canvas elements
+        collectFonts: true, // Collect font info for better replay
         checkoutEveryNms: 30000, // Checkout every 30 seconds
         checkoutEveryNth: 200, // Checkout every 200 events
         maskAllInputs: true, // Mask all input values for privacy
