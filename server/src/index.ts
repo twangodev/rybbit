@@ -87,11 +87,13 @@ const server = Fastify({
 
 server.register(cors, {
   origin: (origin, callback) => {
-    if (!origin || allowList.includes(normalizeOrigin(origin))) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"), false);
-    }
+    callback(null, true);
+
+    // if (!origin || allowList.includes(normalizeOrigin(origin))) {
+    //   callback(null, true);
+    // } else {
+    //   callback(new Error("Not allowed by CORS"), false);
+    // }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
@@ -133,7 +135,11 @@ server.register(
 const PUBLIC_ROUTES: string[] = [
   "/api/health",
   "/api/track",
+  "/track",
   "/api/script.js", // Updated script route
+  "/api/script-full.js", // Updated script route
+  "/script-full.js", // Updated script route
+  "/script.js", // Updated script route
   "/api/config",
   "/api/auth",
   "/api/auth/callback/google",
@@ -269,7 +275,10 @@ server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
 server.post("/api/session-replay/record/:site", recordSessionReplay);
 server.get("/api/session-replay/list/:site", getSessionReplays);
 server.get("/api/session-replay/:site/:sessionId", getSessionReplayEvents);
-server.post("/api/session-replay/complete/:site/:sessionId", markSessionComplete);
+server.post(
+  "/api/session-replay/complete/:site/:sessionId",
+  markSessionComplete
+);
 
 // Administrative
 server.get("/api/config", getConfig);
@@ -305,7 +314,9 @@ if (IS_CLOUD) {
   server.get("/api/admin/organizations", getAdminOrganizations);
 }
 
+server.post("/track", trackEvent);
 server.post("/api/track", trackEvent);
+
 server.get("/api/health", { logLevel: "silent" }, (_, reply) =>
   reply.send("OK")
 );

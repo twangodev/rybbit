@@ -18,7 +18,7 @@ export class Tracker {
     this.config = config;
     this.sessionId = this.generateSessionId();
     this.loadUserId();
-    
+
     if (config.enableSessionReplay) {
       this.initializeSessionReplay();
     }
@@ -54,20 +54,29 @@ export class Tracker {
   }
 
   private generateUserId(): string {
-    return "anon_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+    return (
+      "anon_" +
+      Math.random().toString(36).substring(2) +
+      Date.now().toString(36)
+    );
   }
 
-  private async sendSessionReplayBatch(batch: SessionReplayBatch): Promise<void> {
+  private async sendSessionReplayBatch(
+    batch: SessionReplayBatch
+  ): Promise<void> {
     try {
-      await fetch(`${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(batch),
-        mode: "cors",
-        keepalive: true,
-      });
+      await fetch(
+        `${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(batch),
+          mode: "cors",
+          keepalive: true,
+        }
+      );
     } catch (error) {
       console.error("Failed to send session replay batch:", error);
       throw error;
@@ -240,28 +249,33 @@ export class Tracker {
     if (filename) {
       errorProperties.fileName = filename;
     }
-    
+
     if (additionalInfo.lineno) {
-      const lineNum = typeof additionalInfo.lineno === 'string' 
-        ? parseInt(additionalInfo.lineno, 10) 
-        : additionalInfo.lineno;
+      const lineNum =
+        typeof additionalInfo.lineno === "string"
+          ? parseInt(additionalInfo.lineno, 10)
+          : additionalInfo.lineno;
       if (lineNum && lineNum !== 0) {
         errorProperties.lineNumber = lineNum;
       }
     }
-    
+
     if (additionalInfo.colno) {
-      const colNum = typeof additionalInfo.colno === 'string' 
-        ? parseInt(additionalInfo.colno, 10) 
-        : additionalInfo.colno;
+      const colNum =
+        typeof additionalInfo.colno === "string"
+          ? parseInt(additionalInfo.colno, 10)
+          : additionalInfo.colno;
       if (colNum && colNum !== 0) {
         errorProperties.columnNumber = colNum;
       }
     }
-    
+
     // Add any other additional info
     for (const key in additionalInfo) {
-      if (!['lineno', 'colno'].includes(key) && additionalInfo[key] !== undefined) {
+      if (
+        !["lineno", "colno"].includes(key) &&
+        additionalInfo[key] !== undefined
+      ) {
         errorProperties[key] = additionalInfo[key];
       }
     }
