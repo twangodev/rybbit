@@ -84,6 +84,9 @@ describe("Tracker", () => {
       trackOutbound: true,
       trackErrors: false,
       enableWebVitals: false,
+      enableSessionReplay: false,
+      sessionReplayBatchSize: 50,
+      sessionReplayBatchInterval: 5000,
       skipPatterns: [],
       maskPatterns: [],
     };
