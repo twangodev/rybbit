@@ -65,7 +65,7 @@ export const initializeClickhouse = async () => {
         site_id UInt16,
         session_id String,
         user_id String,
-        timestamp DateTime,
+        timestamp DateTime64(3),
         event_type LowCardinality(String),
         event_data String,
         sequence_number UInt32,

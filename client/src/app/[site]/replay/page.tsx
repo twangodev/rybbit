@@ -11,6 +11,7 @@ export default function SessionReplayPage() {
   useSetPageTitle("Rybbit · Session Replay");
 
   const [ref, { height: resolvedHeight, width: resolvedWidth }] = useMeasure();
+
   return (
     <div className="p-2 md:p-4 max-w-[2000px] mx-auto space-y-3  h-screen">
       <SubHeader availableFilters={SESSION_REPLAY_PAGE_FILTERS} />
@@ -18,7 +19,7 @@ export default function SessionReplayPage() {
         <div className="h-[calc(100vh-120px)] overflow-y-auto w-[300px]">
           <ReplayList />
         </div>
-        <div ref={ref}>
+        <div ref={ref} className="w-[calc(100vw-600px)]">
           {resolvedWidth && <ReplayPlayer width={resolvedWidth} />}
         </div>
       </div>

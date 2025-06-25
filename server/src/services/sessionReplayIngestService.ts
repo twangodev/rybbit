@@ -28,9 +28,7 @@ export class SessionReplayIngestService {
       site_id: siteId,
       session_id: sessionId,
       user_id: userId,
-      timestamp: DateTime.fromMillis(event.timestamp).toFormat(
-        "yyyy-MM-dd HH:mm:ss"
-      ),
+      timestamp: event.timestamp,
       event_type: event.type,
       event_data: JSON.stringify(event.data),
       sequence_number: index,

@@ -145,7 +145,7 @@ export class SessionReplayQueryService {
     const eventsResult = await clickhouse.query({
       query: `
         SELECT 
-          timestamp,
+          toUnixTimestamp64Milli(timestamp) as timestamp,
           event_type as type,
           event_data as data
         FROM session_replay_events
@@ -158,7 +158,7 @@ export class SessionReplayQueryService {
     });
 
     type EventRow = {
-      timestamp: string;
+      timestamp: number;
       type: string;
       data: string;
     };
@@ -170,10 +170,9 @@ export class SessionReplayQueryService {
     );
 
     const events = eventsResults.map((event) => {
-      // The timestamp from ClickHouse is already in seconds (Unix timestamp)
-      // We need to convert it to milliseconds for rrweb
-      const timestamp = new Date(event.timestamp).getTime();
-      console.log(`Converting timestamp: ${event.timestamp} -> ${timestamp}`);
+      // Timestamp is already in milliseconds from the SQL query
+      const timestamp = event.timestamp;
+      console.log(`Event timestamp: ${timestamp}`);
 
       return {
         timestamp,

@@ -1,10 +1,13 @@
-import { useEffect, useRef, useState } from "react";
+import { Pause, Play } from "lucide-react";
+import { DateTime } from "luxon";
+import { useParams } from "next/navigation";
+import { useEffect, useRef } from "react";
 import rrwebPlayer from "rrweb-player";
 import "rrweb-player/dist/style.css";
-import { Button } from "../../../../components/ui/button";
-import { Skeleton } from "../../../../components/ui/skeleton";
-import { Slider } from "../../../../components/ui/slider";
+import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
+import { ThreeDotLoader } from "../../../../components/Loaders";
 import { ActivitySlider } from "../../../../components/ui/activity-slider";
+import { Button } from "../../../../components/ui/button";
 import {
   Select,
   SelectContent,
@@ -12,39 +15,39 @@ import {
   SelectTrigger,
   SelectValue,
 } from "../../../../components/ui/select";
-import {
-  Play,
-  Pause,
-  SkipForward,
-  SkipBack,
-  Maximize,
-  Download,
-  ArrowLeft,
-} from "lucide-react";
-import { DateTime } from "luxon";
-import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
-import { useParams } from "next/navigation";
-import { useReplayStore } from "./store";
+import { useReplayStore } from "./replayStore";
 
 export function ReplayPlayer({ width }: { width: number }) {
   const params = useParams();
   const siteId = Number(params.site);
-  const { sessionId } = useReplayStore();
+  const {
+    sessionId,
+    player,
+    setPlayer,
+    isPlaying,
+    setIsPlaying,
+    currentTime,
+    setCurrentTime,
+    duration,
+    setDuration,
+    playbackSpeed,
+    setPlaybackSpeed,
+    activityPeriods,
+    setActivityPeriods,
+    resetPlayerState,
+  } = useReplayStore();
 
-  const [player, setPlayer] = useState<any>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [playbackSpeed, setPlaybackSpeed] = useState("1");
-  const [activityPeriods, setActivityPeriods] = useState<
-    { start: number; end: number }[]
-  >([]);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, error } = useGetSessionReplayEvents(
     siteId,
     sessionId
   );
+
+  // Reset player state when session changes
+  useEffect(() => {
+    resetPlayerState();
+  }, [sessionId, resetPlayerState]);
 
   useEffect(() => {
     if (data?.events && playerContainerRef.current) {
@@ -198,22 +201,7 @@ export function ReplayPlayer({ width }: { width: number }) {
   }
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col h-full">
-        <div className="border-b border-neutral-800 p-4">
-          <div className="flex items-center justify-between">
-            <Skeleton className="h-8 w-48" />
-            <Skeleton className="h-10 w-32" />
-          </div>
-        </div>
-        <div className="flex-1 p-4">
-          <Skeleton className="w-full h-full" />
-        </div>
-        <div className="border-t border-neutral-800 p-4">
-          <Skeleton className="h-12 w-full" />
-        </div>
-      </div>
-    );
+    return <ThreeDotLoader className="w-full h-full" />;
   }
 
   const metadata = data?.metadata;
@@ -224,12 +212,12 @@ export function ReplayPlayer({ width }: { width: number }) {
     : DateTime.now();
 
   return (
-    <div className="flex flex-col h-full bg-neutral-950">
+    <div className="flex flex-col  bg-neutral-950">
       {/* Player Container */}
       <div className="flex-1 flex items-center justify-center overflow-hidden">
         <div
           ref={playerContainerRef}
-          className="w-full h-full bg-black rounded-lg shadow-2xl"
+          className="w-full bg-black rounded-lg shadow-2xl"
           style={{ position: "relative" }}
         />
       </div>

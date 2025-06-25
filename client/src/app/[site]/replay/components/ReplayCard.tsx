@@ -10,7 +10,7 @@ import {
 import { Badge } from "../../../../components/ui/badge";
 import { Skeleton } from "../../../../components/ui/skeleton";
 import { cn, formatter } from "../../../../lib/utils";
-import { useReplayStore } from "./store";
+import { useReplayStore } from "./replayStore";
 
 interface SessionReplayListItem {
   session_id: string;
@@ -52,7 +52,6 @@ export function ReplayCard({
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
-
 
   return (
     <div

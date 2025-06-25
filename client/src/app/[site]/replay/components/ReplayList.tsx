@@ -7,7 +7,7 @@ import {
   useGetSessionReplays,
   SessionReplayListItem,
 } from "../../../../api/analytics/sessionReplay/useGetSessionReplays";
-import { useReplayStore } from "./store";
+import { useReplayStore } from "./replayStore";
 
 export function ReplayList() {
   const params = useParams();
@@ -43,9 +43,11 @@ export function ReplayList() {
   }
 
   return (
-    <div ref={containerRef} className="space-y-4">
+    <div ref={containerRef} className="space-y-2">
       {isLoading ? (
-        <ReplayCardSkeleton />
+        Array.from({ length: 10 }).map((_, index) => (
+          <ReplayCardSkeleton key={`loading-more-${index}`} />
+        ))
       ) : flattenedData.length === 0 ? (
         <NothingFound
           title={"No session replays found"}
@@ -61,11 +63,10 @@ export function ReplayList() {
         ))
       )}
 
-      {isFetchingNextPage && (
-        <div className="">
-          <ReplayCardSkeleton key="loading-more" />
-        </div>
-      )}
+      {isFetchingNextPage &&
+        Array.from({ length: 10 }).map((_, index) => (
+          <ReplayCardSkeleton key={`loading-more-${index}`} />
+        ))}
 
       {hasNextPage && (
         <div className="flex justify-center py-2">
