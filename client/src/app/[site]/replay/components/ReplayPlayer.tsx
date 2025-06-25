@@ -230,8 +230,10 @@ export function ReplayPlayer({ width }: { width: number }) {
       <div className="flex-1 flex items-center justify-center overflow-hidden">
         <div
           ref={playerContainerRef}
-          className="w-full bg-black rounded-lg shadow-2xl"
-          style={{ position: "relative" }}
+          className="w-full bg-black rounded-lg shadow-2xl [&_.rr-player]:!bg-black"
+          style={{
+            position: "relative",
+          }}
         />
       </div>
 
