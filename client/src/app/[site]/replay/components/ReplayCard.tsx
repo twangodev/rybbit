@@ -20,7 +20,6 @@ interface SessionReplayListItem {
   duration_ms?: number;
   page_url: string;
   event_count: number;
-  recording_status: string;
   country: string;
   region: string;
   city: string;
@@ -54,18 +53,6 @@ export function ReplayCard({
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "text-green-500";
-      case "recording":
-        return "text-yellow-500";
-      case "failed":
-        return "text-red-500";
-      default:
-        return "text-neutral-400";
-    }
-  };
 
   return (
     <div
@@ -90,9 +77,6 @@ export function ReplayCard({
             {formatDuration(duration)}
           </div>
         )}
-        <div className={`text-xs ${getStatusColor(replay.recording_status)}`}>
-          {replay.recording_status}
-        </div>
       </div>
 
       <div className="text-xs text-neutral-200 truncate mb-2">

@@ -109,7 +109,6 @@ export const initializeClickhouse = async () => {
         hostname String,
         referrer String,
         has_replay_data UInt8 DEFAULT 1,
-        recording_status LowCardinality(String) DEFAULT 'recording',
         created_at DateTime DEFAULT now()
       )
       ENGINE = ReplacingMergeTree(created_at)

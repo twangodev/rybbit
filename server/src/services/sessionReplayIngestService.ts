@@ -168,40 +168,10 @@ export class SessionReplayIngestService {
           hostname: trackingData.hostname || "",
           referrer: trackingData.referrer || "",
           has_replay_data: 1,
-          recording_status: "recording",
         },
       ],
       format: "JSONEachRow",
     });
   }
 
-  async markSessionComplete(siteId: number, sessionId: string): Promise<void> {
-    // Update recording status
-    await clickhouse.query({
-      query: `
-        ALTER TABLE session_replay_metadata 
-        UPDATE recording_status = 'completed' 
-        WHERE site_id = {siteId:UInt16} 
-          AND session_id = {sessionId:String}
-      `,
-      query_params: { siteId, sessionId },
-    });
-
-    // Mark last event as complete
-    await clickhouse.query({
-      query: `
-        ALTER TABLE session_replay_events 
-        UPDATE is_complete = 1 
-        WHERE site_id = {siteId:UInt16} 
-          AND session_id = {sessionId:String}
-          AND sequence_number = (
-            SELECT MAX(sequence_number) 
-            FROM session_replay_events 
-            WHERE site_id = {siteId:UInt16} 
-              AND session_id = {sessionId:String}
-          )
-      `,
-      query_params: { siteId, sessionId },
-    });
-  }
 }

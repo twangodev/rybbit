@@ -10,7 +10,6 @@ export interface SessionReplayListItem {
   duration_ms?: number;
   page_url: string;
   event_count: number;
-  recording_status: string;
   country: string;
   region: string;
   city: string;

@@ -41,7 +41,6 @@ import { getPerformanceTimeSeries } from "./api/analytics/performance/getPerform
 import { recordSessionReplay } from "./api/sessionReplay/recordSessionReplay.js";
 import { getSessionReplays } from "./api/sessionReplay/getSessionReplays.js";
 import { getSessionReplayEvents } from "./api/sessionReplay/getSessionReplayEvents.js";
-import { markSessionComplete } from "./api/sessionReplay/markSessionComplete.js";
 import { getConfig } from "./api/getConfig.js";
 import { addSite } from "./api/sites/addSite.js";
 import { changeSiteBlockBots } from "./api/sites/changeSiteBlockBots.js";
@@ -275,10 +274,6 @@ server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
 server.post("/api/session-replay/record/:site", recordSessionReplay);
 server.get("/api/session-replay/list/:site", getSessionReplays);
 server.get("/api/session-replay/:site/:sessionId", getSessionReplayEvents);
-server.post(
-  "/api/session-replay/complete/:site/:sessionId",
-  markSessionComplete
-);
 
 // Administrative
 server.get("/api/config", getConfig);

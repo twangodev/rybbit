@@ -51,7 +51,6 @@ export class SessionReplayQueryService {
         duration_ms,
         page_url,
         event_count,
-        recording_status,
         country,
         region,
         city,
