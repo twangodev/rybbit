@@ -180,7 +180,6 @@ const ANALYTICS_ROUTES = [
   "/api/error-names/",
   "/api/error-events/",
   "/api/error-bucketed/",
-  "/api/session-replay/list/",
   "/api/session-replay/",
 ];
 
