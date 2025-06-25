@@ -215,18 +215,10 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
 
       {/* Custom Controls */}
       <div className="border-t border-neutral-800 p-4">
-        <div className="flex items-center gap-4">
+        <div className="flex items-center">
           <Button
-            variant="outline"
-            size="icon"
-            onClick={handleSkipBack}
-            disabled={!player}
-          >
-            <SkipBack className="w-4 h-4" />
-          </Button>
-          <Button
-            variant="default"
-            size="icon"
+            variant="ghost"
+            size="smIcon"
             onClick={handlePlayPause}
             disabled={!player}
           >
@@ -236,16 +228,7 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
               <Play className="w-4 h-4" />
             )}
           </Button>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={handleSkipForward}
-            disabled={!player}
-          >
-            <SkipForward className="w-4 h-4" />
-          </Button>
-
-          <div className="flex-1 mx-4">
+          <div className="flex-1 mx-2">
             <Slider
               value={[duration > 0 ? (currentTime / duration) * 100 : 0]}
               onValueChange={handleSliderChange}
@@ -259,32 +242,6 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
         </div>
-
-        {/* Metadata */}
-        {metadata && (
-          <div className="mt-4 pt-4 border-t border-neutral-800 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-            <div>
-              <div className="text-neutral-500">User ID</div>
-              <div className="text-neutral-200">{metadata.user_id}</div>
-            </div>
-            <div>
-              <div className="text-neutral-500">Browser</div>
-              <div className="text-neutral-200">
-                {metadata.browser} {metadata.browser_version}
-              </div>
-            </div>
-            <div>
-              <div className="text-neutral-500">Device</div>
-              <div className="text-neutral-200">{metadata.device_type}</div>
-            </div>
-            <div>
-              <div className="text-neutral-500">Location</div>
-              <div className="text-neutral-200">
-                {metadata.city}, {metadata.country}
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </div>
   );
