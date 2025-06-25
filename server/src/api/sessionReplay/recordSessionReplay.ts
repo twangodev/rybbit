@@ -4,7 +4,6 @@ import { SessionReplayIngestService } from "../../services/replay/sessionReplayI
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 
 const recordSessionReplaySchema = z.object({
-  sessionId: z.string(),
   userId: z.string(),
   events: z.array(
     z.object({

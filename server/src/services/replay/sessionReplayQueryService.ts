@@ -76,37 +76,6 @@ export class SessionReplayQueryService {
       OFFSET {offset:UInt32}
     `;
 
-    console.log("SessionReplay Query:", query);
-    console.log("Query Params:", queryParams);
-    console.log("Time Statement:", timeStatement);
-    console.log(
-      "Options passed to getTimeStatement:",
-      JSON.stringify(options, null, 2)
-    );
-
-    // First, let's check if there's any data in the table at all
-    const countQuery = `SELECT COUNT(*) as total FROM session_replay_metadata WHERE site_id = {siteId:UInt16}`;
-    const countResult = await clickhouse.query({
-      query: countQuery,
-      query_params: { siteId },
-      format: "JSONEachRow",
-    });
-    const countData = await processResults<{ total: number }>(countResult);
-    console.log(
-      "Total session replay metadata records for site:",
-      countData[0]?.total || 0
-    );
-
-    // Debug: Check actual dates in the data
-    const dateCheckQuery = `SELECT session_id, start_time, toDate(start_time) as date_only FROM session_replay_metadata WHERE site_id = {siteId:UInt16} ORDER BY start_time DESC LIMIT 5`;
-    const dateCheckResult = await clickhouse.query({
-      query: dateCheckQuery,
-      query_params: { siteId },
-      format: "JSONEachRow",
-    });
-    const dateCheckData = await processResults<any>(dateCheckResult);
-    console.log("Recent session replay dates:", dateCheckData);
-
     const result = await clickhouse.query({
       query,
       query_params: queryParams,
@@ -114,11 +83,9 @@ export class SessionReplayQueryService {
     });
 
     const rawResults = await processResults<any>(result);
-    console.log("Raw results count:", rawResults.length);
 
     const finalResults = rawResults;
 
-    console.log("Final results count:", finalResults.length);
     return finalResults;
   }
 
