@@ -226,7 +226,7 @@ export function ReplayPlayer({ width }: { width: number }) {
   return (
     <div className="flex flex-col h-full bg-neutral-950">
       {/* Player Container */}
-      <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
+      <div className="flex-1 flex items-center justify-center overflow-hidden">
         <div
           ref={playerContainerRef}
           className="w-full h-full bg-black rounded-lg shadow-2xl"
@@ -235,7 +235,7 @@ export function ReplayPlayer({ width }: { width: number }) {
       </div>
 
       {/* Custom Controls */}
-      <div className="border-t border-neutral-800 p-4">
+      <div className="border-t border-neutral-800 p-1">
         <div className="flex items-center">
           <Button
             variant="ghost"

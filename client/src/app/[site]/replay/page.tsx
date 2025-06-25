@@ -14,7 +14,7 @@ export default function SessionReplayPage() {
   return (
     <div className="p-2 md:p-4 max-w-[2000px] mx-auto space-y-3  h-screen">
       <SubHeader availableFilters={SESSION_REPLAY_PAGE_FILTERS} />
-      <div className="grid grid-cols-[1fr_3fr] gap-1">
+      <div className="grid grid-cols-[auto_1fr] gap-3">
         <div className="h-[calc(100vh-120px)] overflow-y-auto w-[300px]">
           <ReplayList />
         </div>
