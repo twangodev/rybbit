@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { SessionReplayService } from "../../services/sessionReplayService.js";
+import { SessionReplayQueryService } from "../../services/sessionReplayQueryService.js";
 
 export async function getSessionReplayEvents(
   request: FastifyRequest<{
@@ -13,7 +13,7 @@ export async function getSessionReplayEvents(
 
     console.log("Getting session replay events for:", { siteId, sessionId });
 
-    const sessionReplayService = new SessionReplayService();
+    const sessionReplayService = new SessionReplayQueryService();
     const replayData = await sessionReplayService.getSessionReplayEvents(
       siteId,
       sessionId

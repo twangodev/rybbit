@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { SessionReplayService } from "../../services/sessionReplayService.js";
+import { SessionReplayIngestService } from "../../services/sessionReplayIngestService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 
 const recordSessionReplaySchema = z.object({
@@ -40,7 +40,7 @@ export async function recordSessionReplay(
     const origin = request.headers.origin || "";
     const referrer = request.headers.referer || "";
 
-    const sessionReplayService = new SessionReplayService();
+    const sessionReplayService = new SessionReplayIngestService();
     await sessionReplayService.recordEvents(siteId, body, {
       userAgent,
       ipAddress,

@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { FilterParams } from "@rybbit/shared";
-import { SessionReplayService } from "../../services/sessionReplayService.js";
+import { SessionReplayQueryService } from "../../services/sessionReplayQueryService.js";
 
 export async function getSessionReplays(
   request: FastifyRequest<{
@@ -17,7 +17,7 @@ export async function getSessionReplays(
     const siteId = Number(request.params.site);
     const { limit, offset, userId } = request.query;
 
-    const sessionReplayService = new SessionReplayService();
+    const sessionReplayService = new SessionReplayQueryService();
     const replays = await sessionReplayService.getSessionReplayList(siteId, {
       limit: limit ? Number(limit) : 50,
       offset: offset ? Number(offset) : 0,

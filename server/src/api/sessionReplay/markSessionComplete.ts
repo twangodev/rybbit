@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { SessionReplayService } from "../../services/sessionReplayService.js";
+import { SessionReplayIngestService } from "../../services/sessionReplayIngestService.js";
 
 export async function markSessionComplete(
   request: FastifyRequest<{
@@ -11,7 +11,7 @@ export async function markSessionComplete(
     const siteId = Number(request.params.site);
     const { sessionId } = request.params;
 
-    const sessionReplayService = new SessionReplayService();
+    const sessionReplayService = new SessionReplayIngestService();
     await sessionReplayService.markSessionComplete(siteId, sessionId);
 
     return reply.send({ success: true });
