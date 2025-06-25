@@ -264,7 +264,7 @@ export function ReplayPlayer({ width }: { width: number }) {
               className="w-full"
             />
           </div>
-          <div className="text-xs text-neutral-300 w-18">
+          <div className="text-xs text-neutral-300 w-20">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
 

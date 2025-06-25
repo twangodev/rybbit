@@ -34,15 +34,16 @@ type UseGetSessionReplaysOptions = {
 export function useGetSessionReplays({
   limit = 20,
 }: UseGetSessionReplaysOptions = {}) {
-  const { time, site } = useStore();
+  const { time, site, filters } = useStore();
 
   return useInfiniteQuery({
-    queryKey: ["session-replays", site, time, limit],
+    queryKey: ["session-replays", site, time, filters, limit],
     queryFn: async ({ pageParam = 0 }) => {
       const queryParams = {
         ...getQueryParams(time),
         limit,
         offset: pageParam,
+        filters,
       };
 
       const response = await authedFetch<SessionReplayListResponse>(

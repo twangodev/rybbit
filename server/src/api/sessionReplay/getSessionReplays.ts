@@ -15,7 +15,7 @@ export async function getSessionReplays(
 ) {
   try {
     const siteId = Number(request.params.site);
-    const { limit, offset, userId } = request.query;
+    const { limit, offset, userId, filters } = request.query;
 
     const sessionReplayService = new SessionReplayQueryService();
     const replays = await sessionReplayService.getSessionReplayList(siteId, {
@@ -31,6 +31,7 @@ export async function getSessionReplays(
       pastMinutesEnd: request.query.pastMinutesEnd
         ? Number(request.query.pastMinutesEnd)
         : undefined,
+      filters: filters || "",
     });
 
     return reply.send({ data: replays });

@@ -4,7 +4,11 @@ import {
   SessionReplayListItem,
   GetSessionReplayEventsResponse,
 } from "../../types/sessionReplay.js";
-import { processResults, getTimeStatement } from "../../api/analytics/utils.js";
+import {
+  processResults,
+  getTimeStatement,
+  getFilterStatement,
+} from "../../api/analytics/utils.js";
 import { FilterParams } from "@rybbit/shared";
 
 /**
@@ -25,6 +29,7 @@ export class SessionReplayQueryService {
       | "timeZone"
       | "pastMinutesStart"
       | "pastMinutesEnd"
+      | "filters"
     >
   ): Promise<SessionReplayListItem[]> {
     const { limit = 50, offset = 0, userId } = options;
@@ -34,12 +39,42 @@ export class SessionReplayQueryService {
       "start_time"
     );
 
+    const filterStatement = getFilterStatement(options.filters || "");
+
     let whereConditions = [`site_id = {siteId:UInt16}`];
     const queryParams: any = { siteId, limit, offset };
 
     if (userId) {
       whereConditions.push(`user_id = {userId:String}`);
       queryParams.userId = userId;
+    }
+
+    // Build the base query for session IDs that have replay events
+    let sessionIdsSubquery = `
+      SELECT DISTINCT session_id
+      FROM session_replay_events
+      WHERE site_id = {siteId:UInt16} AND event_type = '2'
+    `;
+
+    // If filters are present, we need to further filter by sessions that match the filter criteria
+    if (filterStatement) {
+      sessionIdsSubquery = `
+        SELECT DISTINCT srm.session_id
+        FROM session_replay_metadata srm
+        FINAL
+        WHERE srm.site_id = {siteId:UInt16}
+          AND srm.session_id IN (
+            SELECT DISTINCT session_id
+            FROM session_replay_events
+            WHERE site_id = {siteId:UInt16} AND event_type = '2'
+          )
+          AND srm.session_id IN (
+            SELECT DISTINCT session_id
+            FROM events
+            WHERE site_id = {siteId:UInt16}
+              ${filterStatement}
+          )
+      `;
     }
 
     const query = `
@@ -65,11 +100,7 @@ export class SessionReplayQueryService {
       FINAL
       WHERE ${whereConditions.join(" AND ")}
         AND event_count >= 2
-        AND session_id IN (
-          SELECT DISTINCT session_id
-          FROM session_replay_events
-          WHERE site_id = {siteId:UInt16} AND event_type = '2'
-        )
+        AND session_id IN (${sessionIdsSubquery})
       ${timeStatement}
       ORDER BY start_time DESC
       LIMIT {limit:UInt32}
@@ -137,15 +168,10 @@ export class SessionReplayQueryService {
     };
 
     const eventsResults = await processResults<EventRow>(eventsResult);
-    console.log(
-      "Raw event timestamps from DB:",
-      eventsResults.map((e) => ({ timestamp: e.timestamp, type: e.type }))
-    );
 
     const events = eventsResults.map((event) => {
       // Timestamp is already in milliseconds from the SQL query
       const timestamp = event.timestamp;
-      console.log(`Event timestamp: ${timestamp}`);
 
       return {
         timestamp,
@@ -153,18 +179,6 @@ export class SessionReplayQueryService {
         data: JSON.parse(event.data),
       };
     });
-
-    console.log(`Session ${sessionId} has ${events.length} events`);
-    console.log(
-      "Final events:",
-      events.map((e) => ({ type: e.type, timestamp: e.timestamp }))
-    );
-
-    // Check if we have a FullSnapshot event (type 2)
-    const hasFullSnapshot = events.some(
-      (e) => e.type === "2" || e.type.toString() === "2"
-    );
-    console.log("Has FullSnapshot (type 2):", hasFullSnapshot);
 
     return {
       events,
