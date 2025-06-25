@@ -1,8 +1,33 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, lt } from "drizzle-orm";
+import * as cron from "node-cron";
 import { db } from "../../db/postgres/postgres.js";
 import { activeSessions } from "../../db/postgres/schema.js";
 
 class SessionsService {
+  private cleanupTask: cron.ScheduledTask | null = null;
+
+  constructor() {
+    this.initializeCleanupCron();
+  }
+
+  private initializeCleanupCron() {
+    // Schedule session cleanup to run every minute
+    this.cleanupTask = cron.schedule("* * * * *", async () => {
+      try {
+        const deletedCount = await this.cleanupOldSessions();
+        // Uncomment for debugging
+        console.log(
+          `[SessionsService] Cleaned up ${deletedCount} expired sessions`
+        );
+      } catch (error) {
+        console.error("[SessionsService] Error during session cleanup:", error);
+      }
+    });
+
+    console.log(
+      "[SessionsService] Session cleanup cron initialized (runs every minute)"
+    );
+  }
   async getExistingSession(userId: string, siteId: string) {
     const siteIdNumber = parseInt(siteId, 10);
 
@@ -54,6 +79,27 @@ class SessionsService {
 
     await db.insert(activeSessions).values(insertData);
     return { sessionId: insertData.sessionId };
+  }
+
+  async cleanupOldSessions(): Promise<number> {
+    // Delete sessions older than 30 minutes
+    const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000);
+
+    const deletedSessions = await db
+      .delete(activeSessions)
+      .where(lt(activeSessions.lastActivity, thirtyMinutesAgo))
+      .returning();
+
+    // console.log(`Cleaned up ${deletedSessions.length} sessions`);
+    return deletedSessions.length;
+  }
+
+  // Method to stop the cleanup cron job (useful for graceful shutdown)
+  stopCleanupCron() {
+    if (this.cleanupTask) {
+      this.cleanupTask.stop();
+      console.log("[SessionsService] Session cleanup cron stopped");
+    }
   }
 }
 
