@@ -46,13 +46,6 @@ export function ReplayPlayer({ width }: { width: number }) {
     sessionId
   );
 
-  console.log("Replay data:", data);
-  console.log("Events:", data?.events);
-  console.log(
-    "Event types:",
-    data?.events?.map((e) => ({ type: e.type, timestamp: e.timestamp }))
-  );
-
   useEffect(() => {
     if (data?.events && playerContainerRef.current) {
       // Clear any existing content first

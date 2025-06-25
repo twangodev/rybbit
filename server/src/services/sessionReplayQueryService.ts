@@ -63,6 +63,7 @@ export class SessionReplayQueryService {
         screen_width,
         screen_height
       FROM session_replay_metadata
+      FINAL
       WHERE ${whereConditions.join(" AND ")}
       ${timeStatement}
       ORDER BY start_time DESC
@@ -125,6 +126,7 @@ export class SessionReplayQueryService {
       query: `
         SELECT *
         FROM session_replay_metadata
+        FINAL
         WHERE site_id = {siteId:UInt16} 
           AND session_id = {sessionId:String}
         LIMIT 1
@@ -207,6 +209,7 @@ export class SessionReplayQueryService {
       query: `
         SELECT *
         FROM session_replay_metadata
+        FINAL
         WHERE site_id = {siteId:UInt16} 
           AND session_id = {sessionId:String}
         LIMIT 1

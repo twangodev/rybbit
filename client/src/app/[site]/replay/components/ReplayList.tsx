@@ -36,10 +36,11 @@ export function ReplayList() {
 
   const containerRef = useRef<HTMLDivElement>(null);
 
-  if (error)
+  if (error) {
     return (
       <div className="text-red-500 p-4">Error: {(error as Error).message}</div>
     );
+  }
 
   return (
     <div ref={containerRef} className="space-y-4">
