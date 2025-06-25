@@ -43,6 +43,9 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
 
   useEffect(() => {
     if (data?.events && playerContainerRef.current) {
+      // Clear any existing content first
+      playerContainerRef.current.innerHTML = '';
+      
       // Initialize rrweb player
       const newPlayer = new rrwebPlayer({
         target: playerContainerRef.current,
@@ -79,8 +82,12 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
       }, 100);
 
       return () => {
-        // Cleanup
+        // Proper cleanup
         newPlayer.pause();
+        if (playerContainerRef.current) {
+          playerContainerRef.current.innerHTML = '';
+        }
+        setPlayer(null);
       };
     }
   }, [data]);
