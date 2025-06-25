@@ -76,5 +76,6 @@ export interface SessionReplayBatch {
     pageUrl: string;
     viewportWidth?: number;
     viewportHeight?: number;
+    language?: string;
   };
 }

@@ -7,11 +7,20 @@ import {
 } from "../types/sessionReplay.js";
 import { processResults, getTimeStatement } from "../api/analytics/utils.js";
 import { FilterParams } from "@rybbit/shared";
+import { parseTrackingData } from "../lib/trackingUtils.js";
+
+export interface RequestMetadata {
+  userAgent: string;
+  ipAddress: string;
+  origin: string;
+  referrer: string;
+}
 
 export class SessionReplayService {
   async recordEvents(
     siteId: number,
-    request: RecordSessionReplayRequest
+    request: RecordSessionReplayRequest,
+    requestMeta?: RequestMetadata
   ): Promise<void> {
     const { sessionId, userId, events, metadata } = request;
 
@@ -41,7 +50,7 @@ export class SessionReplayService {
 
     // Update or insert metadata
     if (metadata) {
-      await this.updateSessionMetadata(siteId, sessionId, userId, metadata);
+      await this.updateSessionMetadata(siteId, sessionId, userId, metadata, requestMeta);
     }
   }
 
@@ -49,7 +58,8 @@ export class SessionReplayService {
     siteId: number,
     sessionId: string,
     userId: string,
-    metadata: any
+    metadata: any,
+    requestMeta?: RequestMetadata
   ): Promise<void> {
     // Get existing session info from events table
     const sessionInfo = await clickhouse.query({
@@ -84,64 +94,28 @@ export class SessionReplayService {
 
     const sessionReplayData = sessionResults[0];
 
-    // Get additional session data from main events table using user_id and time range
-    // Session replay uses different session_id, so we match by user_id and timeframe
-    const startTimestamp = new Date(sessionReplayData.start_time);
-    const endTimestamp = sessionReplayData.end_time ? new Date(sessionReplayData.end_time) : new Date();
-    
-    const mainSessionData = await clickhouse.query({
-      query: `
-        SELECT 
-          argMax(browser, timestamp) as browser,
-          argMax(browser_version, timestamp) as browser_version,
-          argMax(operating_system, timestamp) as operating_system,
-          argMax(operating_system_version, timestamp) as operating_system_version,
-          argMax(country, timestamp) as country,
-          argMax(region, timestamp) as region,
-          argMax(city, timestamp) as city,
-          argMax(lat, timestamp) as lat,
-          argMax(lon, timestamp) as lon,
-          argMax(language, timestamp) as language,
-          argMax(device_type, timestamp) as device_type,
-          argMax(channel, timestamp) as channel,
-          argMax(hostname, timestamp) as hostname,
-          argMin(referrer, timestamp) as referrer
-        FROM events
-        WHERE site_id = {siteId:UInt16} 
-          AND user_id = {userId:String}
-          AND timestamp >= {startTime:DateTime}
-          AND timestamp <= {endTime:DateTime}
-      `,
-      query_params: { 
-        siteId, 
-        userId, 
-        startTime: startTimestamp.toISOString().slice(0, 19).replace('T', ' '),
-        endTime: endTimestamp.toISOString().slice(0, 19).replace('T', ' ')
-      },
-      format: "JSONEachRow",
-    });
-
-    type MainSessionData = {
-      browser?: string;
-      browser_version?: string;
-      operating_system?: string;
-      operating_system_version?: string;
-      country?: string;
-      region?: string;
-      city?: string;
-      lat?: number;
-      lon?: number;
-      language?: string;
-      device_type?: string;
-      channel?: string;
-      hostname?: string;
-      referrer?: string;
-    };
-
-    const mainResults = await processResults<MainSessionData>(mainSessionData);
-    const sessionData = mainResults[0] || {};
-    
-    console.log("Session data from events table:", sessionData);
+    // Parse tracking data from request metadata
+    let trackingData: any = {};
+    if (requestMeta?.userAgent) {
+      try {
+        // Extract hostname from the page URL
+        const urlObj = new URL(metadata.pageUrl);
+        const hostname = urlObj.hostname;
+        
+        trackingData = await parseTrackingData(
+          requestMeta.userAgent,
+          requestMeta.ipAddress,
+          requestMeta.referrer || "",
+          urlObj.search || "", // querystring from URL
+          hostname,
+          metadata.language || "", // language from client
+          sessionReplayData.screen_width || metadata.viewportWidth || 0,
+          sessionReplayData.screen_height || metadata.viewportHeight || 0
+        );
+      } catch (error) {
+        console.error("Error parsing tracking data for session replay:", error);
+      }
+    }
 
     // Calculate duration
     const startTime = new Date(sessionReplayData.start_time);
@@ -164,22 +138,22 @@ export class SessionReplayService {
           event_count: sessionReplayData.event_count || 0,
           compressed_size_bytes: sessionReplayData.compressed_size_bytes || 0,
           page_url: metadata.pageUrl || "",
-          country: sessionData.country?.replace(/\0/g, '') || "", // Remove null bytes
-          region: sessionData.region?.replace(/\0/g, '') || "",
-          city: sessionData.city?.replace(/\0/g, '') || "",
-          lat: sessionData.lat || 0,
-          lon: sessionData.lon || 0,
-          browser: sessionData.browser || "Unknown",
-          browser_version: sessionData.browser_version || "",
-          operating_system: sessionData.operating_system || "Unknown",
-          operating_system_version: sessionData.operating_system_version || "",
-          language: sessionData.language || "",
-          screen_width: sessionReplayData.screen_width || 0,
-          screen_height: sessionReplayData.screen_height || 0,
-          device_type: sessionData.device_type || "desktop",
-          channel: sessionData.channel || "direct",
-          hostname: sessionData.hostname || "",
-          referrer: sessionData.referrer || "",
+          country: trackingData.country || "",
+          region: trackingData.region || "",
+          city: trackingData.city || "",
+          lat: trackingData.lat || 0,
+          lon: trackingData.lon || 0,
+          browser: trackingData.browser || "Unknown",
+          browser_version: trackingData.browserVersion || "",
+          operating_system: trackingData.operatingSystem || "Unknown",
+          operating_system_version: trackingData.operatingSystemVersion || "",
+          language: trackingData.language || "",
+          screen_width: sessionReplayData.screen_width || metadata?.viewportWidth || 0,
+          screen_height: sessionReplayData.screen_height || metadata?.viewportHeight || 0,
+          device_type: trackingData.deviceType || "desktop",
+          channel: trackingData.channel || "direct",
+          hostname: trackingData.hostname || "",
+          referrer: trackingData.referrer || "",
           has_replay_data: 1,
           recording_status: "recording",
         },

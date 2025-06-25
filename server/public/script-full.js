@@ -283,7 +283,8 @@
         metadata: {
           pageUrl: window.location.href,
           viewportWidth: window.innerWidth,
-          viewportHeight: window.innerHeight
+          viewportHeight: window.innerHeight,
+          language: navigator.language
         }
       };
       try {

@@ -216,6 +216,7 @@ export class SessionReplayRecorder {
         pageUrl: window.location.href,
         viewportWidth: window.innerWidth,
         viewportHeight: window.innerHeight,
+        language: navigator.language,
       },
     };
 

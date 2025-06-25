@@ -55,6 +55,7 @@ export interface RecordSessionReplayRequest {
     pageUrl: string;
     viewportWidth?: number;
     viewportHeight?: number;
+    language?: string;
   };
 }
 

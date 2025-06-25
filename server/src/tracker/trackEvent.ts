@@ -7,7 +7,7 @@ import {
   getExistingSession,
   isSiteOverLimit,
   TotalTrackingPayload,
-} from "./trackingUtils.js";
+} from "./utils.js";
 import { db } from "../db/postgres/postgres.js";
 import { activeSessions } from "../db/postgres/schema.js";
 import { eq } from "drizzle-orm";

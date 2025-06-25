@@ -18,6 +18,7 @@ const recordSessionReplaySchema = z.object({
       pageUrl: z.string(),
       viewportWidth: z.number().optional(),
       viewportHeight: z.number().optional(),
+      language: z.string().optional(),
     })
     .optional(),
 });
@@ -33,8 +34,19 @@ export async function recordSessionReplay(
     const siteId = Number(request.params.site);
     const body = recordSessionReplaySchema.parse(request.body) as RecordSessionReplayRequest;
 
+    // Extract request metadata for tracking
+    const userAgent = request.headers["user-agent"] || "";
+    const ipAddress = getIpAddress(request);
+    const origin = request.headers.origin || "";
+    const referrer = request.headers.referer || "";
+
     const sessionReplayService = new SessionReplayService();
-    await sessionReplayService.recordEvents(siteId, body);
+    await sessionReplayService.recordEvents(siteId, body, {
+      userAgent,
+      ipAddress,
+      origin,
+      referrer,
+    });
 
     return reply.send({ success: true });
   } catch (error) {
@@ -45,3 +57,24 @@ export async function recordSessionReplay(
     return reply.status(500).send({ error: "Internal server error" });
   }
 }
+
+// Helper function to get IP address
+const getIpAddress = (request: FastifyRequest): string => {
+  const cfConnectingIp = request.headers["cf-connecting-ip"];
+  if (cfConnectingIp && typeof cfConnectingIp === "string") {
+    return cfConnectingIp.trim();
+  }
+
+  const forwardedFor = request.headers["x-forwarded-for"];
+  if (forwardedFor && typeof forwardedFor === "string") {
+    const ips = forwardedFor
+      .split(",")
+      .map((ip) => ip.trim())
+      .filter(Boolean);
+    if (ips.length > 0) {
+      return ips[ips.length - 1];
+    }
+  }
+
+  return request.ip;
+};
