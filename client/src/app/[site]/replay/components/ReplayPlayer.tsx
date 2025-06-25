@@ -3,6 +3,7 @@ import rrwebPlayer from "rrweb-player";
 import "rrweb-player/dist/style.css";
 import { Button } from "../../../../components/ui/button";
 import { Skeleton } from "../../../../components/ui/skeleton";
+import { Slider } from "../../../../components/ui/slider";
 import {
   Play,
   Pause,
@@ -50,7 +51,7 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
           width: 1024,
           height: 576,
           autoPlay: false,
-          showController: false, // We'll use custom controls
+          showController: true, // We'll use custom controls
         },
       });
 
@@ -65,12 +66,17 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
         setIsPlaying(event.payload === "playing");
       });
 
-      // Calculate duration
-      if (data.events.length > 0) {
-        const firstEvent = data.events[0];
-        const lastEvent = data.events[data.events.length - 1];
-        setDuration(lastEvent.timestamp - firstEvent.timestamp);
-      }
+      newPlayer.addEventListener("ui-update-duration", (event: any) => {
+        setDuration(event.payload);
+      });
+
+      // Get the initial duration from the player
+      setTimeout(() => {
+        const playerDuration = newPlayer.getMetaData().totalTime;
+        if (playerDuration) {
+          setDuration(playerDuration);
+        }
+      }, 100);
 
       return () => {
         // Cleanup
@@ -100,6 +106,13 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
     if (!player) return;
     const newTime = Math.min(duration, currentTime + 10000); // Skip forward 10 seconds
     player.goto(newTime);
+  };
+
+  const handleSliderChange = (value: number[]) => {
+    if (!player || !duration) return;
+    const newTime = (value[0] / 100) * duration;
+    player.goto(newTime);
+    setCurrentTime(newTime);
   };
 
   const handleFullscreen = () => {
@@ -233,14 +246,13 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
           </Button>
 
           <div className="flex-1 mx-4">
-            <div className="bg-neutral-800 rounded-full h-2 relative overflow-hidden">
-              <div
-                className="absolute top-0 left-0 h-full bg-green-500 transition-all"
-                style={{
-                  width: `${(currentTime / duration) * 100}%`,
-                }}
-              />
-            </div>
+            <Slider
+              value={[duration > 0 ? (currentTime / duration) * 100 : 0]}
+              onValueChange={handleSliderChange}
+              max={100}
+              step={0.1}
+              className="w-full"
+            />
           </div>
 
           <div className="text-sm text-neutral-400 min-w-[100px] text-right">
