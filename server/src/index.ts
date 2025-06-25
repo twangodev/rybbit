@@ -196,7 +196,6 @@ server.addHook("onRequest", async (request, reply) => {
   }
 
   // Check if it's an analytics route and get site ID (now including the prepended /api)
-  console.info(processedUrl);
   if (ANALYTICS_ROUTES.some((route) => processedUrl.startsWith(route))) {
     const siteId = extractSiteId(processedUrl);
 
@@ -273,7 +272,7 @@ server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
 // Session Replay
 server.post("/api/session-replay/record/:site", recordSessionReplay);
 server.get("/api/session-replay/list/:site", getSessionReplays);
-server.get("/api/session-replay/:site/:sessionId", getSessionReplayEvents);
+server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Administrative
 server.get("/api/config", getConfig);

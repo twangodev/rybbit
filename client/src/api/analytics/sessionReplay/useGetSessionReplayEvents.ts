@@ -47,7 +47,7 @@ export function useGetSessionReplayEvents(siteId: number, sessionId: string) {
     queryKey: ["session-replay-events", siteId, sessionId],
     queryFn: () => {
       return authedFetch<GetSessionReplayEventsResponse>(
-        `/session-replay/${siteId}/${sessionId}`
+        `/session-replay/${sessionId}/${siteId}`
       );
     },
     enabled: !!siteId && !!sessionId,
