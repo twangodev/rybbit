@@ -223,9 +223,9 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
             disabled={!player}
           >
             {isPlaying ? (
-              <Pause className="w-4 h-4" />
+              <Pause className="w-4 h-4" fill="currentColor" />
             ) : (
-              <Play className="w-4 h-4" />
+              <Play className="w-4 h-4" fill="currentColor" />
             )}
           </Button>
           <div className="flex-1 mx-2">
