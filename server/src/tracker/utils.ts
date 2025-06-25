@@ -1,13 +1,10 @@
 import crypto from "crypto";
-import { and, eq } from "drizzle-orm";
 import { FastifyRequest } from "fastify";
 import UAParser, { UAParser as userAgentParser } from "ua-parser-js";
 import { z } from "zod";
 import { sitesOverLimit } from "../cron/monthly-usage-checker.js";
-import { db } from "../db/postgres/postgres.js";
-import { activeSessions } from "../db/postgres/schema.js";
-import { trackingPayloadSchema } from "./trackEvent.js";
 import { siteConfig } from "../lib/siteConfig.js";
+import { trackingPayloadSchema } from "./trackEvent.js";
 import { TrackingPayload } from "./types.js";
 
 export type TotalTrackingPayload = TrackingPayload & {
@@ -91,24 +88,6 @@ export function clearSelfReferrer(referrer: string, hostname: string): string {
 // Check if site is over the monthly limit
 export function isSiteOverLimit(siteId: number | string): boolean {
   return sitesOverLimit.has(Number(siteId));
-}
-
-// Get existing user session
-export async function getExistingSession(userId: string, siteId: string) {
-  const siteIdNumber = parseInt(siteId, 10); // Ensure siteId is a number for the query
-
-  const [existingSession] = await db
-    .select()
-    .from(activeSessions)
-    .where(
-      and(
-        eq(activeSessions.userId, userId),
-        eq(activeSessions.siteId, siteIdNumber)
-      )
-    )
-    .limit(1);
-
-  return existingSession || null; // Return the session or null if not found
 }
 
 // Create base tracking payload from request

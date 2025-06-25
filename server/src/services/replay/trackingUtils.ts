@@ -1,7 +1,7 @@
 import { UAParser } from "ua-parser-js";
-import { getLocation } from "../db/geolocation/geolocation.js";
-import { getChannel } from "../tracker/getChannel.js";
-import { getDeviceType } from "../utils.js";
+import { getLocation } from "../../db/geolocation/geolocation.js";
+import { getChannel } from "../../tracker/getChannel.js";
+import { getDeviceType } from "../../utils.js";
 
 export interface TrackingData {
   browser: string;
@@ -36,7 +36,7 @@ export async function parseTrackingData(
 ): Promise<TrackingData> {
   // Parse user agent
   const ua = UAParser(userAgent);
-  
+
   // Get geolocation data
   let geoData: any = {};
   try {
@@ -44,13 +44,13 @@ export async function parseTrackingData(
   } catch (error) {
     console.error("Error getting geo data for session replay:", error);
   }
-  
+
   const countryCode = geoData?.countryIso || "";
   const regionCode = geoData?.subdivisions?.[0]?.isoCode || "";
   const latitude = geoData?.latitude || 0;
   const longitude = geoData?.longitude || 0;
   const city = geoData?.city || "";
-  
+
   // Clear self-referrer if it's from the same domain
   if (referrer && hostname) {
     try {
@@ -62,7 +62,7 @@ export async function parseTrackingData(
       // Invalid URL, keep original referrer
     }
   }
-  
+
   return {
     browser: ua.browser.name || "Unknown",
     browserVersion: ua.browser.major || "",
@@ -84,7 +84,10 @@ export async function parseTrackingData(
 /**
  * Extract browser info from user agent
  */
-export function getBrowserInfo(userAgent: string): { name: string; version: string } {
+export function getBrowserInfo(userAgent: string): {
+  name: string;
+  version: string;
+} {
   const ua = UAParser(userAgent);
   return {
     name: ua.browser.name || "Unknown",
@@ -95,7 +98,10 @@ export function getBrowserInfo(userAgent: string): { name: string; version: stri
 /**
  * Extract OS info from user agent
  */
-export function getOSInfo(userAgent: string): { name: string; version: string } {
+export function getOSInfo(userAgent: string): {
+  name: string;
+  version: string;
+} {
   const ua = UAParser(userAgent);
   return {
     name: ua.os.name || "Unknown",

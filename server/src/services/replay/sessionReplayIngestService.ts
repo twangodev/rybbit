@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
-import { clickhouse } from "../db/clickhouse/clickhouse.js";
-import { RecordSessionReplayRequest } from "../types/sessionReplay.js";
-import { processResults } from "../api/analytics/utils.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
+import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
+import { processResults } from "../../api/analytics/utils.js";
 import { parseTrackingData } from "./trackingUtils.js";
 
 export interface RequestMetadata {
@@ -171,5 +171,4 @@ export class SessionReplayIngestService {
       format: "JSONEachRow",
     });
   }
-
 }

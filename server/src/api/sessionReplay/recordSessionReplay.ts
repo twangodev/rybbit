@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { SessionReplayIngestService } from "../../services/sessionReplayIngestService.js";
+import { SessionReplayIngestService } from "../../services/replay/sessionReplayIngestService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 
 const recordSessionReplaySchema = z.object({
@@ -32,7 +32,9 @@ export async function recordSessionReplay(
 ) {
   try {
     const siteId = Number(request.params.site);
-    const body = recordSessionReplaySchema.parse(request.body) as RecordSessionReplayRequest;
+    const body = recordSessionReplaySchema.parse(
+      request.body
+    ) as RecordSessionReplayRequest;
 
     // Extract request metadata for tracking
     const userAgent = request.headers["user-agent"] || "";

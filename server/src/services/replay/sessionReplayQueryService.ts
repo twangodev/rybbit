@@ -1,10 +1,10 @@
-import { clickhouse } from "../db/clickhouse/clickhouse.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import {
   SessionReplayMetadata,
   SessionReplayListItem,
   GetSessionReplayEventsResponse,
-} from "../types/sessionReplay.js";
-import { processResults, getTimeStatement } from "../api/analytics/utils.js";
+} from "../../types/sessionReplay.js";
+import { processResults, getTimeStatement } from "../../api/analytics/utils.js";
 import { FilterParams } from "@rybbit/shared";
 
 /**

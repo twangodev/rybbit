@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { SessionReplayQueryService } from "../../services/sessionReplayQueryService.js";
+import { SessionReplayQueryService } from "../../services/replay/sessionReplayQueryService.js";
 
 export async function getSessionReplayEvents(
   request: FastifyRequest<{
