@@ -12,8 +12,15 @@ export interface SessionReplayListItem {
   eventCount: number;
   recordingStatus: string;
   country: string;
+  region: string;
+  city: string;
   browser: string;
+  browserVersion: string;
+  operatingSystem: string;
+  operatingSystemVersion: string;
   deviceType: string;
+  screenWidth: number;
+  screenHeight: number;
 }
 
 export interface SessionReplayListResponse {
