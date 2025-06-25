@@ -1,3 +1,4 @@
+import { DateTime } from "luxon";
 import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { RecordSessionReplayRequest } from "../types/sessionReplay.js";
 import { processResults } from "../api/analytics/utils.js";
@@ -27,7 +28,9 @@ export class SessionReplayIngestService {
       site_id: siteId,
       session_id: sessionId,
       user_id: userId,
-      timestamp: Math.floor(event.timestamp / 1000), // Convert to Unix timestamp (seconds)
+      timestamp: DateTime.fromMillis(event.timestamp).toFormat(
+        "yyyy-MM-dd HH:mm:ss"
+      ),
       event_type: event.type,
       event_data: JSON.stringify(event.data),
       sequence_number: index,
@@ -136,8 +139,12 @@ export class SessionReplayIngestService {
           site_id: siteId,
           session_id: sessionId,
           user_id: userId,
-          start_time: Math.floor(startTime.getTime() / 1000), // Convert to Unix timestamp
-          end_time: endTime ? Math.floor(endTime.getTime() / 1000) : null, // Convert to Unix timestamp
+          start_time: DateTime.fromJSDate(startTime).toFormat(
+            "yyyy-MM-dd HH:mm:ss"
+          ),
+          end_time: endTime
+            ? DateTime.fromJSDate(endTime).toFormat("yyyy-MM-dd HH:mm:ss")
+            : null,
           duration_ms: durationMs,
           event_count: sessionReplayData.event_count || 0,
           compressed_size_bytes: sessionReplayData.compressed_size_bytes || 0,
