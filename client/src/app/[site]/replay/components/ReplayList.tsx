@@ -42,7 +42,7 @@ export default function ReplayList() {
       ) : (
         flattenedData.map((replay: SessionReplayListItem, index) => (
           <ReplayCard
-            key={`${replay.sessionId}-${index}`}
+            key={`${replay.session_id}-${index}`}
             replay={replay}
             siteId={siteId}
           />

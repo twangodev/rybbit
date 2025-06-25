@@ -3,24 +3,24 @@ import { useStore } from "../../../lib/store";
 import { authedFetch, getQueryParams } from "../../utils";
 
 export interface SessionReplayListItem {
-  sessionId: string;
-  userId: string;
-  startTime: string;
-  endTime?: string;
-  durationMs?: number;
-  pageUrl: string;
-  eventCount: number;
-  recordingStatus: string;
+  session_id: string;
+  user_id: string;
+  start_time: string;
+  end_time?: string;
+  duration_ms?: number;
+  page_url: string;
+  event_count: number;
+  recording_status: string;
   country: string;
   region: string;
   city: string;
   browser: string;
-  browserVersion: string;
-  operatingSystem: string;
-  operatingSystemVersion: string;
-  deviceType: string;
-  screenWidth: number;
-  screenHeight: number;
+  browser_version: string;
+  operating_system: string;
+  operating_system_version: string;
+  device_type: string;
+  screen_width: number;
+  screen_height: number;
 }
 
 export interface SessionReplayListResponse {

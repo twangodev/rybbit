@@ -8,34 +8,34 @@ export interface SessionReplayEvent {
 }
 
 export interface SessionReplayMetadata {
-  sessionId: string;
-  userId: string;
-  startTime: Date;
-  endTime?: Date;
-  durationMs?: number;
-  eventCount: number;
-  compressedSizeBytes: number;
-  pageUrl: string;
-  userAgent: string;
+  session_id: string;
+  user_id: string;
+  start_time: Date;
+  end_time?: Date;
+  duration_ms?: number;
+  event_count: number;
+  compressed_size_bytes: number;
+  page_url: string;
+  user_agent: string;
   country: string;
   region: string;
   city: string;
   lat: number;
   lon: number;
   browser: string;
-  browserVersion: string;
-  operatingSystem: string;
-  operatingSystemVersion: string;
+  browser_version: string;
+  operating_system: string;
+  operating_system_version: string;
   language: string;
-  screenWidth: number;
-  screenHeight: number;
-  deviceType: string;
+  screen_width: number;
+  screen_height: number;
+  device_type: string;
   channel: string;
   hostname: string;
   referrer: string;
-  hasReplayData: boolean;
-  recordingStatus: 'recording' | 'completed' | 'failed';
-  createdAt: Date;
+  has_replay_data: boolean;
+  recording_status: 'recording' | 'completed' | 'failed';
+  created_at: Date;
 }
 
 export interface GetSessionReplayEventsResponse {

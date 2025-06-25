@@ -156,7 +156,7 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
 
   const metadata = data?.metadata;
   const startTime = metadata
-    ? DateTime.fromSQL(metadata.startTime.toString(), {
+    ? DateTime.fromSQL(metadata.start_time.toString(), {
         zone: "utc",
       }).toLocal()
     : DateTime.now();
@@ -179,7 +179,7 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
               </h1>
               <div className="text-sm text-neutral-400">
                 {startTime.toLocaleString(DateTime.DATETIME_MED)} •{" "}
-                {metadata?.pageUrl}
+                {metadata?.page_url}
               </div>
             </div>
           </div>
@@ -253,17 +253,17 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
           <div className="mt-4 pt-4 border-t border-neutral-800 grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
             <div>
               <div className="text-neutral-500">User ID</div>
-              <div className="text-neutral-200">{metadata.userId}</div>
+              <div className="text-neutral-200">{metadata.user_id}</div>
             </div>
             <div>
               <div className="text-neutral-500">Browser</div>
               <div className="text-neutral-200">
-                {metadata.browser} {metadata.browserVersion}
+                {metadata.browser} {metadata.browser_version}
               </div>
             </div>
             <div>
               <div className="text-neutral-500">Device</div>
-              <div className="text-neutral-200">{metadata.deviceType}</div>
+              <div className="text-neutral-200">{metadata.device_type}</div>
             </div>
             <div>
               <div className="text-neutral-500">Location</div>

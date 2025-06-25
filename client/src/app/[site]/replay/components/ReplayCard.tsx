@@ -10,24 +10,24 @@ import {
 } from "../../../../components/TooltipIcons/TooltipIcons";
 
 interface SessionReplayListItem {
-  sessionId: string;
-  userId: string;
-  startTime: string;
-  endTime?: string;
-  durationMs?: number;
-  pageUrl: string;
-  eventCount: number;
-  recordingStatus: string;
+  session_id: string;
+  user_id: string;
+  start_time: string;
+  end_time?: string;
+  duration_ms?: number;
+  page_url: string;
+  event_count: number;
+  recording_status: string;
   country: string;
   region: string;
   city: string;
   browser: string;
-  browserVersion: string;
-  operatingSystem: string;
-  operatingSystemVersion: string;
-  deviceType: string;
-  screenWidth: number;
-  screenHeight: number;
+  browser_version: string;
+  operating_system: string;
+  operating_system_version: string;
+  device_type: string;
+  screen_width: number;
+  screen_height: number;
 }
 
 export function ReplayCard({
@@ -38,11 +38,11 @@ export function ReplayCard({
   siteId: number;
 }) {
   console.log(replay);
-  const startTime = DateTime.fromSQL(replay.startTime, {
+  const startTime = DateTime.fromSQL(replay.start_time, {
     zone: "utc",
   }).toLocal();
-  const duration = replay.durationMs
-    ? Math.ceil(replay.durationMs / 1000)
+  const duration = replay.duration_ms
+    ? Math.ceil(replay.duration_ms / 1000)
     : null;
 
   const formatDuration = (seconds: number) => {
@@ -65,7 +65,7 @@ export function ReplayCard({
   };
 
   return (
-    <Link href={`/${siteId}/replay/${replay.sessionId}`}>
+    <Link href={`/${siteId}/replay/${replay.session_id}`}>
       <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4 hover:bg-neutral-800/50 transition-colors cursor-pointer">
         <div className="flex items-start justify-between mb-2">
           <div className="flex items-center gap-2">
@@ -89,19 +89,19 @@ export function ReplayCard({
               </div>
             )}
             <div
-              className={`text-xs ${getStatusColor(replay.recordingStatus)}`}
+              className={`text-xs ${getStatusColor(replay.recording_status)}`}
             >
-              {replay.recordingStatus}
+              {replay.recording_status}
             </div>
           </div>
         </div>
 
         <div className="mb-3">
           <div className="text-sm text-neutral-200 truncate">
-            {replay.pageUrl}
+            {replay.page_url}
           </div>
           <div className="text-xs text-neutral-500">
-            User ID: {replay.userId}
+            User ID: {replay.user_id}
           </div>
         </div>
 
@@ -113,18 +113,18 @@ export function ReplayCard({
           />
           <BrowserTooltipIcon
             browser={replay.browser}
-            browser_version={replay.browserVersion}
+            browser_version={replay.browser_version}
           />
           <OperatingSystemTooltipIcon
-            operating_system={replay.operatingSystem}
-            operating_system_version={replay.operatingSystemVersion}
+            operating_system={replay.operating_system}
+            operating_system_version={replay.operating_system_version}
           />
           <DeviceTypeTooltipIcon
-            device_type={replay.deviceType}
-            screen_width={replay.screenWidth}
-            screen_height={replay.screenHeight}
+            device_type={replay.device_type}
+            screen_width={replay.screen_width}
+            screen_height={replay.screen_height}
           />
-          <div className="ml-auto text-xs">{replay.eventCount} events</div>
+          <div className="ml-auto text-xs">{replay.event_count} events</div>
         </div>
       </div>
     </Link>

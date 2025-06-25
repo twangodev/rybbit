@@ -73,8 +73,11 @@ export class SessionReplayQueryService {
     console.log("SessionReplay Query:", query);
     console.log("Query Params:", queryParams);
     console.log("Time Statement:", timeStatement);
-    console.log("Options passed to getTimeStatement:", JSON.stringify(options, null, 2));
-    
+    console.log(
+      "Options passed to getTimeStatement:",
+      JSON.stringify(options, null, 2)
+    );
+
     // First, let's check if there's any data in the table at all
     const countQuery = `SELECT COUNT(*) as total FROM session_replay_metadata WHERE site_id = {siteId:UInt16}`;
     const countResult = await clickhouse.query({
@@ -82,9 +85,12 @@ export class SessionReplayQueryService {
       query_params: { siteId },
       format: "JSONEachRow",
     });
-    const countData = await processResults<{total: number}>(countResult);
-    console.log("Total session replay metadata records for site:", countData[0]?.total || 0);
-    
+    const countData = await processResults<{ total: number }>(countResult);
+    console.log(
+      "Total session replay metadata records for site:",
+      countData[0]?.total || 0
+    );
+
     // Debug: Check actual dates in the data
     const dateCheckQuery = `SELECT session_id, start_time, toDate(start_time) as date_only FROM session_replay_metadata WHERE site_id = {siteId:UInt16} ORDER BY start_time DESC LIMIT 5`;
     const dateCheckResult = await clickhouse.query({
@@ -94,7 +100,7 @@ export class SessionReplayQueryService {
     });
     const dateCheckData = await processResults<any>(dateCheckResult);
     console.log("Recent session replay dates:", dateCheckData);
-    
+
     const result = await clickhouse.query({
       query,
       query_params: queryParams,
@@ -103,29 +109,9 @@ export class SessionReplayQueryService {
 
     const rawResults = await processResults<any>(result);
     console.log("Raw results count:", rawResults.length);
-    
-    // Transform snake_case to camelCase
-    const finalResults = rawResults.map((item: any) => ({
-      sessionId: item.session_id,
-      userId: item.user_id,
-      startTime: item.start_time,
-      endTime: item.end_time,
-      durationMs: item.duration_ms,
-      pageUrl: item.page_url,
-      eventCount: item.event_count,
-      recordingStatus: item.recording_status,
-      country: item.country,
-      region: item.region,
-      city: item.city,
-      browser: item.browser,
-      browserVersion: item.browser_version,
-      operatingSystem: item.operating_system,
-      operatingSystemVersion: item.operating_system_version,
-      deviceType: item.device_type,
-      screenWidth: item.screen_width,
-      screenHeight: item.screen_height,
-    }));
-    
+
+    const finalResults = rawResults;
+
     console.log("Final results count:", finalResults.length);
     return finalResults;
   }
@@ -148,43 +134,11 @@ export class SessionReplayQueryService {
     });
 
     const metadataResults = await processResults<any>(metadataResult);
-    const rawMetadata = metadataResults[0];
+    const metadata = metadataResults[0];
 
-    if (!rawMetadata) {
+    if (!metadata) {
       throw new Error("Session replay not found");
     }
-
-    // Transform snake_case to camelCase for metadata
-    const metadata = {
-      siteId: rawMetadata.site_id,
-      sessionId: rawMetadata.session_id,
-      userId: rawMetadata.user_id,
-      startTime: rawMetadata.start_time,
-      endTime: rawMetadata.end_time,
-      durationMs: rawMetadata.duration_ms,
-      eventCount: rawMetadata.event_count,
-      compressedSizeBytes: rawMetadata.compressed_size_bytes,
-      pageUrl: rawMetadata.page_url,
-      country: rawMetadata.country,
-      region: rawMetadata.region,
-      city: rawMetadata.city,
-      lat: rawMetadata.lat,
-      lon: rawMetadata.lon,
-      browser: rawMetadata.browser,
-      browserVersion: rawMetadata.browser_version,
-      operatingSystem: rawMetadata.operating_system,
-      operatingSystemVersion: rawMetadata.operating_system_version,
-      language: rawMetadata.language,
-      screenWidth: rawMetadata.screen_width,
-      screenHeight: rawMetadata.screen_height,
-      deviceType: rawMetadata.device_type,
-      channel: rawMetadata.channel,
-      hostname: rawMetadata.hostname,
-      referrer: rawMetadata.referrer,
-      hasReplayData: rawMetadata.has_replay_data,
-      recordingStatus: rawMetadata.recording_status,
-      createdAt: rawMetadata.created_at,
-    };
 
     // Get events
     const eventsResult = await clickhouse.query({
@@ -209,14 +163,17 @@ export class SessionReplayQueryService {
     };
 
     const eventsResults = await processResults<EventRow>(eventsResult);
-    console.log("Raw event timestamps from DB:", eventsResults.map(e => ({ timestamp: e.timestamp, type: e.type })));
-    
+    console.log(
+      "Raw event timestamps from DB:",
+      eventsResults.map((e) => ({ timestamp: e.timestamp, type: e.type }))
+    );
+
     const events = eventsResults.map((event) => {
       // The timestamp from ClickHouse is already in seconds (Unix timestamp)
       // We need to convert it to milliseconds for rrweb
       const timestamp = new Date(event.timestamp).getTime();
       console.log(`Converting timestamp: ${event.timestamp} -> ${timestamp}`);
-      
+
       return {
         timestamp,
         type: event.type, // Keep as string for now to match interface
@@ -225,10 +182,15 @@ export class SessionReplayQueryService {
     });
 
     console.log(`Session ${sessionId} has ${events.length} events`);
-    console.log("Final events:", events.map(e => ({ type: e.type, timestamp: e.timestamp })));
-    
+    console.log(
+      "Final events:",
+      events.map((e) => ({ type: e.type, timestamp: e.timestamp }))
+    );
+
     // Check if we have a FullSnapshot event (type 2)
-    const hasFullSnapshot = events.some(e => e.type === "2" || e.type.toString() === "2");
+    const hasFullSnapshot = events.some(
+      (e) => e.type === "2" || e.type.toString() === "2"
+    );
     console.log("Has FullSnapshot (type 2):", hasFullSnapshot);
 
     return {
