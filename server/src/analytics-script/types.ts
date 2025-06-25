@@ -69,7 +69,6 @@ export interface SessionReplayEvent {
 }
 
 export interface SessionReplayBatch {
-  sessionId: string;
   userId: string;
   events: SessionReplayEvent[];
   metadata?: {

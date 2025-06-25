@@ -1,4 +1,8 @@
-import { ScriptConfig, SessionReplayEvent, SessionReplayBatch } from "./types.js";
+import {
+  ScriptConfig,
+  SessionReplayEvent,
+  SessionReplayBatch,
+} from "./types.js";
 
 // rrweb types (simplified for our use case)
 declare global {
@@ -23,7 +27,6 @@ export class SessionReplayRecorder {
   private config: ScriptConfig;
   private isRecording: boolean = false;
   private stopRecordingFn?: () => void;
-  private sessionId: string;
   private userId: string;
   private eventBuffer: SessionReplayEvent[] = [];
   private batchTimer?: number;
@@ -31,12 +34,10 @@ export class SessionReplayRecorder {
 
   constructor(
     config: ScriptConfig,
-    sessionId: string,
     userId: string,
     sendBatch: (batch: SessionReplayBatch) => Promise<void>
   ) {
     this.config = config;
-    this.sessionId = sessionId;
     this.userId = userId;
     this.sendBatch = sendBatch;
   }
@@ -61,7 +62,8 @@ export class SessionReplayRecorder {
   private async loadRrweb(): Promise<void> {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
-      script.src = "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
+      script.src =
+        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
       script.async = false; // Load synchronously to ensure immediate availability
       script.onload = () => {
         console.log("[Session Replay] rrweb loaded successfully");
@@ -77,28 +79,35 @@ export class SessionReplayRecorder {
       console.log("[Session Replay] Cannot start recording:", {
         isRecording: this.isRecording,
         hasRrweb: !!window.rrweb,
-        enableSessionReplay: this.config.enableSessionReplay
+        enableSessionReplay: this.config.enableSessionReplay,
       });
       return;
     }
 
-    console.log("[Session Replay] Starting recording at", new Date().toISOString());
+    console.log(
+      "[Session Replay] Starting recording at",
+      new Date().toISOString()
+    );
     console.log("[Session Replay] Document ready state:", document.readyState);
 
     try {
       this.stopRecordingFn = window.rrweb.record({
         emit: (event) => {
           const eventTypeNames = {
-            0: 'DOMContentLoaded',
-            1: 'Load', 
-            2: 'FullSnapshot',
-            3: 'IncrementalSnapshot',
-            4: 'Meta',
-            5: 'Custom',
-            6: 'Plugin'
+            0: "DOMContentLoaded",
+            1: "Load",
+            2: "FullSnapshot",
+            3: "IncrementalSnapshot",
+            4: "Meta",
+            5: "Custom",
+            6: "Plugin",
           };
-          const typeName = eventTypeNames[event.type as keyof typeof eventTypeNames] || `Unknown(${event.type})`;
-          console.log(`[Session Replay] Event collected: Type ${event.type} (${typeName}) at ${new Date(event.timestamp || Date.now()).toISOString()}`);
+          const typeName =
+            eventTypeNames[event.type as keyof typeof eventTypeNames] ||
+            `Unknown(${event.type})`;
+          console.log(
+            `[Session Replay] Event collected: Type ${event.type} (${typeName}) at ${new Date(event.timestamp || Date.now()).toISOString()}`
+          );
           this.addEvent({
             type: event.type,
             data: event.data,
@@ -137,7 +146,7 @@ export class SessionReplayRecorder {
 
       this.isRecording = true;
       this.setupBatchTimer();
-      
+
       console.log("Session replay recording started");
     } catch (error) {
       console.error("Failed to start session replay recording:", error);
@@ -155,7 +164,7 @@ export class SessionReplayRecorder {
 
     this.isRecording = false;
     this.clearBatchTimer();
-    
+
     // Send any remaining events
     if (this.eventBuffer.length > 0) {
       this.flushEvents();
@@ -170,11 +179,15 @@ export class SessionReplayRecorder {
 
   private addEvent(event: SessionReplayEvent): void {
     this.eventBuffer.push(event);
-    console.log(`[Session Replay] Event added to buffer (${this.eventBuffer.length}/${this.config.sessionReplayBatchSize})`);
+    console.log(
+      `[Session Replay] Event added to buffer (${this.eventBuffer.length}/${this.config.sessionReplayBatchSize})`
+    );
 
     // Auto-flush if buffer is full
     if (this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
-      console.log(`[Session Replay] Buffer full, flushing ${this.eventBuffer.length} events`);
+      console.log(
+        `[Session Replay] Buffer full, flushing ${this.eventBuffer.length} events`
+      );
       this.flushEvents();
     }
   }
@@ -183,7 +196,9 @@ export class SessionReplayRecorder {
     this.clearBatchTimer();
     this.batchTimer = window.setInterval(() => {
       if (this.eventBuffer.length > 0) {
-        console.log(`[Session Replay] Timer triggered, flushing ${this.eventBuffer.length} events`);
+        console.log(
+          `[Session Replay] Timer triggered, flushing ${this.eventBuffer.length} events`
+        );
         this.flushEvents();
       }
     }, this.config.sessionReplayBatchInterval);
@@ -204,12 +219,20 @@ export class SessionReplayRecorder {
     const events = [...this.eventBuffer];
     this.eventBuffer = [];
 
-    console.log(`[Session Replay] Sending batch with ${events.length} events to server`);
-    console.log(`[Session Replay] Event types in batch:`, events.map(e => `Type ${e.type}`).join(', '));
-    console.log(`[Session Replay] Batch size:`, JSON.stringify(events).length, 'characters');
+    console.log(
+      `[Session Replay] Sending batch with ${events.length} events to server`
+    );
+    console.log(
+      `[Session Replay] Event types in batch:`,
+      events.map((e) => `Type ${e.type}`).join(", ")
+    );
+    console.log(
+      `[Session Replay] Batch size:`,
+      JSON.stringify(events).length,
+      "characters"
+    );
 
     const batch: SessionReplayBatch = {
-      sessionId: this.sessionId,
       userId: this.userId,
       events,
       metadata: {
@@ -222,29 +245,28 @@ export class SessionReplayRecorder {
 
     try {
       await this.sendBatch(batch);
-      console.log(`[Session Replay] Successfully sent batch with ${events.length} events`);
+      console.log(
+        `[Session Replay] Successfully sent batch with ${events.length} events`
+      );
     } catch (error) {
       console.error("Failed to send session replay batch:", error);
       console.error("Failed batch details:", {
         eventCount: events.length,
-        eventTypes: events.map(e => e.type),
+        eventTypes: events.map((e) => e.type),
         batchSize: JSON.stringify(batch).length,
-        sessionId: this.sessionId,
         userId: this.userId,
-        url: window.location.href
+        url: window.location.href,
       });
-      
+
       // Re-queue the events for retry since this batch failed
-      console.log(`[Session Replay] Re-queuing ${events.length} failed events for retry`);
+      console.log(
+        `[Session Replay] Re-queuing ${events.length} failed events for retry`
+      );
       this.eventBuffer.unshift(...events);
     }
   }
 
-  // Update session/user IDs when they change
-  public updateSessionId(sessionId: string): void {
-    this.sessionId = sessionId;
-  }
-
+  // Update user ID when it changes
   public updateUserId(userId: string): void {
     this.userId = userId;
   }

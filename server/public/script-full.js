@@ -118,11 +118,10 @@
 
   // sessionReplay.ts
   var SessionReplayRecorder = class {
-    constructor(config, sessionId, userId, sendBatch) {
+    constructor(config, userId, sendBatch) {
       this.isRecording = false;
       this.eventBuffer = [];
       this.config = config;
-      this.sessionId = sessionId;
       this.userId = userId;
       this.sendBatch = sendBatch;
     }
@@ -161,7 +160,10 @@
         });
         return;
       }
-      console.log("[Session Replay] Starting recording at", (/* @__PURE__ */ new Date()).toISOString());
+      console.log(
+        "[Session Replay] Starting recording at",
+        (/* @__PURE__ */ new Date()).toISOString()
+      );
       console.log("[Session Replay] Document ready state:", document.readyState);
       try {
         this.stopRecordingFn = window.rrweb.record({
@@ -176,7 +178,9 @@
               6: "Plugin"
             };
             const typeName = eventTypeNames[event.type] || `Unknown(${event.type})`;
-            console.log(`[Session Replay] Event collected: Type ${event.type} (${typeName}) at ${new Date(event.timestamp || Date.now()).toISOString()}`);
+            console.log(
+              `[Session Replay] Event collected: Type ${event.type} (${typeName}) at ${new Date(event.timestamp || Date.now()).toISOString()}`
+            );
             this.addEvent({
               type: event.type,
               data: event.data,
@@ -246,9 +250,13 @@
     }
     addEvent(event) {
       this.eventBuffer.push(event);
-      console.log(`[Session Replay] Event added to buffer (${this.eventBuffer.length}/${this.config.sessionReplayBatchSize})`);
+      console.log(
+        `[Session Replay] Event added to buffer (${this.eventBuffer.length}/${this.config.sessionReplayBatchSize})`
+      );
       if (this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
-        console.log(`[Session Replay] Buffer full, flushing ${this.eventBuffer.length} events`);
+        console.log(
+          `[Session Replay] Buffer full, flushing ${this.eventBuffer.length} events`
+        );
         this.flushEvents();
       }
     }
@@ -256,7 +264,9 @@
       this.clearBatchTimer();
       this.batchTimer = window.setInterval(() => {
         if (this.eventBuffer.length > 0) {
-          console.log(`[Session Replay] Timer triggered, flushing ${this.eventBuffer.length} events`);
+          console.log(
+            `[Session Replay] Timer triggered, flushing ${this.eventBuffer.length} events`
+          );
           this.flushEvents();
         }
       }, this.config.sessionReplayBatchInterval);
@@ -273,11 +283,19 @@
       }
       const events = [...this.eventBuffer];
       this.eventBuffer = [];
-      console.log(`[Session Replay] Sending batch with ${events.length} events to server`);
-      console.log(`[Session Replay] Event types in batch:`, events.map((e2) => `Type ${e2.type}`).join(", "));
-      console.log(`[Session Replay] Batch size:`, JSON.stringify(events).length, "characters");
+      console.log(
+        `[Session Replay] Sending batch with ${events.length} events to server`
+      );
+      console.log(
+        `[Session Replay] Event types in batch:`,
+        events.map((e2) => `Type ${e2.type}`).join(", ")
+      );
+      console.log(
+        `[Session Replay] Batch size:`,
+        JSON.stringify(events).length,
+        "characters"
+      );
       const batch = {
-        sessionId: this.sessionId,
         userId: this.userId,
         events,
         metadata: {
@@ -289,25 +307,25 @@
       };
       try {
         await this.sendBatch(batch);
-        console.log(`[Session Replay] Successfully sent batch with ${events.length} events`);
+        console.log(
+          `[Session Replay] Successfully sent batch with ${events.length} events`
+        );
       } catch (error) {
         console.error("Failed to send session replay batch:", error);
         console.error("Failed batch details:", {
           eventCount: events.length,
           eventTypes: events.map((e2) => e2.type),
           batchSize: JSON.stringify(batch).length,
-          sessionId: this.sessionId,
           userId: this.userId,
           url: window.location.href
         });
-        console.log(`[Session Replay] Re-queuing ${events.length} failed events for retry`);
+        console.log(
+          `[Session Replay] Re-queuing ${events.length} failed events for retry`
+        );
         this.eventBuffer.unshift(...events);
       }
     }
-    // Update session/user IDs when they change
-    updateSessionId(sessionId) {
-      this.sessionId = sessionId;
-    }
+    // Update user ID when it changes
     updateUserId(userId) {
       this.userId = userId;
     }
@@ -328,7 +346,6 @@
     constructor(config) {
       this.customUserId = null;
       this.config = config;
-      this.sessionId = this.generateSessionId();
       this.loadUserId();
       if (config.enableSessionReplay) {
         this.initializeSessionReplay();
@@ -343,14 +360,10 @@
       } catch (e2) {
       }
     }
-    generateSessionId() {
-      return Math.random().toString(36).substring(2) + Date.now().toString(36);
-    }
     async initializeSessionReplay() {
       try {
         this.sessionReplayRecorder = new SessionReplayRecorder(
           this.config,
-          this.sessionId,
           this.customUserId || this.generateUserId(),
           (batch) => this.sendSessionReplayBatch(batch)
         );

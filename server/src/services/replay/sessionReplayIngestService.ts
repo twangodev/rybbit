@@ -3,6 +3,7 @@ import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 import { processResults } from "../../api/analytics/utils.js";
 import { parseTrackingData } from "./trackingUtils.js";
+import { sessionsService } from "../sessions/sessionsService.js";
 
 export interface RequestMetadata {
   userAgent: string;
@@ -21,7 +22,14 @@ export class SessionReplayIngestService {
     request: RecordSessionReplayRequest,
     requestMeta?: RequestMetadata
   ): Promise<void> {
-    const { sessionId, userId, events, metadata } = request;
+    const { userId, events, metadata } = request;
+
+    // Get or create a session ID from the sessions service
+    const { sessionId } = await sessionsService.updateSession({
+      userId,
+      site_id: siteId.toString(),
+      timestamp: Date.now().toString(),
+    });
 
     // Prepare events for batch insert
     const eventsToInsert = events.map((event, index) => ({

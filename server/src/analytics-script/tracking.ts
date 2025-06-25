@@ -11,12 +11,10 @@ import { SessionReplayRecorder } from "./sessionReplay.js";
 export class Tracker {
   private config: ScriptConfig;
   private customUserId: string | null = null;
-  private sessionId: string;
   private sessionReplayRecorder?: SessionReplayRecorder;
 
   constructor(config: ScriptConfig) {
     this.config = config;
-    this.sessionId = this.generateSessionId();
     this.loadUserId();
 
     if (config.enableSessionReplay) {
@@ -35,15 +33,10 @@ export class Tracker {
     }
   }
 
-  private generateSessionId(): string {
-    return Math.random().toString(36).substring(2) + Date.now().toString(36);
-  }
-
   private async initializeSessionReplay(): Promise<void> {
     try {
       this.sessionReplayRecorder = new SessionReplayRecorder(
         this.config,
-        this.sessionId,
         this.customUserId || this.generateUserId(),
         (batch) => this.sendSessionReplayBatch(batch)
       );
