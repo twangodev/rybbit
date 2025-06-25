@@ -25,7 +25,7 @@ class SessionsService {
     site_id: string;
     timestamp: string;
     sessionId: string;
-  }): Promise<void> {
+  }): Promise<{ sessionId: string }> {
     const existingSession = await this.getExistingSession(
       payload.userId,
       payload.site_id
@@ -38,7 +38,7 @@ class SessionsService {
           lastActivity: new Date(payload.timestamp),
         })
         .where(eq(activeSessions.sessionId, existingSession.sessionId));
-      return;
+      return { sessionId: existingSession.sessionId };
     }
 
     // Insert new session with Drizzle - only include columns that exist in schema
@@ -54,6 +54,7 @@ class SessionsService {
     };
 
     await db.insert(activeSessions).values(insertData);
+    return { sessionId: insertData.sessionId };
   }
 }
 

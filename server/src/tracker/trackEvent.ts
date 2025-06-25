@@ -1,19 +1,13 @@
-import { eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { isbot } from "isbot";
 import { z, ZodError } from "zod";
-import { db } from "../db/postgres/postgres.js";
-import { activeSessions } from "../db/postgres/schema.js";
 import { apiKeyRateLimiter } from "../lib/rateLimiter.js";
 import { siteConfig } from "../lib/siteConfig.js";
 import { sessionsService } from "../services/sessions/sessionsService.js";
 import { normalizeOrigin } from "../utils.js";
 import { DISABLE_ORIGIN_CHECK } from "./const.js";
-import {
-  createBasePayload,
-  isSiteOverLimit,
-  TotalTrackingPayload,
-} from "./utils.js";
+import { createBasePayload, isSiteOverLimit } from "./utils.js";
+import { pageviewQueue } from "./pageviewQueue.js";
 
 // Define Zod schema for validation
 export const trackingPayloadSchema = z.discriminatedUnion("type", [
@@ -160,40 +154,6 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     })
     .strict(),
 ]);
-
-// Update session for both pageviews and events
-async function updateSession(
-  payload: TotalTrackingPayload,
-  existingSession: any | null
-): Promise<void> {
-  if (existingSession) {
-    // Update session with Drizzle
-    const updateData: any = {
-      lastActivity: new Date(payload.timestamp),
-    };
-
-    // Note: pageviews column removed from schema
-    await db
-      .update(activeSessions)
-      .set(updateData)
-      .where(eq(activeSessions.userId, existingSession.userId));
-    return;
-  }
-
-  // Insert new session with Drizzle - only include columns that exist in schema
-  const insertData = {
-    sessionId: payload.sessionId,
-    siteId:
-      typeof payload.site_id === "string"
-        ? parseInt(payload.site_id, 10)
-        : payload.site_id,
-    userId: payload.userId,
-    startTime: new Date(payload.timestamp || Date.now()),
-    lastActivity: new Date(payload.timestamp || Date.now()),
-  };
-
-  await db.insert(activeSessions).values(insertData);
-}
 
 /**
  * Validates API key for the site
@@ -409,14 +369,19 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       validatedPayload.type,
       validatedPayload // Add validated payload back
     );
-
     // Update session
-    await sessionsService.updateSession({
+    const { sessionId } = await sessionsService.updateSession({
       userId: payload.userId,
       site_id: payload.site_id,
       timestamp: payload.timestamp,
       sessionId: payload.sessionId,
     });
+
+    // update with existing session id if it exists
+    payload.sessionId = sessionId;
+
+    // Add to queue for processing
+    await pageviewQueue.add(payload);
 
     return reply.status(200).send({
       success: true,
