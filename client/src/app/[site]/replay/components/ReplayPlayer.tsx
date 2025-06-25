@@ -4,6 +4,14 @@ import "rrweb-player/dist/style.css";
 import { Button } from "../../../../components/ui/button";
 import { Skeleton } from "../../../../components/ui/skeleton";
 import { Slider } from "../../../../components/ui/slider";
+import { ActivitySlider } from "../../../../components/ui/activity-slider";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "../../../../components/ui/select";
 import {
   Play,
   Pause,
@@ -27,6 +35,8 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
+  const [playbackSpeed, setPlaybackSpeed] = useState("1");
+  const [activityPeriods, setActivityPeriods] = useState<{start: number, end: number}[]>([]);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, error } = useGetSessionReplayEvents(
@@ -44,8 +54,8 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
   useEffect(() => {
     if (data?.events && playerContainerRef.current) {
       // Clear any existing content first
-      playerContainerRef.current.innerHTML = '';
-      
+      playerContainerRef.current.innerHTML = "";
+
       // Initialize rrweb player
       const newPlayer = new rrwebPlayer({
         target: playerContainerRef.current,
@@ -81,11 +91,46 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
         }
       }, 100);
 
+      // Calculate activity periods after we have duration
+      setTimeout(() => {
+        if (!data.events || data.events.length === 0) return;
+        
+        const totalDuration = newPlayer.getMetaData().totalTime || 0;
+        
+        // Filter for user interaction events (mouse moves, clicks, etc.)
+        const interactionEvents = data.events.filter(event => {
+          const eventType = parseInt(event.type.toString());
+          // Type 3 = IncrementalSnapshot (includes mouse moves, clicks, etc.)
+          return eventType === 3;
+        });
+
+        const periods: {start: number, end: number}[] = [];
+        const inactivityThreshold = 5000; // 5 seconds of no interaction = inactive
+        const firstEventTime = data.events[0].timestamp;
+        
+        for (let i = 0; i < interactionEvents.length; i++) {
+          const currentEvent = interactionEvents[i];
+          const nextEvent = interactionEvents[i + 1];
+          
+          const currentTime = currentEvent.timestamp - firstEventTime;
+          const nextTime = nextEvent ? nextEvent.timestamp - firstEventTime : totalDuration;
+          
+          if (nextTime - currentTime <= inactivityThreshold) {
+            periods.push({
+              start: currentTime,
+              end: nextTime
+            });
+          }
+        }
+        
+        setActivityPeriods(periods);
+      }, 150); // Run after duration is set
+
       return () => {
         // Proper cleanup
         newPlayer.pause();
         if (playerContainerRef.current) {
-          playerContainerRef.current.innerHTML = '';
+          playerContainerRef.current.innerHTML = "";
         }
         setPlayer(null);
       };
@@ -120,6 +165,12 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
     const newTime = (value[0] / 100) * duration;
     player.goto(newTime);
     setCurrentTime(newTime);
+  };
+
+  const handleSpeedChange = (speed: string) => {
+    if (!player) return;
+    setPlaybackSpeed(speed);
+    player.setSpeed(parseFloat(speed));
   };
 
   const handleFullscreen = () => {
@@ -236,18 +287,42 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
             )}
           </Button>
           <div className="flex-1 mx-2">
-            <Slider
+            <ActivitySlider
               value={[duration > 0 ? (currentTime / duration) * 100 : 0]}
               onValueChange={handleSliderChange}
               max={100}
               step={0.1}
+              activityPeriods={activityPeriods}
+              duration={duration}
               className="w-full"
             />
           </div>
-
-          <div className="text-sm text-neutral-400 min-w-[100px] text-right">
+          <div className="text-sm text-neutral-400">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
+
+          <Select value={playbackSpeed} onValueChange={handleSpeedChange}>
+            <SelectTrigger size="sm" className="w-14 mx-2">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent size="sm">
+              <SelectItem value="0.25" size="sm">
+                0.25x
+              </SelectItem>
+              <SelectItem value="0.5" size="sm">
+                0.5x
+              </SelectItem>
+              <SelectItem value="1" size="sm">
+                1x
+              </SelectItem>
+              <SelectItem value="2" size="sm">
+                2x
+              </SelectItem>
+              <SelectItem value="4" size="sm">
+                4x
+              </SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
     </div>
