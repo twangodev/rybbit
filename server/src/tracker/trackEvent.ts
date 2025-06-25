@@ -374,14 +374,10 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       userId: payload.userId,
       site_id: payload.site_id,
       timestamp: payload.timestamp,
-      sessionId: payload.sessionId,
     });
 
-    // update with existing session id if it exists
-    payload.sessionId = sessionId;
-
     // Add to queue for processing
-    await pageviewQueue.add(payload);
+    await pageviewQueue.add({ ...payload, sessionId });
 
     return reply.status(200).send({
       success: true,

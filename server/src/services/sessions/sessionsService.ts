@@ -24,7 +24,6 @@ class SessionsService {
     userId: string;
     site_id: string;
     timestamp: string;
-    sessionId: string;
   }): Promise<{ sessionId: string }> {
     const existingSession = await this.getExistingSession(
       payload.userId,
@@ -43,7 +42,7 @@ class SessionsService {
 
     // Insert new session with Drizzle - only include columns that exist in schema
     const insertData = {
-      sessionId: payload.sessionId,
+      sessionId: crypto.randomUUID(),
       siteId:
         typeof payload.site_id === "string"
           ? parseInt(payload.site_id, 10)

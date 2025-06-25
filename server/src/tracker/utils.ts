@@ -13,7 +13,6 @@ export type TotalTrackingPayload = TrackingPayload & {
   properties?: string;
   userId: string;
   timestamp: string;
-  sessionId: string;
   ua: UAParser.IResult;
   referrer: string;
   ipAddress: string;
@@ -123,7 +122,6 @@ export function createBasePayload(
     timestamp: new Date().toISOString(),
     ua: userAgentParser(userAgent),
     userId: userId,
-    sessionId: crypto.randomUUID(), // Will be replaced if session exists
   };
 }
 
