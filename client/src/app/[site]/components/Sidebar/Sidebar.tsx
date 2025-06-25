@@ -62,6 +62,12 @@ export function Sidebar() {
           href={getTabPath("realtime")}
           icon={<Earth className="w-4 h-4" />}
         />
+        <SidebarLink
+          label="Replay"
+          active={isActiveTab("replay")}
+          href={getTabPath("replay")}
+          icon={<Play className="w-4 h-4" />}
+        />
         {IS_CLOUD && (
           <SidebarLink
             label="Pages"
@@ -108,14 +114,6 @@ export function Sidebar() {
           href={getTabPath("sessions")}
           icon={<Rewind className="w-4 h-4" />}
         />
-        {IS_CLOUD && (
-          <SidebarLink
-            label="Replay"
-            active={isActiveTab("replay")}
-            href={getTabPath("replay")}
-            icon={<Play className="w-4 h-4" />}
-          />
-        )}
         <SidebarLink
           label="Users"
           active={isActiveTab("users")}

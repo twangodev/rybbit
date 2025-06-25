@@ -175,10 +175,7 @@ async function updateSession(
       lastActivity: new Date(payload.timestamp),
     };
 
-    // Only increment pageviews count for actual pageviews
-    if (isPageview) {
-      updateData.pageviews = (existingSession.pageviews || 0) + 1;
-    }
+    // Note: pageviews column removed from schema
 
     await db
       .update(activeSessions)
@@ -187,7 +184,7 @@ async function updateSession(
     return;
   }
 
-  // Insert new session with Drizzle
+  // Insert new session with Drizzle - only include columns that exist in schema
   const insertData = {
     sessionId: payload.sessionId,
     siteId:
@@ -195,24 +192,8 @@ async function updateSession(
         ? parseInt(payload.site_id, 10)
         : payload.site_id,
     userId: payload.userId,
-    hostname: payload.hostname || null,
     startTime: new Date(payload.timestamp || Date.now()),
     lastActivity: new Date(payload.timestamp || Date.now()),
-    pageviews: isPageview ? 1 : 0,
-    entryPage: payload.pathname || null,
-    deviceType: getDeviceType(
-      payload.screenWidth,
-      payload.screenHeight,
-      payload.ua
-    ),
-    screenWidth: payload.screenWidth || null,
-    screenHeight: payload.screenHeight || null,
-    browser: payload.ua.browser.name || null,
-    operatingSystem: payload.ua.os.name || null,
-    language: payload.language || null,
-    referrer: payload.hostname
-      ? clearSelfReferrer(payload.referrer || "", payload.hostname)
-      : payload.referrer || null,
   };
 
   await db.insert(activeSessions).values(insertData);
