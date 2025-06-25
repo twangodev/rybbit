@@ -44,6 +44,8 @@ export function ReplayPlayer({ width }: { width: number }) {
     sessionId
   );
 
+  console.info(data);
+
   // Reset player state when session changes
   useEffect(() => {
     resetPlayerState();
@@ -54,17 +56,20 @@ export function ReplayPlayer({ width }: { width: number }) {
       // Clear any existing content first
       playerContainerRef.current.innerHTML = "";
 
-      // Initialize rrweb player
-      const newPlayer = new rrwebPlayer({
-        target: playerContainerRef.current,
-        props: {
-          events: data.events as any, // Cast to any to handle type compatibility with rrweb
-          width: width,
-          height: width * 0.5625,
-          autoPlay: false,
-          showController: true, // We'll use custom controls
-        },
-      });
+      console.log("Initializing player with", data.events.length, "events");
+
+      try {
+        // Initialize rrweb player
+        const newPlayer = new rrwebPlayer({
+          target: playerContainerRef.current,
+          props: {
+            events: data.events as any, // Cast to any to handle type compatibility with rrweb
+            width: width,
+            height: width * 0.5625,
+            autoPlay: false,
+            showController: true, // We'll use custom controls
+          },
+        });
 
       setPlayer(newPlayer);
 
@@ -126,9 +131,16 @@ export function ReplayPlayer({ width }: { width: number }) {
         setActivityPeriods(periods);
       }, 150); // Run after duration is set
 
+      } catch (error) {
+        console.error("Failed to initialize rrweb player:", error);
+        return;
+      }
+
       return () => {
         // Proper cleanup
-        newPlayer.pause();
+        if (newPlayer) {
+          newPlayer.pause();
+        }
         if (playerContainerRef.current) {
           playerContainerRef.current.innerHTML = "";
         }
@@ -248,7 +260,7 @@ export function ReplayPlayer({ width }: { width: number }) {
               className="w-full"
             />
           </div>
-          <div className="text-sm text-neutral-400">
+          <div className="text-xs text-neutral-300 w-16">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
 

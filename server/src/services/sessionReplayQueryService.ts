@@ -64,6 +64,13 @@ export class SessionReplayQueryService {
       FROM session_replay_metadata
       FINAL
       WHERE ${whereConditions.join(" AND ")}
+        AND event_count >= 2
+        AND EXISTS (
+          SELECT 1 FROM session_replay_events 
+          WHERE session_replay_events.site_id = session_replay_metadata.site_id 
+            AND session_replay_events.session_id = session_replay_metadata.session_id 
+            AND event_type = '2'
+        )
       ${timeStatement}
       ORDER BY start_time DESC
       LIMIT {limit:UInt32}
