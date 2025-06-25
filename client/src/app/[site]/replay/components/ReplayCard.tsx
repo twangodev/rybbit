@@ -1,9 +1,13 @@
-import { Play, Monitor, Globe, Clock } from "lucide-react";
+import { Play, Clock } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
-import { CountryFlag } from "../../components/shared/icons/CountryFlag";
-import { Browser } from "../../components/shared/icons/Browser";
 import { Skeleton } from "../../../../components/ui/skeleton";
+import {
+  CountryFlagTooltipIcon,
+  BrowserTooltipIcon,
+  DeviceTypeTooltipIcon,
+  OperatingSystemTooltipIcon,
+} from "../../../../components/TooltipIcons/TooltipIcons";
 
 interface SessionReplayListItem {
   sessionId: string;
@@ -15,8 +19,15 @@ interface SessionReplayListItem {
   eventCount: number;
   recordingStatus: string;
   country: string;
+  region: string;
+  city: string;
   browser: string;
+  browserVersion: string;
+  operatingSystem: string;
+  operatingSystemVersion: string;
   deviceType: string;
+  screenWidth: number;
+  screenHeight: number;
 }
 
 export function ReplayCard({
@@ -38,17 +49,6 @@ export function ReplayCard({
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
     return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
-
-  const getDeviceIcon = (deviceType: string) => {
-    switch (deviceType?.toLowerCase()) {
-      case "mobile":
-        return <Globe className="w-4 h-4" />;
-      case "tablet":
-        return <Monitor className="w-4 h-4" />;
-      default:
-        return <Monitor className="w-4 h-4" />;
-    }
   };
 
   const getStatusColor = (status: string) => {
@@ -105,19 +105,25 @@ export function ReplayCard({
           </div>
         </div>
 
-        <div className="flex items-center gap-4 text-sm text-neutral-400">
-          <div className="flex items-center gap-1">
-            <CountryFlag country={replay.country} />
-            <span>{replay.country}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            <Browser browser={replay.browser} />
-            <span>{replay.browser}</span>
-          </div>
-          <div className="flex items-center gap-1">
-            {getDeviceIcon(replay.deviceType)}
-            <span>{replay.deviceType}</span>
-          </div>
+        <div className="flex items-center gap-1 text-sm text-neutral-400">
+          <CountryFlagTooltipIcon
+            country={replay.country}
+            city={replay.city}
+            region={replay.region}
+          />
+          <BrowserTooltipIcon
+            browser={replay.browser}
+            browser_version={replay.browserVersion}
+          />
+          <OperatingSystemTooltipIcon
+            operating_system={replay.operatingSystem}
+            operating_system_version={replay.operatingSystemVersion}
+          />
+          <DeviceTypeTooltipIcon
+            device_type={replay.deviceType}
+            screen_width={replay.screenWidth}
+            screen_height={replay.screenHeight}
+          />
           <div className="ml-auto text-xs">{replay.eventCount} events</div>
         </div>
       </div>

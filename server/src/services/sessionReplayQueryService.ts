@@ -53,8 +53,15 @@ export class SessionReplayQueryService {
         event_count,
         recording_status,
         country,
+        region,
+        city,
         browser,
-        device_type
+        browser_version,
+        operating_system,
+        operating_system_version,
+        device_type,
+        screen_width,
+        screen_height
       FROM session_replay_metadata
       WHERE ${whereConditions.join(" AND ")}
       ${timeStatement}
@@ -108,8 +115,15 @@ export class SessionReplayQueryService {
       eventCount: item.event_count,
       recordingStatus: item.recording_status,
       country: item.country,
+      region: item.region,
+      city: item.city,
       browser: item.browser,
+      browserVersion: item.browser_version,
+      operatingSystem: item.operating_system,
+      operatingSystemVersion: item.operating_system_version,
       deviceType: item.device_type,
+      screenWidth: item.screen_width,
+      screenHeight: item.screen_height,
     }));
     
     console.log("Final results count:", finalResults.length);
