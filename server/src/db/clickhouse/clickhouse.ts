@@ -92,7 +92,6 @@ export const initializeClickhouse = async () => {
         event_count UInt32,
         compressed_size_bytes UInt32,
         page_url String,
-        user_agent String,
         country LowCardinality(FixedString(2)),
         region LowCardinality(String),
         city String,

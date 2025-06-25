@@ -22,7 +22,6 @@ export interface SessionReplayMetadata {
   eventCount: number;
   compressedSizeBytes: number;
   pageUrl: string;
-  userAgent: string;
   country: string;
   region: string;
   city: string;

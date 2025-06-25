@@ -84,7 +84,11 @@ export class SessionReplayService {
 
     const sessionReplayData = sessionResults[0];
 
-    // Get additional session data from main events table
+    // Get additional session data from main events table using user_id and time range
+    // Session replay uses different session_id, so we match by user_id and timeframe
+    const startTimestamp = new Date(sessionReplayData.start_time);
+    const endTimestamp = sessionReplayData.end_time ? new Date(sessionReplayData.end_time) : new Date();
+    
     const mainSessionData = await clickhouse.query({
       query: `
         SELECT 
@@ -104,9 +108,16 @@ export class SessionReplayService {
           argMin(referrer, timestamp) as referrer
         FROM events
         WHERE site_id = {siteId:UInt16} 
-          AND session_id = {sessionId:String}
+          AND user_id = {userId:String}
+          AND timestamp >= {startTime:DateTime}
+          AND timestamp <= {endTime:DateTime}
       `,
-      query_params: { siteId, sessionId },
+      query_params: { 
+        siteId, 
+        userId, 
+        startTime: startTimestamp.toISOString().slice(0, 19).replace('T', ' '),
+        endTime: endTimestamp.toISOString().slice(0, 19).replace('T', ' ')
+      },
       format: "JSONEachRow",
     });
 
@@ -153,7 +164,6 @@ export class SessionReplayService {
           event_count: sessionReplayData.event_count || 0,
           compressed_size_bytes: sessionReplayData.compressed_size_bytes || 0,
           page_url: metadata.pageUrl || "",
-          user_agent: "", // User agent not available in events table
           country: sessionData.country?.replace(/\0/g, '') || "", // Remove null bytes
           region: sessionData.region?.replace(/\0/g, '') || "",
           city: sessionData.city?.replace(/\0/g, '') || "",
@@ -347,7 +357,6 @@ export class SessionReplayService {
       eventCount: rawMetadata.event_count,
       compressedSizeBytes: rawMetadata.compressed_size_bytes,
       pageUrl: rawMetadata.page_url,
-      userAgent: rawMetadata.user_agent,
       country: rawMetadata.country,
       region: rawMetadata.region,
       city: rawMetadata.city,
