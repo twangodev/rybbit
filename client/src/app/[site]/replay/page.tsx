@@ -19,7 +19,7 @@ export default function SessionReplayPage() {
         <div className="h-[calc(100vh-120px)] overflow-y-auto w-[300px]">
           <ReplayList />
         </div>
-        <div ref={ref} className="w-[calc(100vw-600px)]">
+        <div ref={ref} className="w-[calc(100vw-550px)]">
           {resolvedWidth && <ReplayPlayer width={resolvedWidth} />}
         </div>
       </div>

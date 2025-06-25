@@ -151,7 +151,7 @@ export class SessionReplayQueryService {
         FROM session_replay_events
         WHERE site_id = {siteId:UInt16} 
           AND session_id = {sessionId:String}
-        ORDER BY sequence_number ASC
+        ORDER BY timestamp ASC, sequence_number ASC
       `,
       query_params: { siteId, sessionId },
       format: "JSONEachRow",
