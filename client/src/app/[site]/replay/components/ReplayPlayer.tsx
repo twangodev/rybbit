@@ -58,79 +58,80 @@ export function ReplayPlayer({ width }: { width: number }) {
 
       console.log("Initializing player with", data.events.length, "events");
 
+      let newPlayer: any = null;
+
       try {
         // Initialize rrweb player
-        const newPlayer = new rrwebPlayer({
+        newPlayer = new rrwebPlayer({
           target: playerContainerRef.current,
           props: {
             events: data.events as any, // Cast to any to handle type compatibility with rrweb
             width: width,
             height: width * 0.5625,
             autoPlay: false,
-            showController: true, // We'll use custom controls
+            showController: false, // We'll use custom controls
           },
         });
 
-      setPlayer(newPlayer);
+        setPlayer(newPlayer);
 
-      // Set up event listeners
-      newPlayer.addEventListener("ui-update-current-time", (event: any) => {
-        setCurrentTime(event.payload);
-      });
-
-      newPlayer.addEventListener("ui-update-player-state", (event: any) => {
-        setIsPlaying(event.payload === "playing");
-      });
-
-      newPlayer.addEventListener("ui-update-duration", (event: any) => {
-        setDuration(event.payload);
-      });
-
-      // Get the initial duration from the player
-      setTimeout(() => {
-        const playerDuration = newPlayer.getMetaData().totalTime;
-        if (playerDuration) {
-          setDuration(playerDuration);
-        }
-      }, 100);
-
-      // Calculate activity periods after we have duration
-      setTimeout(() => {
-        if (!data.events || data.events.length === 0) return;
-
-        const totalDuration = newPlayer.getMetaData().totalTime || 0;
-
-        // Filter for user interaction events (mouse moves, clicks, etc.)
-        const interactionEvents = data.events.filter((event) => {
-          const eventType = parseInt(event.type.toString());
-          // Type 3 = IncrementalSnapshot (includes mouse moves, clicks, etc.)
-          return eventType === 3;
+        // Set up event listeners
+        newPlayer.addEventListener("ui-update-current-time", (event: any) => {
+          setCurrentTime(event.payload);
         });
 
-        const periods: { start: number; end: number }[] = [];
-        const inactivityThreshold = 5000; // 5 seconds of no interaction = inactive
-        const firstEventTime = data.events[0].timestamp;
+        newPlayer.addEventListener("ui-update-player-state", (event: any) => {
+          setIsPlaying(event.payload === "playing");
+        });
 
-        for (let i = 0; i < interactionEvents.length; i++) {
-          const currentEvent = interactionEvents[i];
-          const nextEvent = interactionEvents[i + 1];
+        newPlayer.addEventListener("ui-update-duration", (event: any) => {
+          setDuration(event.payload);
+        });
 
-          const currentTime = currentEvent.timestamp - firstEventTime;
-          const nextTime = nextEvent
-            ? nextEvent.timestamp - firstEventTime
-            : totalDuration;
-
-          if (nextTime - currentTime <= inactivityThreshold) {
-            periods.push({
-              start: currentTime,
-              end: nextTime,
-            });
+        // Get the initial duration from the player
+        setTimeout(() => {
+          const playerDuration = newPlayer.getMetaData().totalTime;
+          if (playerDuration) {
+            setDuration(playerDuration);
           }
-        }
+        }, 100);
 
-        setActivityPeriods(periods);
-      }, 150); // Run after duration is set
+        // Calculate activity periods after we have duration
+        setTimeout(() => {
+          if (!data.events || data.events.length === 0) return;
 
+          const totalDuration = newPlayer.getMetaData().totalTime || 0;
+
+          // Filter for user interaction events (mouse moves, clicks, etc.)
+          const interactionEvents = data.events.filter((event) => {
+            const eventType = parseInt(event.type.toString());
+            // Type 3 = IncrementalSnapshot (includes mouse moves, clicks, etc.)
+            return eventType === 3;
+          });
+
+          const periods: { start: number; end: number }[] = [];
+          const inactivityThreshold = 5000; // 5 seconds of no interaction = inactive
+          const firstEventTime = data.events[0].timestamp;
+
+          for (let i = 0; i < interactionEvents.length; i++) {
+            const currentEvent = interactionEvents[i];
+            const nextEvent = interactionEvents[i + 1];
+
+            const currentTime = currentEvent.timestamp - firstEventTime;
+            const nextTime = nextEvent
+              ? nextEvent.timestamp - firstEventTime
+              : totalDuration;
+
+            if (nextTime - currentTime <= inactivityThreshold) {
+              periods.push({
+                start: currentTime,
+                end: nextTime,
+              });
+            }
+          }
+
+          setActivityPeriods(periods);
+        }, 150); // Run after duration is set
       } catch (error) {
         console.error("Failed to initialize rrweb player:", error);
         return;
@@ -257,10 +258,11 @@ export function ReplayPlayer({ width }: { width: number }) {
               step={0.1}
               activityPeriods={activityPeriods}
               duration={duration}
+              events={data?.events || []}
               className="w-full"
             />
           </div>
-          <div className="text-xs text-neutral-300 w-16">
+          <div className="text-xs text-neutral-300 w-18">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
 
