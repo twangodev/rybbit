@@ -1,66 +1,49 @@
-import { useQuery } from "@tanstack/react-query";
+import { useGeoStore, getSubdivisions, getCountries } from "./geoStore";
 
-const countriesGeoUrl = "/countries.json";
-const subdivisionsGeoUrl = "/subdivisions.json";
+// Re-export types for backward compatibility
+export type { Subdivisions, Country } from "./geoStore";
 
-export type Subdivisions = {
-  type: string;
-  features: Array<{
-    type: string;
-    properties: {
-      name: string;
-      iso_3166_2: string;
-      admin: string;
-      border: number;
-    };
-    geometry: {
-      type: string;
-      coordinates: Array<Array<Array<any>>>;
-    };
-  }>;
-};
-
-export type Country = {
-  type: string;
-  features: Array<{
-    type: string;
-    properties: {
-      ISO_A2: string;
-      ADMIN: string;
-      ISO_A3: string;
-      BORDER: number;
-    };
-    geometry: {
-      type: string;
-      coordinates: Array<Array<Array<any>>>;
-    };
-  }>;
-};
-
+// Hook-based access (for components that need reactive updates)
 export const useSubdivisions = () => {
-  return useQuery<Subdivisions>({
-    queryKey: ["subdivisions"],
-    queryFn: () => fetch(subdivisionsGeoUrl).then((res) => res.json()),
-  });
+  const {
+    subdivisions,
+    isLoadingSubdivisions: isLoading,
+    subdivisionsError: error,
+  } = useGeoStore();
+
+  return {
+    data: subdivisions,
+    isLoading,
+    error,
+  };
 };
 
 export const useCountries = () => {
-  return useQuery<Country>({
-    queryKey: ["countries"],
-    queryFn: () => fetch(countriesGeoUrl).then((res) => res.json()),
-  });
+  const {
+    countries,
+    isLoadingCountries: isLoading,
+    countriesError: error,
+  } = useGeoStore();
+
+  return {
+    data: countries,
+    isLoading,
+    error,
+  };
 };
 
 export const useGetRegionName = () => {
-  const { data: subdivisions } = useSubdivisions();
+  const { getRegionName } = useGeoStore();
 
   return {
-    getRegionName: (region: string) => {
-      return (
-        subdivisions?.features.find(
-          (feature) => feature.properties.iso_3166_2 === region
-        )?.properties.name ?? ""
-      );
-    },
+    getRegionName,
   };
 };
+
+// Direct access functions (no hooks required)
+export const getRegionName = (region: string) => {
+  return useGeoStore.getState().getRegionName(region);
+};
+
+// Direct access to current data
+export { getSubdivisions, getCountries };
