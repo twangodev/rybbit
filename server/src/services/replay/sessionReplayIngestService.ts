@@ -4,6 +4,7 @@ import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 import { processResults } from "../../api/analytics/utils.js";
 import { parseTrackingData } from "./trackingUtils.js";
 import { sessionsService } from "../sessions/sessionsService.js";
+import { userIdService } from "../userId/userIdService.js";
 
 export interface RequestMetadata {
   userAgent: string;
@@ -22,7 +23,16 @@ export class SessionReplayIngestService {
     request: RecordSessionReplayRequest,
     requestMeta?: RequestMetadata
   ): Promise<void> {
-    const { userId, events, metadata } = request;
+    const { userId: clientUserId, events, metadata } = request;
+
+    // Generate user ID server-side if not provided by client
+    const userId = clientUserId && clientUserId.trim() 
+      ? clientUserId.trim()
+      : userIdService.generateUserId(
+          requestMeta?.ipAddress || "",
+          requestMeta?.userAgent || "",
+          siteId
+        );
 
     // Get or create a session ID from the sessions service
     const { sessionId } = await sessionsService.updateSession({

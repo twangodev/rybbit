@@ -37,21 +37,13 @@ export class Tracker {
     try {
       this.sessionReplayRecorder = new SessionReplayRecorder(
         this.config,
-        this.customUserId || this.generateUserId(),
+        this.customUserId || "",
         (batch) => this.sendSessionReplayBatch(batch)
       );
       await this.sessionReplayRecorder.initialize();
     } catch (error) {
       console.error("Failed to initialize session replay:", error);
     }
-  }
-
-  private generateUserId(): string {
-    return (
-      "anon_" +
-      Math.random().toString(36).substring(2) +
-      Date.now().toString(36)
-    );
   }
 
   private async sendSessionReplayBatch(

@@ -6,6 +6,7 @@ import { sitesOverLimit } from "../cron/monthly-usage-checker.js";
 import { siteConfig } from "../lib/siteConfig.js";
 import { trackingPayloadSchema } from "./trackEvent.js";
 import { TrackingPayload } from "./types.js";
+import { userIdService } from "../services/userId/userIdService.js";
 
 export type TotalTrackingPayload = TrackingPayload & {
   type?: string;
@@ -105,7 +106,7 @@ export function createBasePayload(
   // Use custom user ID if provided, otherwise generate one
   const userId = validatedBody.user_id
     ? validatedBody.user_id.trim()
-    : getUserId(ipAddress, userAgent, siteId);
+    : userIdService.generateUserId(ipAddress, userAgent, siteId);
 
   return {
     ...validatedBody,
@@ -125,72 +126,6 @@ export function createBasePayload(
   };
 }
 
-let cachedSalt: string | null = null;
-let cacheDate: string | null = null; // Store the date the salt was generated for (YYYY-MM-DD format)
-
-/**
- * Generates a deterministic daily salt based on a secret environment variable.
- * The salt remains the same for the entire UTC day and changes automatically
- * when the UTC date changes. Caches the salt in memory for efficiency.
- *
- * @throws {Error} If the BETTER_AUTH_SECRET environment variable is not set.
- * @returns {string} The daily salt as a hex string.
- */
-function getDailySalt(): string {
-  const secretKey = process.env.BETTER_AUTH_SECRET;
-
-  if (!secretKey) {
-    console.error(
-      "FATAL: BETTER_AUTH_SECRET environment variable is not set. User ID generation will be insecure or fail."
-    );
-    throw new Error("BETTER_AUTH_SECRET environment variable is missing.");
-  }
-
-  // Use UTC date to ensure consistency across timezones and server restarts
-  const currentDate = new Date().toISOString().split("T")[0]; // Gets 'YYYY-MM-DD' in UTC
-
-  // Check if the cached salt is still valid for the current UTC date
-  if (cachedSalt && cacheDate === currentDate) {
-    return cachedSalt;
-  }
-
-  const input = secretKey + currentDate;
-  const newSalt = crypto.createHash("sha256").update(input).digest("hex");
-
-  cachedSalt = newSalt;
-  cacheDate = currentDate;
-  return newSalt;
-}
-
-/**
- * Generate a user ID based on IP and user agent
- * If the site has salting enabled, also includes a daily rotating salt
- *
- * @param ip User's IP address
- * @param userAgent User's user agent string
- * @param siteId The site ID to check for salting configuration
- * @returns A sha256 hash to identify the user
- */
-function getUserId(
-  ip: string,
-  userAgent: string,
-  siteId?: string | number
-): string {
-  // Only apply salt if the site has salting enabled
-  if (siteId && siteConfig.shouldSaltUserIds(siteId)) {
-    const dailySalt = getDailySalt(); // Get the salt for the current day
-    return crypto
-      .createHash("sha256")
-      .update(ip + userAgent + dailySalt)
-      .digest("hex");
-  }
-
-  // Otherwise, just hash IP and user agent
-  return crypto
-    .createHash("sha256")
-    .update(ip + userAgent)
-    .digest("hex");
-}
 
 // Helper function to get IP address
 const getIpAddress = (request: FastifyRequest): string => {
