@@ -196,6 +196,7 @@ server.addHook("onRequest", async (request, reply) => {
   }
 
   // Check if it's an analytics route and get site ID (now including the prepended /api)
+  console.info(processedUrl);
   if (ANALYTICS_ROUTES.some((route) => processedUrl.startsWith(route))) {
     const siteId = extractSiteId(processedUrl);
 
@@ -209,7 +210,7 @@ server.addHook("onRequest", async (request, reply) => {
     const session = await getSessionFromReq(request);
 
     if (!session) {
-      return reply.status(401).send({ error: "Unauthorized" });
+      return reply.status(401).send({ error: "Unauthorized 1" });
     }
 
     // Attach session user info to request
