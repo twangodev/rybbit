@@ -35,7 +35,10 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
 
   console.log("Replay data:", data);
   console.log("Events:", data?.events);
-  console.log("Event types:", data?.events?.map(e => ({ type: e.type, timestamp: e.timestamp })));
+  console.log(
+    "Event types:",
+    data?.events?.map((e) => ({ type: e.type, timestamp: e.timestamp }))
+  );
 
   useEffect(() => {
     if (data?.events && playerContainerRef.current) {
@@ -153,7 +156,9 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
 
   const metadata = data?.metadata;
   const startTime = metadata
-    ? DateTime.fromISO(metadata.startTime.toString())
+    ? DateTime.fromSQL(metadata.startTime.toString(), {
+        zone: "utc",
+      }).toLocal()
     : DateTime.now();
 
   return (

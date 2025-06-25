@@ -27,7 +27,9 @@ export function ReplayCard({
   siteId: number;
 }) {
   console.log(replay);
-  const startTime = DateTime.fromISO(replay.startTime);
+  const startTime = DateTime.fromSQL(replay.startTime, {
+    zone: "utc",
+  }).toLocal();
   const duration = replay.durationMs
     ? Math.ceil(replay.durationMs / 1000)
     : null;
