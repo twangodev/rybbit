@@ -21,22 +21,24 @@ import {
   Download,
   ArrowLeft,
 } from "lucide-react";
-import Link from "next/link";
 import { DateTime } from "luxon";
 import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
+import { useParams } from "next/navigation";
+import { replayStore } from "./store";
 
-interface ReplayPlayerProps {
-  siteId: number;
-  sessionId: string;
-}
+export function ReplayPlayer({ width }: { width: number }) {
+  const params = useParams();
+  const siteId = Number(params.site);
+  const { sessionId } = replayStore();
 
-export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const [playbackSpeed, setPlaybackSpeed] = useState("1");
-  const [activityPeriods, setActivityPeriods] = useState<{start: number, end: number}[]>([]);
+  const [activityPeriods, setActivityPeriods] = useState<
+    { start: number; end: number }[]
+  >([]);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
   const { data, isLoading, error } = useGetSessionReplayEvents(
@@ -61,8 +63,8 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
         target: playerContainerRef.current,
         props: {
           events: data.events as any, // Cast to any to handle type compatibility with rrweb
-          width: 1024,
-          height: 576,
+          width: width,
+          height: width * 0.5625,
           autoPlay: false,
           showController: true, // We'll use custom controls
         },
@@ -94,35 +96,37 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
       // Calculate activity periods after we have duration
       setTimeout(() => {
         if (!data.events || data.events.length === 0) return;
-        
+
         const totalDuration = newPlayer.getMetaData().totalTime || 0;
-        
+
         // Filter for user interaction events (mouse moves, clicks, etc.)
-        const interactionEvents = data.events.filter(event => {
+        const interactionEvents = data.events.filter((event) => {
           const eventType = parseInt(event.type.toString());
           // Type 3 = IncrementalSnapshot (includes mouse moves, clicks, etc.)
           return eventType === 3;
         });
 
-        const periods: {start: number, end: number}[] = [];
+        const periods: { start: number; end: number }[] = [];
         const inactivityThreshold = 5000; // 5 seconds of no interaction = inactive
         const firstEventTime = data.events[0].timestamp;
-        
+
         for (let i = 0; i < interactionEvents.length; i++) {
           const currentEvent = interactionEvents[i];
           const nextEvent = interactionEvents[i + 1];
-          
+
           const currentTime = currentEvent.timestamp - firstEventTime;
-          const nextTime = nextEvent ? nextEvent.timestamp - firstEventTime : totalDuration;
-          
+          const nextTime = nextEvent
+            ? nextEvent.timestamp - firstEventTime
+            : totalDuration;
+
           if (nextTime - currentTime <= inactivityThreshold) {
             periods.push({
               start: currentTime,
-              end: nextTime
+              end: nextTime,
             });
           }
         }
-        
+
         setActivityPeriods(periods);
       }, 150); // Run after duration is set
 
@@ -196,12 +200,6 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
         <div className="text-red-500 mb-4">
           Error loading replay: {(error as Error).message}
         </div>
-        <Link href={`/${siteId}/replay`}>
-          <Button variant="outline">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Replays
-          </Button>
-        </Link>
       </div>
     );
   }
@@ -234,39 +232,11 @@ export default function ReplayPlayer({ siteId, sessionId }: ReplayPlayerProps) {
 
   return (
     <div className="flex flex-col h-full bg-neutral-950">
-      {/* Header */}
-      <div className="border-b border-neutral-800 p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href={`/${siteId}/replay`}>
-              <Button variant="ghost" size="sm">
-                <ArrowLeft className="w-4 h-4 mr-2" />
-                Back
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-lg font-semibold text-white">
-                Session Replay
-              </h1>
-              <div className="text-sm text-neutral-400">
-                {startTime.toLocaleString(DateTime.DATETIME_MED)} •{" "}
-                {metadata?.page_url}
-              </div>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleFullscreen}>
-              <Maximize className="w-4 h-4" />
-            </Button>
-          </div>
-        </div>
-      </div>
-
       {/* Player Container */}
       <div className="flex-1 flex items-center justify-center p-4 overflow-hidden">
         <div
           ref={playerContainerRef}
-          className="w-full h-full max-w-6xl bg-black rounded-lg shadow-2xl"
+          className="w-full h-full bg-black rounded-lg shadow-2xl"
           style={{ position: "relative" }}
         />
       </div>

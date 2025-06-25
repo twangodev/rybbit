@@ -3,9 +3,12 @@ import { useParams } from "next/navigation";
 import { Button } from "../../../../components/ui/button";
 import { NothingFound } from "../../../../components/NothingFound";
 import { ReplayCard, ReplayCardSkeleton } from "./ReplayCard";
-import { useGetSessionReplays, SessionReplayListItem } from "../../../../api/analytics/sessionReplay/useGetSessionReplays";
+import {
+  useGetSessionReplays,
+  SessionReplayListItem,
+} from "../../../../api/analytics/sessionReplay/useGetSessionReplays";
 
-export default function ReplayList() {
+export function ReplayList() {
   const params = useParams();
   const siteId = Number(params.site);
 
