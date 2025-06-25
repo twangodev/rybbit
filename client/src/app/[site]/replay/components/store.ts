@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export const replayStore = create<{
+export const useReplayStore = create<{
   sessionId: string;
   setSessionId: (sessionId: string) => void;
 }>((set) => ({

@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { useParams } from "next/navigation";
 import { Button } from "../../../../components/ui/button";
 import { NothingFound } from "../../../../components/NothingFound";
@@ -7,10 +7,12 @@ import {
   useGetSessionReplays,
   SessionReplayListItem,
 } from "../../../../api/analytics/sessionReplay/useGetSessionReplays";
+import { useReplayStore } from "./store";
 
 export function ReplayList() {
   const params = useParams();
   const siteId = Number(params.site);
+  const { sessionId, setSessionId } = useReplayStore();
 
   const {
     data,
@@ -25,6 +27,12 @@ export function ReplayList() {
     if (!data) return [];
     return data.pages.flatMap((page) => page.data || []);
   }, [data]);
+
+  useEffect(() => {
+    if (flattenedData.length > 0 && !sessionId) {
+      setSessionId(flattenedData[0].session_id);
+    }
+  }, [flattenedData]);
 
   const containerRef = useRef<HTMLDivElement>(null);
 

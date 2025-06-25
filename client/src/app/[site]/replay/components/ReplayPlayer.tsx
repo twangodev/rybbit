@@ -24,12 +24,12 @@ import {
 import { DateTime } from "luxon";
 import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
 import { useParams } from "next/navigation";
-import { replayStore } from "./store";
+import { useReplayStore } from "./store";
 
 export function ReplayPlayer({ width }: { width: number }) {
   const params = useParams();
   const siteId = Number(params.site);
-  const { sessionId } = replayStore();
+  const { sessionId } = useReplayStore();
 
   const [player, setPlayer] = useState<any>(null);
   const [isPlaying, setIsPlaying] = useState(false);

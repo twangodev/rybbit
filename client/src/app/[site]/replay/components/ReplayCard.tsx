@@ -9,8 +9,8 @@ import {
 } from "../../../../components/TooltipIcons/TooltipIcons";
 import { Badge } from "../../../../components/ui/badge";
 import { Skeleton } from "../../../../components/ui/skeleton";
-import { formatter } from "../../../../lib/utils";
-import { replayStore } from "./store";
+import { cn, formatter } from "../../../../lib/utils";
+import { useReplayStore } from "./store";
 
 interface SessionReplayListItem {
   session_id: string;
@@ -40,7 +40,7 @@ export function ReplayCard({
   replay: SessionReplayListItem;
   siteId: number;
 }) {
-  const { setSessionId } = replayStore();
+  const { sessionId, setSessionId } = useReplayStore();
   const startTime = DateTime.fromSQL(replay.start_time, {
     zone: "utc",
   }).toLocal();
@@ -69,7 +69,10 @@ export function ReplayCard({
 
   return (
     <div
-      className="bg-neutral-900 border border-neutral-800 rounded-lg p-3 hover:bg-neutral-800/50 transition-colors cursor-pointer"
+      className={cn(
+        "bg-neutral-900 border border-neutral-800 rounded-lg p-3 hover:bg-neutral-800/50 transition-colors cursor-pointer",
+        sessionId === replay.session_id && "bg-neutral-800"
+      )}
       onClick={() => {
         setSessionId(replay.session_id);
       }}
