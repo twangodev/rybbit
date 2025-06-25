@@ -373,7 +373,6 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     const { sessionId } = await sessionsService.updateSession({
       userId: payload.userId,
       site_id: payload.site_id,
-      timestamp: payload.timestamp,
     });
 
     // Add to queue for processing

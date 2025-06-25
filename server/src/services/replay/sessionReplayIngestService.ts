@@ -28,7 +28,6 @@ export class SessionReplayIngestService {
     const { sessionId } = await sessionsService.updateSession({
       userId,
       site_id: siteId.toString(),
-      timestamp: Date.now().toString(),
     });
 
     // Prepare events for batch insert

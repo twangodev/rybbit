@@ -48,7 +48,6 @@ class SessionsService {
   async updateSession(payload: {
     userId: string;
     site_id: string;
-    timestamp: string;
   }): Promise<{ sessionId: string }> {
     const existingSession = await this.getExistingSession(
       payload.userId,
@@ -59,7 +58,7 @@ class SessionsService {
       await db
         .update(activeSessions)
         .set({
-          lastActivity: new Date(payload.timestamp),
+          lastActivity: new Date(),
         })
         .where(eq(activeSessions.sessionId, existingSession.sessionId));
       return { sessionId: existingSession.sessionId };
@@ -73,8 +72,8 @@ class SessionsService {
           ? parseInt(payload.site_id, 10)
           : payload.site_id,
       userId: payload.userId,
-      startTime: new Date(payload.timestamp || Date.now()),
-      lastActivity: new Date(payload.timestamp || Date.now()),
+      startTime: new Date(),
+      lastActivity: new Date(),
     };
 
     await db.insert(activeSessions).values(insertData);
