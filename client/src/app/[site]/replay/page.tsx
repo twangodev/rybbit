@@ -39,7 +39,9 @@ export default function SessionReplayPage() {
               <ReplayList />
             </div>
             <div ref={ref} className="w-[calc(100vw-780px)]">
-              {resolvedWidth && <ReplayPlayer width={resolvedWidth} />}
+              {resolvedWidth && resolvedHeight && (
+                <ReplayPlayer width={resolvedWidth} height={resolvedHeight} />
+              )}
             </div>
             <div className="w-[300px]">
               <ReplayBreadcrumbs />

@@ -1,22 +1,21 @@
+import {
+  Camera,
+  Eye,
+  FileText,
+  Globe,
+  Loader2,
+  MousePointer,
+  Puzzle,
+  ScrollText,
+  Sparkles,
+} from "lucide-react";
 import { Duration } from "luxon";
 import { useParams } from "next/navigation";
 import { useMemo } from "react";
-import {
-  FileText,
-  Camera,
-  MousePointer,
-  Info,
-  Sparkles,
-  Puzzle,
-  Globe,
-  Loader2,
-  ScrollText,
-  Eye,
-} from "lucide-react";
 import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
-import { useReplayStore } from "./replayStore";
-import { cn } from "../../../../lib/utils";
 import { ScrollArea } from "../../../../components/ui/scroll-area";
+import { cn } from "../../../../lib/utils";
+import { useReplayStore } from "./replayStore";
 
 // Event type mapping based on rrweb event types
 const EVENT_TYPE_INFO = {

@@ -17,7 +17,13 @@ import {
 } from "../../../../components/ui/select";
 import { useReplayStore } from "./replayStore";
 
-export function ReplayPlayer({ width }: { width: number }) {
+export function ReplayPlayer({
+  width,
+  height,
+}: {
+  width: number;
+  height: number;
+}) {
   const params = useParams();
   const siteId = Number(params.site);
   const {
@@ -44,8 +50,6 @@ export function ReplayPlayer({ width }: { width: number }) {
     sessionId
   );
 
-  console.info(data);
-
   // Reset player state when session changes
   useEffect(() => {
     resetPlayerState();
@@ -56,8 +60,6 @@ export function ReplayPlayer({ width }: { width: number }) {
       // Clear any existing content first
       playerContainerRef.current.innerHTML = "";
 
-      console.log("Initializing player with", data.events.length, "events");
-
       let newPlayer: any = null;
 
       try {
@@ -67,7 +69,8 @@ export function ReplayPlayer({ width }: { width: number }) {
           props: {
             events: data.events as any, // Cast to any to handle type compatibility with rrweb
             width: width,
-            height: width * 0.5625,
+            // subtract for the custom controls
+            height: height - 66,
             autoPlay: false,
             showController: false, // We'll use custom controls
           },
@@ -225,7 +228,7 @@ export function ReplayPlayer({ width }: { width: number }) {
     : DateTime.now();
 
   return (
-    <div className="flex flex-col  bg-neutral-950">
+    <div className="flex flex-col bg-neutral-950">
       {/* Player Container */}
       <div className="flex-1 flex items-center justify-center overflow-hidden">
         <div
@@ -252,7 +255,7 @@ export function ReplayPlayer({ width }: { width: number }) {
               <Play className="w-4 h-4" fill="currentColor" />
             )}
           </Button>
-          <div className="flex-1 mx-2">
+          <div className="flex-1 mx-2 mb-7">
             <ActivitySlider
               value={[duration > 0 ? (currentTime / duration) * 100 : 0]}
               onValueChange={handleSliderChange}
@@ -264,7 +267,7 @@ export function ReplayPlayer({ width }: { width: number }) {
               className="w-full"
             />
           </div>
-          <div className="text-xs text-neutral-300 w-20">
+          <div className="text-xs text-neutral-300 w-20 text-center">
             {formatTime(currentTime)} / {formatTime(duration)}
           </div>
 
