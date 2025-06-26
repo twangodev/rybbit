@@ -70,7 +70,7 @@ export function ReplayPlayer({
             events: data.events as any, // Cast to any to handle type compatibility with rrweb
             width: width,
             // subtract for the custom controls
-            height: height - 66,
+            height: height - 64,
             autoPlay: false,
             showController: false, // We'll use custom controls
           },
@@ -241,7 +241,7 @@ export function ReplayPlayer({
       </div>
 
       {/* Custom Controls */}
-      <div className="border-t border-neutral-800 p-1">
+      <div className="border border-neutral-800 p-2 pb-3 bg-neutral-900 rounded-b-lg pt-6">
         <div className="flex items-center">
           <Button
             variant="ghost"
@@ -255,7 +255,7 @@ export function ReplayPlayer({
               <Play className="w-4 h-4" fill="currentColor" />
             )}
           </Button>
-          <div className="flex-1 mx-2 mb-7">
+          <div className="flex-1 mx-2 -mt-8">
             <ActivitySlider
               value={[duration > 0 ? (currentTime / duration) * 100 : 0]}
               onValueChange={handleSliderChange}

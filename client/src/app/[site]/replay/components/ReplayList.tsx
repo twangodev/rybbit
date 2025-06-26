@@ -65,7 +65,7 @@ export function ReplayList() {
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-130px)]">
+    <ScrollArea className="h-[calc(100vh-123px)]">
       {isLoading ? (
         Array.from({ length: 10 }).map((_, index) => (
           <ReplayCardSkeleton key={`loading-${index}`} />
