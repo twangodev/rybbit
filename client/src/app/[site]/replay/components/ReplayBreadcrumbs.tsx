@@ -180,18 +180,16 @@ export function ReplayBreadcrumbs() {
                 className={cn(
                   "p-3 border-b border-neutral-800 bg-neutral-900",
                   "hover:bg-neutral-800/80 transition-colors cursor-pointer",
-                  "flex items-start gap-2 group"
+                  "flex items-center gap-2 group"
                 )}
                 onClick={() => handleEventClick(event.timestamp)}
               >
-                <Icon className={cn("w-4 h-4 mt-0.5 flex-shrink-0", color)} />
-                <div className="flex-1 min-w-0">
-                  <div className="text-xs text-neutral-200 font-medium truncate">
-                    {description}
-                  </div>
-                  <div className="text-xs text-neutral-500 mt-0.5">
-                    {Duration.fromMillis(timeMs).toFormat("mm:ss")}
-                  </div>
+                <div className="text-xs text-neutral-400 w-10">
+                  {Duration.fromMillis(timeMs).toFormat("mm:ss")}
+                </div>
+                <Icon className={cn("w-4 h-4 flex-shrink-0", color)} />
+                <div className="text-xs text-neutral-200 font-medium truncate">
+                  {description}
                 </div>
               </div>
             );

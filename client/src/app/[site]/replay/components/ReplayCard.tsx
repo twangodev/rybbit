@@ -50,7 +50,7 @@ export function ReplayCard({ replay }: { replay: SessionReplayListItem }) {
   return (
     <div
       className={cn(
-        "bg-neutral-900 border-b border-neutral-800 p-3 hover:bg-neutral-800/80 transition-colors cursor-pointer",
+        "bg-neutral-900 border-b border-neutral-800 p-3 hover:bg-neutral-800/80 transition-colors cursor-pointer w-[200px]",
         // "bg-neutral-900 border border-neutral-800 rounded-lg p-3 hover:bg-neutral-800/50 transition-colors cursor-pointer",
         sessionId === replay.session_id && "bg-neutral-800/80"
       )}
