@@ -34,7 +34,7 @@ export default function SessionReplayPage() {
           />
         ) : (
           <div className="grid grid-cols-[auto_1fr] gap-3">
-            <div className="h-[calc(100vh-120px)] overflow-y-auto w-[300px]">
+            <div className="h-[calc(100vh-120px)] overflow-y-auto w-[200px]">
               <ReplayList />
             </div>
             <div ref={ref} className="w-[calc(100vw-570px)]">

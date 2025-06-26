@@ -10,8 +10,6 @@ import {
 import { useReplayStore } from "./replayStore";
 
 export function ReplayList() {
-  const params = useParams();
-  const siteId = Number(params.site);
   const { sessionId, setSessionId } = useReplayStore();
 
   const {
@@ -43,30 +41,31 @@ export function ReplayList() {
   }
 
   return (
-    <div ref={containerRef} className="space-y-2">
-      {isLoading ? (
-        Array.from({ length: 10 }).map((_, index) => (
-          <ReplayCardSkeleton key={`loading-more-${index}`} />
-        ))
-      ) : flattenedData.length === 0 ? (
-        <NothingFound
-          title={"No session replays found"}
-          description={"Try a different date range or filter"}
-        />
-      ) : (
-        flattenedData.map((replay: SessionReplayListItem, index) => (
-          <ReplayCard
-            key={`${replay.session_id}-${index}`}
-            replay={replay}
-            siteId={siteId}
+    <>
+      <div
+        ref={containerRef}
+        className="rounded-lg overflow-hidden border border-neutral-800"
+      >
+        {isLoading ? (
+          Array.from({ length: 10 }).map((_, index) => (
+            <ReplayCardSkeleton key={`loading-more-${index}`} />
+          ))
+        ) : flattenedData.length === 0 ? (
+          <NothingFound
+            title={"No session replays found"}
+            description={"Try a different date range or filter"}
           />
-        ))
-      )}
+        ) : (
+          flattenedData.map((replay: SessionReplayListItem, index) => (
+            <ReplayCard key={`${replay.session_id}-${index}`} replay={replay} />
+          ))
+        )}
 
-      {isFetchingNextPage &&
-        Array.from({ length: 10 }).map((_, index) => (
-          <ReplayCardSkeleton key={`loading-more-${index}`} />
-        ))}
+        {isFetchingNextPage &&
+          Array.from({ length: 10 }).map((_, index) => (
+            <ReplayCardSkeleton key={`loading-more-${index}`} />
+          ))}
+      </div>
 
       {hasNextPage && (
         <div className="flex justify-center py-2">
@@ -79,6 +78,6 @@ export function ReplayList() {
           </Button>
         </div>
       )}
-    </div>
+    </>
   );
 }

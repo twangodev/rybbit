@@ -32,13 +32,7 @@ interface SessionReplayListItem {
   screen_height: number;
 }
 
-export function ReplayCard({
-  replay,
-  siteId,
-}: {
-  replay: SessionReplayListItem;
-  siteId: number;
-}) {
+export function ReplayCard({ replay }: { replay: SessionReplayListItem }) {
   const { sessionId, setSessionId } = useReplayStore();
   const startTime = DateTime.fromSQL(replay.start_time, {
     zone: "utc",
@@ -56,17 +50,18 @@ export function ReplayCard({
   return (
     <div
       className={cn(
-        "bg-neutral-900 border border-neutral-800 rounded-lg p-3 hover:bg-neutral-800/50 transition-colors cursor-pointer",
-        sessionId === replay.session_id && "bg-neutral-800"
+        "bg-neutral-900 border-b border-neutral-800 p-3 hover:bg-neutral-800/80 transition-colors cursor-pointer",
+        // "bg-neutral-900 border border-neutral-800 rounded-lg p-3 hover:bg-neutral-800/50 transition-colors cursor-pointer",
+        sessionId === replay.session_id && "bg-neutral-800/80"
       )}
       onClick={() => {
         setSessionId(replay.session_id);
       }}
     >
       <div className="flex items-center gap-2 mb-1">
-        <div className="text-xs text-neutral-500">
+        {/* <div className="text-xs text-neutral-500">
           {replay.user_id.slice(0, 10)}...
-        </div>
+        </div> */}
         <div className="text-xs  text-neutral-400">
           {startTime.toRelative()}
         </div>
@@ -79,7 +74,10 @@ export function ReplayCard({
       </div>
 
       <div className="text-xs text-neutral-200 truncate mb-2">
-        {replay.page_url}
+        {replay.page_url
+          .replace("https://", "")
+          .replace("http://", "")
+          .replace("www.", "")}
       </div>
 
       <div className="flex items-center gap-2 text-sm text-neutral-400">
@@ -116,31 +114,25 @@ export function ReplayCard({
 
 export function ReplayCardSkeleton() {
   return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-lg p-4">
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-center gap-2">
-          <Skeleton className="w-10 h-10 rounded-lg" />
-          <div>
-            <Skeleton className="h-4 w-20 mb-1" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-12" />
-          <Skeleton className="h-3 w-16" />
-        </div>
+    <div className="bg-neutral-900 border-b border-neutral-800 p-3 hover:bg-neutral-800/80 transition-colors">
+      {/* Time and duration row */}
+      <div className="flex items-center gap-2 mb-1">
+        <Skeleton className="h-3 w-16" />
+        <Skeleton className="h-3 w-12" />
       </div>
 
-      <div className="mb-3">
-        <Skeleton className="h-4 w-64 mb-1" />
-        <Skeleton className="h-3 w-32" />
+      {/* URL row */}
+      <div className="mb-2">
+        <Skeleton className="h-3 w-40" />
       </div>
 
-      <div className="flex items-center gap-4">
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-4 w-20" />
-        <Skeleton className="h-4 w-16" />
-        <Skeleton className="h-3 w-20 ml-auto" />
+      {/* Icons and event count row */}
+      <div className="flex items-center gap-2">
+        <Skeleton className="h-4 w-4 rounded" />
+        <Skeleton className="h-4 w-4 rounded" />
+        <Skeleton className="h-4 w-4 rounded" />
+        <Skeleton className="h-4 w-4 rounded" />
+        <Skeleton className="h-6 w-12 rounded" />
       </div>
     </div>
   );
