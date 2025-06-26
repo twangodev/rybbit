@@ -8,6 +8,7 @@ import {
   SessionReplayListItem,
 } from "../../../../api/analytics/sessionReplay/useGetSessionReplays";
 import { useReplayStore } from "./replayStore";
+import { ScrollArea } from "../../../../components/ui/scroll-area";
 
 export function ReplayList() {
   const { sessionId, setSessionId } = useReplayStore();
@@ -41,7 +42,7 @@ export function ReplayList() {
   }
 
   return (
-    <>
+    <ScrollArea className="h-[calc(100vh-130px)]">
       <div
         ref={containerRef}
         className="rounded-lg overflow-hidden border border-neutral-800"
@@ -78,6 +79,6 @@ export function ReplayList() {
           </Button>
         </div>
       )}
-    </>
+    </ScrollArea>
   );
 }

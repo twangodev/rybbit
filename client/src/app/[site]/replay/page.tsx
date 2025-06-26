@@ -10,6 +10,7 @@ import { EnableSessionReplay } from "./components/EnableSessionReplay";
 import { ReplayList } from "./components/ReplayList";
 import { ReplayPlayer } from "./components/ReplayPlayer";
 import { NothingFound } from "../../../components/NothingFound";
+import { ReplayBreadcrumbs } from "./components/ReplayBreadcrumbs";
 
 export default function SessionReplayPage() {
   useSetPageTitle("Rybbit · Session Replay");
@@ -22,7 +23,7 @@ export default function SessionReplayPage() {
 
   return (
     <DisabledOverlay message="Replay">
-      <div className="p-2 md:p-4 max-w-[2000px] mx-auto space-y-3  h-screen">
+      <div className="p-2 md:p-4 max-w-[2000px] mx-auto space-y-3">
         <SubHeader availableFilters={SESSION_REPLAY_PAGE_FILTERS} />
         <EnableSessionReplay />
         {hasNoReplays ? (
@@ -33,12 +34,15 @@ export default function SessionReplayPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-[auto_1fr] gap-3">
-            <div className="h-[calc(100vh-120px)] overflow-y-auto w-[200px]">
+          <div className="grid grid-cols-[auto_1fr_auto] gap-3">
+            <div className="w-[200px] rounded-lg border border-neutral-800">
               <ReplayList />
             </div>
-            <div ref={ref} className="w-[calc(100vw-570px)]">
+            <div ref={ref} className="w-[calc(100vw-680px)]">
               {resolvedWidth && <ReplayPlayer width={resolvedWidth} />}
+            </div>
+            <div className="w-[200px]">
+              <ReplayBreadcrumbs />
             </div>
           </div>
         )}
