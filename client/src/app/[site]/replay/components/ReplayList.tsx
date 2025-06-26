@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useRef } from "react";
-import { useParams } from "next/navigation";
-import { Button } from "../../../../components/ui/button";
+import { useEffect, useMemo } from "react";
+import { useIntersectionObserver } from "@uidotdev/usehooks";
+import { Loader2 } from "lucide-react";
 import { NothingFound } from "../../../../components/NothingFound";
 import { ReplayCard, ReplayCardSkeleton } from "./ReplayCard";
 import {
@@ -22,6 +22,13 @@ export function ReplayList() {
     isFetchingNextPage,
   } = useGetSessionReplays();
 
+  // Use the intersection observer hook for infinite scroll
+  const [ref, entry] = useIntersectionObserver({
+    threshold: 0,
+    root: null,
+    rootMargin: "0px 0px 200px 0px", // Load more when user is 200px from the bottom
+  });
+
   const flattenedData = useMemo(() => {
     if (!data) return [];
     return data.pages.flatMap((page) => page.data || []);
@@ -33,7 +40,23 @@ export function ReplayList() {
     }
   }, [flattenedData]);
 
-  const containerRef = useRef<HTMLDivElement>(null);
+  // Fetch next page when intersection observer detects the target is visible
+  useEffect(() => {
+    if (
+      entry?.isIntersecting &&
+      hasNextPage &&
+      !isFetchingNextPage &&
+      !isLoading
+    ) {
+      fetchNextPage();
+    }
+  }, [
+    entry?.isIntersecting,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading,
+  ]);
 
   if (error) {
     return (
@@ -43,13 +66,10 @@ export function ReplayList() {
 
   return (
     <ScrollArea className="h-[calc(100vh-130px)]">
-      <div
-        ref={containerRef}
-        className="rounded-lg overflow-hidden border border-neutral-800"
-      >
+      <div className="overflow-hidden">
         {isLoading ? (
           Array.from({ length: 10 }).map((_, index) => (
-            <ReplayCardSkeleton key={`loading-more-${index}`} />
+            <ReplayCardSkeleton key={`loading-${index}`} />
           ))
         ) : flattenedData.length === 0 ? (
           <NothingFound
@@ -57,28 +77,28 @@ export function ReplayList() {
             description={"Try a different date range or filter"}
           />
         ) : (
-          flattenedData.map((replay: SessionReplayListItem, index) => (
-            <ReplayCard key={`${replay.session_id}-${index}`} replay={replay} />
-          ))
+          <>
+            {flattenedData.map((replay: SessionReplayListItem, index) => (
+              <ReplayCard key={`${replay.session_id}-${index}`} replay={replay} />
+            ))}
+            
+            {/* Infinite scroll anchor and loading indicator */}
+            <div ref={ref} className="py-3 flex justify-center">
+              {isFetchingNextPage && (
+                <div className="flex items-center gap-2 text-neutral-400 text-xs">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading more replays...
+                </div>
+              )}
+              {!hasNextPage && !isFetchingNextPage && flattenedData.length > 0 && (
+                <div className="text-neutral-500 text-xs">
+                  All replays loaded
+                </div>
+              )}
+            </div>
+          </>
         )}
-
-        {isFetchingNextPage &&
-          Array.from({ length: 10 }).map((_, index) => (
-            <ReplayCardSkeleton key={`loading-more-${index}`} />
-          ))}
       </div>
-
-      {hasNextPage && (
-        <div className="flex justify-center py-2">
-          <Button
-            onClick={() => fetchNextPage()}
-            className="w-full"
-            variant="success"
-          >
-            Load more
-          </Button>
-        </div>
-      )}
     </ScrollArea>
   );
 }
