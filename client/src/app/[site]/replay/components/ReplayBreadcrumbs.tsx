@@ -1,5 +1,6 @@
 import { Duration } from "luxon";
 import { useParams } from "next/navigation";
+import { useMemo } from "react";
 import {
   FileText,
   Camera,
@@ -10,6 +11,7 @@ import {
   Globe,
   Loader2,
   ScrollText,
+  Eye,
 } from "lucide-react";
 import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
 import { useReplayStore } from "./replayStore";
@@ -22,7 +24,7 @@ const EVENT_TYPE_INFO = {
   "1": { name: "Load", icon: Loader2, color: "text-green-400" },
   "2": { name: "Full Snapshot", icon: Camera, color: "text-purple-400" },
   "3": { name: "Incremental", icon: MousePointer, color: "text-yellow-400" },
-  "4": { name: "Meta", icon: Info, color: "text-cyan-400" },
+  "4": { name: "Meta", icon: Eye, color: "text-cyan-400" },
   "5": { name: "Custom", icon: Sparkles, color: "text-pink-400" },
   "6": { name: "Plugin", icon: Puzzle, color: "text-indigo-400" },
 };
@@ -56,6 +58,67 @@ export function ReplayBreadcrumbs() {
     siteId,
     sessionId
   );
+
+  // Group consecutive events of the same type
+  const groupedEvents = useMemo(() => {
+    if (!data?.events) return [];
+
+    const groups: Array<{
+      events: any[];
+      type: string;
+      subType?: number;
+      startTime: number;
+      endTime: number;
+      count: number;
+    }> = [];
+
+    let currentGroup: (typeof groups)[0] | null = null;
+
+    data.events.forEach((event) => {
+      const eventTypeStr = String(event.type);
+      const subType = eventTypeStr === "3" ? event.data?.source : undefined;
+
+      // Check if this event should be grouped with the previous one
+      const shouldGroup =
+        currentGroup &&
+        currentGroup.type === eventTypeStr &&
+        currentGroup.subType === subType &&
+        // Only group incremental events (type 3) and certain subtypes
+        eventTypeStr === "3" &&
+        (subType === 0 || // Mutation
+          subType === 1 || // Mouse move
+          subType === 2 || // Mouse interaction (click, etc.)
+          subType === 3 || // Scroll
+          subType === 5); // Input
+
+      if (shouldGroup && currentGroup) {
+        // Add to current group
+        currentGroup.events.push(event);
+        currentGroup.endTime = event.timestamp;
+        currentGroup.count++;
+      } else {
+        // Start a new group
+        if (currentGroup) {
+          groups.push(currentGroup);
+        }
+        currentGroup = {
+          events: [event],
+          type: eventTypeStr,
+          subType,
+          startTime: event.timestamp,
+          endTime: event.timestamp,
+          count: 1,
+        };
+      }
+    });
+
+    // Don't forget the last group
+    if (currentGroup) {
+      groups.push(currentGroup);
+    }
+
+    return groups;
+  }, [data?.events]);
 
   const firstTimestamp = data?.events[0]?.timestamp;
 
@@ -145,52 +208,70 @@ export function ReplayBreadcrumbs() {
     );
   }
 
-  // Filter out repetitive mouse move events for cleaner display
-  const filteredEvents = data.events.filter((event, index) => {
-    const eventTypeStr = String(event.type);
-    // Always show non-incremental events
-    if (eventTypeStr !== "3") return true;
+  const getGroupDescription = (group: (typeof groupedEvents)[0]) => {
+    const firstEvent = group.events[0];
+    const baseDescription = getEventDescription(firstEvent);
 
-    // For incremental events, filter out excessive mouse moves
-    if (event.data?.source === 1) {
-      // Mouse move
-      // Show every 10th mouse move event to reduce clutter
-      return index % 10 === 0;
+    if (group.count > 1) {
+      return `${baseDescription} (×${group.count})`;
     }
 
-    return true;
-  });
+    return baseDescription;
+  };
+
+  const handleGroupClick = (group: (typeof groupedEvents)[0]) => {
+    // Jump to the middle of the group
+    const middleIndex = Math.floor(group.events.length / 2);
+    const middleEvent = group.events[middleIndex];
+    handleEventClick(middleEvent.timestamp);
+  };
 
   return (
     <div className="rounded-lg border border-neutral-800 flex flex-col">
       <div className="p-2 border-b border-neutral-800 bg-neutral-900 text-xs text-neutral-400">
-        {data.events.length} events captured
+        {data.events.length} events captured ({groupedEvents.length} groups)
       </div>
       <ScrollArea className="h-[calc(100vh-160px)]">
         <div className="flex flex-col">
-          {filteredEvents.map((event, index) => {
-            const Icon = getEventIcon(event);
-            const color = getEventColor(event);
-            const description = getEventDescription(event);
-            const timeMs = getTime(event.timestamp);
+          {groupedEvents.map((group, index) => {
+            const firstEvent = group.events[0];
+            const Icon = getEventIcon(firstEvent);
+            const color = getEventColor(firstEvent);
+            const description = getGroupDescription(group);
+            const startTimeMs = getTime(group.startTime);
+            const endTimeMs = getTime(group.endTime);
+            const durationMs = endTimeMs - startTimeMs;
 
             return (
               <div
-                key={`${event.timestamp}-${index}`}
+                key={`${group.startTime}-${index}`}
                 className={cn(
-                  "p-3 border-b border-neutral-800 bg-neutral-900",
+                  "p-2 border-b border-neutral-800 bg-neutral-900",
                   "hover:bg-neutral-800/80 transition-colors cursor-pointer",
                   "flex items-center gap-2 group"
                 )}
-                onClick={() => handleEventClick(event.timestamp)}
+                onClick={() => handleGroupClick(group)}
               >
                 <div className="text-xs text-neutral-400 w-10">
-                  {Duration.fromMillis(timeMs).toFormat("mm:ss")}
+                  {Duration.fromMillis(startTimeMs).toFormat("mm:ss")}
                 </div>
                 <Icon className={cn("w-4 h-4 flex-shrink-0", color)} />
-                <div className="text-xs text-neutral-200 font-medium truncate">
-                  {description}
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs text-neutral-200 font-medium truncate">
+                    {description}
+                  </div>
+                  {group.count > 1 && durationMs > 0 && (
+                    <div className="text-xs text-neutral-500 mt-0.5">
+                      {Duration.fromMillis(durationMs).toFormat("s.SSS")}s
+                      duration
+                    </div>
+                  )}
                 </div>
+                {group.count > 5 && (
+                  <div className="text-xs text-neutral-500 bg-neutral-800 px-1.5 py-0.5 rounded">
+                    {group.count}
+                  </div>
+                )}
               </div>
             );
           })}
