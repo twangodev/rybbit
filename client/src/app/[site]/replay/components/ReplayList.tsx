@@ -65,40 +65,45 @@ export function ReplayList() {
   }
 
   return (
-    <ScrollArea className="h-[calc(100vh-123px)]">
-      {isLoading ? (
-        Array.from({ length: 10 }).map((_, index) => (
-          <ReplayCardSkeleton key={`loading-${index}`} />
-        ))
-      ) : flattenedData.length === 0 ? (
-        <NothingFound
-          title={"No session replays found"}
-          description={"Try a different date range or filter"}
-        />
-      ) : (
-        <>
-          {flattenedData.map((replay: SessionReplayListItem, index) => (
-            <ReplayCard key={`${replay.session_id}-${index}`} replay={replay} />
-          ))}
+    <div className="rounded-lg border border-neutral-800 flex flex-col">
+      <ScrollArea className="h-[calc(100vh-123px)]">
+        {isLoading ? (
+          Array.from({ length: 20 }).map((_, index) => (
+            <ReplayCardSkeleton key={`loading-${index}`} />
+          ))
+        ) : flattenedData.length === 0 ? (
+          <NothingFound
+            title={"No session replays found"}
+            description={"Try a different date range or filter"}
+          />
+        ) : (
+          <>
+            {flattenedData.map((replay: SessionReplayListItem, index) => (
+              <ReplayCard
+                key={`${replay.session_id}-${index}`}
+                replay={replay}
+              />
+            ))}
 
-          {/* Infinite scroll anchor and loading indicator */}
-          <div ref={ref} className="py-3 flex justify-center">
-            {isFetchingNextPage && (
-              <div className="flex items-center gap-2 text-neutral-400 text-xs">
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Loading more replays...
-              </div>
-            )}
-            {!hasNextPage &&
-              !isFetchingNextPage &&
-              flattenedData.length > 0 && (
-                <div className="text-neutral-500 text-xs">
-                  All replays loaded
+            {/* Infinite scroll anchor and loading indicator */}
+            <div ref={ref} className="py-3 flex justify-center">
+              {isFetchingNextPage && (
+                <div className="flex items-center gap-2 text-neutral-400 text-xs">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Loading more replays...
                 </div>
               )}
-          </div>
-        </>
-      )}
-    </ScrollArea>
+              {!hasNextPage &&
+                !isFetchingNextPage &&
+                flattenedData.length > 0 && (
+                  <div className="text-neutral-500 text-xs">
+                    All replays loaded
+                  </div>
+                )}
+            </div>
+          </>
+        )}
+      </ScrollArea>
+    </div>
   );
 }

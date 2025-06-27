@@ -191,18 +191,10 @@ export function ReplayBreadcrumbs() {
     return eventInfo?.color || "text-gray-400";
   };
 
-  if (isLoading) {
+  if (isLoading || !data?.events) {
     return (
       <div className="rounded-lg border border-neutral-800 p-4 flex items-center justify-center h-[calc(100vh-120px)]">
         <Loader2 className="w-6 h-6 animate-spin text-neutral-400" />
-      </div>
-    );
-  }
-
-  if (error || !data?.events) {
-    return (
-      <div className="rounded-lg border border-neutral-800 p-4 text-neutral-400 text-sm">
-        No events available
       </div>
     );
   }
@@ -230,7 +222,7 @@ export function ReplayBreadcrumbs() {
       <div className="p-2 border-b border-neutral-800 bg-neutral-900 text-xs text-neutral-400">
         {data.events.length} events captured ({groupedEvents.length} groups)
       </div>
-      <ScrollArea className="h-[calc(100vh-153px)]">
+      <ScrollArea className="h-[calc(100vh-156px)]">
         <div className="flex flex-col">
           {groupedEvents.map((group, index) => {
             const firstEvent = group.events[0];

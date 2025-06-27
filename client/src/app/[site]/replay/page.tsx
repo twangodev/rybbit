@@ -23,7 +23,7 @@ export default function SessionReplayPage() {
 
   return (
     <DisabledOverlay message="Replay">
-      <div className="p-2 md:p-4 max-w-[2000px] mx-auto space-y-3 overflow-hidden">
+      <div className="p-2 md:p-4 max-w-[2000px] mx-auto flex flex-col gap-1 overflow-hidden h-full">
         <SubHeader availableFilters={SESSION_REPLAY_PAGE_FILTERS} />
         <EnableSessionReplay />
         {hasNoReplays ? (
@@ -34,18 +34,14 @@ export default function SessionReplayPage() {
             }
           />
         ) : (
-          <div className="grid grid-cols-[auto_1fr_auto] gap-3 overflow-hidden">
-            <div className="w-[200px] rounded-lg border border-neutral-800">
-              <ReplayList />
-            </div>
+          <div className="grid grid-cols-[200px_1fr_300px] gap-3">
+            <ReplayList />
             <div ref={ref} className="w-[calc(100vw-780px)]">
               {resolvedWidth && resolvedHeight && (
                 <ReplayPlayer width={resolvedWidth} height={resolvedHeight} />
               )}
             </div>
-            <div className="w-[300px]">
-              <ReplayBreadcrumbs />
-            </div>
+            <ReplayBreadcrumbs />
           </div>
         )}
       </div>

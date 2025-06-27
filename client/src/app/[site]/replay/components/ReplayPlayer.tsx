@@ -70,7 +70,7 @@ export function ReplayPlayer({
             events: data.events as any, // Cast to any to handle type compatibility with rrweb
             width: width,
             // subtract for the custom controls
-            height: height - 64,
+            height: height - 67,
             autoPlay: false,
             showController: false, // We'll use custom controls
           },
@@ -216,8 +216,8 @@ export function ReplayPlayer({
     );
   }
 
-  if (isLoading) {
-    return <ThreeDotLoader className="w-full h-full" />;
+  if (isLoading || !data) {
+    return <ThreeDotLoader className="w-full" />;
   }
 
   const metadata = data?.metadata;
