@@ -77,6 +77,7 @@ export const initializeClickhouse = async () => {
       ENGINE = MergeTree()
       PARTITION BY toYYYYMM(timestamp)
       ORDER BY (site_id, session_id, sequence_number)
+      TTL toDateTime(timestamp) + INTERVAL 30 DAY
       `,
   });
 
@@ -114,6 +115,7 @@ export const initializeClickhouse = async () => {
       ENGINE = ReplacingMergeTree(created_at)
       PARTITION BY toYYYYMM(start_time)
       ORDER BY (site_id, session_id)
+      TTL start_time + INTERVAL 30 DAY
       `,
   });
 
