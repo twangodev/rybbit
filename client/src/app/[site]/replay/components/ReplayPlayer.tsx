@@ -1,5 +1,4 @@
 import { Pause, Play } from "lucide-react";
-import { DateTime } from "luxon";
 import { useParams } from "next/navigation";
 import { useEffect, useRef } from "react";
 import rrwebPlayer from "rrweb-player";
@@ -217,15 +216,12 @@ export function ReplayPlayer({
   }
 
   if (isLoading || !data) {
-    return <ThreeDotLoader className="w-full" />;
+    return (
+      <div className="bg-black h-full flex items-center justify-center">
+        <ThreeDotLoader className="w-full" />
+      </div>
+    );
   }
-
-  const metadata = data?.metadata;
-  const startTime = metadata
-    ? DateTime.fromSQL(metadata.start_time.toString(), {
-        zone: "utc",
-      }).toLocal()
-    : DateTime.now();
 
   return (
     <div className="flex flex-col bg-neutral-950">
