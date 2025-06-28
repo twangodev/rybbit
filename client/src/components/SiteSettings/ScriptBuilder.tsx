@@ -19,6 +19,7 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
   const [trackQuery, setTrackQuery] = useState(true);
   const [trackOutbound, setTrackOutbound] = useState(true);
   const [trackErrors, setTrackErrors] = useState(false);
+  const [sessionReplay, setSessionReplay] = useState(false);
   const [webVitals, setWebVitals] = useState(false);
   const [skipPatterns, setSkipPatterns] = useState<string[]>([]);
   const [skipPatternsText, setSkipPatternsText] = useState("");
@@ -115,6 +116,11 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
     trackErrors
       ? `
     data-track-errors="true"`
+      : ""
+  }${
+    sessionReplay
+      ? `
+    data-session-replay="true"`
       : ""
   }${
     skipPatterns.length > 0
@@ -218,24 +224,25 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
             </div>
           </div>
 
-          {/* Track Errors Option */}
+          {/* Session Replay Option */}
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
                 <Label
-                  htmlFor="trackErrors"
+                  htmlFor="sessionReplay"
                   className="text-sm font-medium text-foreground block"
                 >
-                  Track JavaScript errors
+                  Enable session replay
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Automatically capture and track JavaScript errors on your site
+                  Record user interactions and DOM changes for debugging and UX
+                  analysis
                 </p>
               </div>
               <Switch
-                id="trackErrors"
-                checked={trackErrors}
-                onCheckedChange={setTrackErrors}
+                id="sessionReplay"
+                checked={sessionReplay}
+                onCheckedChange={setSessionReplay}
               />
             </div>
           </div>
@@ -281,6 +288,28 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
                 id="webVitals"
                 checked={webVitals}
                 onCheckedChange={setWebVitals}
+              />
+            </div>
+          </div>
+
+          {/* Track Errors Option */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <div>
+                <Label
+                  htmlFor="trackErrors"
+                  className="text-sm font-medium text-foreground block"
+                >
+                  Track JavaScript errors
+                </Label>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Automatically capture and track JavaScript errors on your site
+                </p>
+              </div>
+              <Switch
+                id="trackErrors"
+                checked={trackErrors}
+                onCheckedChange={setTrackErrors}
               />
             </div>
           </div>
