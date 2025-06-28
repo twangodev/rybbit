@@ -1,6 +1,6 @@
 import { Pause, Play } from "lucide-react";
 import { useParams } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import rrwebPlayer from "rrweb-player";
 import "rrweb-player/dist/style.css";
 import { useGetSessionReplayEvents } from "../../../../api/analytics/sessionReplay/useGetSessionReplayEvents";
@@ -44,6 +44,11 @@ export function ReplayPlayer({
 
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
+  // State for play/pause overlay animation
+  const [showPlayPauseOverlay, setShowPlayPauseOverlay] = useState(false);
+  const [overlayIcon, setOverlayIcon] = useState<"play" | "pause">("play");
+  const overlayTimeoutRef = useRef<number | undefined>(undefined);
+
   const { data, isLoading, error } = useGetSessionReplayEvents(
     siteId,
     sessionId
@@ -53,6 +58,15 @@ export function ReplayPlayer({
   useEffect(() => {
     resetPlayerState();
   }, [sessionId, resetPlayerState]);
+
+  // Cleanup overlay timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (overlayTimeoutRef.current) {
+        clearTimeout(overlayTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (data?.events && playerContainerRef.current) {
@@ -155,12 +169,28 @@ export function ReplayPlayer({
   const handlePlayPause = () => {
     if (!player) return;
 
+    const newPlayingState = !isPlaying;
+
     if (isPlaying) {
       player.pause();
     } else {
       player.play();
     }
-    setIsPlaying(!isPlaying);
+    setIsPlaying(newPlayingState);
+
+    // Show overlay animation
+    setOverlayIcon(newPlayingState ? "pause" : "play");
+    setShowPlayPauseOverlay(true);
+
+    // Clear existing timeout
+    if (overlayTimeoutRef.current) {
+      clearTimeout(overlayTimeoutRef.current);
+    }
+
+    // Hide overlay after animation
+    overlayTimeoutRef.current = window.setTimeout(() => {
+      setShowPlayPauseOverlay(false);
+    }, 800);
   };
 
   const handleSkipBack = () => {
@@ -177,6 +207,11 @@ export function ReplayPlayer({
 
   const handleSliderChange = (value: number[]) => {
     if (!player || !duration) return;
+
+    // Pause the player when user scrubs manually
+    player.pause();
+    setIsPlaying(false);
+
     const newTime = (value[0] / 100) * duration;
     player.goto(newTime);
     setCurrentTime(newTime);
@@ -205,6 +240,41 @@ export function ReplayPlayer({
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  // Add keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Only handle hotkeys when the player exists and focus is not on an input/textarea
+      if (
+        !player ||
+        event.target instanceof HTMLInputElement ||
+        event.target instanceof HTMLTextAreaElement
+      ) {
+        return;
+      }
+
+      switch (event.key) {
+        case "ArrowLeft":
+          event.preventDefault();
+          handleSkipBack();
+          break;
+        case "ArrowRight":
+          event.preventDefault();
+          handleSkipForward();
+          break;
+        case " ":
+          event.preventDefault();
+          handlePlayPause();
+          break;
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [player, handleSkipBack, handleSkipForward, handlePlayPause]);
+
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full p-8">
@@ -226,14 +296,28 @@ export function ReplayPlayer({
   return (
     <div className="flex flex-col bg-neutral-950">
       {/* Player Container */}
-      <div className="flex-1 flex items-center justify-center overflow-hidden">
+      <div className="flex-1 flex items-center justify-center overflow-hidden relative">
         <div
           ref={playerContainerRef}
-          className="w-full bg-black rounded-lg shadow-2xl [&_.rr-player]:!bg-black"
+          className="w-full bg-black rounded-lg shadow-2xl [&_.rr-player]:!bg-black cursor-pointer"
           style={{
             position: "relative",
           }}
+          onClick={handlePlayPause}
         />
+
+        {/* Play/Pause Overlay Animation */}
+        {showPlayPauseOverlay && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div className="bg-black/60 rounded-full p-6 animate-in fade-in zoom-in-50 duration-200">
+              {overlayIcon === "play" ? (
+                <Play className="w-12 h-12 text-white" fill="currentColor" />
+              ) : (
+                <Pause className="w-12 h-12 text-white" fill="currentColor" />
+              )}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Custom Controls */}

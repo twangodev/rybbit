@@ -36,7 +36,7 @@ export default function SessionReplayPage() {
         ) : (
           <div className="grid grid-cols-[200px_1fr_300px] gap-3">
             <ReplayList />
-            <div ref={ref} className="w-[calc(100vw-780px)]">
+            <div ref={ref} className="w-[calc(min(100vw, 2000px)-780px)]">
               {resolvedWidth && resolvedHeight && (
                 <ReplayPlayer width={resolvedWidth} height={resolvedHeight} />
               )}
