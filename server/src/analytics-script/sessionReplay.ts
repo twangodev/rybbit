@@ -237,8 +237,8 @@ export class SessionReplayRecorder {
       events,
       metadata: {
         pageUrl: window.location.href,
-        viewportWidth: window.innerWidth,
-        viewportHeight: window.innerHeight,
+        viewportWidth: screen.width,
+        viewportHeight: screen.height,
         language: navigator.language,
       },
     };

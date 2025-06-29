@@ -49,12 +49,12 @@ describe("Tracker", () => {
       hash: mockLocation.hash,
     })) as any;
 
-    Object.defineProperty(window, "innerWidth", {
+    Object.defineProperty(screen, "width", {
       value: 1920,
       writable: true,
     });
 
-    Object.defineProperty(window, "innerHeight", {
+    Object.defineProperty(screen, "height", {
       value: 1080,
       writable: true,
     });
