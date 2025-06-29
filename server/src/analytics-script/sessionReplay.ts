@@ -3,8 +3,17 @@ import {
   SessionReplayEvent,
   SessionReplayBatch,
 } from "./types.js";
-import * as rrweb from "rrweb";
 
+// Import rrweb using require to avoid TypeScript module resolution issues
+// @ts-ignore
+const rrweb = require("rrweb");
+
+// Define the event type locally since the type import doesn't work
+interface RRWebEvent {
+  type: number;
+  data: any;
+  timestamp?: number;
+}
 
 export class SessionReplayRecorder {
   private config: ScriptConfig;
@@ -33,7 +42,6 @@ export class SessionReplayRecorder {
     this.startRecording();
   }
 
-
   public startRecording(): void {
     if (this.isRecording || !this.config.enableSessionReplay) {
       console.log("[Session Replay] Cannot start recording:", {
@@ -51,7 +59,7 @@ export class SessionReplayRecorder {
 
     try {
       this.stopRecordingFn = rrweb.record({
-        emit: (event) => {
+        emit: (event: RRWebEvent) => {
           const eventTypeNames = {
             0: "DOMContentLoaded",
             1: "Load",
