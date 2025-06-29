@@ -64,11 +64,11 @@ export async function parseTrackingData(
   }
 
   return {
-    browser: ua.browser.name || "Unknown",
+    browser: ua.browser.name || "",
     browserVersion: ua.browser.major || "",
-    operatingSystem: ua.os.name || "Unknown",
+    operatingSystem: ua.os.name || "",
     operatingSystemVersion: ua.os.version || "",
-    deviceType: getDeviceType(screenWidth, screenHeight, ua) || "desktop",
+    deviceType: getDeviceType(screenWidth, screenHeight, ua),
     country: countryCode,
     region: countryCode && regionCode ? countryCode + "-" + regionCode : "",
     city: city || "",
