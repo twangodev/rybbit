@@ -6,6 +6,17 @@ export function getDeviceType(
   screenHeight: number,
   ua: UAParser.IResult
 ): string {
+  console.info({
+    screenWidth,
+    screenHeight,
+    type: ua.device.type,
+    os: ua.os.name,
+    browser: ua.browser.name,
+    engine: ua.engine.name,
+    cpu: ua.cpu.architecture,
+    device: ua.device.model,
+  });
+
   // if (ua.device) {
   //   if (ua.device.type === "mobile") {
   //     return "Mobile";
