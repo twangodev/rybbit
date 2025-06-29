@@ -162,7 +162,7 @@ export default async function RootLayout({ children }) {
         }}
       />
       <script
-        src="https://demo.rybbit.io/api/script.js"
+        src="https://amdtest.tomato.gg/api/script.js"
         data-site-id="21"
         defer
         data-session-replay="true"
