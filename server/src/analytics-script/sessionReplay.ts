@@ -3,25 +3,8 @@ import {
   SessionReplayEvent,
   SessionReplayBatch,
 } from "./types.js";
+import * as rrweb from "rrweb";
 
-// rrweb types (simplified for our use case)
-declare global {
-  interface Window {
-    rrweb?: {
-      record: (options: {
-        emit: (event: any) => void;
-        checkoutEveryNms?: number;
-        checkoutEveryNth?: number;
-        maskAllInputs?: boolean;
-        maskInputOptions?: any;
-        slimDOMOptions?: any;
-        sampling?: any;
-        recordCanvas?: boolean;
-        collectFonts?: boolean;
-      }) => () => void;
-    };
-  }
-}
 
 export class SessionReplayRecorder {
   private config: ScriptConfig;
@@ -47,38 +30,14 @@ export class SessionReplayRecorder {
       return;
     }
 
-    // Load rrweb if not already loaded
-    if (!window.rrweb) {
-      await this.loadRrweb();
-    }
-
-    if (window.rrweb) {
-      this.startRecording();
-    } else {
-      console.warn("Failed to load rrweb, session replay disabled");
-    }
+    this.startRecording();
   }
 
-  private async loadRrweb(): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const script = document.createElement("script");
-      script.src =
-        "https://cdn.jsdelivr.net/npm/rrweb@2.0.0-alpha.11/dist/rrweb.min.js";
-      script.async = false; // Load synchronously to ensure immediate availability
-      script.onload = () => {
-        console.log("[Session Replay] rrweb loaded successfully");
-        resolve();
-      };
-      script.onerror = () => reject(new Error("Failed to load rrweb"));
-      document.head.appendChild(script);
-    });
-  }
 
   public startRecording(): void {
-    if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+    if (this.isRecording || !this.config.enableSessionReplay) {
       console.log("[Session Replay] Cannot start recording:", {
         isRecording: this.isRecording,
-        hasRrweb: !!window.rrweb,
         enableSessionReplay: this.config.enableSessionReplay,
       });
       return;
@@ -91,7 +50,7 @@ export class SessionReplayRecorder {
     console.log("[Session Replay] Document ready state:", document.readyState);
 
     try {
-      this.stopRecordingFn = window.rrweb.record({
+      this.stopRecordingFn = rrweb.record({
         emit: (event) => {
           const eventTypeNames = {
             0: "DOMContentLoaded",
