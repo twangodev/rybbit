@@ -163,7 +163,7 @@ export default async function RootLayout({ children }) {
       />
       <script
         src="https://amdtest.tomato.gg/api/script.js"
-        data-site-id="21"
+        data-site-id="1"
         defer
         data-session-replay="true"
         data-web-vitals="true"
