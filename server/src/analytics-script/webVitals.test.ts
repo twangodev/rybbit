@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { WebVitalsCollector } from './webVitals.js';
+import { ScriptConfig } from './types.js';
 
 // Mock web-vitals module
 vi.mock('web-vitals', () => ({
@@ -16,11 +17,31 @@ describe('WebVitalsCollector', () => {
   let collector: WebVitalsCollector;
   let onReadyCallback: ReturnType<typeof vi.fn>;
   let mockMetricCallbacks: Map<Function, Function>;
+  let mockConfig: ScriptConfig;
 
   beforeEach(() => {
     vi.useFakeTimers();
     onReadyCallback = vi.fn();
     mockMetricCallbacks = new Map();
+
+    // Create mock config
+    mockConfig = {
+      analyticsHost: 'https://analytics.example.com',
+      siteId: 'test-site-id',
+      apiKey: 'test-api-key',
+      enableWebVitals: true,
+      autoTrackPageview: true,
+      autoTrackSpa: true,
+      trackQuerystring: true,
+      trackErrors: false,
+      trackOutbound: true,
+      debounceDuration: 1000,
+      enableSessionReplay: false,
+      sessionReplayBatchSize: 100,
+      sessionReplayBatchInterval: 5000,
+      skipPatterns: [],
+      maskPatterns: []
+    };
 
     // Setup mocks to capture callbacks
     vi.mocked(onLCP).mockImplementation((callback) => {
@@ -39,7 +60,7 @@ describe('WebVitalsCollector', () => {
       mockMetricCallbacks.set(onTTFB, callback);
     });
 
-    collector = new WebVitalsCollector(onReadyCallback);
+    collector = new WebVitalsCollector(mockConfig, onReadyCallback);
   });
 
   afterEach(() => {
