@@ -50,15 +50,11 @@ declare global {
   // Initialize web vitals if enabled
   if (config.enableWebVitals) {
     const webVitalsCollector = new WebVitalsCollector(
-      config,
       (vitals: WebVitalsData) => {
         tracker.trackWebVitals(vitals);
       }
     );
-    // Initialize asynchronously (doesn't block main script)
-    webVitalsCollector.initialize().catch(e => {
-      console.warn('Failed to initialize web vitals:', e);
-    });
+    webVitalsCollector.initialize();
   }
 
   // Initialize error tracking if enabled
