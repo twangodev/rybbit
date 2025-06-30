@@ -137,7 +137,7 @@
     async loadRrweb() {
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = `${this.config.analyticsHost}/api/replay.js`;
+        script.src = `${this.config.analyticsHost}/replay.js`;
         script.async = false;
         script.onload = () => {
           console.log("[Session Replay] rrweb loaded successfully");
@@ -626,7 +626,7 @@
     async loadWebVitals() {
       return new Promise((resolve) => {
         const script = document.createElement("script");
-        script.src = `${this.config.analyticsHost}/api/metrics.js`;
+        script.src = `${this.config.analyticsHost}/metrics.js`;
         script.async = false;
         script.onload = () => {
           console.log("[Web Vitals] Library loaded successfully");
@@ -643,7 +643,9 @@
       if (this.sent) return;
       const metricName = metric.name.toLowerCase();
       this.data[metricName] = metric.value;
-      const allCollected = Object.values(this.data).every((value) => value !== null);
+      const allCollected = Object.values(this.data).every(
+        (value) => value !== null
+      );
       if (allCollected) {
         this.sendData();
       }

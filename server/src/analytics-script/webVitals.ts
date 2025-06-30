@@ -1,4 +1,4 @@
-import { ScriptConfig, WebVitalsData } from './types.js';
+import { ScriptConfig, WebVitalsData } from "./types.js";
 
 // Declare web-vitals types
 declare global {
@@ -50,7 +50,7 @@ export class WebVitalsCollector {
     }
 
     if (!window.webVitals) {
-      console.warn('Failed to load web-vitals, metrics collection disabled');
+      console.warn("Failed to load web-vitals, metrics collection disabled");
       return;
     }
 
@@ -74,28 +74,28 @@ export class WebVitalsCollector {
       }, 20000);
 
       // Send on page unload
-      window.addEventListener('beforeunload', () => {
+      window.addEventListener("beforeunload", () => {
         if (!this.sent) {
           this.sendData();
         }
       });
     } catch (e) {
-      console.warn('Error initializing web vitals tracking:', e);
+      console.warn("Error initializing web vitals tracking:", e);
     }
   }
 
   private async loadWebVitals(): Promise<void> {
     return new Promise((resolve) => {
-      const script = document.createElement('script');
+      const script = document.createElement("script");
       // Load from same origin to avoid CDN blocking
-      script.src = `${this.config.analyticsHost}/api/metrics.js`;
+      script.src = `${this.config.analyticsHost}/metrics.js`;
       script.async = false;
       script.onload = () => {
-        console.log('[Web Vitals] Library loaded successfully');
+        console.log("[Web Vitals] Library loaded successfully");
         resolve();
       };
       script.onerror = () => {
-        console.error('[Web Vitals] Failed to load library');
+        console.error("[Web Vitals] Failed to load library");
         resolve(); // Resolve anyway to continue execution
       };
       document.head.appendChild(script);
@@ -107,9 +107,11 @@ export class WebVitalsCollector {
 
     const metricName = metric.name.toLowerCase() as keyof WebVitalsData;
     this.data[metricName] = metric.value;
-    
+
     // Check if all metrics are collected
-    const allCollected = Object.values(this.data).every(value => value !== null);
+    const allCollected = Object.values(this.data).every(
+      (value) => value !== null
+    );
     if (allCollected) {
       this.sendData();
     }
