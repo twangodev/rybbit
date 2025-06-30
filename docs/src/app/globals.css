@@ -150,7 +150,21 @@
   }
 }
 
-/* sidebar active item */
+/* Sidebar active item */
 html:not(.dark) .nextra-sidebar li.active a {
   background-color: var(--x-color-primary-200);
+}
+
+/* Callouts border light theme */
+html:not(.dark) .nextra-callout[class*="x:bg-yellow-50"] {
+  border: 2px solid rgb(from var(--x-color-yellow-900) r g b / 0.2);
+}
+html:not(.dark) .nextra-callout[class*="x:bg-orange-50"] {
+  border: 2px solid rgb(from var(--x-color-yellow-900) r g b / 0.5);
+}
+html:not(.dark) .nextra-callout[class*="x:bg-blue-100"] {
+  border: 2px solid rgb(from var(--x-color-blue-900) r g b / 0.3);
+}
+html:not(.dark) .nextra-callout[class*="x:bg-red-100"] {
+  border: 2px solid rgb(from var(--x-color-red-900) r g b / 0.3);
 }
