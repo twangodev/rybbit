@@ -149,3 +149,8 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* sidebar active item */
+html:not(.dark) .nextra-sidebar li.active a {
+  background-color: var(--x-color-primary-200);
+}
