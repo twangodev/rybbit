@@ -137,7 +137,7 @@
     async loadRrweb() {
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = "/rrweb.min.js";
+        script.src = `${this.config.analyticsHost}/rrweb.min.js`;
         script.async = false;
         script.onload = () => {
           console.log("[Session Replay] rrweb loaded successfully");
@@ -578,7 +578,7 @@
 
   // webVitals.ts
   var WebVitalsCollector = class {
-    constructor(onReady) {
+    constructor(config, onReady) {
       this.data = {
         lcp: null,
         cls: null,
@@ -590,6 +590,7 @@
       this.timeout = null;
       this.onReadyCallback = null;
       this.initialized = false;
+      this.config = config;
       this.onReadyCallback = onReady;
     }
     async initialize() {
@@ -625,7 +626,7 @@
     async loadWebVitals() {
       return new Promise((resolve) => {
         const script = document.createElement("script");
-        script.src = "/web-vitals.iife.js";
+        script.src = `${this.config.analyticsHost}/web-vitals.iife.js`;
         script.async = false;
         script.onload = () => {
           console.log("[Web Vitals] Library loaded successfully");
@@ -698,6 +699,7 @@
     const tracker = new Tracker(config);
     if (config.enableWebVitals) {
       const webVitalsCollector = new WebVitalsCollector(
+        config,
         (vitals) => {
           tracker.trackWebVitals(vitals);
         }

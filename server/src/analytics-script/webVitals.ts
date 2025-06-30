@@ -1,4 +1,4 @@
-import { WebVitalsData } from './types.js';
+import { ScriptConfig, WebVitalsData } from './types.js';
 
 // Declare web-vitals types
 declare global {
@@ -34,8 +34,10 @@ export class WebVitalsCollector {
   private timeout: NodeJS.Timeout | null = null;
   private onReadyCallback: ((data: WebVitalsData) => void) | null = null;
   private initialized = false;
+  private config: ScriptConfig;
 
-  constructor(onReady: (data: WebVitalsData) => void) {
+  constructor(config: ScriptConfig, onReady: (data: WebVitalsData) => void) {
+    this.config = config;
     this.onReadyCallback = onReady;
   }
 
@@ -86,7 +88,7 @@ export class WebVitalsCollector {
     return new Promise((resolve) => {
       const script = document.createElement('script');
       // Load from same origin to avoid CDN blocking
-      script.src = '/web-vitals.iife.js';
+      script.src = `${this.config.analyticsHost}/web-vitals.iife.js`;
       script.async = false;
       script.onload = () => {
         console.log('[Web Vitals] Library loaded successfully');

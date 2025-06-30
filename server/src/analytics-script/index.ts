@@ -50,6 +50,7 @@ declare global {
   // Initialize web vitals if enabled
   if (config.enableWebVitals) {
     const webVitalsCollector = new WebVitalsCollector(
+      config,
       (vitals: WebVitalsData) => {
         tracker.trackWebVitals(vitals);
       }
