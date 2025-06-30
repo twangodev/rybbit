@@ -70,7 +70,13 @@ function Footer_() {
     <div className="max-w-[1300px] mx-auto">
       <div className="flex flex-col md:flex-row items-center md:justify-between w-full px-6 py-4 space-y-4 md:space-y-0">
         <div className="flex flex-col md:flex-row items-center gap-4 md:gap-0 md:justify-between w-full">
-          <Image src="/rybbit-text.svg" alt="Rybbit" width={120} height={27} />
+          <Image
+            src="/rybbit-text.svg"
+            alt="Rybbit"
+            width={120}
+            height={27}
+            className="invert dark:invert-0"
+          />
           <div className="text-sm text-neutral-400 text-center md:text-left">
             Copyright {new Date().getFullYear()} © Rybbit.
           </div>
@@ -136,7 +142,13 @@ export default async function RootLayout({ children }) {
   const navbar = (
     <Navbar
       logo={
-        <Image src="/rybbit-text.svg" alt="Rybbit" width={110} height={27} />
+        <Image
+          src="/rybbit-text.svg"
+          alt="Rybbit"
+          width={110}
+          height={27}
+          className="invert dark:invert-0"
+        />
       }
       chatLink="https://discord.gg/DEhGb4hYBj"
       projectLink="https://github.com/rybbit-io/rybbit"
