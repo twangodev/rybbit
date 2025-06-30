@@ -193,7 +193,7 @@ export default async function RootLayout({ children }) {
       <body>
         <ThemedLayout
           banner={
-            <div className="text-center text-sm text-neutral-100 pt-2 pb-1 bg-neutral-700/50 flex items-center justify-center gap-2">
+            <div className="text-center text-sm pt-2 pb-1 flex items-center justify-center gap-2 text-slate-50 dark:text-white bg-neutral-900 dark:bg-neutral-700/50">
               <div className="mb-1">
                 🚀 We just launched! Please star us on Github!{" "}
               </div>
