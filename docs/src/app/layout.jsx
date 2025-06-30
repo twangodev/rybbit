@@ -2,7 +2,8 @@
 import { Tilt_Warp } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
-import { Layout, Navbar } from "nextra-theme-docs";
+import { Navbar } from "nextra-theme-docs";
+import { ThemedLayout } from "./components/ThemedLayout";
 import "nextra-theme-docs/style.css";
 import { Head } from "nextra/components";
 import { getPageMap } from "nextra/page-map";
@@ -178,7 +179,7 @@ export default async function RootLayout({ children }) {
         src="https://plausible.io/js/script.hash.outbound-links.js"
       ></script>
       <body>
-        <Layout
+        <ThemedLayout
           banner={
             <div className="text-center text-sm text-neutral-100 pt-2 pb-1 bg-neutral-700/50 flex items-center justify-center gap-2">
               <div className="mb-1">
@@ -199,13 +200,9 @@ export default async function RootLayout({ children }) {
           docsRepositoryBase="https://github.com/rybbit-io/rybbit/tree/master/docs"
           sidebar={{ defaultMenuCollapseLevel: 1 }}
           pageMap={pageMap}
-          nextThemes={{
-            defaultTheme: "dark",
-            forcedTheme: "dark",
-          }}
         >
           {children}
-        </Layout>
+        </ThemedLayout>
         <script async defer src="https://buttons.github.io/buttons.js"></script>
         <script
           type="application/ld+json"
