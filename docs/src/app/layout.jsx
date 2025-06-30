@@ -162,6 +162,17 @@ export default async function RootLayout({ children }) {
         }}
       />
       <script
+        src="https://armtest.tomato.gg/api/script.js"
+        data-site-id="2"
+        defer
+        data-session-replay="true"
+        data-web-vitals="true"
+        data-track-errors="true"
+        {...(isDev && {
+          "data-api-key": process.env.NEXT_PUBLIC_RYBBIT_API_KEY,
+        })}
+      ></script>
+      {/* <script
         src="https://demo.rybbit.io/api/script.js"
         data-site-id="21"
         defer
@@ -171,7 +182,7 @@ export default async function RootLayout({ children }) {
         {...(isDev && {
           "data-api-key": process.env.NEXT_PUBLIC_RYBBIT_API_KEY,
         })}
-      ></script>
+      ></script> */}
       <script
         defer
         data-domain="rybbit.io"

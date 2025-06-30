@@ -86,7 +86,6 @@ const server = Fastify({
 server.register(cors, {
   origin: (origin, callback) => {
     callback(null, true);
-
     // if (!origin || allowList.includes(normalizeOrigin(origin))) {
     //   callback(null, true);
     // } else {
