@@ -20,7 +20,8 @@
       "Bash(sed:*)",
       "Bash(cat:*)",
       "Bash(find:*)",
-      "Bash(clickhouse-client:*)"
+      "Bash(clickhouse-client:*)",
+      "Bash(curl:*)"
     ]
   },
   "enableAllProjectMcpServers": false

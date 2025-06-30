@@ -54,7 +54,10 @@ declare global {
         tracker.trackWebVitals(vitals);
       }
     );
-    webVitalsCollector.initialize();
+    // Initialize asynchronously (doesn't block main script)
+    webVitalsCollector.initialize().catch(e => {
+      console.warn('Failed to initialize web vitals:', e);
+    });
   }
 
   // Initialize error tracking if enabled
