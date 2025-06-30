@@ -88,7 +88,7 @@ export class WebVitalsCollector {
     return new Promise((resolve) => {
       const script = document.createElement('script');
       // Load from same origin to avoid CDN blocking
-      script.src = `${this.config.analyticsHost}/web-vitals.iife.js`;
+      script.src = `${this.config.analyticsHost}/api/metrics.js`;
       script.async = false;
       script.onload = () => {
         console.log('[Web Vitals] Library loaded successfully');

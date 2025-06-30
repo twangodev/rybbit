@@ -63,7 +63,7 @@ export class SessionReplayRecorder {
     return new Promise((resolve, reject) => {
       const script = document.createElement("script");
       // Load from same origin to avoid CDN blocking
-      script.src = `${this.config.analyticsHost}/rrweb.min.js`;
+      script.src = `${this.config.analyticsHost}/api/replay.js`;
       script.async = false;
       script.onload = () => {
         console.log("[Session Replay] rrweb loaded successfully");

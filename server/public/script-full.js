@@ -137,7 +137,7 @@
     async loadRrweb() {
       return new Promise((resolve, reject) => {
         const script = document.createElement("script");
-        script.src = `${this.config.analyticsHost}/rrweb.min.js`;
+        script.src = `${this.config.analyticsHost}/api/replay.js`;
         script.async = false;
         script.onload = () => {
           console.log("[Session Replay] rrweb loaded successfully");
@@ -626,7 +626,7 @@
     async loadWebVitals() {
       return new Promise((resolve) => {
         const script = document.createElement("script");
-        script.src = `${this.config.analyticsHost}/web-vitals.iife.js`;
+        script.src = `${this.config.analyticsHost}/api/metrics.js`;
         script.async = false;
         script.onload = () => {
           console.log("[Web Vitals] Library loaded successfully");
