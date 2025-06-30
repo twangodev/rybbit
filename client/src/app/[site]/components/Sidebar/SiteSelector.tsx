@@ -27,8 +27,8 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
   const { user } = userStore();
 
   if (
-    typeof window !== "undefined"
-    // && globalThis.location.hostname === "demo.rybbit.io"
+    typeof window !== "undefined" &&
+    globalThis.location.hostname === "demo.rybbit.io"
   ) {
     return (
       <PopoverContent align="start" className="w-52 p-2">
