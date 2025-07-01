@@ -96,10 +96,22 @@ export default function IndexPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqSchema) }}
       />
-      <div className="flex flex-col items-center justify-center overflow-x-hidden">
+      <div className="flex flex-col items-center justify-center overflow-x-hidden pt-16 md:pt-24">
+        <a
+          href="https://www.producthunt.com/products/rybbit?embed=true&utm_source=badge-featured&utm_medium=badge&utm_source=badge-rybbit"
+          target="_blank"
+        >
+          <img
+            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=981885&theme=light&t=1751329497257"
+            alt="Rybbit - The&#0032;open&#0032;source&#0032;Google&#0032;Analytics&#0032;replacement | Product Hunt"
+            style={{ width: "250px", height: "44px", marginBottom: "24px" }}
+            width="250"
+            height="54"
+          />
+        </a>
         <h1
           className={cn(
-            "text-4xl md:text-5xl lg:text-7xl font-semibold pt-16 md:pt-24 px-4 tracking-tight max-w-4xl text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-100 to-gray-400",
+            "text-4xl md:text-5xl lg:text-7xl font-semibold  px-4 tracking-tight max-w-4xl text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-100 to-gray-400",
             tilt_wrap.className
           )}
         >
