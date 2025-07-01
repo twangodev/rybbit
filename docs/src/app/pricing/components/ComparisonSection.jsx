@@ -58,6 +58,11 @@ const COMPARISON_FEATURES = [
         pro: true,
       },
       {
+        name: "Error tracking",
+        free: false,
+        pro: true,
+      },
+      {
         name: "Pages view",
         free: false,
         pro: true,

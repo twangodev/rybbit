@@ -5,6 +5,10 @@ set -e
 
 echo "Updating to the latest version..."
 
+# Stash any local changes
+echo "Stashing local changes, if any..."
+git stash
+
 # Pull latest changes from git repository
 echo "Pulling latest code..."
 git pull

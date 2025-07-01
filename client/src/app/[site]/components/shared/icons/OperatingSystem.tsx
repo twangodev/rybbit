@@ -24,19 +24,24 @@ const OS_TO_LOGO: Record<string, string> = {
   Xbox: "Xbox.svg",
 };
 
-export function OperatingSystem({ os = "" }: { os?: string }) {
+export function OperatingSystem({
+  os = "",
+  size = 16,
+}: {
+  os?: string;
+  size?: number;
+}) {
   return (
     <>
       {OS_TO_LOGO[os] ? (
         <Image
           src={`/operating-systems/${OS_TO_LOGO[os]}`}
           alt={os || "Other"}
-          className="w-4 h-4"
-          width={16}
-          height={16}
+          width={size}
+          height={size}
         />
       ) : (
-        <Compass width={16} />
+        <Compass width={size} height={size} />
       )}
     </>
   );

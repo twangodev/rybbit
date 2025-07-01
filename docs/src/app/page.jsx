@@ -122,7 +122,7 @@ export default function IndexPage() {
             </button>
           </Link>
           <Link
-            href="https://demo.rybbit.io/1"
+            href="https://demo.rybbit.io/21"
             className="w-full sm:w-auto"
             data-rybbit-event="demo"
           >
@@ -153,7 +153,7 @@ export default function IndexPage() {
           <div className="relative z-10 rounded-lg overflow-hidden border-4 border-neutral-100/5 shadow-2xl shadow-emerald-900/10">
             {/* Remove mobile message and show iframe on all devices */}
             <iframe
-              src="https://demo.rybbit.io/1"
+              src="https://demo.rybbit.io/21"
               width="1300"
               height="750"
               className="w-full h-[600px] md:h-[700px] lg:h-[750px]"
@@ -316,7 +316,7 @@ export default function IndexPage() {
                     <p>
                       You can see for yourself by checking out our{" "}
                       <Link
-                        href="https://demo.rybbit.io/1"
+                        href="https://demo.rybbit.io/21"
                         className="text-emerald-400 hover:text-emerald-300"
                       >
                         demo site

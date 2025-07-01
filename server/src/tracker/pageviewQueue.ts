@@ -3,7 +3,7 @@ import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { getLocation } from "../db/geolocation/geolocation.js";
 import { getDeviceType } from "../utils.js";
 import { getChannel } from "./getChannel.js";
-import { clearSelfReferrer, getAllUrlParams } from "./trackingUtils.js";
+import { clearSelfReferrer, getAllUrlParams } from "./utils.js";
 import { TrackingPayload } from "./types.js";
 
 type TotalPayload = TrackingPayload & {

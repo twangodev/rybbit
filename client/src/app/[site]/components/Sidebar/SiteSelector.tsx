@@ -24,6 +24,65 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
   const router = useRouter();
   const currentSiteId = Number(pathname.split("/")[1]);
 
+  const { user } = userStore();
+
+  if (
+    typeof window !== "undefined" &&
+    globalThis.location.hostname === "demo.rybbit.io"
+  ) {
+    return (
+      <PopoverContent align="start" className="w-52 p-2">
+        <div className="max-h-96 overflow-y-auto">
+          {[
+            {
+              siteId: 21,
+              domain: "rybbit.io",
+            },
+            {
+              siteId: 1,
+              domain: "tomato.gg",
+            },
+          ].map((site) => {
+            const isSelected = site.siteId === currentSiteId;
+            return (
+              <div
+                key={site.siteId}
+                onClick={() => {
+                  if (isSelected) {
+                    onSiteSelect(); // Close popover even if same site
+                    return;
+                  }
+                  resetStore();
+                  setSite(site.siteId.toString());
+                  router.push(`/${site.siteId}`);
+                  onSiteSelect(); // Close popover immediately
+                }}
+                className={cn(
+                  "flex items-center justify-between p-2 cursor-pointer hover:bg-neutral-800/50 transition-colors rounded-md border-b border-neutral-800 last:border-b-0",
+                  isSelected && "bg-neutral-800"
+                )}
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <Favicon
+                    domain={site.domain}
+                    className="w-4 h-4 flex-shrink-0"
+                  />
+                  <div className="text-sm text-white truncate">
+                    {site.domain}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </PopoverContent>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
   return (
     <PopoverContent align="start" className="w-80 p-2">
       <div className="max-h-96 overflow-y-auto">
@@ -95,7 +154,6 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
 }
 
 export function SiteSelector() {
-  const { user } = userStore();
   const { site: currentSite } = useStore();
   const { data: site } = useGetSite(currentSite);
   const [open, setOpen] = useState(false);
@@ -119,7 +177,7 @@ export function SiteSelector() {
           </button>
         )}
       </PopoverTrigger>
-      {user && <SiteSelectorContent onSiteSelect={() => setOpen(false)} />}
+      <SiteSelectorContent onSiteSelect={() => setOpen(false)} />
     </Popover>
   );
 }

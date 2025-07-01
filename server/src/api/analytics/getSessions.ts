@@ -17,7 +17,11 @@ export type GetSessionsResponse = {
   language: string;
   device_type: string;
   browser: string;
+  browser_version: string;
   operating_system: string;
+  operating_system_version: string;
+  screen_width: number;
+  screen_height: number;
   referrer: string;
   channel: string;
   utm_source: string;
@@ -69,7 +73,9 @@ export async function getSessions(
           argMax(language, timestamp) AS language,
           argMax(device_type, timestamp) AS device_type,
           argMax(browser, timestamp) AS browser,
+          argMax(browser_version, timestamp) AS browser_version,
           argMax(operating_system, timestamp) AS operating_system,
+          argMax(operating_system_version, timestamp) AS operating_system_version,
           argMax(screen_width, timestamp) AS screen_width,
           argMax(screen_height, timestamp) AS screen_height,
           argMin(referrer, timestamp) AS referrer,

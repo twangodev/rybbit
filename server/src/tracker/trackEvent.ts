@@ -1,21 +1,13 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { z, ZodError } from "zod";
 import { isbot } from "isbot";
-import {
-  clearSelfReferrer,
-  createBasePayload,
-  getExistingSession,
-  isSiteOverLimit,
-  TotalTrackingPayload,
-} from "./trackingUtils.js";
-import { db } from "../db/postgres/postgres.js";
-import { activeSessions } from "../db/postgres/schema.js";
-import { eq } from "drizzle-orm";
-import { getDeviceType, normalizeOrigin } from "../utils.js";
-import { pageviewQueue } from "./pageviewQueue.js";
-import { siteConfig } from "../lib/siteConfig.js";
-import { DISABLE_ORIGIN_CHECK } from "./const.js";
+import { z, ZodError } from "zod";
 import { apiKeyRateLimiter } from "../lib/rateLimiter.js";
+import { siteConfig } from "../lib/siteConfig.js";
+import { sessionsService } from "../services/sessions/sessionsService.js";
+import { normalizeOrigin } from "../utils.js";
+import { DISABLE_ORIGIN_CHECK } from "./const.js";
+import { createBasePayload, isSiteOverLimit } from "./utils.js";
+import { pageviewQueue } from "./pageviewQueue.js";
 
 // Define Zod schema for validation
 export const trackingPayloadSchema = z.discriminatedUnion("type", [
@@ -92,69 +84,76 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
       ip_address: z.string().ip().optional(), // Custom IP for geolocation
       user_agent: z.string().max(512).optional(), // Custom user agent
       // Performance metrics (can be null if not collected)
-      lcp: z.number().positive().nullable().optional(),
+      lcp: z.number().min(0).nullable().optional(),
       cls: z.number().min(0).nullable().optional(),
-      inp: z.number().positive().nullable().optional(),
-      fcp: z.number().positive().nullable().optional(),
-      ttfb: z.number().positive().nullable().optional(),
+      inp: z.number().min(0).nullable().optional(),
+      fcp: z.number().min(0).nullable().optional(),
+      ttfb: z.number().min(0).nullable().optional(),
+    })
+    .strict(),
+  z
+    .object({
+      type: z.literal("error"),
+      site_id: z.string().min(1),
+      hostname: z.string().max(253).optional(),
+      pathname: z.string().max(2048).optional(),
+      querystring: z.string().max(2048).optional(),
+      screenWidth: z.number().int().positive().optional(),
+      screenHeight: z.number().int().positive().optional(),
+      language: z.string().max(35).optional(),
+      page_title: z.string().max(512).optional(),
+      referrer: z.string().max(2048).optional(),
+      event_name: z.string().min(1).max(256), // Error type (TypeError, ReferenceError, etc.)
+      properties: z
+        .string()
+        .max(4096) // Larger limit for error details
+        .refine(
+          (val) => {
+            try {
+              const parsed = JSON.parse(val);
+              // Validate error-specific properties
+              if (typeof parsed.message !== "string") return false;
+              if (parsed.stack && typeof parsed.stack !== "string")
+                return false;
+
+              // Support both camelCase and lowercase for backwards compatibility
+              if (parsed.fileName && typeof parsed.fileName !== "string")
+                return false;
+
+              if (parsed.lineNumber && typeof parsed.lineNumber !== "number")
+                return false;
+
+              if (
+                parsed.columnNumber &&
+                typeof parsed.columnNumber !== "number"
+              )
+                return false;
+
+              // Apply truncation limits
+              if (parsed.message && parsed.message.length > 500) {
+                parsed.message = parsed.message.substring(0, 500);
+              }
+              if (parsed.stack && parsed.stack.length > 2000) {
+                parsed.stack = parsed.stack.substring(0, 2000);
+              }
+
+              return true;
+            } catch (e) {
+              return false;
+            }
+          },
+          {
+            message:
+              "Properties must be valid JSON with error fields (message, stack, fileName, lineNumber, columnNumber)",
+          }
+        ),
+      user_id: z.string().max(255).optional(),
+      api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
+      ip_address: z.string().ip().optional(), // Custom IP for geolocation
+      user_agent: z.string().max(512).optional(), // Custom user agent
     })
     .strict(),
 ]);
-
-// Update session for both pageviews and events
-async function updateSession(
-  payload: TotalTrackingPayload,
-  existingSession: any | null,
-  isPageview: boolean = true
-): Promise<void> {
-  if (existingSession) {
-    // Update session with Drizzle
-    const updateData: any = {
-      lastActivity: new Date(payload.timestamp),
-    };
-
-    // Only increment pageviews count for actual pageviews
-    if (isPageview) {
-      updateData.pageviews = (existingSession.pageviews || 0) + 1;
-    }
-
-    await db
-      .update(activeSessions)
-      .set(updateData)
-      .where(eq(activeSessions.userId, existingSession.userId));
-    return;
-  }
-
-  // Insert new session with Drizzle
-  const insertData = {
-    sessionId: payload.sessionId,
-    siteId:
-      typeof payload.site_id === "string"
-        ? parseInt(payload.site_id, 10)
-        : payload.site_id,
-    userId: payload.userId,
-    hostname: payload.hostname || null,
-    startTime: new Date(payload.timestamp || Date.now()),
-    lastActivity: new Date(payload.timestamp || Date.now()),
-    pageviews: isPageview ? 1 : 0,
-    entryPage: payload.pathname || null,
-    deviceType: getDeviceType(
-      payload.screenWidth,
-      payload.screenHeight,
-      payload.ua
-    ),
-    screenWidth: payload.screenWidth || null,
-    screenHeight: payload.screenHeight || null,
-    browser: payload.ua.browser.name || null,
-    operatingSystem: payload.ua.os.name || null,
-    language: payload.language || null,
-    referrer: payload.hostname
-      ? clearSelfReferrer(payload.referrer || "", payload.hostname)
-      : payload.referrer || null,
-  };
-
-  await db.insert(activeSessions).values(insertData);
-}
 
 /**
  * Validates API key for the site
@@ -306,7 +305,8 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
         );
         return reply.status(429).send({
           success: false,
-          error: "Rate limit exceeded. Maximum 20 requests per second per API key.",
+          error:
+            "Rate limit exceeded. Maximum 20 requests per second per API key.",
         });
       }
     }
@@ -369,24 +369,14 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       validatedPayload.type,
       validatedPayload // Add validated payload back
     );
-
-    // Get existing session
-    const existingSession = await getExistingSession(
-      payload.userId,
-      payload.site_id
-    );
-
-    if (existingSession) {
-      payload.sessionId = existingSession.sessionId;
-    }
+    // Update session
+    const { sessionId } = await sessionsService.updateSession({
+      userId: payload.userId,
+      site_id: payload.site_id,
+    });
 
     // Add to queue for processing
-    pageviewQueue.add(payload);
-    await updateSession(
-      payload,
-      existingSession,
-      validatedPayload.type === "pageview"
-    );
+    await pageviewQueue.add({ ...payload, sessionId });
 
     return reply.status(200).send({
       success: true,

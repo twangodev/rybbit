@@ -3,7 +3,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import Avatar from "boring-avatars";
 import {
   ArrowRight,
   Clock,
@@ -30,6 +29,8 @@ import { cn, getCountryName, getLanguageName } from "../../lib/utils";
 import { formatDuration } from "../../lib/dateTimeUtils";
 import { Button } from "../ui/button";
 import { hour12 } from "../../lib/dateTimeUtils";
+import { useGetRegionName } from "../../lib/geo";
+import { Avatar } from "../Avatar";
 
 // Component to display a single pageview or event
 function PageviewItem({
@@ -255,6 +256,8 @@ export function SessionDetails({ session, userId }: SessionDetailsProps) {
     return allEvents.filter((p: SessionEvent) => p.type !== "pageview").length;
   }, [allEvents]);
 
+  const { getRegionName } = useGetRegionName();
+
   return (
     <div className="px-4 bg-neutral-900 border-t border-neutral-800">
       {isLoading ? (
@@ -370,18 +373,7 @@ export function SessionDetails({ session, userId }: SessionDetailsProps) {
                   {sessionDetails?.user_id && (
                     <div className="flex items-center gap-2">
                       <div className="h-7 w-7 bg-neutral-800 rounded-full flex items-center justify-center flex-shrink-0">
-                        <Avatar
-                          size={24}
-                          name={sessionDetails.user_id}
-                          variant="marble"
-                          colors={[
-                            "#92A1C6",
-                            "#146A7C",
-                            "#F0AB3D",
-                            "#C271B4",
-                            "#C20D90",
-                          ]}
-                        />
+                        <Avatar size={24} name={sessionDetails.user_id} />
                       </div>
                       <div>
                         <div className="text-sm text-gray-400 flex items-center">
@@ -425,7 +417,7 @@ export function SessionDetails({ session, userId }: SessionDetailsProps) {
                     {sessionDetails?.country && (
                       <div className="flex items-center gap-2 text-sm">
                         <span className="font-medium text-gray-300 min-w-[80px]">
-                          Location:
+                          Country:
                         </span>
                         <div className="flex items-center gap-1 text-gray-400">
                           <CountryFlag country={sessionDetails.country} />
@@ -434,6 +426,27 @@ export function SessionDetails({ session, userId }: SessionDetailsProps) {
                             <span>({sessionDetails.region})</span>
                           )}
                         </div>
+                      </div>
+                    )}
+                    {sessionDetails?.region &&
+                      getRegionName(sessionDetails.region) && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="font-medium text-gray-300 min-w-[80px]">
+                            Region:
+                          </span>
+                          <span className="text-gray-400">
+                            {getRegionName(sessionDetails.region)}
+                          </span>
+                        </div>
+                      )}
+                    {sessionDetails?.city && (
+                      <div className="flex items-center gap-2 text-sm">
+                        <span className="font-medium text-gray-300 min-w-[80px]">
+                          City:
+                        </span>
+                        <span className="text-gray-400">
+                          {sessionDetails.city}
+                        </span>
                       </div>
                     )}
                   </div>

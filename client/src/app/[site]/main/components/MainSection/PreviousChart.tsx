@@ -9,16 +9,7 @@ import { Time } from "../../../../../components/DateSelector/types";
 import { TimeBucket } from "@rybbit/shared";
 
 const getMin = (time: Time, bucket: TimeBucket) => {
-  if (time.mode === "past-minutes") {
-    if (bucket === "hour") {
-      return DateTime.now()
-        .setZone("UTC")
-        .minus({ minutes: time.pastMinutesStart * 2 })
-        .startOf("hour")
-        .toJSDate();
-    }
-    undefined;
-  } else if (time.mode === "day") {
+  if (time.mode === "day") {
     const dayDate = DateTime.fromISO(time.day).startOf("day");
     return dayDate.toJSDate();
   } else if (time.mode === "week") {
@@ -31,6 +22,16 @@ const getMin = (time: Time, bucket: TimeBucket) => {
     const yearDate = DateTime.fromISO(time.year).startOf("year");
     return yearDate.toJSDate();
   }
+  // else if (time.mode === "past-minutes") {
+  //   if (bucket === "hour") {
+  //     return DateTime.now()
+  //       .setZone("UTC")
+  //       .minus({ minutes: time.pastMinutesStart * 2 })
+  //       .startOf("hour")
+  //       .toJSDate();
+  //   }
+  //   undefined;
+  // }
   return undefined;
 };
 
@@ -80,7 +81,7 @@ export function PreviousChart({
         precision: "second",
         useUTC: true,
         min,
-        max: maxPastMinutes,
+        // max: maxPastMinutes,
       }}
       yScale={{
         type: "linear",

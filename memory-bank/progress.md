@@ -255,3 +255,20 @@ This file tracks the project's progress using a task list format.
 - **Files Modified**:
   - [`docs/src/content/api.mdx`](docs/src/content/api.mdx:78) - API parameter documentation and all mobile platform examples
 - **Impact**: Improved consistency across platform examples, modernized deprecated APIs, and clarified pixel type expectations for mobile developers
+
+[2025-06-20 16:16:23] - **COMPLETED: Docker Cleanup Documentation**
+
+- **Task**: Add Docker cleanup section to troubleshooting documentation
+- **Status**: ✅ COMPLETED
+- **Work Done**:
+  - Added comprehensive "Full Docker Cleanup" section to [`docs/src/content/troubleshooting.mdx`](docs/src/content/troubleshooting.mdx:1)
+  - Included all requested Docker cleanup commands (containers, images, volumes, networks)
+  - Added warning callout about destructive nature of cleanup commands
+  - Provided alternative Rybbit-specific cleanup options using docker-compose
+  - Added recovery instructions for restarting after cleanup
+- **Features Added**:
+  - Step-by-step cleanup process with explanations
+  - System-wide vs project-specific cleanup options
+  - Clear warnings about data loss
+  - Post-cleanup recovery steps
+- **Impact**: Users experiencing Docker issues now have clear, comprehensive cleanup procedures with appropriate warnings and recovery guidance

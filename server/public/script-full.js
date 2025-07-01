@@ -72,7 +72,9 @@
     }
     const siteId = scriptTag.getAttribute("data-site-id") || scriptTag.getAttribute("site-id");
     if (!siteId || isNaN(Number(siteId))) {
-      console.error("Please provide a valid site ID using the data-site-id attribute");
+      console.error(
+        "Please provide a valid site ID using the data-site-id attribute"
+      );
       return null;
     }
     const debounceDuration = scriptTag.getAttribute("data-debounce") ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce"))) : 500;
@@ -85,6 +87,16 @@
       []
     );
     const apiKey = scriptTag.getAttribute("data-api-key") || void 0;
+    const sessionReplayBatchSize = scriptTag.getAttribute(
+      "data-replay-batch-size"
+    ) ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 3;
+    const sessionReplayBatchInterval = scriptTag.getAttribute(
+      "data-replay-batch-interval"
+    ) ? Math.max(
+      1e3,
+      parseInt(scriptTag.getAttribute("data-replay-batch-interval"))
+    ) : 2e3;
+    console.info(scriptTag);
     return {
       analyticsHost,
       siteId,
@@ -94,11 +106,176 @@
       trackQuerystring: scriptTag.getAttribute("data-track-query") !== "false",
       trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
       enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
+      trackErrors: scriptTag.getAttribute("data-track-errors") === "true",
+      enableSessionReplay: scriptTag.getAttribute("data-session-replay") === "true",
+      sessionReplayBatchSize,
+      sessionReplayBatchInterval,
       skipPatterns,
       maskPatterns,
       apiKey
     };
   }
+
+  // sessionReplay.ts
+  var SessionReplayRecorder = class {
+    constructor(config, userId, sendBatch) {
+      this.isRecording = false;
+      this.eventBuffer = [];
+      this.config = config;
+      this.userId = userId;
+      this.sendBatch = sendBatch;
+    }
+    async initialize() {
+      if (!this.config.enableSessionReplay) {
+        return;
+      }
+      if (!window.rrweb) {
+        await this.loadRrweb();
+      }
+      if (window.rrweb) {
+        this.startRecording();
+      }
+    }
+    async loadRrweb() {
+      return new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = `${this.config.analyticsHost}/replay.js`;
+        script.async = false;
+        script.onload = () => {
+          resolve();
+        };
+        script.onerror = () => reject(new Error("Failed to load rrweb"));
+        document.head.appendChild(script);
+      });
+    }
+    startRecording() {
+      if (this.isRecording || !window.rrweb || !this.config.enableSessionReplay) {
+        return;
+      }
+      try {
+        this.stopRecordingFn = window.rrweb.record({
+          emit: (event) => {
+            this.addEvent({
+              type: event.type,
+              data: event.data,
+              timestamp: event.timestamp || Date.now()
+            });
+          },
+          recordCanvas: true,
+          // Record canvas elements
+          collectFonts: true,
+          // Collect font info for better replay
+          checkoutEveryNms: 3e4,
+          // Checkout every 30 seconds
+          checkoutEveryNth: 200,
+          // Checkout every 200 events
+          maskAllInputs: true,
+          // Mask all input values for privacy
+          maskInputOptions: {
+            password: true,
+            email: true
+          },
+          slimDOMOptions: {
+            script: false,
+            comment: true,
+            headFavicon: true,
+            headWhitespace: true,
+            headMetaDescKeywords: true,
+            headMetaSocial: true,
+            headMetaRobots: true,
+            headMetaHttpEquiv: true,
+            headMetaAuthorship: true,
+            headMetaVerification: true
+          },
+          sampling: {
+            // Optional: reduce recording frequency to save bandwidth
+            mousemove: false,
+            // Don't record every mouse move
+            mouseInteraction: true,
+            scroll: 150,
+            // Sample scroll events every 150ms
+            input: "last"
+            // Only record the final input value
+          }
+        });
+        this.isRecording = true;
+        this.setupBatchTimer();
+      } catch (error) {
+      }
+    }
+    stopRecording() {
+      if (!this.isRecording) {
+        return;
+      }
+      if (this.stopRecordingFn) {
+        this.stopRecordingFn();
+      }
+      this.isRecording = false;
+      this.clearBatchTimer();
+      if (this.eventBuffer.length > 0) {
+        this.flushEvents();
+      }
+    }
+    isActive() {
+      return this.isRecording;
+    }
+    addEvent(event) {
+      this.eventBuffer.push(event);
+      if (this.eventBuffer.length >= this.config.sessionReplayBatchSize) {
+        this.flushEvents();
+      }
+    }
+    setupBatchTimer() {
+      this.clearBatchTimer();
+      this.batchTimer = window.setInterval(() => {
+        if (this.eventBuffer.length > 0) {
+          this.flushEvents();
+        }
+      }, this.config.sessionReplayBatchInterval);
+    }
+    clearBatchTimer() {
+      if (this.batchTimer) {
+        clearInterval(this.batchTimer);
+        this.batchTimer = void 0;
+      }
+    }
+    async flushEvents() {
+      if (this.eventBuffer.length === 0) {
+        return;
+      }
+      const events = [...this.eventBuffer];
+      this.eventBuffer = [];
+      const batch = {
+        userId: this.userId,
+        events,
+        metadata: {
+          pageUrl: window.location.href,
+          viewportWidth: screen.width,
+          viewportHeight: screen.height,
+          language: navigator.language
+        }
+      };
+      try {
+        await this.sendBatch(batch);
+      } catch (error) {
+        this.eventBuffer.unshift(...events);
+      }
+    }
+    // Update user ID when it changes
+    updateUserId(userId) {
+      this.userId = userId;
+    }
+    // Handle page navigation for SPAs
+    onPageChange() {
+      if (this.isRecording) {
+        this.flushEvents();
+      }
+    }
+    // Cleanup on page unload
+    cleanup() {
+      this.stopRecording();
+    }
+  };
 
   // tracking.ts
   var Tracker = class {
@@ -106,6 +283,9 @@
       this.customUserId = null;
       this.config = config;
       this.loadUserId();
+      if (config.enableSessionReplay) {
+        this.initializeSessionReplay();
+      }
     }
     loadUserId() {
       try {
@@ -114,6 +294,38 @@
           this.customUserId = storedUserId;
         }
       } catch (e2) {
+      }
+    }
+    async initializeSessionReplay() {
+      try {
+        this.sessionReplayRecorder = new SessionReplayRecorder(
+          this.config,
+          this.customUserId || "",
+          (batch) => this.sendSessionReplayBatch(batch)
+        );
+        await this.sessionReplayRecorder.initialize();
+      } catch (error) {
+        console.error("Failed to initialize session replay:", error);
+      }
+    }
+    async sendSessionReplayBatch(batch) {
+      try {
+        await fetch(
+          `${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(batch),
+            mode: "cors",
+            keepalive: false
+            // Disable keepalive for large session replay requests
+          }
+        );
+      } catch (error) {
+        console.error("Failed to send session replay batch:", error);
+        throw error;
       }
     }
     createBasePayload() {
@@ -134,8 +346,8 @@
         hostname: url.hostname,
         pathname,
         querystring: this.config.trackQuerystring ? url.search : "",
-        screenWidth: window.innerWidth,
-        screenHeight: window.innerHeight,
+        screenWidth: screen.width,
+        screenHeight: screen.height,
         language: navigator.language,
         page_title: document.title,
         referrer: document.referrer
@@ -165,7 +377,9 @@
     }
     track(eventType, eventName = "", properties = {}) {
       if (eventType === "custom_event" && (!eventName || typeof eventName !== "string")) {
-        console.error("Event name is required and must be a string for custom events");
+        console.error(
+          "Event name is required and must be a string for custom events"
+        );
         return;
       }
       const basePayload = this.createBasePayload();
@@ -176,7 +390,7 @@
         ...basePayload,
         type: eventType,
         event_name: eventName,
-        properties: eventType === "custom_event" || eventType === "outbound" ? JSON.stringify(properties) : void 0
+        properties: eventType === "custom_event" || eventType === "outbound" || eventType === "error" ? JSON.stringify(properties) : void 0
       };
       this.sendTrackingData(payload);
     }
@@ -202,6 +416,51 @@
       };
       this.sendTrackingData(payload);
     }
+    trackError(error, additionalInfo = {}) {
+      const currentOrigin = window.location.origin;
+      const filename = additionalInfo.filename || "";
+      const errorStack = error.stack || "";
+      if (filename) {
+        try {
+          const fileUrl = new URL(filename);
+          if (fileUrl.origin !== currentOrigin) {
+            return;
+          }
+        } catch (e2) {
+        }
+      } else if (errorStack) {
+        if (!errorStack.includes(currentOrigin)) {
+          return;
+        }
+      }
+      const errorProperties = {
+        message: error.message?.substring(0, 500) || "Unknown error",
+        // Truncate to 500 chars
+        stack: errorStack.substring(0, 2e3) || ""
+        // Truncate to 2000 chars
+      };
+      if (filename) {
+        errorProperties.fileName = filename;
+      }
+      if (additionalInfo.lineno) {
+        const lineNum = typeof additionalInfo.lineno === "string" ? parseInt(additionalInfo.lineno, 10) : additionalInfo.lineno;
+        if (lineNum && lineNum !== 0) {
+          errorProperties.lineNumber = lineNum;
+        }
+      }
+      if (additionalInfo.colno) {
+        const colNum = typeof additionalInfo.colno === "string" ? parseInt(additionalInfo.colno, 10) : additionalInfo.colno;
+        if (colNum && colNum !== 0) {
+          errorProperties.columnNumber = colNum;
+        }
+      }
+      for (const key in additionalInfo) {
+        if (!["lineno", "colno"].includes(key) && additionalInfo[key] !== void 0) {
+          errorProperties[key] = additionalInfo[key];
+        }
+      }
+      this.track("error", error.name || "Error", errorProperties);
+    }
     identify(userId) {
       if (typeof userId !== "string" || userId.trim() === "") {
         console.error("User ID must be a non-empty string");
@@ -213,6 +472,9 @@
       } catch (e2) {
         console.warn("Could not persist user ID to localStorage");
       }
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.updateUserId(this.customUserId);
+      }
     }
     clearUserId() {
       this.customUserId = null;
@@ -223,6 +485,34 @@
     }
     getUserId() {
       return this.customUserId;
+    }
+    // Session Replay methods
+    startSessionReplay() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.startRecording();
+      } else {
+        console.warn("Session replay not initialized");
+      }
+    }
+    stopSessionReplay() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.stopRecording();
+      }
+    }
+    isSessionReplayActive() {
+      return this.sessionReplayRecorder?.isActive() ?? false;
+    }
+    // Handle page changes for SPA
+    onPageChange() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.onPageChange();
+      }
+    }
+    // Cleanup
+    cleanup() {
+      if (this.sessionReplayRecorder) {
+        this.sessionReplayRecorder.cleanup();
+      }
     }
   };
 
@@ -497,7 +787,9 @@
       if (this.sent) return;
       const metricName = metric.name.toLowerCase();
       this.data[metricName] = metric.value;
-      const allCollected = Object.values(this.data).every((value) => value !== null);
+      const allCollected = Object.values(this.data).every(
+        (value) => value !== null
+      );
       if (allCollected) {
         this.sendData();
       }
@@ -537,7 +829,12 @@
         },
         clearUserId: () => {
         },
-        getUserId: () => null
+        getUserId: () => null,
+        startSessionReplay: () => {
+        },
+        stopSessionReplay: () => {
+        },
+        isSessionReplayActive: () => false
       };
       return;
     }
@@ -547,10 +844,27 @@
     }
     const tracker = new Tracker(config);
     if (config.enableWebVitals) {
-      const webVitalsCollector = new WebVitalsCollector((vitals) => {
-        tracker.trackWebVitals(vitals);
-      });
+      const webVitalsCollector = new WebVitalsCollector(
+        (vitals) => {
+          tracker.trackWebVitals(vitals);
+        }
+      );
       webVitalsCollector.initialize();
+    }
+    if (config.trackErrors) {
+      window.addEventListener("error", (event) => {
+        tracker.trackError(event.error || new Error(event.message), {
+          filename: event.filename,
+          lineno: event.lineno,
+          colno: event.colno
+        });
+      });
+      window.addEventListener("unhandledrejection", (event) => {
+        const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+        tracker.trackError(error, {
+          type: "unhandledrejection"
+        });
+      });
     }
     const trackPageview = () => tracker.trackPageview();
     const debouncedTrackPageview = config.debounceDuration > 0 ? debounce(trackPageview, config.debounceDuration) : trackPageview;
@@ -575,7 +889,9 @@
           target = target.parentElement;
         }
         if (config.trackOutbound) {
-          const link = e2.target.closest("a");
+          const link = e2.target.closest(
+            "a"
+          );
           if (link?.href && isOutboundLink(link.href)) {
             tracker.trackOutbound(
               link.href,
@@ -591,13 +907,21 @@
         history.pushState = function(...args) {
           originalPushState.apply(this, args);
           debouncedTrackPageview();
+          tracker.onPageChange();
         };
         history.replaceState = function(...args) {
           originalReplaceState.apply(this, args);
           debouncedTrackPageview();
+          tracker.onPageChange();
         };
-        window.addEventListener("popstate", debouncedTrackPageview);
-        window.addEventListener("hashchange", debouncedTrackPageview);
+        window.addEventListener("popstate", () => {
+          debouncedTrackPageview();
+          tracker.onPageChange();
+        });
+        window.addEventListener("hashchange", () => {
+          debouncedTrackPageview();
+          tracker.onPageChange();
+        });
       }
     }
     window.rybbit = {
@@ -606,9 +930,15 @@
       trackOutbound: (url, text = "", target = "_self") => tracker.trackOutbound(url, text, target),
       identify: (userId) => tracker.identify(userId),
       clearUserId: () => tracker.clearUserId(),
-      getUserId: () => tracker.getUserId()
+      getUserId: () => tracker.getUserId(),
+      startSessionReplay: () => tracker.startSessionReplay(),
+      stopSessionReplay: () => tracker.stopSessionReplay(),
+      isSessionReplayActive: () => tracker.isSessionReplayActive()
     };
     setupEventListeners();
+    window.addEventListener("beforeunload", () => {
+      tracker.cleanup();
+    });
     if (config.autoTrackPageview) {
       tracker.trackPageview();
     }

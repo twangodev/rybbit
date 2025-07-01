@@ -1,6 +1,7 @@
 "use client";
 import { Funnel, Target } from "@phosphor-icons/react/dist/ssr";
 import {
+  AlertTriangle,
   Earth,
   Gauge,
   LayoutDashboard,
@@ -12,6 +13,7 @@ import {
   Split,
   User,
   File,
+  Play,
 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -46,7 +48,7 @@ export function Sidebar() {
       <div className="p-3 border-b  border-neutral-800 flex flex-col gap-2">
         <SiteSelector />
       </div>
-      <div className="flex flex-col space-y-1 p-3 ">
+      <div className="flex flex-col p-3 ">
         <LiveUserCount />
         <SidebarLink
           label="Main"
@@ -60,6 +62,14 @@ export function Sidebar() {
           href={getTabPath("realtime")}
           icon={<Earth className="w-4 h-4" />}
         />
+        <div className="hidden md:block">
+          <SidebarLink
+            label="Replay"
+            active={isActiveTab("replay")}
+            href={getTabPath("replay")}
+            icon={<Play className="w-4 h-4" />}
+          />
+        </div>
         {IS_CLOUD && (
           <SidebarLink
             label="Pages"
@@ -123,6 +133,12 @@ export function Sidebar() {
           active={isActiveTab("events")}
           href={getTabPath("events")}
           icon={<MousePointerClick className="w-4 h-4" />}
+        />
+        <SidebarLink
+          label="Errors"
+          active={isActiveTab("errors")}
+          href={getTabPath("errors")}
+          icon={<AlertTriangle className="w-4 h-4" />}
         />
         {/* <SidebarLink
           label="Reports"

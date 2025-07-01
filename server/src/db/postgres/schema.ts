@@ -83,19 +83,8 @@ export const activeSessions = pgTable("active_sessions", {
   sessionId: text("session_id").primaryKey().notNull(),
   siteId: integer("site_id"),
   userId: text("user_id"),
-  hostname: text("hostname"),
   startTime: timestamp("start_time").defaultNow(),
   lastActivity: timestamp("last_activity").defaultNow(),
-  pageviews: integer("pageviews").default(0),
-  entryPage: text("entry_page"),
-  exitPage: text("exit_page"),
-  deviceType: text("device_type"),
-  screenWidth: integer("screen_width"),
-  screenHeight: integer("screen_height"),
-  browser: text("browser"),
-  operatingSystem: text("operating_system"),
-  language: text("language"),
-  referrer: text("referrer"),
 });
 
 export const funnels = pgTable(

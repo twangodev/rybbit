@@ -1,8 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { WebVitalsCollector } from './webVitals.js';
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { WebVitalsCollector } from "./webVitals.js";
 
 // Mock web-vitals module
-vi.mock('web-vitals', () => ({
+vi.mock("web-vitals", () => ({
   onLCP: vi.fn(),
   onCLS: vi.fn(),
   onINP: vi.fn(),
@@ -10,9 +10,9 @@ vi.mock('web-vitals', () => ({
   onTTFB: vi.fn(),
 }));
 
-import { onLCP, onCLS, onINP, onFCP, onTTFB } from 'web-vitals';
+import { onLCP, onCLS, onINP, onFCP, onTTFB } from "web-vitals";
 
-describe('WebVitalsCollector', () => {
+describe("WebVitalsCollector", () => {
   let collector: WebVitalsCollector;
   let onReadyCallback: ReturnType<typeof vi.fn>;
   let mockMetricCallbacks: Map<Function, Function>;
@@ -46,7 +46,7 @@ describe('WebVitalsCollector', () => {
     vi.restoreAllMocks();
   });
 
-  it('should initialize and register all metric callbacks', () => {
+  it("should initialize and register all metric callbacks", () => {
     collector.initialize();
 
     expect(onLCP).toHaveBeenCalled();
@@ -56,27 +56,27 @@ describe('WebVitalsCollector', () => {
     expect(onTTFB).toHaveBeenCalled();
   });
 
-  it('should collect individual metrics', () => {
+  it("should collect individual metrics", () => {
     collector.initialize();
 
     // Simulate LCP metric
     const lcpCallback = mockMetricCallbacks.get(onLCP)!;
-    lcpCallback({ name: 'LCP', value: 2500 });
+    lcpCallback({ name: "LCP", value: 2500 });
 
     const data = collector.getData();
     expect(data.lcp).toBe(2500);
     expect(data.cls).toBeNull();
   });
 
-  it('should trigger callback when all metrics are collected', () => {
+  it("should trigger callback when all metrics are collected", () => {
     collector.initialize();
 
     // Simulate all metrics
-    mockMetricCallbacks.get(onLCP)!({ name: 'LCP', value: 2500 });
-    mockMetricCallbacks.get(onCLS)!({ name: 'CLS', value: 0.1 });
-    mockMetricCallbacks.get(onINP)!({ name: 'INP', value: 200 });
-    mockMetricCallbacks.get(onFCP)!({ name: 'FCP', value: 1800 });
-    mockMetricCallbacks.get(onTTFB)!({ name: 'TTFB', value: 800 });
+    mockMetricCallbacks.get(onLCP)!({ name: "LCP", value: 2500 });
+    mockMetricCallbacks.get(onCLS)!({ name: "CLS", value: 0.1 });
+    mockMetricCallbacks.get(onINP)!({ name: "INP", value: 200 });
+    mockMetricCallbacks.get(onFCP)!({ name: "FCP", value: 1800 });
+    mockMetricCallbacks.get(onTTFB)!({ name: "TTFB", value: 800 });
 
     expect(onReadyCallback).toHaveBeenCalledWith({
       lcp: 2500,
@@ -87,29 +87,29 @@ describe('WebVitalsCollector', () => {
     });
   });
 
-  it('should only send data once', () => {
+  it("should only send data once", () => {
     collector.initialize();
 
     // Collect all metrics
-    mockMetricCallbacks.get(onLCP)!({ name: 'LCP', value: 2500 });
-    mockMetricCallbacks.get(onCLS)!({ name: 'CLS', value: 0.1 });
-    mockMetricCallbacks.get(onINP)!({ name: 'INP', value: 200 });
-    mockMetricCallbacks.get(onFCP)!({ name: 'FCP', value: 1800 });
-    mockMetricCallbacks.get(onTTFB)!({ name: 'TTFB', value: 800 });
+    mockMetricCallbacks.get(onLCP)!({ name: "LCP", value: 2500 });
+    mockMetricCallbacks.get(onCLS)!({ name: "CLS", value: 0.1 });
+    mockMetricCallbacks.get(onINP)!({ name: "INP", value: 200 });
+    mockMetricCallbacks.get(onFCP)!({ name: "FCP", value: 1800 });
+    mockMetricCallbacks.get(onTTFB)!({ name: "TTFB", value: 800 });
 
     // Try to send another metric
-    mockMetricCallbacks.get(onLCP)!({ name: 'LCP', value: 3000 });
+    mockMetricCallbacks.get(onLCP)!({ name: "LCP", value: 3000 });
 
     expect(onReadyCallback).toHaveBeenCalledTimes(1);
     expect(collector.getData().lcp).toBe(2500); // Original value
   });
 
-  it('should send data after timeout even if not all metrics collected', () => {
+  it("should send data after timeout even if not all metrics collected", () => {
     collector.initialize();
 
     // Only collect some metrics
-    mockMetricCallbacks.get(onLCP)!({ name: 'LCP', value: 2500 });
-    mockMetricCallbacks.get(onCLS)!({ name: 'CLS', value: 0.1 });
+    mockMetricCallbacks.get(onLCP)!({ name: "LCP", value: 2500 });
+    mockMetricCallbacks.get(onCLS)!({ name: "CLS", value: 0.1 });
 
     expect(onReadyCallback).not.toHaveBeenCalled();
 
@@ -125,14 +125,14 @@ describe('WebVitalsCollector', () => {
     });
   });
 
-  it('should send data on beforeunload event', () => {
+  it("should send data on beforeunload event", () => {
     collector.initialize();
 
     // Collect some metrics
-    mockMetricCallbacks.get(onLCP)!({ name: 'LCP', value: 2500 });
+    mockMetricCallbacks.get(onLCP)!({ name: "LCP", value: 2500 });
 
     // Trigger beforeunload
-    window.dispatchEvent(new Event('beforeunload'));
+    window.dispatchEvent(new Event("beforeunload"));
 
     expect(onReadyCallback).toHaveBeenCalledWith({
       lcp: 2500,
@@ -143,18 +143,18 @@ describe('WebVitalsCollector', () => {
     });
   });
 
-  it('should handle initialization errors gracefully', () => {
-    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    
+  it("should handle initialization errors gracefully", () => {
+    const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
     // Make onLCP throw an error
     vi.mocked(onLCP).mockImplementation(() => {
-      throw new Error('Test error');
+      throw new Error("Test error");
     });
 
     collector.initialize();
 
     expect(consoleSpy).toHaveBeenCalledWith(
-      'Error initializing web vitals tracking:',
+      "Error initializing web vitals tracking:",
       expect.any(Error)
     );
 

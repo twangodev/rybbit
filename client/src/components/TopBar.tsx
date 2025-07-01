@@ -6,7 +6,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "../lib/auth";
-import { IS_DEMO } from "../lib/const";
 import { Button } from "./ui/button";
 import {
   DropdownMenu,
@@ -70,14 +69,16 @@ export function TopBar() {
           </DropdownMenu>
         ) : isPending ? (
           <Skeleton className="w-20 h-4 mr-2" />
-        ) : IS_DEMO ? (
-          <Link href="https://app.rybbit.io/signup" passHref>
-            <Button variant="ghost" size="xs">
-              Sign up
-            </Button>
-          </Link>
         ) : (
-          <Link href="/signup" passHref>
+          <Link
+            href={
+              typeof window !== "undefined" &&
+              globalThis.location.hostname === "demo.rybbit.io"
+                ? "https://app.rybbit.io/signup"
+                : "/signup"
+            }
+            passHref
+          >
             <Button variant="ghost" size="xs">
               Sign up
             </Button>

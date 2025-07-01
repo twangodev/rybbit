@@ -9,7 +9,6 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import Avatar from "boring-avatars";
 import {
   ArrowDown,
   ArrowUp,
@@ -39,6 +38,7 @@ import { CountryFlag } from "../components/shared/icons/CountryFlag";
 import { OperatingSystem } from "../components/shared/icons/OperatingSystem";
 import { SubHeader } from "../components/SubHeader/SubHeader";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
+import { Avatar } from "../../../components/Avatar";
 
 // Set up column helper
 const columnHelper = createColumnHelper<UsersResponse>();
@@ -115,12 +115,7 @@ export default function UsersPage() {
       cell: (info) => (
         <Link href={`/${site}/user/${info.getValue()}`}>
           <div className=" truncate flex items-center gap-2 text-neutral-250 hover:text-neutral-100 hover:underline">
-            <Avatar
-              size={20}
-              name={info.getValue() as string}
-              variant="marble"
-              colors={["#92A1C6", "#146A7C", "#F0AB3D", "#C271B4", "#C20D90"]}
-            />
+            <Avatar size={20} name={info.getValue() as string} />
             {info.getValue().slice(0, 6)}
           </div>
         </Link>

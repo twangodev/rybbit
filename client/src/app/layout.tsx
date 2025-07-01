@@ -46,6 +46,9 @@ export default function RootLayout({
             src="https://demo.rybbit.io/api/script.js"
             data-site-id="22"
             strategy="afterInteractive"
+            data-web-vitals="true"
+            data-track-errors="true"
+            data-session-replay="true"
           />
         </>
       )}

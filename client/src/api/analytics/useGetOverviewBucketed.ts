@@ -47,19 +47,8 @@ export function useGetOverviewBucketed({
   const timeToUse = periodTime === "previous" ? previousTime : baseTime;
   const combinedFilters = [...globalFilters, ...dynamicFilters];
 
-  // For "previous" periods in past-minutes mode, we need to modify the time object
-  // to use doubled duration for the start and the original start as the end
-  const timeForQuery =
-    timeToUse.mode === "past-minutes" && periodTime === "previous"
-      ? {
-          ...timeToUse,
-          pastMinutesStart: timeToUse.pastMinutesStart * 2,
-          pastMinutesEnd: timeToUse.pastMinutesStart,
-        }
-      : timeToUse;
-
   // Use getQueryParams utility to handle conditional logic
-  const queryParams = getQueryParams(timeForQuery, {
+  const queryParams = getQueryParams(timeToUse, {
     timeZone,
     bucket,
     filters: combinedFilters,
@@ -67,16 +56,16 @@ export function useGetOverviewBucketed({
 
   // Generate appropriate query key based on whether we're using past minutes or regular time
   const queryKey =
-    timeForQuery.mode === "past-minutes"
+    timeToUse.mode === "past-minutes"
       ? [
           "overview-bucketed-past-minutes",
-          timeForQuery.pastMinutesStart,
-          timeForQuery.pastMinutesEnd,
+          timeToUse.pastMinutesStart,
+          timeToUse.pastMinutesEnd,
           site,
           bucket,
           combinedFilters,
         ]
-      : ["overview-bucketed", timeForQuery, bucket, site, combinedFilters];
+      : ["overview-bucketed", timeToUse, bucket, site, combinedFilters];
 
   return useQuery({
     queryKey,

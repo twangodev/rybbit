@@ -58,6 +58,67 @@ export const initializeClickhouse = async () => {
     `,
   });
 
+  // Create session replay tables
+  await clickhouse.exec({
+    query: `
+      CREATE TABLE IF NOT EXISTS session_replay_events (
+        site_id UInt16,
+        session_id String,
+        user_id String,
+        timestamp DateTime64(3),
+        event_type LowCardinality(String),
+        event_data String,
+        sequence_number UInt32,
+        event_size_bytes UInt32,
+        viewport_width Nullable(UInt16),
+        viewport_height Nullable(UInt16),
+        is_complete UInt8 DEFAULT 0
+      )
+      ENGINE = MergeTree()
+      PARTITION BY toYYYYMM(timestamp)
+      ORDER BY (site_id, session_id, sequence_number)
+      TTL toDateTime(timestamp) + INTERVAL 30 DAY
+      `,
+  });
+
+  await clickhouse.exec({
+    query: `
+      CREATE TABLE IF NOT EXISTS session_replay_metadata (
+        site_id UInt16,
+        session_id String,
+        user_id String,
+        start_time DateTime,
+        end_time Nullable(DateTime),
+        duration_ms Nullable(UInt32),
+        event_count UInt32,
+        compressed_size_bytes UInt32,
+        page_url String,
+        country LowCardinality(FixedString(2)),
+        region LowCardinality(String),
+        city String,
+        lat Float64,
+        lon Float64,
+        browser LowCardinality(String),
+        browser_version LowCardinality(String),
+        operating_system LowCardinality(String),
+        operating_system_version LowCardinality(String),
+        language LowCardinality(String),
+        screen_width UInt16,
+        screen_height UInt16,
+        device_type LowCardinality(String),
+        channel String,
+        hostname String,
+        referrer String,
+        has_replay_data UInt8 DEFAULT 1,
+        created_at DateTime DEFAULT now()
+      )
+      ENGINE = ReplacingMergeTree(created_at)
+      PARTITION BY toYYYYMM(start_time)
+      ORDER BY (site_id, session_id)
+      TTL start_time + INTERVAL 30 DAY
+      `,
+  });
+
   if (IS_CLOUD) {
     await clickhouse.exec({
       query: `

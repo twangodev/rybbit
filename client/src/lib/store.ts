@@ -14,7 +14,9 @@ export type StatType =
 export const SESSION_PAGE_FILTERS: FilterParameter[] = [
   "hostname",
   "browser",
+  "browser_version",
   "operating_system",
+  "operating_system_version",
   "language",
   "country",
   "region",
@@ -32,6 +34,21 @@ export const SESSION_PAGE_FILTERS: FilterParameter[] = [
   "utm_content",
 ];
 
+export const SESSION_REPLAY_PAGE_FILTERS: FilterParameter[] = [
+  "hostname",
+  "browser",
+  "browser_version",
+  "operating_system",
+  "operating_system_version",
+  "language",
+  "country",
+  "region",
+  "city",
+  "device_type",
+  "referrer",
+  "channel",
+];
+
 export const EVENT_FILTERS: FilterParameter[] = [
   // "event_name",
   // "browser",
@@ -41,7 +58,9 @@ export const EVENT_FILTERS: FilterParameter[] = [
   // "referrer",
   "hostname",
   "browser",
+  "browser_version",
   "operating_system",
+  "operating_system_version",
   "language",
   "country",
   "region",
@@ -66,7 +85,9 @@ export const EVENT_FILTERS: FilterParameter[] = [
 export const GOALS_PAGE_FILTERS: FilterParameter[] = [
   "hostname",
   "browser",
+  "browser_version",
   "operating_system",
+  "operating_system_version",
   "language",
   "country",
   "region",
@@ -82,7 +103,9 @@ export const GOALS_PAGE_FILTERS: FilterParameter[] = [
 export const USER_PAGE_FILTERS: FilterParameter[] = [
   "hostname",
   "browser",
+  "browser_version",
   "operating_system",
+  "operating_system_version",
   "language",
   "country",
   "region",

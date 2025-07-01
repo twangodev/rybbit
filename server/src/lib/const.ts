@@ -18,6 +18,7 @@ export interface StripePlan {
   interval: "month" | "year";
   limits: {
     events: number;
+    replays: number;
   };
   annualDiscountPriceId?: string; // Make this optional
 }
@@ -29,6 +30,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "month",
     limits: {
       events: 100_000,
+      replays: 10_000,
     },
   },
   {
@@ -37,6 +39,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "year",
     limits: {
       events: 100_000,
+      replays: 10_000,
     },
   },
   {
@@ -45,6 +48,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "month",
     limits: {
       events: 250_000,
+      replays: 25_000,
     },
   },
   {
@@ -53,6 +57,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "year",
     limits: {
       events: 250_000,
+      replays: 25_000,
     },
   },
   {
@@ -61,6 +66,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "month",
     limits: {
       events: 500_000,
+      replays: 50_000,
     },
   },
   {
@@ -69,6 +75,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "year",
     limits: {
       events: 500_000,
+      replays: 50_000,
     },
   },
   {
@@ -77,6 +84,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "month",
     limits: {
       events: 1_000_000,
+      replays: 100_000,
     },
   },
   {
@@ -85,6 +93,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "year",
     limits: {
       events: 1_000_000,
+      replays: 100_000,
     },
   },
   {
@@ -93,6 +102,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "month",
     limits: {
       events: 2_000_000,
+      replays: 200_000,
     },
   },
   {
@@ -101,6 +111,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "year",
     limits: {
       events: 2_000_000,
+      replays: 200_000,
     },
   },
   {
@@ -109,6 +120,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "month",
     limits: {
       events: 5_000_000,
+      replays: 500_000,
     },
   },
   {
@@ -117,6 +129,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "year",
     limits: {
       events: 5_000_000,
+      replays: 500_000,
     },
   },
   {
@@ -125,6 +138,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "month",
     limits: {
       events: 10_000_000,
+      replays: 1_000_000,
     },
   },
   {
@@ -133,6 +147,7 @@ const STRIPE_PRICES: StripePlan[] = [
     interval: "year",
     limits: {
       events: 10_000_000,
+      replays: 1_000_000,
     },
   },
 ];

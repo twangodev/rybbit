@@ -36,13 +36,15 @@ export function Pages() {
           onValueChange={(value) => setTab(value as Tab)}
         >
           <div className="flex flex-row gap-2 justify-between items-center">
-            <TabsList>
-              <TabsTrigger value="pages">Pages</TabsTrigger>
-              <TabsTrigger value="page_title">Page Titles</TabsTrigger>
-              <TabsTrigger value="entry_pages">Entry Pages</TabsTrigger>
-              <TabsTrigger value="exit_pages">Exit Pages</TabsTrigger>
-              <TabsTrigger value="hostname">Hostnames</TabsTrigger>
-            </TabsList>
+            <div className="overflow-x-auto">
+              <TabsList>
+                <TabsTrigger value="pages">Pages</TabsTrigger>
+                <TabsTrigger value="page_title">Page Titles</TabsTrigger>
+                <TabsTrigger value="entry_pages">Entry Pages</TabsTrigger>
+                <TabsTrigger value="exit_pages">Exit Pages</TabsTrigger>
+                <TabsTrigger value="hostname">Hostnames</TabsTrigger>
+              </TabsList>
+            </div>
             <Button size="smIcon" onClick={() => setExpanded(!expanded)}>
               <Expand className="w-4 h-4" />
             </Button>

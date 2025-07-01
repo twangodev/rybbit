@@ -4,6 +4,8 @@ import {
   getFilterStatement,
   getTimeStatement,
   processResults,
+  TimeBucketToFn,
+  bucketIntervalMap,
 } from "../utils.js";
 import SqlString from "sqlstring";
 import { getUserHasAccessToSitePublic } from "../../../lib/auth-utils.js";
@@ -11,29 +13,6 @@ import { validateTimeStatementFillParams } from "../query-validation.js";
 import { TimeBucket, PerformanceTimeSeriesPoint } from "../types.js";
 import { FilterParams } from "@rybbit/shared";
 
-const TimeBucketToFn = {
-  minute: "toStartOfMinute",
-  five_minutes: "toStartOfFiveMinutes",
-  ten_minutes: "toStartOfTenMinutes",
-  fifteen_minutes: "toStartOfFifteenMinutes",
-  hour: "toStartOfHour",
-  day: "toStartOfDay",
-  week: "toStartOfWeek",
-  month: "toStartOfMonth",
-  year: "toStartOfYear",
-};
-
-const bucketIntervalMap = {
-  minute: "1 MINUTE",
-  five_minutes: "5 MINUTES",
-  ten_minutes: "10 MINUTES",
-  fifteen_minutes: "15 MINUTES",
-  hour: "1 HOUR",
-  day: "1 DAY",
-  week: "7 DAY",
-  month: "1 MONTH",
-  year: "1 YEAR",
-} as const;
 
 function getTimeStatementFill(params: FilterParams, bucket: TimeBucket) {
   const { params: validatedParams, bucket: validatedBucket } =

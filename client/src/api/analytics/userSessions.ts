@@ -8,43 +8,6 @@ import {
 import { APIResponse } from "../types";
 import { authedFetch, getQueryParams } from "../utils";
 
-export type UserSessionsResponse = {
-  session_id: string;
-  browser: string;
-  operating_system: string;
-  device_type: string;
-  country: string;
-  firstTimestamp: string;
-  lastTimestamp: string;
-  duration: number; // Duration in seconds
-  pageviews: {
-    pathname: string;
-    querystring: string;
-    title: string;
-    timestamp: string;
-    referrer: string;
-  }[];
-}[];
-
-export function useGetUserSessions(userId: string) {
-  const { time, site, filters } = useStore();
-  const timeParams = getQueryParams(time);
-
-  return useQuery({
-    queryKey: ["user-sessions", userId, time, site, filters],
-    queryFn: () => {
-      return authedFetch<UserSessionsResponse>(
-        `/user/${userId}/sessions/${site}`,
-        {
-          ...timeParams,
-          filters,
-        }
-      );
-    },
-    staleTime: Infinity,
-  });
-}
-
 export type GetSessionsResponse = {
   session_id: string;
   user_id: string;
@@ -54,7 +17,11 @@ export type GetSessionsResponse = {
   language: string;
   device_type: string;
   browser: string;
+  browser_version: string;
   operating_system: string;
+  operating_system_version: string;
+  screen_width: number;
+  screen_height: number;
   referrer: string;
   channel: string;
   utm_source: string;
@@ -128,6 +95,7 @@ export interface SessionDetails {
   user_id: string;
   country: string;
   region: string;
+  city: string;
   language: string;
   device_type: string;
   browser: string;

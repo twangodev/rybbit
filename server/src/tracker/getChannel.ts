@@ -12,7 +12,7 @@ import {
   socialAppIds,
   videoAppIds,
 } from "./const.js";
-import { getUTMParams } from "./trackingUtils.js";
+import { getUTMParams } from "./utils.js";
 
 // Categorize mobile app by its bundle ID/package name
 function getMobileAppCategory(

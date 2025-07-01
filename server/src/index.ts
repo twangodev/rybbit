@@ -13,6 +13,9 @@ import { createFunnel } from "./api/analytics/funnels/createFunnel.js";
 import { deleteFunnel } from "./api/analytics/funnels/deleteFunnel.js";
 import { getFunnel } from "./api/analytics/funnels/getFunnel.js";
 import { getFunnels } from "./api/analytics/funnels/getFunnels.js";
+import { getErrorBucketed } from "./api/analytics/getErrorBucketed.js";
+import { getErrorEvents } from "./api/analytics/getErrorEvents.js";
+import { getErrorNames } from "./api/analytics/getErrorNames.js";
 import { getJourneys } from "./api/analytics/getJourneys.js";
 import { getLiveSessionLocations } from "./api/analytics/getLiveSessionLocations.js";
 import { getLiveUsercount } from "./api/analytics/getLiveUsercount.js";
@@ -36,6 +39,9 @@ import { getPerformanceByDimension } from "./api/analytics/performance/getPerfor
 import { getPerformanceOverview } from "./api/analytics/performance/getPerformanceOverview.js";
 import { getPerformanceTimeSeries } from "./api/analytics/performance/getPerformanceTimeSeries.js";
 import { getConfig } from "./api/getConfig.js";
+import { getSessionReplayEvents } from "./api/sessionReplay/getSessionReplayEvents.js";
+import { getSessionReplays } from "./api/sessionReplay/getSessionReplays.js";
+import { recordSessionReplay } from "./api/sessionReplay/recordSessionReplay.js";
 import { addSite } from "./api/sites/addSite.js";
 import { changeSiteBlockBots } from "./api/sites/changeSiteBlockBots.js";
 import { changeSiteDomain } from "./api/sites/changeSiteDomain.js";
@@ -43,10 +49,10 @@ import { changeSitePublic } from "./api/sites/changeSitePublic.js";
 import { changeSiteSalt } from "./api/sites/changeSiteSalt.js";
 import { deleteSite } from "./api/sites/deleteSite.js";
 import { getSite } from "./api/sites/getSite.js";
+import { getSiteApiConfig } from "./api/sites/getSiteApiConfig.js";
 import { getSiteHasData } from "./api/sites/getSiteHasData.js";
 import { getSiteIsPublic } from "./api/sites/getSiteIsPublic.js";
 import { getSitesFromOrg } from "./api/sites/getSitesFromOrg.js";
-import { getSiteApiConfig } from "./api/sites/getSiteApiConfig.js";
 import { updateSiteApiConfig } from "./api/sites/updateSiteApiConfig.js";
 import { createCheckoutSession } from "./api/stripe/createCheckoutSession.js";
 import { createPortalSession } from "./api/stripe/createPortalSession.js";
@@ -54,15 +60,14 @@ import { getSubscription } from "./api/stripe/getSubscription.js";
 import { handleWebhook } from "./api/stripe/webhook.js";
 import { getUserOrganizations } from "./api/user/getUserOrganizations.js";
 import { listOrganizationMembers } from "./api/user/listOrganizationMembers.js";
-import { initializeCronJobs } from "./cron/index.js";
 import { initializeClickhouse } from "./db/clickhouse/clickhouse.js";
-import { allowList, loadAllowedDomains } from "./lib/allowedDomains.js";
+import { loadAllowedDomains } from "./lib/allowedDomains.js";
 import { getSessionFromReq, mapHeaders } from "./lib/auth-utils.js";
 import { auth } from "./lib/auth.js";
 import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./tracker/trackEvent.js";
-import { extractSiteId, isSitePublic, normalizeOrigin } from "./utils.js";
+import { extractSiteId, isSitePublic } from "./utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -75,15 +80,18 @@ const server = Fastify({
   },
   maxParamLength: 1500,
   trustProxy: true,
+  bodyLimit: 10 * 1024 * 1024, // 10MB limit for session replay data
 });
 
 server.register(cors, {
   origin: (origin, callback) => {
-    if (!origin || allowList.includes(normalizeOrigin(origin))) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"), false);
-    }
+    callback(null, true);
+
+    // if (!origin || allowList.includes(normalizeOrigin(origin))) {
+    //   callback(null, true);
+    // } else {
+    //   callback(new Error("Not allowed by CORS"), false);
+    // }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
@@ -125,12 +133,17 @@ server.register(
 const PUBLIC_ROUTES: string[] = [
   "/api/health",
   "/api/track",
-  "/api/script.js", // Updated script route
+  "/track",
+  "/api/script.js",
+  "/api/script-full.js",
+  "/api/replay.js",
+  "/api/metrics.js",
   "/api/config",
   "/api/auth",
   "/api/auth/callback/google",
   "/api/auth/callback/github",
   "/api/stripe/webhook",
+  "/api/session-replay/record",
 ];
 
 // Define analytics routes that can be public
@@ -138,6 +151,7 @@ const ANALYTICS_ROUTES = [
   "/api/live-user-count/",
   "/api/overview/",
   "/api/overview-bucketed/",
+  "/api/error-bucketed/",
   "/api/single-col/",
   "/api/page-titles/",
   "/api/retention/",
@@ -145,7 +159,6 @@ const ANALYTICS_ROUTES = [
   "/api/site-is-public/",
   "/api/sessions/",
   "/api/session/",
-  "/api/recent-events/",
   "/api/users/",
   "/api/user/info/",
   "/api/user/session-count/",
@@ -163,6 +176,10 @@ const ANALYTICS_ROUTES = [
   "/api/performance/time-series/",
   "/api/performance/by-path/",
   "/api/performance/by-dimension/",
+  "/api/error-names/",
+  "/api/error-events/",
+  "/api/error-bucketed/",
+  "/api/session-replay/",
 ];
 
 server.addHook("onRequest", async (request, reply) => {
@@ -191,7 +208,7 @@ server.addHook("onRequest", async (request, reply) => {
     const session = await getSessionFromReq(request);
 
     if (!session) {
-      return reply.status(401).send({ error: "Unauthorized" });
+      return reply.status(401).send({ error: "Unauthorized 1" });
     }
 
     // Attach session user info to request
@@ -202,10 +219,14 @@ server.addHook("onRequest", async (request, reply) => {
   }
 });
 
-// Add this with your other routes, around line 273
-server.get("/api/script.js", async (request, reply) => {
-  return reply.sendFile("script.js");
-});
+// Serve analytics scripts with generic names to avoid ad-blocker detection
+server.get("/api/script.js", async (_, reply) => reply.sendFile("script.js"));
+server.get("/api/replay.js", async (_, reply) =>
+  reply.sendFile("rrweb.min.js")
+);
+server.get("/api/metrics.js", async (_, reply) =>
+  reply.sendFile("web-vitals.iife.js")
+);
 
 // Analytics
 
@@ -219,13 +240,15 @@ server.get("/api/overview/:site", getOverview);
 server.get("/api/overview-bucketed/:site", getOverviewBucketed);
 server.get("/api/single-col/:site", getSingleCol);
 server.get("/api/page-titles/:site", getPageTitles);
+server.get("/api/error-names/:site", getErrorNames);
+server.get("/api/error-events/:site", getErrorEvents);
+server.get("/api/error-bucketed/:site", getErrorBucketed);
 server.get("/api/retention/:site", getRetention);
 server.get("/api/site-has-data/:site", getSiteHasData);
 server.get("/api/site-is-public/:site", getSiteIsPublic);
 server.get("/api/sessions/:site", getSessions);
 server.get("/api/session/:sessionId/:site", getSession);
-server.get("/api/recent-events/:site", getEvents); // Legacy endpoint for backward compatibility
-server.get("/api/events/:site", getEvents); // New endpoint with filtering and pagination
+server.get("/api/events/:site", getEvents);
 server.get("/api/users/:site", getUsers);
 server.get("/api/user/:userId/sessions/:site", getUserSessions);
 server.get("/api/user/session-count/:site", getUserSessionCount);
@@ -248,6 +271,11 @@ server.get("/api/org-event-count/:organizationId", getOrgEventCount);
 server.get("/api/performance/overview/:site", getPerformanceOverview);
 server.get("/api/performance/time-series/:site", getPerformanceTimeSeries);
 server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
+
+// Session Replay
+server.post("/api/session-replay/record/:site", recordSessionReplay);
+server.get("/api/session-replay/list/:site", getSessionReplays);
+server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Administrative
 server.get("/api/config", getConfig);
@@ -283,7 +311,9 @@ if (IS_CLOUD) {
   server.get("/api/admin/organizations", getAdminOrganizations);
 }
 
+server.post("/track", trackEvent);
 server.post("/api/track", trackEvent);
+
 server.get("/api/health", { logLevel: "silent" }, (_, reply) =>
   reply.send("OK")
 );
@@ -300,8 +330,6 @@ const start = async () => {
 
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });
-
-    initializeCronJobs();
   } catch (err) {
     server.log.error(err);
     process.exit(1);

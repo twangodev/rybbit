@@ -297,3 +297,29 @@ export function patternToRegex(pattern: string): string {
   // Anchor the regex to start/end of string for exact matches
   return `^${finalRegex}$`;
 }
+
+// Time bucket mapping constants
+export const TimeBucketToFn = {
+  minute: "toStartOfMinute",
+  five_minutes: "toStartOfFiveMinutes",
+  ten_minutes: "toStartOfTenMinutes",
+  fifteen_minutes: "toStartOfFifteenMinutes",
+  hour: "toStartOfHour",
+  day: "toStartOfDay",
+  week: "toStartOfWeek",
+  month: "toStartOfMonth",
+  year: "toStartOfYear",
+} as const;
+
+export const bucketIntervalMap = {
+  minute: "1 MINUTE",
+  five_minutes: "5 MINUTES",
+  ten_minutes: "10 MINUTES",
+  fifteen_minutes: "15 MINUTES",
+  hour: "1 HOUR",
+  day: "1 DAY",
+  week: "7 DAY",
+  month: "1 MONTH",
+  year: "1 YEAR",
+} as const;
+

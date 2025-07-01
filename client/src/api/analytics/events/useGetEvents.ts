@@ -45,7 +45,7 @@ export function useGetEvents(count = 10) {
     queryKey: ["events", site, count],
     refetchInterval: 5000,
     queryFn: () =>
-      authedFetch<{ data: Event[] }>(`/recent-events/${site}`, {
+      authedFetch<{ data: Event[] }>(`/events/${site}`, {
         count,
       }).then((res) => res.data),
   });

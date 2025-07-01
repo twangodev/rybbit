@@ -8,6 +8,7 @@ export interface SessionDetails {
   user_id: string;
   country: string;
   region: string;
+  city: string;
   language: string;
   device_type: string;
   browser: string;
@@ -91,6 +92,7 @@ SELECT
     any(user_id) as user_id,
     any(country) as country,
     any(region) as region,
+    any(city) as city,
     any(language) as language,
     any(device_type) as device_type,
     any(browser) as browser,

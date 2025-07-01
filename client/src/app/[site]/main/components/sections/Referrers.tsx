@@ -37,7 +37,7 @@ export function Referrers() {
           onValueChange={(value) => setTab(value as Tab)}
         >
           <div className="flex flex-row gap-2 justify-between items-center">
-            <div className="overflow-x-auto pb-1">
+            <div className="overflow-x-auto">
               <TabsList>
                 <TabsTrigger value="referrers">Referrers</TabsTrigger>
                 <TabsTrigger value="channels">Channels</TabsTrigger>
@@ -48,11 +48,9 @@ export function Referrers() {
                 <TabsTrigger value="utm_content">Content</TabsTrigger>
               </TabsList>
             </div>
-            <div>
-              <Button size="smIcon" onClick={() => setExpanded(!expanded)}>
-                <Expand className="w-4 h-4" />
-              </Button>
-            </div>
+            <Button size="smIcon" onClick={() => setExpanded(!expanded)}>
+              <Expand className="w-4 h-4" />
+            </Button>
           </div>
           <TabsContent value="referrers">
             <StandardSection

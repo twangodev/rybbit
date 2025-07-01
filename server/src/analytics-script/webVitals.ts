@@ -1,5 +1,5 @@
-import { onLCP, onCLS, onINP, onFCP, onTTFB, Metric } from 'web-vitals';
-import { WebVitalsData } from './types.js';
+import { onLCP, onCLS, onINP, onFCP, onTTFB, Metric } from "web-vitals";
+import { WebVitalsData } from "./types.js";
 
 export class WebVitalsCollector {
   private data: WebVitalsData = {
@@ -37,13 +37,13 @@ export class WebVitalsCollector {
       }, 20000);
 
       // Send on page unload
-      window.addEventListener('beforeunload', () => {
+      window.addEventListener("beforeunload", () => {
         if (!this.sent) {
           this.sendData();
         }
       });
     } catch (e) {
-      console.warn('Error initializing web vitals tracking:', e);
+      console.warn("Error initializing web vitals tracking:", e);
     }
   }
 
@@ -52,9 +52,11 @@ export class WebVitalsCollector {
 
     const metricName = metric.name.toLowerCase() as keyof WebVitalsData;
     this.data[metricName] = metric.value;
-    
+
     // Check if all metrics are collected
-    const allCollected = Object.values(this.data).every(value => value !== null);
+    const allCollected = Object.values(this.data).every(
+      (value) => value !== null
+    );
     if (allCollected) {
       this.sendData();
     }

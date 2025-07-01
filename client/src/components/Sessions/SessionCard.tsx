@@ -9,37 +9,26 @@ import {
   ChevronDown,
   ChevronRight,
   FileText,
-  Laptop,
   MousePointerClick,
-  Smartphone,
 } from "lucide-react";
-import { DateTime, Duration } from "luxon";
+import { DateTime } from "luxon";
 import { memo, useState } from "react";
 import { GetSessionsResponse } from "../../api/analytics/userSessions";
-import { Browser } from "../../app/[site]/components/shared/icons/Browser";
-import { CountryFlag } from "../../app/[site]/components/shared/icons/CountryFlag";
-import { OperatingSystem } from "../../app/[site]/components/shared/icons/OperatingSystem";
-import { cn, formatter, getCountryName } from "../../lib/utils";
-import { formatDuration } from "../../lib/dateTimeUtils";
+import { formatDuration, hour12, userLocale } from "../../lib/dateTimeUtils";
+import { cn, formatter } from "../../lib/utils";
+import {
+  BrowserTooltipIcon,
+  CountryFlagTooltipIcon,
+  DeviceTypeTooltipIcon,
+  OperatingSystemTooltipIcon,
+} from "../TooltipIcons/TooltipIcons";
 import { Badge } from "../ui/badge";
 import { SessionDetails } from "./SessionDetails";
-import { userLocale, hour12 } from "../../lib/dateTimeUtils";
 
 interface SessionCardProps {
   session: GetSessionsResponse[number];
   userId?: string;
   onClick?: () => void;
-}
-
-// DeviceIcon component for displaying mobile/desktop icons
-function DeviceIcon({ deviceType }: { deviceType: string }) {
-  const type = deviceType.toLowerCase();
-
-  if (type.includes("mobile") || type.includes("tablet")) {
-    return <Smartphone className="w-4 h-4" />;
-  }
-
-  return <Laptop className="w-4 h-4" />;
 }
 
 // Function to truncate path for display
@@ -83,56 +72,26 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
 
           {/* Icons section */}
           <div className="flex space-x-2 items-center md:ml-3">
-            {/* Country */}
             {session.country && (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex items-center">
-                    <CountryFlag country={session.country} />
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>{getCountryName(session.country)}</p>
-                </TooltipContent>
-              </Tooltip>
+              <CountryFlagTooltipIcon
+                country={session.country}
+                city={session.city}
+                region={session.region}
+              />
             )}
-
-            {/* Browser */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex-shrink-0">
-                  <Browser browser={session.browser || "Unknown"} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{session.browser || "Unknown browser"}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* OS */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div className="flex-shrink-0">
-                  <OperatingSystem os={session.operating_system || ""} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{session.operating_system || "Unknown OS"}</p>
-              </TooltipContent>
-            </Tooltip>
-
-            {/* Device Type */}
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <div>
-                  <DeviceIcon deviceType={session.device_type || ""} />
-                </div>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>{session.device_type || "Unknown device"}</p>
-              </TooltipContent>
-            </Tooltip>
-
+            <BrowserTooltipIcon
+              browser={session.browser || "Unknown"}
+              browser_version={session.browser_version}
+            />
+            <OperatingSystemTooltipIcon
+              operating_system={session.operating_system || ""}
+              operating_system_version={session.operating_system_version}
+            />
+            <DeviceTypeTooltipIcon
+              device_type={session.device_type || ""}
+              screen_width={session.screen_width}
+              screen_height={session.screen_height}
+            />
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge
@@ -266,9 +225,9 @@ export const SessionCardSkeleton = memo(() => {
             <Skeleton className="h-4 w-4 rounded-sm flex-shrink-0" />
             <Skeleton className="h-4 w-4 rounded-sm" />
             {/* Badge skeleton for pageviews */}
-            <Skeleton className="h-4 w-8 rounded-sm" />
+            <Skeleton className="h-[21px] w-8 rounded-sm" />
             {/* Badge skeleton for events */}
-            <Skeleton className="h-4 w-8 rounded-sm" />
+            <Skeleton className="h-[21px] w-8 rounded-sm" />
           </div>
 
           {/* Entry/Exit paths with randomized widths */}

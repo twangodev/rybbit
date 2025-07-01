@@ -38,7 +38,7 @@ export function Devices() {
           onValueChange={(value) => setTab(value as Tab)}
         >
           <div className="flex flex-row gap-2 justify-between items-center">
-            <div className="overflow-x-auto pb-1">
+            <div className="overflow-x-auto">
               <TabsList>
                 <TabsTrigger value="browsers">Browsers</TabsTrigger>
                 <TabsTrigger value="devices">Devices</TabsTrigger>
@@ -46,11 +46,9 @@ export function Devices() {
                 <TabsTrigger value="dimensions">Screen Dimensions</TabsTrigger>
               </TabsList>
             </div>
-            <div>
-              <Button size="smIcon" onClick={() => setExpanded(!expanded)}>
-                <Expand />
-              </Button>
-            </div>
+            <Button size="smIcon" onClick={() => setExpanded(!expanded)}>
+              <Expand />
+            </Button>
           </div>
           <TabsContent value="devices">
             <StandardSection

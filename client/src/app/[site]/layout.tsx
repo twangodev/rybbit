@@ -55,9 +55,9 @@ export default function SiteLayout({
             {/* <div className="px-4 py-2 max-w-[1400px] mx-auto w-full mb-4"> */}
             <Header />
             <div>{children}</div>
-            {!pathname.includes("/map") && !pathname.includes("/realtime") && (
-              <Footer />
-            )}
+            {!pathname.includes("/map") &&
+              !pathname.includes("/realtime") &&
+              !pathname.includes("/replay") && <Footer />}
           </div>
         </div>
       </div>

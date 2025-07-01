@@ -32,8 +32,13 @@ describe("parseScriptConfig", () => {
       trackQuerystring: true,
       trackOutbound: true,
       enableWebVitals: false, // Default is false, only true when data-web-vitals="true"
+      trackErrors: false, // Default is false, only true when data-track-errors="true"
       skipPatterns: [],
       maskPatterns: [],
+      apiKey: undefined, // Default is undefined when no data-api-key attribute
+      enableSessionReplay: false, // Default is false
+      sessionReplayBatchInterval: 2000, // Default batch interval
+      sessionReplayBatchSize: 3, // Default batch size
     });
   });
 

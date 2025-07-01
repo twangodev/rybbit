@@ -7,6 +7,10 @@ export interface ScriptConfig {
   trackQuerystring: boolean;
   trackOutbound: boolean;
   enableWebVitals: boolean;
+  trackErrors: boolean;
+  enableSessionReplay: boolean;
+  sessionReplayBatchSize: number;
+  sessionReplayBatchInterval: number;
   skipPatterns: string[];
   maskPatterns: string[];
   apiKey?: string;
@@ -27,7 +31,7 @@ export interface BasePayload {
 }
 
 export interface TrackingPayload extends BasePayload {
-  type: 'pageview' | 'custom_event' | 'outbound' | 'performance';
+  type: "pageview" | "custom_event" | "outbound" | "performance" | "error";
   event_name?: string;
   properties?: string;
   // Web vitals metrics
@@ -53,4 +57,24 @@ export interface RybbitAPI {
   identify: (userId: string) => void;
   clearUserId: () => void;
   getUserId: () => string | null;
+  startSessionReplay: () => void;
+  stopSessionReplay: () => void;
+  isSessionReplayActive: () => boolean;
+}
+
+export interface SessionReplayEvent {
+  type: string | number;
+  data: any;
+  timestamp: number;
+}
+
+export interface SessionReplayBatch {
+  userId: string;
+  events: SessionReplayEvent[];
+  metadata?: {
+    pageUrl: string;
+    viewportWidth?: number;
+    viewportHeight?: number;
+    language?: string;
+  };
 }

@@ -1,40 +1,125 @@
 import { siteConfig } from "./lib/siteConfig.js";
 import * as psl from "psl";
 
+const desktopOS = new Set([
+  "AIX",
+  "macOS",
+  "Windows",
+  "Linux",
+  "FreeBSD",
+  "OpenBSD",
+  "NetBSD",
+  "DragonFly",
+  "Solaris",
+  "Unix",
+  "HP-UX",
+  "QNX",
+  "BeOS",
+  "Haiku",
+  "OS/2",
+  "ArcaOS",
+  "OpenVMS",
+  "RISC OS",
+  "Plan9",
+  "Hurd",
+  "GNU",
+  "Minix",
+  "SerenityOS",
+  "GhostBSD",
+  "PC-BSD",
+  "Arch",
+  "CentOS",
+  "Debian",
+  "Deepin",
+  "elementary OS",
+  "Fedora",
+  "Gentoo",
+  "Knoppix",
+  "Kubuntu",
+  "Linpus",
+  "Linspire",
+  "Mageia",
+  "Mandriva",
+  "Manjaro",
+  "Mint",
+  "PCLinuxOS",
+  "RedHat",
+  "Sabayon",
+  "Slackware",
+  "SUSE",
+  "Ubuntu",
+  "Xubuntu",
+  "VectorLinux",
+  "Zenwalk",
+  "Chrome OS",
+  "Android-x86",
+  "Fuchsia",
+]);
+
+const mobileOS = new Set([
+  "Android",
+  "iOS",
+  "watchOS",
+  "Windows Phone",
+  "Windows Mobile",
+  "Windows CE",
+  "BlackBerry",
+  "Symbian",
+  "Palm",
+  "Bada",
+  "Firefox OS",
+  "KaiOS",
+  "MeeGo",
+  "Maemo",
+  "Sailfish",
+  "Tizen",
+  "WebOS",
+  "HarmonyOS",
+  "OpenHarmony",
+  "RIM Tablet OS",
+  "Series40",
+  "Ubuntu Touch",
+  "Joli",
+]);
+
+const tvOS = new Set([
+  "Chromecast",
+  "Chromecast Android",
+  "Chromecast Fuchsia",
+  "Chromecast Linux",
+  "Chromecast SmartSpeaker",
+  "NetTV",
+]);
+
+const gamingOS = new Set(["PlayStation", "Xbox", "Nintendo"]);
+
+const embeddedOS = new Set([
+  "Windows IoT",
+  "Contiki",
+  "Raspbian",
+  "Morph OS",
+  "Pico",
+  "NetRange",
+]);
+
 export function getDeviceType(
   screenWidth: number,
   screenHeight: number,
   ua: UAParser.IResult
 ): string {
-  // if (ua.device) {
-  //   if (ua.device.type === "mobile") {
-  //     return "Mobile";
-  //   } else if (ua.device.type === "tablet") {
-  //     return "Tablet";
-  //   } else if (ua.device.type === "console") {
-  //     return "Console";
-  //   } else if (ua.device.type === "smarttv") {
-  //     return "TV";
-  //   } else if (ua.device.type === "wearable") {
-  //     return "Wearable";
-  //   } else if (ua.device.type === "embedded") {
-  //     return "Embedded";
-  //   } else if (ua.device.type === "xr") {
-  //     return "XR";
-  //   }
-  // }
-
-  // if (ua.os.name) {
-  //   if (desktopOS.has(ua.os.name)) {
-  //     return "Desktop";
-  //   } else if (mobileOS.has(ua.os.name)) {
-  //     return "Mobile";
-  //   } else if (tvOS.has(ua.os.name)) {
-  //     return "TV";
-  //   } else if (gamingOS.has(ua.os.name)) {
-  //     return "Console";
-  //   }
-  // }
+  if (ua.os.name) {
+    if (desktopOS.has(ua.os.name)) {
+      return "Desktop";
+    } else if (mobileOS.has(ua.os.name)) {
+      return "Mobile";
+    } else if (tvOS.has(ua.os.name)) {
+      return "TV";
+    } else if (gamingOS.has(ua.os.name)) {
+      return "Console";
+    } else if (embeddedOS.has(ua.os.name)) {
+      return "Embedded";
+    }
+  }
 
   const largerDimension = Math.max(screenWidth, screenHeight);
   const smallerDimension = Math.min(screenWidth, screenHeight);
