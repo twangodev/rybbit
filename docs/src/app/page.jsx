@@ -17,6 +17,8 @@ import { UserBehaviorTrends } from "./components/Cards/UserBehaviorTrends";
 import { UserFlowAnalysis } from "./components/Cards/UserFlowAnalysis";
 import { UserProfiles } from "./components/Cards/UserProfiles";
 import { UserSessions } from "./components/Cards/UserSessions";
+import { SessionReplay } from "./components/Cards/SessionReplay";
+import { WebVitals } from "./components/Cards/WebVitals";
 import { Integrations } from "./components/integrations";
 import { PricingSection } from "./pricing/components/PricingSection";
 import { TweetCard } from "./components/Tweet";
@@ -205,6 +207,10 @@ export default function IndexPage() {
             <UserBehaviorTrends />
             <EventTracking />
             <GoalConversion />
+
+            {/* Row 4 */}
+            <SessionReplay />
+            <WebVitals />
           </div>
         </section>
 

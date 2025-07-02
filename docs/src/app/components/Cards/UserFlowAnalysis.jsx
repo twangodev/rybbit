@@ -20,130 +20,114 @@ export function UserFlowAnalysis() {
         {/* Sankey-style flow visualization */}
         <div className="space-y-4">
           {/* Path 1: Homepage → Products → Checkout */}
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 text-xs">
-                <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
-                  Home
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="px-2 py-1.5 bg-blue-900/30 border border-blue-500/40 rounded">
-                  Products
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
-                  Checkout
-                </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-orange-400">324</div>
-                <div className="text-xs text-neutral-500">26%</div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-blue-900/30 border border-blue-500/40 rounded">
+                Products
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
+                Checkout
               </div>
             </div>
-            {/* Flow thickness indicator */}
-            <div className="absolute bottom-0 left-0 right-24 h-0.5 bg-gradient-to-r from-emerald-500/20 via-blue-500/20 to-orange-500/20 rounded-full"></div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-orange-400">324</div>
+              <div className="text-xs text-neutral-500">26%</div>
+            </div>
           </div>
 
           {/* Path 2: Homepage → Features → Sign Up */}
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 text-xs">
-                <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
-                  Home
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="px-2 py-1.5 bg-purple-900/30 border border-purple-500/40 rounded">
-                  Features
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
-                  Sign Up
-                </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-orange-400">198</div>
-                <div className="text-xs text-neutral-500">16%</div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-purple-900/30 border border-purple-500/40 rounded">
+                Features
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
+                Sign Up
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-32 h-0.5 bg-gradient-to-r from-emerald-500/15 via-purple-500/15 to-orange-500/15 rounded-full"></div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-orange-400">198</div>
+              <div className="text-xs text-neutral-500">16%</div>
+            </div>
           </div>
 
           {/* Path 3: Homepage → Blog → Article → Exit */}
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-1.5 text-xs">
-                <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
-                  Home
-                </div>
-                <ArrowRight className="w-3 h-3 text-neutral-600" />
-                <div className="px-2 py-1.5 bg-indigo-900/30 border border-indigo-500/40 rounded">
-                  Blog
-                </div>
-                <ArrowRight className="w-3 h-3 text-neutral-600" />
-                <div className="px-2 py-1.5 bg-indigo-900/30 border border-indigo-500/40 rounded">
-                  Article
-                </div>
-                <ArrowRight className="w-3 h-3 text-neutral-600" />
-                <div className="flex items-center gap-1 px-2 py-1.5 bg-red-900/20 border border-red-500/30 rounded">
-                  <TrendingDown className="w-3 h-3" />
-                  <span>Exit</span>
-                </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-1.5 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-red-400">187</div>
-                <div className="text-xs text-neutral-500">15%</div>
+              <ArrowRight className="w-3 h-3 text-neutral-600" />
+              <div className="px-2 py-1.5 bg-indigo-900/30 border border-indigo-500/40 rounded">
+                Blog
+              </div>
+              <ArrowRight className="w-3 h-3 text-neutral-600" />
+              <div className="px-2 py-1.5 bg-indigo-900/30 border border-indigo-500/40 rounded">
+                Article
+              </div>
+              <ArrowRight className="w-3 h-3 text-neutral-600" />
+              <div className="flex items-center gap-1 px-2 py-1.5 bg-red-900/20 border border-red-500/30 rounded">
+                <TrendingDown className="w-3 h-3" />
+                <span>Exit</span>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-32 h-0.5 bg-gradient-to-r from-emerald-500/10 via-indigo-500/10 to-red-500/10 rounded-full"></div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-red-400">187</div>
+              <div className="text-xs text-neutral-500">15%</div>
+            </div>
           </div>
 
           {/* Path 4: Homepage → Pricing → Contact */}
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 text-xs">
-                <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
-                  Home
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="px-2 py-1.5 bg-cyan-900/30 border border-cyan-500/40 rounded">
-                  Pricing
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
-                  Contact
-                </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-orange-400">145</div>
-                <div className="text-xs text-neutral-500">12%</div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-cyan-900/30 border border-cyan-500/40 rounded">
+                Pricing
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
+                Contact
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-36 h-0.5 bg-gradient-to-r from-emerald-500/10 via-cyan-500/10 to-orange-500/10 rounded-full"></div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-orange-400">145</div>
+              <div className="text-xs text-neutral-500">12%</div>
+            </div>
           </div>
 
           {/* Path 5: Homepage → About → Exit */}
-          <div className="relative">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 flex items-center gap-2 text-xs">
-                <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
-                  Home
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="px-2 py-1.5 bg-violet-900/30 border border-violet-500/40 rounded">
-                  About
-                </div>
-                <ChevronRight className="w-3 h-3 text-neutral-500" />
-                <div className="flex items-center gap-1 px-2 py-1.5 bg-red-900/20 border border-red-500/30 rounded">
-                  <TrendingDown className="w-3 h-3" />
-                  <span>Exit</span>
-                </div>
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
               </div>
-              <div className="text-right">
-                <div className="text-sm font-medium text-red-400">98</div>
-                <div className="text-xs text-neutral-500">8%</div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-violet-900/30 border border-violet-500/40 rounded">
+                About
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="flex items-center gap-1 px-2 py-1.5 bg-red-900/20 border border-red-500/30 rounded">
+                <TrendingDown className="w-3 h-3" />
+                <span>Exit</span>
               </div>
             </div>
-            <div className="absolute bottom-0 left-0 right-40 h-0.5 bg-gradient-to-r from-emerald-500/8 via-violet-500/8 to-red-500/8 rounded-full"></div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-red-400">98</div>
+              <div className="text-xs text-neutral-500">8%</div>
+            </div>
           </div>
         </div>
 
