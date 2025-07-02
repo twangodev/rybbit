@@ -1,8 +1,11 @@
+import { Card } from "./Card";
+
 export function UserFlowAnalysis() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">User Flow Analysis</h3>
-      <p className="text-neutral-300 mb-4">Visualize how users navigate through your site with intuitive path analysis tools.</p>
+    <Card 
+      title="User Flow Analysis" 
+      description="Visualize how users navigate through your site with intuitive path analysis tools."
+    >
       
       <div className="mt-4 bg-neutral-900 p-4 rounded-md">
         <div className="flex justify-between items-center mb-4">
@@ -92,6 +95,6 @@ export function UserFlowAnalysis() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 } 

@@ -3,6 +3,7 @@ import { CountryFlag } from "../Country";
 import { Browser } from "../Browser";
 import { OperatingSystem } from "../OperatingSystem";
 import { Laptop, Smartphone } from "lucide-react";
+import { Card } from "./Card";
 
 // Mock events for the real-time analytics card
 const mockEvents = [
@@ -14,18 +15,7 @@ const mockEvents = [
     country: "US",
     browser: "Chrome",
     operating_system: "Windows",
-    device_type: "Desktop"
-  },
-  {
-    id: 2,
-    type: "event",
-    event_name: "button_click",
-    pathname: "/features",
-    timestamp: "45 sec ago",
-    country: "GB",
-    browser: "Safari",
-    operating_system: "macOS",
-    device_type: "Desktop"
+    device_type: "Desktop",
   },
   {
     id: 3,
@@ -35,14 +25,14 @@ const mockEvents = [
     country: "DE",
     browser: "Firefox",
     operating_system: "Linux",
-    device_type: "Mobile"
-  }
+    device_type: "Mobile",
+  },
 ];
 
 // EventCard component for Real-time Analytics
 function EventCard({ event }) {
   const isPageview = event.type === "pageview";
-  
+
   return (
     <div className="mb-3 rounded-lg bg-neutral-800/50 border border-neutral-700 overflow-hidden p-3 flex flex-col">
       <div className="flex items-center gap-2 text-sm text-neutral-100 mb-2">
@@ -54,11 +44,9 @@ function EventCard({ event }) {
           )}
         </div>
 
-        <div>
-          {isPageview ? event.pathname : event.event_name}
-        </div>
+        <div>{isPageview ? event.pathname : event.event_name}</div>
       </div>
-      
+
       <div className="flex items-center gap-2">
         <div className="flex space-x-2 items-center ml-6">
           <div className="flex items-center">
@@ -71,7 +59,11 @@ function EventCard({ event }) {
             <OperatingSystem os={event.operating_system || ""} />
           </div>
           <div>
-            {event.device_type === "Mobile" ? <Smartphone className="w-4 h-4" /> : <Laptop className="w-4 h-4" />}
+            {event.device_type === "Mobile" ? (
+              <Smartphone className="w-4 h-4" />
+            ) : (
+              <Laptop className="w-4 h-4" />
+            )}
           </div>
         </div>
 
@@ -86,22 +78,24 @@ function EventCard({ event }) {
 
 export function RealTimeAnalytics() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">Real-time Analytics</h3>
-      <p className="text-neutral-300 mb-4">See your site performance as it happens with instant data updates and live visitor activity.</p>
-      
+    <Card
+      title="Real-time Analytics"
+      description="See your site performance as it happens with instant data updates and live visitor activity."
+    >
       <div className="bg-neutral-900 rounded-lg p-4">
         <div className="flex items-center justify-between mb-3">
           <h4 className="font-medium">Live Visitors</h4>
-          <span className="bg-emerald-500/20 text-emerald-400 font-medium px-2 py-1 rounded text-sm">28 online</span>
+          <span className="bg-emerald-500/20 text-emerald-400 font-medium px-2 py-1 rounded text-sm">
+            28 online
+          </span>
         </div>
-        
+
         <div className="space-y-1">
-          {mockEvents.map(event => (
+          {mockEvents.map((event) => (
             <EventCard key={event.id} event={event} />
           ))}
         </div>
       </div>
-    </div>
+    </Card>
   );
-} 
+}

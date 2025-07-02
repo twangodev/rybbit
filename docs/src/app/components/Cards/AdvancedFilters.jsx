@@ -20,6 +20,7 @@ import {
   Flag,
   Puzzle,
 } from "lucide-react";
+import { Card } from "./Card";
 
 const FilterOptions = [
   {
@@ -116,10 +117,11 @@ const FilterOptions = [
 
 export function AdvancedFilters() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">Advanced Filters</h3>
-      <p className="text-neutral-300">Drill down into your data with advanced filters across over numerous dimensions.</p>
-      <div className="flex flex-wrap justify-center gap-y-3 gap-x-3.5 mt-4">  
+    <Card 
+      title="Advanced Filters"
+      description="Drill down into your data with advanced filters across over numerous dimensions."
+    >
+      <div className="flex flex-wrap justify-center gap-y-3 gap-x-3.5">  
         {FilterOptions.map((option) => (
           <div key={option.value} className="flex items-center gap-2 text-base bg-neutral-800 border border-neutral-700 py-1 px-2 rounded-md">
             {option.icon}
@@ -127,6 +129,6 @@ export function AdvancedFilters() {
           </div>
         ))}
       </div>
-    </div>
+    </Card>
   );
 } 

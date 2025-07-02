@@ -162,7 +162,7 @@ export default function IndexPage() {
           <div className="absolute top-1/2 left-1/2 -translate-x-1/3 -translate-y-1/3 w-[350px] h-[350px] bg-sky-400/20 rounded-full blur-[75px] opacity-40"></div>
 
           {/* Iframe container with responsive visibility */}
-          <div className="relative z-10 rounded-lg overflow-hidden border-4 border-neutral-100/5 shadow-2xl shadow-emerald-900/10">
+          <div className="relative z-10 rounded-lg overflow-hidden border-8 border-neutral-100/5 shadow-2xl shadow-emerald-900/10">
             {/* Remove mobile message and show iframe on all devices */}
             <iframe
               src="https://demo.rybbit.io/21"
@@ -190,7 +190,7 @@ export default function IndexPage() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
             {/* Row 1 */}
             <RealTimeAnalytics />
             <AdvancedFilters />
