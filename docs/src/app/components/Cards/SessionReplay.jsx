@@ -110,7 +110,7 @@ export function SessionReplay() {
                 onClick={() => setIsPlaying(!isPlaying)}
                 className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-full p-2 transition-colors"
               >
-                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4 ml-0.5" />}
+                {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
               </button>
               <button className="text-neutral-300 hover:text-white transition-colors">
                 <SkipForward className="w-4 h-4" />

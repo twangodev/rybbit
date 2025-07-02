@@ -73,12 +73,12 @@ export function UserSessions() {
               </div>
             </div>
           </div>
-          {/* Event 3 */}
+          {/* Event 2 */}
           <div className="flex mb-3">
             <div className="relative flex-shrink-0">
               <div className="absolute top-8 left-4 w-[1px] bg-neutral-700 h-[calc(100%-20px)]" />
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-900/30 border border-amber-500/50">
-                <span className="text-sm font-medium">3</span>
+                <span className="text-sm font-medium">2</span>
               </div>
             </div>
 
@@ -96,7 +96,7 @@ export function UserSessions() {
                     <span className="text-neutral-400 font-light mr-1">
                       button_id:
                     </span>
-                    <span>pricing-link</span>
+                    <span>pricing</span>
                   </div>
                   <div className="px-1.5 py-0 h-5 text-xs bg-neutral-800 rounded border border-neutral-700">
                     <span className="text-neutral-400 font-light mr-1">
@@ -109,12 +109,12 @@ export function UserSessions() {
             </div>
           </div>
 
-          {/* Event 4 */}
+          {/* Event 3 */}
           <div className="flex mb-3">
             <div className="relative flex-shrink-0">
               <div className="absolute top-8 left-4 w-[1px] bg-neutral-700 h-[calc(100%-20px)]" />
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-900/30 border border-blue-500/50">
-                <span className="text-sm font-medium">4</span>
+                <span className="text-sm font-medium">3</span>
               </div>
             </div>
 
@@ -135,12 +135,12 @@ export function UserSessions() {
             </div>
           </div>
 
-          {/* Event 5 */}
+          {/* Event 4 */}
           <div className="flex mb-3">
             <div className="relative flex-shrink-0">
               <div className="absolute top-8 left-4 w-[1px] bg-neutral-700 h-[calc(100%-20px)]" />
               <div className="flex items-center justify-center w-8 h-8 rounded-full bg-amber-900/30 border border-amber-500/50">
-                <span className="text-sm font-medium">5</span>
+                <span className="text-sm font-medium">4</span>
               </div>
             </div>
 
