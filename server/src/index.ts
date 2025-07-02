@@ -69,7 +69,7 @@ import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
-import { importPlausible } from "./api/import/plausible.js";
+import { importUmami } from "./api/import/umami.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -282,7 +282,7 @@ server.get("/api/session-replay/list/:site", getSessionReplays);
 server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Imports
-server.post("/api/import/plausible/:site", importPlausible);
+server.post("/api/import/umami/:site", importUmami);
 
 // Administrative
 server.get("/api/config", getConfig);
