@@ -18,6 +18,17 @@ const mockEvents = [
     device_type: "Desktop",
   },
   {
+    id: 2,
+    type: "event",
+    event_name: "button_click",
+    pathname: "/features",
+    timestamp: "45 sec ago",
+    country: "GB",
+    browser: "Safari",
+    operating_system: "macOS",
+    device_type: "Desktop",
+  },
+  {
     id: 3,
     type: "pageview",
     pathname: "/blog/analytics-tips",
@@ -34,7 +45,7 @@ function EventCard({ event }) {
   const isPageview = event.type === "pageview";
 
   return (
-    <div className="mb-3 rounded-lg bg-neutral-800/50 border border-neutral-700 overflow-hidden p-3 flex flex-col">
+    <div className="mb-3 rounded-lg bg-neutral-800/50 overflow-hidden p-3 flex flex-col">
       <div className="flex items-center gap-2 text-sm text-neutral-100 mb-2">
         <div className="flex items-center gap-2">
           {isPageview ? (
