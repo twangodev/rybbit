@@ -70,9 +70,7 @@ export async function importPlausible(request: FastifyRequest<ImportPlausibleReq
 
   const importId = crypto.randomUUID();
 
-  for (const file of files) {
-    await boss.send("plausible-import", { ...file, site_id: Number(site), importId });
-  }
+  await boss.send("plausible-import", { files, site_id: Number(site), importId });
 
   reply.send({ success: true, importId });
 }
