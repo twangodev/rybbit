@@ -447,54 +447,48 @@ export default function IndexPage() {
         </section>
 
         {/* add CTA section here */}
-        <section className="py-16 md:py-24 w-full bg-gradient-to-b from-neutral-900 to-neutral-950">
+        <section className="py-12 md:py-20 w-full bg-gradient-to-b from-neutral-900 to-neutral-950">
           <div className="max-w-7xl mx-auto px-4">
-            <div className="relative bg-neutral-800/60 backdrop-blur-sm border border-neutral-700 rounded-2xl shadow-xl overflow-hidden">
-              {/* Background gradient accents */}
-              <div className="absolute top-0 left-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2"></div>
-              <div className="absolute bottom-0 right-0 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2"></div>
+            <div className="relative p-6 md:p-12 flex flex-col items-center justify-center text-center">
+              <div className="mb-6 md:mb-8">
+                <Image
+                  src="/rybbit-text.svg"
+                  alt="Rybbit"
+                  width={150}
+                  height={27}
+                />
+              </div>
+              <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">
+                It's time to switch to analytics that's made for you
+              </h2>
+              <p className="text-base md:text-xl text-neutral-300 mb-6 md:mb-10 max-w-3xl mx-auto">
+                The first 3,000 events a month are free
+              </p>
 
-              <div className="relative p-6 md:p-12 flex flex-col items-center justify-center text-center">
-                <div className="mb-6 md:mb-8">
-                  <Image
-                    src="/rybbit-text.svg"
-                    alt="Rybbit"
-                    width={150}
-                    height={27}
-                  />
-                </div>
-                <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">
-                  It's time to switch to analytics that's made for you
-                </h2>
-                <p className="text-base md:text-xl text-neutral-300 mb-6 md:mb-10 max-w-3xl mx-auto">
-                  The first 3,000 events a month are free
-                </p>
-
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8 w-full sm:w-auto">
-                  <Link
-                    href="https://app.rybbit.io/signup"
-                    className="w-full sm:w-auto"
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8 w-full sm:w-auto">
+                <Link
+                  href="https://app.rybbit.io/signup"
+                  className="w-full sm:w-auto"
+                >
+                  <button
+                    data-rybbit-event="signup"
+                    data-rybbit-prop-location="bottom"
+                    className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 md:px-8 py-3 md:py-4 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer"
                   >
-                    <button
-                      data-rybbit-event="signup"
-                      data-rybbit-prop-location="bottom"
-                      className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-6 md:px-8 py-3 md:py-4 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer"
-                    >
-                      Track your site now
-                    </button>
-                  </Link>
-                  {/* <Link href="https://docs.tomato.gg" className="w-full sm:w-auto">
+                    Track your site now
+                  </button>
+                </Link>
+                {/* <Link href="https://docs.tomato.gg" className="w-full sm:w-auto">
                   <button className="w-full sm:w-auto bg-neutral-800 hover:bg-neutral-700 text-white font-medium px-6 md:px-8 py-3 md:py-4 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50">
                     View Documentation
                   </button>
                 </Link> */}
-                </div>
-
-                <p className="text-neutral-400 text-xs md:text-sm flex items-center justify-center gap-2">
-                  <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
-                  We don't ask for your credit card
-                </p>
               </div>
+
+              <p className="text-neutral-400 text-xs md:text-sm flex items-center justify-center gap-2">
+                <CheckCircle className="w-3 h-3 md:w-4 md:h-4" />
+                We don't ask for your credit card
+              </p>
             </div>
           </div>
         </section>
