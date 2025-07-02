@@ -69,6 +69,7 @@ import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
+import { importPlausible } from "./api/import/plausible.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -279,6 +280,9 @@ server.get("/api/performance/by-dimension/:site", getPerformanceByDimension);
 server.post("/api/session-replay/record/:site", recordSessionReplay);
 server.get("/api/session-replay/list/:site", getSessionReplays);
 server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
+
+// Imports
+server.post("/api/import/plausible/:site", importPlausible);
 
 // Administrative
 server.get("/api/config", getConfig);
