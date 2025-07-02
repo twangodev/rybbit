@@ -193,24 +193,19 @@ export default function IndexPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
-            {/* Row 1 */}
-            <RealTimeAnalytics />
-            <AdvancedFilters />
-            <UserProfiles />
+            {/* <Funnels /> */}
+            {/* <AdvancedFilters /> */}
 
-            {/* Row 2 */}
+            <RealTimeAnalytics />
+            <SessionReplay />
+            <WebVitals />
+            <UserProfiles />
             <UserSessions />
             <UserFlowAnalysis />
-            <Funnels />
 
-            {/* Row 3 */}
             <UserBehaviorTrends />
             <EventTracking />
             <GoalConversion />
-
-            {/* Row 4 */}
-            <SessionReplay />
-            <WebVitals />
           </div>
         </section>
 
