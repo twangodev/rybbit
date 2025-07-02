@@ -1,5 +1,6 @@
 import cors from "@fastify/cors";
 import fastifyStatic from "@fastify/static";
+import multipart from "@fastify/multipart";
 import { toNodeHandler } from "better-auth/node";
 import Fastify from "fastify";
 import { dirname, join } from "path";
@@ -97,6 +98,8 @@ server.register(cors, {
   allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   credentials: true,
 });
+
+server.register(multipart);
 
 // Serve static files
 server.register(fastifyStatic, {
