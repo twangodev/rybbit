@@ -22,6 +22,7 @@
   },
   "dependencies": {
     "@clickhouse/client": "1.11.1",
+    "@fast-csv/parse": "^5.0.2",
     "@fastify/cors": "11.0.1",
     "@fastify/one-line-logger": "2.0.2",
     "@fastify/rate-limit": "^10.3.0",
@@ -38,6 +39,7 @@
     "node-cache": "^5.1.2",
     "node-cron": "4.0.6",
     "pg": "8.16.0",
+    "pg-boss": "^10.3.2",
     "postgres": "3.4.5",
     "psl": "^1.15.0",
     "resend": "^4.5.1",
