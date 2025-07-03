@@ -48,13 +48,13 @@ export class SessionReplayRecorder {
     }
 
     // Load rrweb if not already loaded
-    if (!window.rrweb) {
-      await this.loadRrweb();
-    }
+    // if (!window.rrweb) {
+    //   await this.loadRrweb();
+    // }
 
-    if (window.rrweb) {
-      this.startRecording();
-    }
+    // if (window.rrweb) {
+    //   this.startRecording();
+    // }
   }
 
   private async loadRrweb(): Promise<void> {
