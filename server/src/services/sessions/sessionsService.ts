@@ -11,8 +11,8 @@ class SessionsService {
   }
 
   private initializeCleanupCron() {
-    // Schedule session cleanup to run every minute
-    this.cleanupTask = cron.schedule("* * * * *", async () => {
+    // Schedule session cleanup to run every 5 minutes
+    this.cleanupTask = cron.schedule("*/5 * * * *", async () => {
       try {
         const deletedCount = await this.cleanupOldSessions();
         // Uncomment for debugging

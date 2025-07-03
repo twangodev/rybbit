@@ -41,19 +41,22 @@ export class SessionReplayIngestService {
     });
 
     // Prepare events for batch insert
-    const eventsToInsert = events.map((event, index) => ({
-      site_id: siteId,
-      session_id: sessionId,
-      user_id: userId,
-      timestamp: event.timestamp,
-      event_type: event.type,
-      event_data: JSON.stringify(event.data),
-      sequence_number: index,
-      event_size_bytes: JSON.stringify(event.data).length,
-      viewport_width: metadata?.viewportWidth || null,
-      viewport_height: metadata?.viewportHeight || null,
-      is_complete: 0,
-    }));
+    const eventsToInsert = events.map((event, index) => {
+      const serializedData = JSON.stringify(event.data);
+      return {
+        site_id: siteId,
+        session_id: sessionId,
+        user_id: userId,
+        timestamp: event.timestamp,
+        event_type: event.type,
+        event_data: serializedData,
+        sequence_number: index,
+        event_size_bytes: serializedData.length,
+        viewport_width: metadata?.viewportWidth || null,
+        viewport_height: metadata?.viewportHeight || null,
+        is_complete: 0,
+      };
+    });
 
     // Batch insert events
     if (eventsToInsert.length > 0) {
