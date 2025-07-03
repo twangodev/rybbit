@@ -128,12 +128,6 @@
       if (!this.config.enableSessionReplay) {
         return;
       }
-      if (!window.rrweb) {
-        await this.loadRrweb();
-      }
-      if (window.rrweb) {
-        this.startRecording();
-      }
     }
     async loadRrweb() {
       return new Promise((resolve, reject) => {
