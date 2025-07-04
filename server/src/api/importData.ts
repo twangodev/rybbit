@@ -7,6 +7,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import boss from "../lib/boss.js";
 import { getUserHasAccessToSite } from "../lib/auth-utils.js";
+import { importInitiationQueue } from "../types/import.js";
 
 const IMPORT_DIR = "/tmp/imports";
 
@@ -53,9 +54,9 @@ export async function importData(
     return reply.status(500).send({ error: "Could not process file upload." });
   }
 
-  await boss.send("csv-import-initiation", {
-    filePath: tempFilePath,
-    siteId: Number(site),
+  await boss.send(importInitiationQueue, {
+    tempFilePath,
+    site,
     importId,
     source,
   });
