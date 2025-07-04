@@ -1,7 +1,6 @@
 import { FastifyRequest, FastifyReply } from "fastify";
 import { pipeline } from "stream/promises";
-import { createWriteStream } from "fs";
-import fs from "fs/promises";
+import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import crypto from "crypto";
@@ -47,8 +46,8 @@ export async function importData(
   const tempFilePath = path.join(IMPORT_DIR, importId);
 
   try {
-    await fs.mkdir(IMPORT_DIR, { recursive: true });
-    await pipeline(fileData.file, createWriteStream(tempFilePath));
+    await fs.promises.mkdir(IMPORT_DIR, { recursive: true });
+    await pipeline(fileData.file, fs.createWriteStream(tempFilePath));
   } catch (error) {
     console.error("🚨 Failed to save uploaded file to disk:", error);
     return reply.status(500).send({ error: "Could not process file upload." });
