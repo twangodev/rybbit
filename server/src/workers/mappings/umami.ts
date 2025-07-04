@@ -43,7 +43,7 @@ interface UmamiEvent {
   job_id: string | null; // Ignore
 }
 
-export class UmamiImportMapping implements ImportMapping {
+export class UmamiImportMapping implements ImportMapping<UmamiEvent> {
   transform(row: UmamiEvent, headers: string[]): any {
     const [screenWidth, screenHeight] = row.screen?.split("x") || [null, null];
 
