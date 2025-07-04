@@ -4,6 +4,7 @@ import React, { ReactNode } from "react";
 import { useCurrentSite } from "../api/admin/sites";
 import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
 import { Button } from "./ui/button";
+import { authClient } from "../lib/auth";
 
 interface DisabledOverlayProps {
   children: ReactNode;
@@ -20,8 +21,7 @@ function ownerMessage(message: string) {
       <Crown className="h-5 w-5 text-amber-500 flex-shrink-0" />
       <div className="flex-1">
         <p className="text-sm text-muted-foreground">
-          Upgrade to <span className="font-medium text-foreground">Pro</span> to
-          unlock {message}
+          Upgrade to <span className="font-medium text-foreground">Pro</span> to unlock {message}
         </p>
       </div>
       <Button asChild size="sm" variant="success">
@@ -39,8 +39,7 @@ function userMessage(message: string) {
       <Crown className="h-5 w-5 text-amber-500 flex-shrink-0" />
       <div className="flex-1">
         <p className="text-sm text-muted-foreground">
-          Ask your organization owner to upgrade to{" "}
-          <span className="font-medium text-foreground">Pro</span> to unlock{" "}
+          Ask your organization owner to upgrade to <span className="font-medium text-foreground">Pro</span> to unlock{" "}
           {message}
         </p>
       </div>
@@ -58,27 +57,22 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
 }) => {
   const { subscription, site } = useCurrentSite();
 
+  const { data } = authClient.useSession();
+
   const disabled = subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
 
-  if (!disabled) {
+  if (!disabled || data?.user?.role === "admin") {
     return <>{children}</>;
   }
 
-  const borderRadiusStyle =
-    borderRadius > 0 ? { borderRadius: `${borderRadius}px` } : {};
+  const borderRadiusStyle = borderRadius > 0 ? { borderRadius: `${borderRadius}px` } : {};
 
   return (
     <div className="relative" style={style}>
-      <div
-        className={disabled ? "filter" : ""}
-        style={disabled ? { filter: `blur(${blur}px)` } : {}}
-      >
+      <div className={disabled ? "filter" : ""} style={disabled ? { filter: `blur(${blur}px)` } : {}}>
         {children}
       </div>
-      <div
-        className="absolute inset-0 flex items-center justify-center z-10"
-        style={borderRadiusStyle}
-      >
+      <div className="absolute inset-0 flex items-center justify-center z-10" style={borderRadiusStyle}>
         {showMessage && (
           <div className="flex items-center justify-center">
             {site?.isOwner ? ownerMessage(message) : userMessage(message)}

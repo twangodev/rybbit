@@ -83,15 +83,6 @@ export const initializeClickhouse = async () => {
       `,
   });
 
-  // Add new columns for R2 integration if they don't exist
-  await clickhouse.exec({
-    query: `
-      ALTER TABLE session_replay_events
-        ADD COLUMN IF NOT EXISTS event_data_key Nullable(String),
-        ADD COLUMN IF NOT EXISTS batch_index Nullable(UInt16)
-    `,
-  });
-
   await clickhouse.exec({
     query: `
       CREATE TABLE IF NOT EXISTS session_replay_metadata (
