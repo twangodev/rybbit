@@ -2,15 +2,23 @@ export const importInitiationQueue = "import-initiation";
 
 export const processImportChunkQueue = "process-import-chunk";
 
-export interface ImportInitiationJob {
-  tempFilePath: string;
+interface ImportJob {
   site: string;
   importId: string;
   source: "umami";
 }
 
-export interface ImportMapping<T> {
-  transform(row: T, headers: string[]): RybbitEvent;
+export interface ImportInitiationJob extends ImportJob {
+  tempFilePath: string;
+}
+
+export interface ProcessImportChunkJob<T> extends ImportJob {
+  chunk: T[];
+  chunkNumber: number;
+}
+
+export interface ImportMapper<T> {
+  transform(rows: T, site: string, importId: string): RybbitEvent[];
 }
 
 interface RybbitEvent {
