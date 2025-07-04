@@ -26,6 +26,8 @@ export class R2StorageService {
           accessKeyId: process.env.R2_ACCESS_KEY_ID,
           secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
         },
+        // Required for R2 compatibility
+        forcePathStyle: true,
       });
       this.bucketName = process.env.R2_BUCKET_NAME || "rybbit";
       this.enabled = true;
@@ -73,8 +75,16 @@ export class R2StorageService {
       );
 
       return key;
-    } catch (error) {
+    } catch (error: any) {
       console.error("[R2Storage] Failed to store batch:", error);
+      
+      // Log more details for debugging
+      if (error.Code === 'AccessDenied') {
+        console.error("[R2Storage] Access denied. Check R2 API token permissions.");
+        console.error(`[R2Storage] Attempted to write to bucket: ${this.bucketName}`);
+        console.error(`[R2Storage] Key: ${key}`);
+      }
+      
       throw error;
     }
   }
