@@ -11,13 +11,6 @@ export class R2StorageService {
 
   constructor() {
     // Only initialize R2 in cloud environment
-    console.log({
-      R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
-      R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
-      R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
-      R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
-    });
-
     if (IS_CLOUD && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
       this.client = new S3Client({
         region: "auto",
@@ -75,16 +68,8 @@ export class R2StorageService {
       );
 
       return key;
-    } catch (error: any) {
+    } catch (error) {
       console.error("[R2Storage] Failed to store batch:", error);
-      
-      // Log more details for debugging
-      if (error.Code === 'AccessDenied') {
-        console.error("[R2Storage] Access denied. Check R2 API token permissions.");
-        console.error(`[R2Storage] Attempted to write to bucket: ${this.bucketName}`);
-        console.error(`[R2Storage] Key: ${key}`);
-      }
-      
       throw error;
     }
   }
