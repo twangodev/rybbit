@@ -1,4 +1,4 @@
-import { ImportMapping } from "../../types/import.js";
+import { ImportMapper } from "../../types/import.js";
 
 interface UmamiEvent {
   website_id: string; // Ignore
@@ -43,7 +43,46 @@ interface UmamiEvent {
   job_id: string | null; // Ignore
 }
 
-export class UmamiImportMapping implements ImportMapping<UmamiEvent> {
+export const umamiHeaders = [
+  "website_id",
+  "session_id",
+  "visit_id",
+  "event_id",
+  "hostname",
+  "browser",
+  "os",
+  "device",
+  "screen",
+  "language",
+  "country",
+  "region",
+  "city",
+  "url_path",
+  "url_query",
+  "utm_source",
+  "utm_medium",
+  "utm_campaign",
+  "utm_content",
+  "utm_term",
+  "referrer_path",
+  "referrer_query",
+  "referrer_domain",
+  "page_title",
+  "gclid",
+  "fbclid",
+  "msclkid",
+  "ttclid",
+  "li_fat_id",
+  "twclid",
+  "event_type",
+  "event_name",
+  "tag",
+  "distinct_id",
+  "created_at",
+  "job_id"
+];
+
+export class UmamiImportMapper implements ImportMapper<UmamiEvent> {
   transform(row: UmamiEvent, headers: string[]): any {
     const [screenWidth, screenHeight] = row.screen?.split("x") || [null, null];
 
