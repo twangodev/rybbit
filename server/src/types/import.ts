@@ -2,7 +2,7 @@ export const importInitiationQueue = "import-initiation";
 
 export const processImportChunkQueue = "process-import-chunk";
 
-export interface ImportJob {
+export interface ImportInitiationJob {
   tempFilePath: string;
   site: string;
   importId: string;
