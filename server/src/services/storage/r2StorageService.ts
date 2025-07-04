@@ -11,10 +11,17 @@ export class R2StorageService {
 
   constructor() {
     // Only initialize R2 in cloud environment
+    console.log({
+      R2_BUCKET_NAME: process.env.R2_BUCKET_NAME,
+      R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
+      R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
+      R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
+    });
+
     if (IS_CLOUD && process.env.R2_ACCESS_KEY_ID && process.env.R2_SECRET_ACCESS_KEY) {
       this.client = new S3Client({
         region: "auto",
-        endpoint: process.env.R2_ENDPOINT || `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+        endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
         credentials: {
           accessKeyId: process.env.R2_ACCESS_KEY_ID,
           secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
@@ -102,18 +109,18 @@ export class R2StorageService {
       }
 
       const buffer = Buffer.concat(chunks);
-      
+
       // Detect compression based on file extension
       let decompressed: Buffer;
-      if (key.endsWith('.zst')) {
+      if (key.endsWith(".zst")) {
         decompressed = await zstdDecompress(buffer);
-      } else if (key.endsWith('.gz')) {
+      } else if (key.endsWith(".gz")) {
         decompressed = gunzipSync(buffer);
       } else {
         // Assume zstd for unknown extensions
         decompressed = await zstdDecompress(buffer);
       }
-      
+
       return JSON.parse(decompressed.toString());
     } catch (error) {
       console.error("[R2Storage] Failed to retrieve batch:", error);
