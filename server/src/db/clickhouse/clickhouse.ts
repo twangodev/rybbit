@@ -68,6 +68,8 @@ export const initializeClickhouse = async () => {
         timestamp DateTime64(3),
         event_type LowCardinality(String),
         event_data String,
+        event_data_key Nullable(String), -- R2 storage key for cloud deployments
+        batch_index Nullable(UInt16), -- Index within the R2 batch
         sequence_number UInt32,
         event_size_bytes UInt32,
         viewport_width Nullable(UInt16),
@@ -79,6 +81,15 @@ export const initializeClickhouse = async () => {
       ORDER BY (site_id, session_id, sequence_number)
       TTL toDateTime(timestamp) + INTERVAL 30 DAY
       `,
+  });
+
+  // Add new columns for R2 integration if they don't exist
+  await clickhouse.exec({
+    query: `
+      ALTER TABLE session_replay_events
+        ADD COLUMN IF NOT EXISTS event_data_key Nullable(String),
+        ADD COLUMN IF NOT EXISTS batch_index Nullable(UInt16)
+    `,
   });
 
   await clickhouse.exec({

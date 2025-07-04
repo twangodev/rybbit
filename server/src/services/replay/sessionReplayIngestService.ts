@@ -5,6 +5,7 @@ import { processResults } from "../../api/analytics/utils.js";
 import { parseTrackingData } from "./trackingUtils.js";
 import { sessionsService } from "../sessions/sessionsService.js";
 import { userIdService } from "../userId/userIdService.js";
+import { r2Storage } from "../storage/r2StorageService.js";
 
 export interface RequestMetadata {
   userAgent: string;
@@ -40,22 +41,62 @@ export class SessionReplayIngestService {
       site_id: siteId.toString(),
     });
 
+    // Check if R2 storage is enabled for cloud deployments
+    let r2BatchKey: string | null = null;
+    let eventDataArray: any[] = [];
+    
+    if (r2Storage.isEnabled()) {
+      // Extract event data for R2 storage
+      eventDataArray = events.map(event => event.data);
+      
+      try {
+        // Store event data batch in R2
+        r2BatchKey = await r2Storage.storeBatch(siteId, sessionId, eventDataArray);
+      } catch (error) {
+        console.error("Failed to store in R2, falling back to ClickHouse:", error);
+        r2BatchKey = null;
+      }
+    }
+
     // Prepare events for batch insert
     const eventsToInsert = events.map((event, index) => {
       const serializedData = JSON.stringify(event.data);
-      return {
-        site_id: siteId,
-        session_id: sessionId,
-        user_id: userId,
-        timestamp: event.timestamp,
-        event_type: event.type,
-        event_data: serializedData,
-        sequence_number: index,
-        event_size_bytes: serializedData.length,
-        viewport_width: metadata?.viewportWidth || null,
-        viewport_height: metadata?.viewportHeight || null,
-        is_complete: 0,
-      };
+      
+      if (r2BatchKey) {
+        // R2 storage: store metadata only in ClickHouse
+        return {
+          site_id: siteId,
+          session_id: sessionId,
+          user_id: userId,
+          timestamp: event.timestamp,
+          event_type: event.type,
+          event_data: "", // Empty string when using R2
+          event_data_key: r2BatchKey,
+          batch_index: index,
+          sequence_number: index,
+          event_size_bytes: serializedData.length,
+          viewport_width: metadata?.viewportWidth || null,
+          viewport_height: metadata?.viewportHeight || null,
+          is_complete: 0,
+        };
+      } else {
+        // Traditional storage: store everything in ClickHouse
+        return {
+          site_id: siteId,
+          session_id: sessionId,
+          user_id: userId,
+          timestamp: event.timestamp,
+          event_type: event.type,
+          event_data: serializedData,
+          event_data_key: null,
+          batch_index: null,
+          sequence_number: index,
+          event_size_bytes: serializedData.length,
+          viewport_width: metadata?.viewportWidth || null,
+          viewport_height: metadata?.viewportHeight || null,
+          is_complete: 0,
+        };
+      }
     });
 
     // Batch insert events

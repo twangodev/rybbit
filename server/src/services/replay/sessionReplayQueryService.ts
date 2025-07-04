@@ -10,6 +10,7 @@ import {
   getFilterStatement,
 } from "../../api/analytics/utils.js";
 import { FilterParams } from "@rybbit/shared";
+import { r2Storage } from "../storage/r2StorageService.js";
 
 /**
  * Service responsible for querying/retrieving session replay data
@@ -157,7 +158,9 @@ export class SessionReplayQueryService {
         SELECT 
           toUnixTimestamp64Milli(timestamp) as timestamp,
           event_type as type,
-          event_data as data
+          event_data as data,
+          event_data_key,
+          batch_index
         FROM session_replay_events
         WHERE site_id = {siteId:UInt16} 
           AND session_id = {sessionId:String}
@@ -171,20 +174,59 @@ export class SessionReplayQueryService {
       timestamp: number;
       type: string;
       data: string;
+      event_data_key: string | null;
+      batch_index: number | null;
     };
 
     const eventsResults = await processResults<EventRow>(eventsResult);
 
-    const events = eventsResults.map((event) => {
-      // Timestamp is already in milliseconds from the SQL query
-      const timestamp = event.timestamp;
-
-      return {
-        timestamp,
-        type: event.type, // Keep as string for now to match interface
-        data: JSON.parse(event.data),
-      };
+    // Group events by batch key for efficient R2 retrieval
+    const eventsByBatch = new Map<string | null, EventRow[]>();
+    eventsResults.forEach(event => {
+      const key = event.event_data_key;
+      if (!eventsByBatch.has(key)) {
+        eventsByBatch.set(key, []);
+      }
+      eventsByBatch.get(key)!.push(event);
     });
+
+    // Process batches and reconstruct events
+    const events = [];
+    
+    for (const [batchKey, batchEvents] of eventsByBatch) {
+      if (batchKey && r2Storage.isEnabled()) {
+        // Fetch event data from R2
+        try {
+          const eventDataArray = await r2Storage.getBatch(batchKey);
+          
+          // Map R2 data back to events
+          for (const event of batchEvents) {
+            if (event.batch_index !== null && eventDataArray[event.batch_index]) {
+              events.push({
+                timestamp: event.timestamp,
+                type: event.type,
+                data: eventDataArray[event.batch_index],
+              });
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to fetch R2 batch ${batchKey}:`, error);
+          // Skip this batch if R2 fetch fails
+        }
+      } else {
+        // Traditional ClickHouse storage
+        for (const event of batchEvents) {
+          events.push({
+            timestamp: event.timestamp,
+            type: event.type,
+            data: JSON.parse(event.data),
+          });
+        }
+      }
+    }
+
+    // Sort events by timestamp (in case batches were processed out of order)
+    events.sort((a, b) => a.timestamp - b.timestamp);
 
     return {
       events,
