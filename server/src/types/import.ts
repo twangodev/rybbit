@@ -22,14 +22,14 @@ export interface ImportMapper<T> {
 }
 
 interface RybbitEvent {
-  site_id: number; // UInt16
-  timestamp: string; // ISO 8601 format (DateTime)
+  site_id: number;
+  timestamp: string;
   session_id: string;
   user_id: string;
   hostname: string;
   pathname: string;
-  querystring: string; // Raw URL parameters
-  url_parameters: Record<string, string>; // Map(String, String)
+  querystring: string;
+  url_parameters: Record<string, string>;
   page_title: string;
   referrer: string;
   channel: string;
@@ -38,15 +38,21 @@ interface RybbitEvent {
   operating_system: string;
   operating_system_version: string;
   language: string;
-  country: string; // ISO 3166-1 alpha-2 (FixedString(2))
+  country: string;
   region: string;
   city: string;
   lat: number;
   lon: number;
-  screen_width: number; // UInt16
-  screen_height: number; // UInt16
+  screen_width: number;
+  screen_height: number;
   device_type: string;
-  type: string; // Defaults to 'pageview'
+  type: string;
   event_name: string;
-  props: Record<string, unknown>; // JSON
+  props: Record<string, unknown>;
+  lcp: number | null,
+  cls: number | null,
+  inp: number | null,
+  fcp: number | null,
+  ttfb: number | null,
+  import_id: string | null,
 }
