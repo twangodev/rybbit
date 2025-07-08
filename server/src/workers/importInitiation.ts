@@ -4,11 +4,37 @@ import boss from "../lib/boss.js";
 import { importInitiationQueue, ImportInitiationJob, processImportChunkQueue } from "../types/import.js";
 import { Job } from "pg-boss";
 import { umamiHeaders } from "./mappings/umami.js";
+import { clickhouse } from "../db/clickhouse/clickhouse.js";
+import { processResults } from "../api/analytics/utils.js";
 
 await boss.work(importInitiationQueue, async (job: Job<ImportInitiationJob>[]) => {
   const { tempFilePath, site, importId, source } = job[0].data;
+
+  const query = await clickhouse.query({
+    query: `
+    SELECT count() AS count
+    FROM events
+    WHERE site_id = {siteId:UInt16}
+    AND import_id IS NOT NULL
+    `,
+    format: "JSONEachRow",
+    query_params: {
+      siteId: Number(site),
+    },
+  });
+  const result = await processResults<{ count: number }>(query);
+  const importedRowCount = result[0].count;
+
+  const maxImportedRows = 1000000;
+  const remainingRows = maxImportedRows - importedRowCount;
+  if (remainingRows <= 0) {
+    console.log(`🛑 No remaining rows can be imported (already imported: ${importedRowCount}).`);
+    await fs.promises.unlink(tempFilePath);
+    return;
+  }
+
   const chunkSize = 1000;
-  const maxChunks = 1000; // 1 million rows limit
+  const maxChunks = Math.ceil(remainingRows / chunkSize);
   let chunkNumber = 0;
   let chunk: any[] = [];
   let shouldStop = false;
@@ -65,7 +91,7 @@ await boss.work(importInitiationQueue, async (job: Job<ImportInitiationJob>[]) =
         chunkNumber++;
 
         if (chunkNumber > maxChunks) {
-          await cleanup(`Maximum chunks limit reached (${maxChunks} chunks / 1 million rows)`);
+          await cleanup(`Maximum import limit reached: ${maxImportedRows} rows total (already imported: ${importedRowCount})`);
           return;
         }
 
