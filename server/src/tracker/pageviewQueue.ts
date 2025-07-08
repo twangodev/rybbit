@@ -126,6 +126,7 @@ class PageviewQueue {
         inp: pv.inp || null,
         fcp: pv.fcp || null,
         ttfb: pv.ttfb || null,
+        import_id: null,
       };
     });
 
