@@ -1,10 +1,12 @@
 import { ImportMapper } from "../../types/import.js";
+import { clearSelfReferrer, getAllUrlParams } from "../../tracker/utils.js";
+import { getChannel } from "../../tracker/getChannel.js";
 
 export interface UmamiEvent {
   website_id: string; // Ignore
   session_id: string;
-  visit_id: string; // ?
-  event_id: string; // ?
+  visit_id: string; // Ignore
+  event_id: string; // Ignore
 
   hostname: string;
   browser: string;
@@ -18,28 +20,28 @@ export interface UmamiEvent {
 
   url_path: string;
   url_query: string;
-  utm_source: string;
-  utm_medium: string;
-  utm_campaign: string;
-  utm_content: string;
-  utm_term: string;
-  referrer_path: string;
-  referrer_query: string;
+  utm_source: string; // Ignore, part of url_query
+  utm_medium: string; // Ignore, part of url_query
+  utm_campaign: string; // Ignore, part of url_query
+  utm_content: string; // Ignore, part of url_query
+  utm_term: string; // Ignore, part of url_query
+  referrer_path: string; // Ignore
+  referrer_query: string; // Ignore
   referrer_domain: string;
   page_title: string;
 
-  gclid: string; // Ignore
-  fbclid: string; // Ignore
-  msclkid: string; // Ignore
-  ttclid: string; // Ignore
-  li_fat_id: string; // Ignore
-  twclid: string; // Ignore
+  gclid: string; // Ignore, part of url_query
+  fbclid: string; // Ignore, part of url_query
+  msclkid: string; // Ignore, part of url_query
+  ttclid: string; // Ignore, part of url_query
+  li_fat_id: string; // Ignore, part of url_query
+  twclid: string; // Ignore, part of url_query
 
-  event_type: number | string;
+  event_type: number;
   event_name: string;
   tag: string; // Ignore
-  distinct_id: string; // user id?
-  created_at: string; // ISO date-time string (from DateTime('UTC'))
+  distinct_id: string;
+  created_at: string;
   job_id: string | null; // Ignore
 }
 
@@ -85,26 +87,9 @@ export const umamiHeaders = [
 export class UmamiImportMapper implements ImportMapper<UmamiEvent[]> {
   transform(rows: UmamiEvent[], site: string, importId: string) {
     return rows.map(row => {
-      const [screenWidth, screenHeight] = row.screen.split("x") || [0, 0];
-
-      const referrer = row.referrer_domain
-        ? `${row.referrer_domain}${row.referrer_path || ""}${
-          row.referrer_query || ""
-        }`
-        : "";
-
-      const props: Record<string, any> = {};
-      if (row.utm_source) props.utm_source = row.utm_source;
-      if (row.utm_medium) props.utm_medium = row.utm_medium;
-      if (row.utm_campaign) props.utm_campaign = row.utm_campaign;
-      if (row.utm_content) props.utm_content = row.utm_content;
-      if (row.utm_term) props.utm_term = row.utm_term;
-
-      // Umami: 1 for pageview, 2 for custom event
-      const eventType =
-        row.event_type === "2" || row.event_type === 2
-          ? "custom_event"
-          : "pageview";
+      const querystring = row.url_query ? `?${row.url_query}` : "";
+      const referrer = row.referrer_domain ? `https://${row.referrer_domain}` : "";
+      const [screenWidth, screenHeight] = /^\d+x\d+$/.test(row.screen) ? row.screen.split("x") : ["0", "0"];
 
       return {
         site_id: Number(site),
@@ -113,27 +98,33 @@ export class UmamiImportMapper implements ImportMapper<UmamiEvent[]> {
         user_id: row.distinct_id,
         hostname: row.hostname,
         pathname: row.url_path,
-        querystring: row.url_query,
-        url_parameters: {placeholder: "a"},
+        querystring: querystring,
+        url_parameters: getAllUrlParams(row.url_query),
         page_title: row.page_title,
-        referrer: referrer,
-        channel: "placeholder",
-        browser: row.browser,
-        browser_version: "placeholder",
-        operating_system: row.os,
-        operating_system_version: "placeholder",
+        referrer: clearSelfReferrer(referrer, row.hostname.replace(/^www\./, "")),
+        channel: getChannel(referrer, querystring, row.hostname),
+        browser: row.browser ? row.browser.charAt(0).toUpperCase() + row.browser.slice(1) : "",
+        browser_version: "",
+        operating_system: row.os ? row.os.trim().split(/\s+/)[0] : "",
+        operating_system_version: row.os === "Windows 10" ? "10" : "",
         language: row.language,
         country: row.country,
         region: row.region,
         city: row.city,
-        lat: 0, // placeholder
-        lon: 0, // placeholder
-        screen_width: screenWidth ? parseInt(screenWidth, 10) : 0,
-        screen_height: screenHeight ? parseInt(screenHeight, 10) : 0,
-        device_type: row.device,
-        type: eventType,
+        lat: 0,
+        lon: 0,
+        screen_width: parseInt(screenWidth, 10),
+        screen_height: parseInt(screenHeight, 10),
+        device_type: row.device ? row.device.charAt(0).toUpperCase() + row.device.slice(1) : "",
+        type: row.event_type === 1 ? "pageview" : "custom_event",
         event_name: row.event_name,
-        props: props,
+        props: JSON.parse("{}"),
+        lcp: null,
+        cls: null,
+        inp: null,
+        fcp: null,
+        ttfb: null,
+        import_id: importId,
       };
     });
   }
