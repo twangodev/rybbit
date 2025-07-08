@@ -69,6 +69,8 @@ export const initializeClickhouse = async () => {
         timestamp DateTime64(3),
         event_type LowCardinality(String),
         event_data String,
+        event_data_key Nullable(String), -- R2 storage key for cloud deployments
+        batch_index Nullable(UInt16), -- Index within the R2 batch
         sequence_number UInt32,
         event_size_bytes UInt32,
         viewport_width Nullable(UInt16),

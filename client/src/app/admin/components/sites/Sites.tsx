@@ -28,6 +28,7 @@ import { SearchInput } from "../shared/SearchInput";
 import { ErrorAlert } from "../shared/ErrorAlert";
 import { AdminLayout } from "../shared/AdminLayout";
 import Link from "next/link";
+import { Favicon } from "../../../../components/Favicon";
 
 export function Sites() {
   const { data: sites, isLoading, isError } = useAdminSites();
@@ -80,7 +81,11 @@ export function Sites() {
           <SortableHeader column={column}>Domain</SortableHeader>
         ),
         cell: ({ row }) => (
-          <div className="font-medium">
+          <div className="font-medium flex items-center gap-2">
+            <Favicon
+              domain={row.original.domain}
+              className="w-5 h-5 flex-shrink-0"
+            />
             <Link
               href={`https://${row.original.domain}`}
               target="_blank"

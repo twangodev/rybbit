@@ -1,8 +1,11 @@
+import { Card } from "./Card";
+
 export function UserBehaviorTrends() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">User Behavior Trends</h3>
-      <p className="text-neutral-300 mb-4">Discover when your users are most active with hourly and daily heatmaps.</p>
+    <Card 
+      title="User Behavior Trends" 
+      description="Discover when your users are most active with hourly and daily heatmaps."
+    >
       
       <div className="mt-4 bg-neutral-900 p-4 rounded-md">
         <div className="flex justify-between items-center mb-4">
@@ -117,6 +120,6 @@ export function UserBehaviorTrends() {
           Weekday afternoons show highest user engagement
         </div>
       </div>
-    </div>
+    </Card>
   );
 } 

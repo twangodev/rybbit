@@ -1,97 +1,126 @@
+import { Card } from "./Card";
+import { ChevronRight, TrendingDown, Users, ArrowRight } from "lucide-react";
+
 export function UserFlowAnalysis() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">User Flow Analysis</h3>
-      <p className="text-neutral-300 mb-4">Visualize how users navigate through your site with intuitive path analysis tools.</p>
-      
-      <div className="mt-4 bg-neutral-900 p-4 rounded-md">
-        <div className="flex justify-between items-center mb-4">
-          <div className="text-base font-medium">Homepage Flow</div>
-          <div className="bg-blue-900/30 text-blue-400 text-sm px-2 py-1 rounded-md">
-            1,240 users
+    <Card
+      title="User Flow Analysis"
+      description="Visualize how users navigate through your site with intuitive path analysis tools."
+    >
+      <div className="mt-4 bg-neutral-900 rounded-lg p-4">
+        {/* Header with metrics */}
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Users className="w-4 h-4 text-blue-400" />
+            <span className="text-sm font-medium">Top Paths from Homepage</span>
+          </div>
+          <span className="text-xs text-neutral-400">Last 7 days</span>
+        </div>
+
+        {/* Sankey-style flow visualization */}
+        <div className="space-y-4">
+          {/* Path 1: Homepage → Products → Checkout */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-blue-900/30 border border-blue-500/40 rounded">
+                Products
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
+                Checkout
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-orange-400">324</div>
+              <div className="text-xs text-neutral-500">26%</div>
+            </div>
+          </div>
+
+          {/* Path 2: Homepage → Features → Sign Up */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-purple-900/30 border border-purple-500/40 rounded">
+                Features
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
+                Sign Up
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-orange-400">198</div>
+              <div className="text-xs text-neutral-500">16%</div>
+            </div>
+          </div>
+
+          {/* Path 3: Homepage → Pricing → Contact */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-cyan-900/30 border border-cyan-500/40 rounded">
+                Pricing
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-orange-900/30 border border-orange-500/40 rounded">
+                Contact
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-orange-400">145</div>
+              <div className="text-xs text-neutral-500">12%</div>
+            </div>
+          </div>
+
+          {/* Path 4: Homepage → About → Exit */}
+          <div className="flex items-center gap-2">
+            <div className="flex-1 flex items-center gap-2 text-xs">
+              <div className="px-2 py-1.5 bg-emerald-900/30 border border-emerald-500/40 rounded">
+                Home
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="px-2 py-1.5 bg-violet-900/30 border border-violet-500/40 rounded">
+                About
+              </div>
+              <ChevronRight className="w-3 h-3 text-neutral-500" />
+              <div className="flex items-center gap-1 px-2 py-1.5 bg-red-900/20 border border-red-500/30 rounded">
+                <TrendingDown className="w-3 h-3" />
+                <span>Exit</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <div className="text-sm font-medium text-red-400">98</div>
+              <div className="text-xs text-neutral-500">8%</div>
+            </div>
           </div>
         </div>
-        
-        {/* Flow diagram - structured approach */}
-        <div className="relative py-2">
-          {/* Entry point - full width, no line */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Entry Page</span>
-              <span className="text-xs text-neutral-400">100%</span>
-            </div>
-            <div className="w-full py-3 px-2 bg-emerald-900/30 border border-emerald-500/40 rounded-md text-center text-sm">
-              Homepage
-            </div>
-          </div>
-          
-          {/* Second level - split */}
-          <div className="mb-8">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Second Page</span>
-              <span className="text-xs text-neutral-400">73% continued</span>
-            </div>
-            <div className="grid grid-cols-3 gap-3 w-full">
-              <div className="flex flex-col">
-                <div className="py-3 px-2 bg-blue-900/30 border border-blue-500/40 rounded-md text-center text-sm mb-2">
-                  Products
-                </div>
-                <div className="text-xs text-center text-blue-400">42%</div>
-              </div>
-              <div className="flex flex-col">
-                <div className="py-3 px-2 bg-blue-900/30 border border-blue-500/40 rounded-md text-center text-sm mb-2">
-                  Features
-                </div>
-                <div className="text-xs text-center text-blue-400">31%</div>
-              </div>
-              <div className="flex flex-col">
-                <div className="py-3 px-2 bg-neutral-800 border border-neutral-700 rounded-md text-center text-neutral-500 text-sm mb-2">
-                  Other
-                </div>
-                <div className="text-xs text-center text-neutral-500">27%</div>
-              </div>
-            </div>
-          </div>
-          
-          {/* Third level - conversion */}
+
+        {/* Summary metrics */}
+        <div className="mt-5 pt-4 border-t border-neutral-800 grid grid-cols-3 gap-4">
           <div>
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-sm font-medium">Conversion Pages</span>
-              <span className="text-xs text-neutral-400">32% converted</span>
-            </div>
-            <div className="grid grid-cols-3 gap-3 w-full">
-              <div className="flex flex-col">
-                <div className="py-3 px-2 bg-orange-900/30 border border-orange-500/40 rounded-md text-center text-sm mb-2">
-                  Checkout
-                </div>
-                <div className="text-xs text-center text-orange-400">15%</div>
-              </div>
-              <div className="flex flex-col">
-                <div className="py-3 px-2 bg-orange-900/30 border border-orange-500/40 rounded-md text-center text-sm mb-2">
-                  Sign Up
-                </div>
-                <div className="text-xs text-center text-orange-400">17%</div>
-              </div>
-              <div className="flex flex-col">
-                <div className="py-3 px-2 bg-neutral-800 border border-neutral-700 rounded-md text-center text-neutral-500 text-sm mb-2">
-                  Exit
-                </div>
-                <div className="text-xs text-center text-neutral-500">68%</div>
-              </div>
-            </div>
+            <div className="text-xs text-neutral-400">Pages/Session</div>
+            <div className="text-sm font-medium mt-1">3.2</div>
           </div>
-          
-          {/* Connecting lines using pseudo elements and CSS are better,
-               but this simplified approach works for the mockup */}
-          
-          <div className="absolute top-0 bottom-0 left-0 right-0 pointer-events-none hidden md:block" aria-hidden="true">
-            {/* Connecting guides - would be better with SVG in a real implementation */}
-            <div className="absolute top-14 left-16 h-[calc(100%-120px)] w-px bg-neutral-800"></div>
-            <div className="absolute top-14 left-1/2 h-[calc(100%-120px)] w-px bg-neutral-800"></div>
-            <div className="absolute top-14 right-16 h-[calc(100%-120px)] w-px bg-neutral-800"></div>
+          <div>
+            <div className="text-xs text-neutral-400">Drop-off Rate</div>
+            <div className="text-sm font-medium text-red-400 mt-1">45%</div>
+          </div>
+          <div>
+            <div className="text-xs text-neutral-400">Conversion Rate</div>
+            <div className="text-sm font-medium text-emerald-400 mt-1">38%</div>
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
-} 
+}

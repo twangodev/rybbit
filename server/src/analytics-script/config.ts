@@ -48,7 +48,7 @@ export function parseScriptConfig(
     "data-replay-batch-size"
   )
     ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size")!))
-    : 3; // Reduced from 50 to 3 for production stability
+    : 25; // Increased to 25 for better performance
 
   const sessionReplayBatchInterval = scriptTag.getAttribute(
     "data-replay-batch-interval"

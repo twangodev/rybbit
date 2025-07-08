@@ -53,6 +53,11 @@ const COMPARISON_FEATURES = [
         pro: true,
       },
       {
+        name: "Session replays",
+        free: false,
+        pro: true,
+      },
+      {
         name: "Web vitals",
         free: false,
         pro: true,
@@ -165,9 +170,7 @@ function FeatureCell({ value, isPro = false }) {
     );
   }
 
-  return (
-    <span className={cn("text-sm text-center block text-white")}>{value}</span>
-  );
+  return <span className={cn("text-sm text-center block text-white")}>{value}</span>;
 }
 
 export function ComparisonSection() {
@@ -192,10 +195,7 @@ export function ComparisonSection() {
             </div>
             <div className="flex flex-col items-center justify-center px-6 border-r border-neutral-700/50">
               <div className="font-semibold text-lg text-center mb-3">
-                Free{" "}
-                <span className="text-sm text-neutral-400 font-normal">
-                  $0/month
-                </span>
+                Free <span className="text-sm text-neutral-400 font-normal">$0/month</span>
               </div>
               <a
                 href="https://app.rybbit.io/signup"
@@ -206,10 +206,7 @@ export function ComparisonSection() {
             </div>
             <div className="flex flex-col items-center justify-center px-6">
               <div className="font-semibold text-lg text-emerald-400 text-center mb-3">
-                Pro{" "}
-                <span className="text-sm text-neutral-400 font-normal">
-                  Starting at $19/month
-                </span>
+                Pro <span className="text-sm text-neutral-400 font-normal">Starting at $19/month</span>
               </div>
               <a
                 href="https://app.rybbit.io/signup"
@@ -227,9 +224,7 @@ export function ComparisonSection() {
               {category.category !== "Usage" && (
                 <div className="grid grid-cols-3 gap-0 py-3 border-b border-neutral-700 bg-neutral-800/10">
                   <div className="flex items-center px-6 border-r border-neutral-700/50">
-                    <h3 className="font-semibold text-neutral-100 text-base">
-                      {category.category}
-                    </h3>
+                    <h3 className="font-semibold text-neutral-100 text-base">{category.category}</h3>
                   </div>
                   <div className="border-r border-neutral-700/50"></div>
                   <div></div>
@@ -243,9 +238,7 @@ export function ComparisonSection() {
                   className="grid grid-cols-3 gap-0 py-3 hover:bg-neutral-800/20 transition-colors border-b border-neutral-800/30 last:border-b-0"
                 >
                   <div className="flex items-center px-6 border-r border-neutral-700/50">
-                    <span className="text-sm text-neutral-300">
-                      {feature.name}
-                    </span>
+                    <span className="text-sm text-neutral-300">{feature.name}</span>
                   </div>
                   <div className="flex items-center justify-center px-6 border-r border-neutral-700/50">
                     <FeatureCell value={feature.free} />

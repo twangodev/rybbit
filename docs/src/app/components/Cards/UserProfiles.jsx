@@ -4,16 +4,17 @@ import { cn } from "../../../lib/utils";
 import { Browser } from "../Browser";
 import { CountryFlag } from "../Country";
 import { OperatingSystem } from "../OperatingSystem";
+import { Card } from "./Card";
 
 
 
 export function UserProfiles() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">User Profiles</h3>
-      <p className="text-neutral-300">Know who your users are and exactly what they do.</p>
-      
-      <div className="mt-4 bg-neutral-900 p-4 rounded-md">
+    <Card 
+      title="User Profiles"
+      description="Know who your users are and exactly what they do."
+    >
+      <div className="bg-neutral-900 p-4 rounded-md">
         <div className="flex items-start gap-4">
           {/* User basic info */}
           <div className="flex-1">
@@ -93,6 +94,6 @@ export function UserProfiles() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 } 
