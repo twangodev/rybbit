@@ -17,7 +17,7 @@ const importRequestSchema = z.object({
   body: z.object({
     source: z.enum(["umami"]),
   }),
-});
+}).strict();
 
 type ImportRequest = {
   Params: z.infer<typeof importRequestSchema.shape.params>;
@@ -29,12 +29,20 @@ export async function importData(
   reply: FastifyReply,
 ) {
   try {
-    const { site } = request.params;
-    const { source } = request.body;
+    const parsed = importRequestSchema.safeParse({
+      params: request.params,
+      body: request.body,
+    });
 
-    if (!source) {
-      return reply.status(400).send({ error: "Missing 'source' in request body." });
+    if (!parsed.success) {
+      return reply.status(400).send({
+        error: "Validation failed",
+        details: parsed.error.flatten(),
+      });
     }
+
+    const { site } = parsed.data.params;
+    const { source } = parsed.data.body;
 
     const userHasAccess = await getUserHasAccessToSite(request, site);
     if (!userHasAccess) {
