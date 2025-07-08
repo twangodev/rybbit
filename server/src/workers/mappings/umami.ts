@@ -37,7 +37,7 @@ export interface UmamiEvent {
 
   event_type: number | string;
   event_name: string;
-  tag: string; // ?
+  tag: string; // Ignore
   distinct_id: string; // user id?
   created_at: string; // ISO date-time string (from DateTime('UTC'))
   job_id: string | null; // Ignore
@@ -85,7 +85,7 @@ export const umamiHeaders = [
 export class UmamiImportMapper implements ImportMapper<UmamiEvent[]> {
   transform(rows: UmamiEvent[], site: string, importId: string) {
     return rows.map(row => {
-      const [screenWidth, screenHeight] = row.screen?.split("x") || [0, 0];
+      const [screenWidth, screenHeight] = row.screen.split("x") || [0, 0];
 
       const referrer = row.referrer_domain
         ? `${row.referrer_domain}${row.referrer_path || ""}${
@@ -99,13 +99,6 @@ export class UmamiImportMapper implements ImportMapper<UmamiEvent[]> {
       if (row.utm_campaign) props.utm_campaign = row.utm_campaign;
       if (row.utm_content) props.utm_content = row.utm_content;
       if (row.utm_term) props.utm_term = row.utm_term;
-      if (row.gclid) props.gclid = row.gclid;
-      if (row.fbclid) props.fbclid = row.fbclid;
-      if (row.msclkid) props.msclkid = row.msclkid;
-      if (row.ttclid) props.ttclid = row.ttclid;
-      if (row.li_fat_id) props.li_fat_id = row.li_fat_id;
-      if (row.twclid) props.twclid = row.twclid;
-      if (row.tag) props.tag = row.tag;
 
       // Umami: 1 for pageview, 2 for custom event
       const eventType =
