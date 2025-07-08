@@ -9,7 +9,7 @@ import { processResults } from "../api/analytics/utils.js";
 
 await boss.work(importInitiationQueue, async (job: Job<ImportInitiationJob>[]) => {
   try {
-    const { tempFilePath, site, importId, source } = job[0].data;
+    const { site, importId, source, tempFilePath } = job[0].data;
 
     const query = await clickhouse.query({
       query: `

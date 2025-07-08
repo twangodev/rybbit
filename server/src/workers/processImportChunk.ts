@@ -5,18 +5,22 @@ import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { Job } from "pg-boss";
 
 await boss.work(processImportChunkQueue, async (job: Job<ProcessImportChunkJob<UmamiEvent>>[]) => {
-  const { site, importId, source, chunk, chunkNumber } = job[0].data;
+  try {
+    const { site, importId, source, chunk, chunkNumber } = job[0].data;
 
-  const dataMapper = getImportDataMapping(source);
-  const transformedRecords = dataMapper.transform(chunk, site, importId);
+    const dataMapper = getImportDataMapping(source);
+    const transformedRecords = dataMapper.transform(chunk, site, importId);
 
-  await clickhouse.insert({
-    table: "events",
-    values: transformedRecords,
-    format: "JSONEachRow",
-  });
+    await clickhouse.insert({
+      table: "events",
+      values: transformedRecords,
+      format: "JSONEachRow",
+    });
 
-  console.log(`📦 Processed chunk ${chunkNumber} for import ${importId}`);
+    console.log(`Processed chunk ${chunkNumber} for import ${importId}`);
+  } catch (error) {
+    console.error("Error in processImportChunkQueue worker:", error);
+  }
 });
 
 function getImportDataMapping(source: string) {
