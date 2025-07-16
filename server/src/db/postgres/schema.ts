@@ -8,6 +8,7 @@ import {
   timestamp,
   foreignKey,
   unique,
+  bigint,
 } from "drizzle-orm/pg-core";
 
 // User table
@@ -249,6 +250,45 @@ export const goals = pgTable(
       columns: [table.siteId],
       foreignColumns: [sites.siteId],
       name: "goals_site_id_sites_site_id_fk",
+    }),
+  ]
+);
+
+// Import status table for tracking data import progress
+export const importStatus = pgTable(
+  "import_status",
+  {
+    importId: text("import_id").primaryKey().notNull(),
+    siteId: integer("site_id").notNull(),
+    organizationId: text("organization_id").notNull(),
+    source: text("source").notNull(),
+    status: text("status").notNull().default("pending"),
+    totalRows: integer("total_rows"),
+    processedRows: integer("processed_rows").default(0),
+    chunksCompleted: integer("chunks_completed").default(0),
+    totalChunks: integer("total_chunks"),
+    errorMessage: text("error_message"),
+    startedAt: timestamp("started_at").defaultNow(),
+    completedAt: timestamp("completed_at"),
+    fileName: text("file_name").notNull(),
+    fileSize: bigint("file_size", { mode: "number" }).notNull(),
+    createdBy: text("created_by").notNull(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.siteId],
+      foreignColumns: [sites.siteId],
+      name: "import_status_site_id_sites_site_id_fk",
+    }),
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: "import_status_organization_id_organization_id_fk",
+    }),
+    foreignKey({
+      columns: [table.createdBy],
+      foreignColumns: [user.id],
+      name: "import_status_created_by_user_id_fk",
     }),
   ]
 );
