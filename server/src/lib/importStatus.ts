@@ -1,5 +1,5 @@
 import { db } from "../db/postgres/postgres.js";
-import { eq, and, desc } from 'drizzle-orm';
+import { eq, and, desc } from "drizzle-orm";
 import { importStatus } from "../db/postgres/schema.js";
 
 type SelectImportStatus = typeof importStatus.$inferSelect;
