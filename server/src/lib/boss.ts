@@ -10,7 +10,7 @@ const boss = new PgBoss({
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
     schema: "pgboss",
-    application_name: "data-import-jobs",
+    application_name: "data-import-system",
 });
 
 boss.on("error", error => console.error(error));

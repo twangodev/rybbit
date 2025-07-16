@@ -70,6 +70,7 @@ import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 import { importData } from "./api/importData.js";
+import boss from "./lib/boss.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -335,9 +336,12 @@ const start = async () => {
     // Load site configurations cache
     await siteConfig.loadSiteConfigs();
 
+    await boss.start();
+
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });
   } catch (err) {
+    await boss.stop();
     server.log.error(err);
     process.exit(1);
   }
