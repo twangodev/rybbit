@@ -23,21 +23,21 @@ export interface ImportMapper<T> {
 }
 
 export interface ImportStatus {
-  import_id: string;
-  site_id: string;
-  organization: string;
+  importId: string;
+  siteId: number;
+  organizationId: string;
   source: "umami";
   status: "pending" | "processing" | "completed" | "failed";
-  total_rows?: number;
-  processed_rows: number;
-  chunks_completed: number;
-  total_chunks?: number;
-  error_message?: string;
-  started_at: Date;
-  completed_at?: Date;
-  file_name: string;
-  file_size: number;
-  created_by: string; // user_id
+  totalRows: number | null;
+  processedRows: number;
+  chunksCompleted: number;
+  totalChunks: number | null;
+  errorMessage: string | null;
+  startedAt: Date;
+  completedAt: Date | null;
+  fileName: string;
+  fileSize: number;
+  createdBy: string; // user_id
 }
 
 interface RybbitEvent {

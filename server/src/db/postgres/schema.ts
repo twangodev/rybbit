@@ -9,6 +9,7 @@ import {
   foreignKey,
   unique,
   bigint,
+  pgEnum,
 } from "drizzle-orm/pg-core";
 
 // User table
@@ -254,6 +255,17 @@ export const goals = pgTable(
   ]
 );
 
+const importSourceEnum = pgEnum("import_source_enum", [
+  "umami",
+]);
+
+const importStatusEnum = pgEnum("import_status_enum", [
+  "pending",
+  "processing",
+  "completed",
+  "failed",
+]);
+
 // Import status table for tracking data import progress
 export const importStatus = pgTable(
   "import_status",
@@ -261,14 +273,14 @@ export const importStatus = pgTable(
     importId: text("import_id").primaryKey().notNull(),
     siteId: integer("site_id").notNull(),
     organizationId: text("organization_id").notNull(),
-    source: text("source").notNull(),
-    status: text("status").notNull().default("pending"),
+    source: importSourceEnum("source").notNull(),
+    status: importStatusEnum("status").notNull().default("pending"),
     totalRows: integer("total_rows"),
-    processedRows: integer("processed_rows").default(0),
-    chunksCompleted: integer("chunks_completed").default(0),
+    processedRows: integer("processed_rows").notNull().default(0),
+    chunksCompleted: integer("chunks_completed").notNull().default(0),
     totalChunks: integer("total_chunks"),
     errorMessage: text("error_message"),
-    startedAt: timestamp("started_at").defaultNow(),
+    startedAt: timestamp("started_at").notNull().defaultNow(),
     completedAt: timestamp("completed_at"),
     fileName: text("file_name").notNull(),
     fileSize: bigint("file_size", { mode: "number" }).notNull(),
