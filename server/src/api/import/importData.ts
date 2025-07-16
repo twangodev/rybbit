@@ -10,7 +10,7 @@ import { CSV_PARSE_QUEUE } from "../../types/import.js";
 
 const IMPORT_DIR = "/tmp/imports";
 
-const importRequestSchema = z.object({
+const importDataRequestSchema = z.object({
   params: z.object({
     organization: z.string(),
     site: z.string().min(1),
@@ -20,17 +20,17 @@ const importRequestSchema = z.object({
   }),
 }).strict();
 
-type ImportRequest = {
-  Params: z.infer<typeof importRequestSchema.shape.params>;
-  Body: z.infer<typeof importRequestSchema.shape.body>;
+type ImportDataRequest = {
+  Params: z.infer<typeof importDataRequestSchema.shape.params>;
+  Body: z.infer<typeof importDataRequestSchema.shape.body>;
 };
 
 export async function importData(
-  request: FastifyRequest<ImportRequest>,
+  request: FastifyRequest<ImportDataRequest>,
   reply: FastifyReply,
 ) {
   try {
-    const parsed = importRequestSchema.safeParse({
+    const parsed = importDataRequestSchema.safeParse({
       params: request.params,
       body: request.body,
     });
