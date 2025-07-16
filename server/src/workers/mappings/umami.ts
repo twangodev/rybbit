@@ -117,7 +117,7 @@ export class UmamiImportMapper implements ImportMapper<UmamiEvent[]> {
         screen_height: parseInt(screenHeight, 10),
         device_type: row.device ? row.device.charAt(0).toUpperCase() + row.device.slice(1) : "",
         type: row.event_type === 1 ? "pageview" : "custom_event",
-        event_name: row.event_name,
+        event_name: row.event_type === 1 ? "" : row.event_name,
         props: JSON.parse("{}"),
         lcp: null,
         cls: null,
