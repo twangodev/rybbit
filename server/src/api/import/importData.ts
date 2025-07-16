@@ -5,7 +5,7 @@ import path from "path";
 import { z } from "zod";
 import crypto from "crypto";
 import boss from "../../lib/boss.js";
-import { getUserHasAccessToSite } from "../../lib/auth-utils.js";
+import {getUserHasAccessToSite, getUserHasAdminAccessToSite} from "../../lib/auth-utils.js";
 import { CSV_PARSE_QUEUE } from "../../types/import.js";
 
 const IMPORT_DIR = "/tmp/imports";
@@ -45,7 +45,7 @@ export async function importData(
     const { organization, site } = parsed.data.params;
     const { source } = parsed.data.body;
 
-    const userHasAccess = await getUserHasAccessToSite(request, site);
+    const userHasAccess = await getUserHasAdminAccessToSite(request, site);
     if (!userHasAccess) {
       return reply.status(403).send({ error: "Forbidden" });
     }
