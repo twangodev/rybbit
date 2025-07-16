@@ -23,8 +23,20 @@ export async function getImportStatus(
   reply: FastifyReply,
 ) {
   try {
-    const { organization, site } = request.params;
-    const { importId } = request.body;
+    const parsed = getImportStatusRequestSchema.safeParse({
+      params: request.params,
+      body: request.body,
+    });
+
+    if (!parsed.success) {
+      return reply.status(400).send({
+        error: "Validation failed",
+        details: parsed.error.flatten(),
+      });
+    }
+
+    const { organization, site } = parsed.data.params;
+    const { importId } = parsed.data.body;
 
     const userHasAccess = await getUserHasAccessToSite(request, site);
     if (!userHasAccess) {
