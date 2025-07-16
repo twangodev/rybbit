@@ -9,6 +9,8 @@ const boss = new PgBoss({
     database: process.env.POSTGRES_DB,
     user: process.env.POSTGRES_USER,
     password: process.env.POSTGRES_PASSWORD,
+    schema: "pgboss",
+    application_name: "data-import-jobs",
 });
 
 boss.on("error", error => console.error(error));
