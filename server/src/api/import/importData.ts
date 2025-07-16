@@ -4,9 +4,9 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import crypto from "crypto";
-import boss from "../lib/boss.js";
-import { getUserHasAccessToSite } from "../lib/auth-utils.js";
-import { CSV_PARSE_QUEUE } from "../types/import.js";
+import boss from "../../lib/boss.js";
+import { getUserHasAccessToSite } from "../../lib/auth-utils.js";
+import { CSV_PARSE_QUEUE } from "../../types/import.js";
 
 const IMPORT_DIR = "/tmp/imports";
 
