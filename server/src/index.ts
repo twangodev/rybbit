@@ -69,10 +69,11 @@ import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
-import { importData } from "./api/importData.js";
+import { importData } from "./api/import/importData.js";
 import boss from "./lib/boss.js";
 import { registerCsvParseWorker } from "./workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./workers/dataInsertWorker.js";
+import { getImportStatus } from "./api/import/getImportStatus.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -286,6 +287,7 @@ server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Imports
 server.post("/api/import/:organization/:site", importData);
+server.post("/api/import-status/:organization/:site", getImportStatus);
 
 // Administrative
 server.get("/api/config", getConfig);
