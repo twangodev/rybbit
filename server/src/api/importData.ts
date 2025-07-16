@@ -12,6 +12,7 @@ const IMPORT_DIR = "/tmp/imports";
 
 const importRequestSchema = z.object({
   params: z.object({
+    organization: z.string(),
     site: z.string().min(1),
   }),
   body: z.object({
@@ -41,7 +42,7 @@ export async function importData(
       });
     }
 
-    const { site } = parsed.data.params;
+    const { organization, site } = parsed.data.params;
     const { source } = parsed.data.body;
 
     const userHasAccess = await getUserHasAccessToSite(request, site);
@@ -74,6 +75,7 @@ export async function importData(
     try {
       await boss.send(importInitiationQueue, {
         tempFilePath,
+        organization,
         site,
         importId,
         source,

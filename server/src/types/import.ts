@@ -10,6 +10,7 @@ interface ImportJob {
 
 export interface ImportInitiationJob extends ImportJob {
   tempFilePath: string;
+  organization: string;
 }
 
 export interface ProcessImportChunkJob<T> extends ImportJob {

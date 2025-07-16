@@ -282,7 +282,7 @@ server.get("/api/session-replay/list/:site", getSessionReplays);
 server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Imports
-server.post("/api/import/:site", importData);
+server.post("/api/import/:organization/:site", importData);
 
 // Administrative
 server.get("/api/config", getConfig);
