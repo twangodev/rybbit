@@ -22,24 +22,6 @@ export interface ImportMapper<T> {
   transform(rows: T, site: string, importId: string): RybbitEvent[];
 }
 
-export interface ImportStatus {
-  importId: string;
-  siteId: number;
-  organizationId: string;
-  source: "umami";
-  status: "pending" | "processing" | "completed" | "failed";
-  totalRows: number | null;
-  processedRows: number;
-  chunksCompleted: number;
-  totalChunks: number | null;
-  errorMessage: string | null;
-  startedAt: Date;
-  completedAt: Date | null;
-  fileName: string;
-  fileSize: number;
-  createdBy: string; // user_id
-}
-
 interface RybbitEvent {
   site_id: number;
   timestamp: string;
