@@ -66,7 +66,7 @@ import { getSessionFromReq, mapHeaders } from "./lib/auth-utils.js";
 import { auth } from "./lib/auth.js";
 import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
-import { trackEvent } from "./tracker/trackEvent.js";
+import { trackEvent } from "./services/tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -114,7 +114,7 @@ server.register(
         /* c8 ignore next 3 */
         (_request, _payload, done) => {
           done(null, null);
-        }
+        },
       );
 
       fastify.all("/api/auth/*", async (request, reply: any) => {
@@ -127,7 +127,7 @@ server.register(
       });
     });
   },
-  { auth: auth! }
+  { auth: auth! },
 );
 
 const PUBLIC_ROUTES: string[] = [
@@ -221,21 +221,13 @@ server.addHook("onRequest", async (request, reply) => {
 
 // Serve analytics scripts with generic names to avoid ad-blocker detection
 server.get("/api/script.js", async (_, reply) => reply.sendFile("script.js"));
-server.get("/api/replay.js", async (_, reply) =>
-  reply.sendFile("rrweb.min.js")
-);
-server.get("/api/metrics.js", async (_, reply) =>
-  reply.sendFile("web-vitals.iife.js")
-);
+server.get("/api/replay.js", async (_, reply) => reply.sendFile("rrweb.min.js"));
+server.get("/api/metrics.js", async (_, reply) => reply.sendFile("web-vitals.iife.js"));
 
 // Analytics
 
 // This endpoint gets called a lot so we don't want to log it
-server.get(
-  "/api/live-user-count/:site",
-  { logLevel: "silent" },
-  getLiveUsercount
-);
+server.get("/api/live-user-count/:site", { logLevel: "silent" }, getLiveUsercount);
 server.get("/api/overview/:site", getOverview);
 server.get("/api/overview-bucketed/:site", getOverviewBucketed);
 server.get("/api/single-col/:site", getSingleCol);
@@ -289,10 +281,7 @@ server.get("/api/get-sites-from-org/:organizationId", getSitesFromOrg);
 server.get("/api/get-site/:id", getSite);
 server.get("/api/site/:siteId/api-config", getSiteApiConfig);
 server.post("/api/site/:siteId/api-config", updateSiteApiConfig);
-server.get(
-  "/api/list-organization-members/:organizationId",
-  listOrganizationMembers
-);
+server.get("/api/list-organization-members/:organizationId", listOrganizationMembers);
 server.get("/api/user/organizations", getUserOrganizations);
 
 if (IS_CLOUD) {
@@ -300,11 +289,7 @@ if (IS_CLOUD) {
   server.post("/api/stripe/create-checkout-session", createCheckoutSession);
   server.post("/api/stripe/create-portal-session", createPortalSession);
   server.get("/api/stripe/subscription", getSubscription);
-  server.post(
-    "/api/stripe/webhook",
-    { config: { rawBody: true } },
-    handleWebhook
-  ); // Use rawBody parser config for webhook
+  server.post("/api/stripe/webhook", { config: { rawBody: true } }, handleWebhook); // Use rawBody parser config for webhook
 
   // Admin Routes
   server.get("/api/admin/sites", getAdminSites);
@@ -314,9 +299,7 @@ if (IS_CLOUD) {
 server.post("/track", trackEvent);
 server.post("/api/track", trackEvent);
 
-server.get("/api/health", { logLevel: "silent" }, (_, reply) =>
-  reply.send("OK")
-);
+server.get("/api/health", { logLevel: "silent" }, (_, reply) => reply.send("OK"));
 
 const start = async () => {
   try {

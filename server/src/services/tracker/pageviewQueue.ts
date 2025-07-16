@@ -1,7 +1,7 @@
 import { DateTime } from "luxon";
-import { clickhouse } from "../db/clickhouse/clickhouse.js";
-import { getLocation } from "../db/geolocation/geolocation.js";
-import { getDeviceType } from "../utils.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
+import { getLocation } from "../../db/geolocation/geolocation.js";
+import { getDeviceType } from "../../utils.js";
 import { getChannel } from "./getChannel.js";
 import { clearSelfReferrer, getAllUrlParams } from "./utils.js";
 import { TrackingPayload } from "./types.js";
@@ -92,9 +92,7 @@ class PageviewQueue {
 
       return {
         site_id: pv.site_id,
-        timestamp: DateTime.fromISO(pv.timestamp).toFormat(
-          "yyyy-MM-dd HH:mm:ss"
-        ),
+        timestamp: DateTime.fromISO(pv.timestamp).toFormat("yyyy-MM-dd HH:mm:ss"),
         session_id: pv.sessionId,
         user_id: pv.userId,
         hostname: pv.hostname || "",

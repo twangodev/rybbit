@@ -1,11 +1,9 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { isbot } from "isbot";
 import { z, ZodError } from "zod";
-import { apiKeyRateLimiter } from "../lib/rateLimiter.js";
-import { siteConfig } from "../lib/siteConfig.js";
-import { sessionsService } from "../services/sessions/sessionsService.js";
-import { normalizeOrigin } from "../utils.js";
-import { DISABLE_ORIGIN_CHECK } from "./const.js";
+import { siteConfig } from "../../lib/siteConfig.js";
+import { sessionsService } from "../sessions/sessionsService.js";
+import { validateApiKey, validateOrigin, checkApiKeyRateLimit } from "../shared/requestValidation.js";
 import { createBasePayload, isSiteOverLimit } from "./utils.js";
 import { pageviewQueue } from "./pageviewQueue.js";
 
@@ -56,7 +54,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
               return false;
             }
           },
-          { message: "Properties must be a valid JSON string" }
+          { message: "Properties must be a valid JSON string" },
         )
         .optional(), // Optional but must be valid JSON if present
       user_id: z.string().max(255).optional(),
@@ -113,21 +111,14 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
               const parsed = JSON.parse(val);
               // Validate error-specific properties
               if (typeof parsed.message !== "string") return false;
-              if (parsed.stack && typeof parsed.stack !== "string")
-                return false;
+              if (parsed.stack && typeof parsed.stack !== "string") return false;
 
               // Support both camelCase and lowercase for backwards compatibility
-              if (parsed.fileName && typeof parsed.fileName !== "string")
-                return false;
+              if (parsed.fileName && typeof parsed.fileName !== "string") return false;
 
-              if (parsed.lineNumber && typeof parsed.lineNumber !== "number")
-                return false;
+              if (parsed.lineNumber && typeof parsed.lineNumber !== "number") return false;
 
-              if (
-                parsed.columnNumber &&
-                typeof parsed.columnNumber !== "number"
-              )
-                return false;
+              if (parsed.columnNumber && typeof parsed.columnNumber !== "number") return false;
 
               // Apply truncation limits
               if (parsed.message && parsed.message.length > 500) {
@@ -145,7 +136,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
           {
             message:
               "Properties must be valid JSON with error fields (message, stack, fileName, lineNumber, columnNumber)",
-          }
+          },
         ),
       user_id: z.string().max(255).optional(),
       api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
@@ -155,113 +146,6 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     .strict(),
 ]);
 
-/**
- * Validates API key for the site
- * @param siteId The site ID from the tracking payload
- * @param apiKey The API key from the payload
- * @returns An object with success status and optional error message
- */
-async function validateApiKey(siteId: string, apiKey?: string) {
-  if (!apiKey) {
-    return { success: false, error: null };
-  }
-
-  try {
-    await siteConfig.ensureInitialized();
-    const numericSiteId =
-      typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
-    const site = await siteConfig.getSiteConfig(numericSiteId);
-
-    if (!site) {
-      return { success: false, error: "Site not found" };
-    }
-
-    if (site.apiKey && apiKey === site.apiKey) {
-      console.info(`[Tracking] Valid API key for site ${siteId}`);
-      return { success: true };
-    }
-
-    return { success: false, error: "Invalid API key" };
-  } catch (error) {
-    console.error("Error validating API key:", error);
-    return { success: false, error: "Failed to validate API key" };
-  }
-}
-
-/**
- * Validates if the request's origin matches the registered domain for the site
- * @param siteId The site ID from the tracking payload
- * @param requestOrigin The origin header from the request
- * @returns An object with success status and optional error message
- */
-async function validateOrigin(siteId: string, requestOrigin?: string) {
-  try {
-    // If origin checking is disabled, return success
-    if (DISABLE_ORIGIN_CHECK) {
-      console.info(
-        `[Tracking] Origin check disabled. Allowing request for site ${siteId} from origin: ${
-          requestOrigin || "none"
-        }`
-      );
-      return { success: true };
-    }
-
-    // Ensure site config is initialized
-    await siteConfig.ensureInitialized();
-
-    // Convert siteId to number
-    const numericSiteId =
-      typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
-
-    // Get the site configuration
-    const site = await siteConfig.getSiteConfig(numericSiteId);
-
-    if (!site) {
-      return {
-        success: false,
-        error: "Site not found",
-      };
-    }
-
-    // If no origin header, reject the request
-    if (!requestOrigin) {
-      return {
-        success: false,
-        error: "Origin header required",
-      };
-    }
-
-    try {
-      // Get the domain associated with this site
-      const siteDomain = site.domain;
-
-      // Normalize domains by removing all subdomain prefixes
-      const normalizedOriginHost = normalizeOrigin(requestOrigin);
-      const normalizedSiteDomain = normalizeOrigin(`https://${siteDomain}`);
-
-      // Check if the normalized domains match
-      if (normalizedOriginHost !== normalizedSiteDomain) {
-        return {
-          success: false,
-          error: `Origin mismatch. Received: ${requestOrigin}`,
-        };
-      }
-
-      return { success: true };
-    } catch (error) {
-      return {
-        success: false,
-        error: `Invalid origin format: ${requestOrigin}`,
-      };
-    }
-  } catch (error) {
-    console.error("Error validating origin:", error);
-    return {
-      success: false,
-      error: "Internal error validating origin",
-    };
-  }
-}
 
 // Unified handler for all events (pageviews and custom events)
 export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
@@ -281,16 +165,11 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     const validatedPayload = validationResult.data;
 
     // First check if API key is provided and valid
-    const apiKeyValidation = await validateApiKey(
-      validatedPayload.site_id,
-      validatedPayload.api_key
-    );
+    const apiKeyValidation = await validateApiKey(validatedPayload.site_id, validatedPayload.api_key);
 
     // If API key validation failed with an error, reject the request
     if (apiKeyValidation.error) {
-      console.warn(
-        `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${apiKeyValidation.error}`
-      );
+      console.warn(`[Tracking] Request rejected for site ${validatedPayload.site_id}: ${apiKeyValidation.error}`);
       return reply.status(403).send({
         success: false,
         error: apiKeyValidation.error,
@@ -299,29 +178,23 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
 
     // Check rate limit for API key authenticated requests
     if (apiKeyValidation.success && validatedPayload.api_key) {
-      if (!apiKeyRateLimiter.isAllowed(validatedPayload.api_key)) {
+      if (!checkApiKeyRateLimit(validatedPayload.api_key)) {
         console.warn(
-          `[Tracking] Rate limit exceeded for API key ${validatedPayload.api_key} on site ${validatedPayload.site_id}`
+          `[Tracking] Rate limit exceeded for API key ${validatedPayload.api_key} on site ${validatedPayload.site_id}`,
         );
         return reply.status(429).send({
           success: false,
-          error:
-            "Rate limit exceeded. Maximum 20 requests per second per API key.",
+          error: "Rate limit exceeded. Maximum 20 requests per second per API key.",
         });
       }
     }
 
     // If no valid API key, validate origin
     if (!apiKeyValidation.success) {
-      const originValidation = await validateOrigin(
-        validatedPayload.site_id,
-        request.headers.origin as string
-      );
+      const originValidation = await validateOrigin(validatedPayload.site_id, request.headers.origin as string);
 
       if (!originValidation.success) {
-        console.warn(
-          `[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`
-        );
+        console.warn(`[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`);
         return reply.status(403).send({
           success: false,
           error: originValidation.error,
@@ -334,17 +207,12 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
 
     // Check if bot blocking is enabled for this site and if the request is from a bot
     // Skip bot check for API key authenticated requests
-    if (
-      !validatedPayload.api_key &&
-      siteConfig.shouldBlockBots(validatedPayload.site_id)
-    ) {
+    if (!validatedPayload.api_key && siteConfig.shouldBlockBots(validatedPayload.site_id)) {
       // Use custom user agent if provided, otherwise fall back to header
-      const userAgent =
-        validatedPayload.user_agent ||
-        (request.headers["user-agent"] as string);
+      const userAgent = validatedPayload.user_agent || (request.headers["user-agent"] as string);
       if (userAgent && isbot(userAgent)) {
         console.log(
-          `[Tracking] Bot request filtered for site ${validatedPayload.site_id} from User-Agent: ${userAgent}`
+          `[Tracking] Bot request filtered for site ${validatedPayload.site_id} from User-Agent: ${userAgent}`,
         );
         return reply.status(200).send({
           success: true,
@@ -355,19 +223,15 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
 
     // Check if the site has exceeded its monthly limit
     if (isSiteOverLimit(validatedPayload.site_id)) {
-      console.log(
-        `[Tracking] Skipping event for site ${validatedPayload.site_id} - over monthly limit`
-      );
-      return reply
-        .status(200)
-        .send("Site over monthly limit, event not tracked");
+      console.log(`[Tracking] Skipping event for site ${validatedPayload.site_id} - over monthly limit`);
+      return reply.status(200).send("Site over monthly limit, event not tracked");
     }
 
     // Create base payload for the event using validated data
     const payload = createBasePayload(
       request, // Pass request for IP/UA
       validatedPayload.type,
-      validatedPayload // Add validated payload back
+      validatedPayload, // Add validated payload back
     );
     // Update session
     const { sessionId } = await sessionsService.updateSession({

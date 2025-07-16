@@ -1,11 +1,11 @@
 import { FastifyRequest } from "fastify";
 import UAParser, { UAParser as userAgentParser } from "ua-parser-js";
 import { z } from "zod";
-import { usageService } from "../services/usageService.js";
-import { userIdService } from "../services/userId/userIdService.js";
+import { usageService } from "../usageService.js";
+import { userIdService } from "../userId/userIdService.js";
 import { trackingPayloadSchema } from "./trackEvent.js";
 import { TrackingPayload } from "./types.js";
-import { getIpAddress } from "../utils.js";
+import { getIpAddress } from "../../utils.js";
 
 export type TotalTrackingPayload = TrackingPayload & {
   type?: string;

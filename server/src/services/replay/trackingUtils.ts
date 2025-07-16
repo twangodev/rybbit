@@ -1,6 +1,6 @@
 import { UAParser } from "ua-parser-js";
 import { getLocation } from "../../db/geolocation/geolocation.js";
-import { getChannel } from "../../tracker/getChannel.js";
+import { getChannel } from "../tracker/getChannel.js";
 import { getDeviceType } from "../../utils.js";
 
 export interface TrackingData {
@@ -32,7 +32,7 @@ export async function parseTrackingData(
   hostname: string,
   language: string,
   screenWidth: number,
-  screenHeight: number
+  screenHeight: number,
 ): Promise<TrackingData> {
   // Parse user agent
   const ua = UAParser(userAgent);
@@ -112,11 +112,7 @@ export function getOSInfo(userAgent: string): {
 /**
  * Get device type from user agent and screen dimensions
  */
-export function getDeviceTypeFromUA(
-  userAgent: string,
-  screenWidth: number,
-  screenHeight: number
-): string {
+export function getDeviceTypeFromUA(userAgent: string, screenWidth: number, screenHeight: number): string {
   const ua = UAParser(userAgent);
   return getDeviceType(screenWidth, screenHeight, ua);
 }
