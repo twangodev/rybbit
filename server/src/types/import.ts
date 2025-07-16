@@ -1,6 +1,6 @@
-export const importInitiationQueue = "import-initiation";
+export const CSV_PARSE_QUEUE = "csv-parse";
 
-export const processImportChunkQueue = "process-import-chunk";
+export const DATA_INSERT_QUEUE = "data-insert";
 
 interface ImportJob {
   site: string;
@@ -8,12 +8,12 @@ interface ImportJob {
   source: "umami";
 }
 
-export interface ImportInitiationJob extends ImportJob {
+export interface CsvParseJob extends ImportJob {
   tempFilePath: string;
   organization: string;
 }
 
-export interface ProcessImportChunkJob<T> extends ImportJob {
+export interface DataInsertJob<T> extends ImportJob {
   chunk: T[];
   chunkNumber: number;
 }

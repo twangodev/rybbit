@@ -6,7 +6,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import boss from "../lib/boss.js";
 import { getUserHasAccessToSite } from "../lib/auth-utils.js";
-import { importInitiationQueue } from "../types/import.js";
+import { CSV_PARSE_QUEUE } from "../types/import.js";
 
 const IMPORT_DIR = "/tmp/imports";
 
@@ -73,7 +73,7 @@ export async function importData(
     }
 
     try {
-      await boss.send(importInitiationQueue, {
+      await boss.send(CSV_PARSE_QUEUE, {
         tempFilePath,
         organization,
         site,

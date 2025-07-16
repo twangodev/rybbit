@@ -71,6 +71,8 @@ import { trackEvent } from "./tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 import { importData } from "./api/importData.js";
 import boss from "./lib/boss.js";
+import { registerCsvParseWorker } from "./workers/csvParseWorker.js";
+import { registerDataInsertWorker } from "./workers/dataInsertWorker.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -337,6 +339,8 @@ const start = async () => {
     await siteConfig.loadSiteConfigs();
 
     await boss.start();
+    await registerCsvParseWorker();
+    await registerDataInsertWorker();
 
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });
