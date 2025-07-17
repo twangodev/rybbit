@@ -9,16 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { motion } from "framer-motion";
-import {
-  AppWindow,
-  ArrowLeft,
-  ArrowRight,
-  Building2,
-  Check,
-  Code,
-  Sparkles,
-  User,
-} from "lucide-react";
+import { AppWindow, ArrowLeft, ArrowRight, Building2, Check, Code, Sparkles, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -90,8 +81,7 @@ export default function SignupPage() {
 
   // Validate domain
   const isValidDomain = (domain: string): boolean => {
-    const domainRegex =
-      /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
     return domainRegex.test(domain);
   };
 
@@ -167,20 +157,14 @@ export default function SignupPage() {
     try {
       // Validate domain
       if (!isValidDomain(domain)) {
-        setError(
-          "Invalid domain format. Must be a valid domain like example.com or sub.example.com"
-        );
+        setError("Invalid domain format. Must be a valid domain like example.com or sub.example.com");
         setIsLoading(false);
         return;
       }
 
       try {
         const normalizedDomain = normalizeDomain(domain);
-        const response = await addSite(
-          normalizedDomain,
-          normalizedDomain,
-          organizationId
-        );
+        const response = await addSite(normalizedDomain, normalizedDomain, organizationId);
         setSiteId(response.siteId);
         setCurrentStep(4);
       } catch (error) {
@@ -214,11 +198,7 @@ export default function SignupPage() {
     switch (currentStep) {
       case 1:
         return (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={contentVariants}
-          >
+          <motion.div initial="hidden" animate="visible" variants={contentVariants}>
             <h2 className="text-2xl font-semibold mb-6">Create your account</h2>
             <div className="space-y-4">
               <AuthInput
@@ -277,11 +257,7 @@ export default function SignupPage() {
         );
       case 2:
         return (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={contentVariants}
-          >
+          <motion.div initial="hidden" animate="visible" variants={contentVariants}>
             <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
               <Building2 className="h-6 w-6 text-emerald-500" />
               Create your organization
@@ -300,7 +276,7 @@ export default function SignupPage() {
                 />
               </div>
 
-              <div className="space-y-2">
+              {/* <div className="space-y-2">
                 <Label htmlFor="orgSlug">Organization Slug</Label>
                 <Input
                   id="orgSlug"
@@ -318,7 +294,7 @@ export default function SignupPage() {
                   required
                   className="h-10 transition-all bg-neutral-800/50 border-neutral-700"
                 />
-              </div>
+              </div> */}
 
               <div className="flex flex-col gap-4 pt-4">
                 <Button
@@ -330,10 +306,7 @@ export default function SignupPage() {
                   Continue
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
-                <Button
-                  className="w-full transition-all duration-300 h-11"
-                  onClick={() => router.push("/")}
-                >
+                <Button className="w-full transition-all duration-300 h-11" onClick={() => router.push("/")}>
                   I'm joining someone else's organization
                 </Button>
               </div>
@@ -342,11 +315,7 @@ export default function SignupPage() {
         );
       case 3:
         return (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={contentVariants}
-          >
+          <motion.div initial="hidden" animate="visible" variants={contentVariants}>
             <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
               <AppWindow className="h-6 w-6 text-emerald-500" />
               Add your first website
@@ -363,9 +332,7 @@ export default function SignupPage() {
                   required
                   className="h-10 transition-all bg-neutral-800/50 border-neutral-700"
                 />
-                <p className="text-xs text-muted-foreground">
-                  Enter the domain of the website you want to track
-                </p>
+                <p className="text-xs text-muted-foreground">Enter the domain of the website you want to track</p>
               </div>
 
               <div className="flex justify-between pt-4">
@@ -384,11 +351,7 @@ export default function SignupPage() {
         );
       case 4:
         return (
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={contentVariants}
-          >
+          <motion.div initial="hidden" animate="visible" variants={contentVariants}>
             <h2 className="text-2xl font-semibold mb-6 flex items-center gap-2">
               <Code className="h-6 w-6 text-emerald-500" />
               Add tracking code to your website
@@ -399,20 +362,15 @@ export default function SignupPage() {
                   <div className="flex items-center justify-center w-8 h-8 rounded-full bg-emerald-600 text-primary-foreground">
                     <Check className="h-4 w-4" />
                   </div>
-                  <p className="text-base font-medium">
-                    Your account is ready!
-                  </p>
+                  <p className="text-base font-medium">Your account is ready!</p>
                 </div>
                 <p className="text-sm text-muted-foreground ml-11">
-                  To start collecting analytics data, add this tracking code to
-                  your website.
+                  To start collecting analytics data, add this tracking code to your website.
                 </p>
               </div>
 
               <div className="flex flex-col gap-2">
-                <Label>
-                  Place this snippet in the &lt;head&gt; of your website
-                </Label>
+                <Label>Place this snippet in the &lt;head&gt; of your website</Label>
                 <div className="border border-neutral-700 rounded-lg overflow-hidden">
                   <CodeSnippet
                     language="HTML"
@@ -423,8 +381,7 @@ export default function SignupPage() {
 
               <div className="rounded-lg bg-muted p-4 border border-neutral-700 backdrop-blur-sm bg-neutral-800/20">
                 <p className="text-sm text-muted-foreground">
-                  Once you've added the tracking code, it may take a few minutes
-                  for data to appear in your dashboard.
+                  Once you've added the tracking code, it may take a few minutes for data to appear in your dashboard.
                 </p>
               </div>
 
@@ -468,15 +425,12 @@ export default function SignupPage() {
         <Card className="w-full max-w-sm p-1">
           <CardHeader>
             <Image src="/rybbit.svg" alt="Rybbit" width={32} height={32} />
-            <CardTitle className="text-2xl flex justify-center">
-              Sign Up Disabled
-            </CardTitle>
+            <CardTitle className="text-2xl flex justify-center">Sign Up Disabled</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-6">
               <p className="text-center">
-                New account registration is currently disabled. If you have an
-                account, you can{" "}
+                New account registration is currently disabled. If you have an account, you can{" "}
                 <Link href="/login" className="underline">
                   sign in
                 </Link>
@@ -518,12 +472,7 @@ export default function SignupPage() {
             </div>
             <div className="relative z-10 flex flex-col space-y-4">
               <a href="https://rybbit.io" target="_blank">
-                <Image
-                  src="/rybbit-text.svg"
-                  alt="Rybbit"
-                  width={120}
-                  height={27}
-                />
+                <Image src="/rybbit-text.svg" alt="Rybbit" width={120} height={27} />
               </a>
 
               {[1, 2, 3, 4].map((step) => (
@@ -548,11 +497,7 @@ export default function SignupPage() {
                         : "bg-muted-foreground/20 text-muted-foreground"
                     )}
                   >
-                    {currentStep > step ? (
-                      <Check className="h-4 w-4" />
-                    ) : (
-                      getStepIcon(step)
-                    )}
+                    {currentStep > step ? <Check className="h-4 w-4" /> : getStepIcon(step)}
                   </div>
                   <span>
                     {step === 1 && "Create account"}

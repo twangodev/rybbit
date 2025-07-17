@@ -1,12 +1,13 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin, createAuthMiddleware, emailOTP, organization } from "better-auth/plugins";
+import { admin, emailOTP, organization } from "better-auth/plugins";
 import dotenv from "dotenv";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import pg from "pg";
 
 import { db } from "../db/postgres/postgres.js";
 import * as schema from "../db/postgres/schema.js";
+import { user } from "../db/postgres/schema.js";
 import { DISABLE_SIGNUP } from "./const.js";
 import { sendEmail, sendInvitationEmail } from "./resend.js";
 
@@ -125,6 +126,20 @@ export let auth: AuthType | null = betterAuth({
       path: "/",
     },
   },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async () => {
+          const users = await db.select().from(schema.user).orderBy(asc(user.createdAt));
+
+          // If this is the first user, make them an admin
+          if (users.length === 1) {
+            await db.update(user).set({ role: "admin" }).where(eq(user.id, users[0].id));
+          }
+        },
+      },
+    },
+  },
 });
 
 export function initAuth(allowedOrigins: string[]) {
@@ -204,6 +219,20 @@ export function initAuth(allowedOrigins: string[]) {
       defaultCookieAttributes: {
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         path: "/",
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async () => {
+            const users = await db.select().from(schema.user).orderBy(asc(user.createdAt));
+
+            // If this is the first user, make them an admin
+            if (users.length === 1) {
+              await db.update(user).set({ role: "admin" }).where(eq(user.id, users[0].id));
+            }
+          },
+        },
       },
     },
   });
