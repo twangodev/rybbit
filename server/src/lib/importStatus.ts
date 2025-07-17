@@ -53,16 +53,9 @@ export class ImportStatusManager {
     return result || null;
   }
 
-  static async getImportsForSite(
-    siteId: number,
-    organization: string,
-    limit = 50
-  ): Promise<SelectImportStatus[]> {
+  static async getImportsForSite(siteId: number, limit = 50): Promise<SelectImportStatus[]> {
     return db.query.importStatus.findMany({
-      where: and(
-        eq(importStatus.siteId, siteId),
-        eq(importStatus.organizationId, organization)
-      ),
+      where: eq(importStatus.siteId, siteId),
       orderBy: [desc(importStatus.startedAt)],
       limit,
     });

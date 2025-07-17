@@ -38,10 +38,7 @@ export async function listImports(
       return reply.status(403).send({ error: "Forbidden" });
     }
 
-    const imports = await ImportStatusManager.getImportsForSite(
-      Number(site),
-      organization,
-    );
+    const imports = await ImportStatusManager.getImportsForSite(Number(site));
 
     return reply.send({
       imports: imports.map(imp => ({
