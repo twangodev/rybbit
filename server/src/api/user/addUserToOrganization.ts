@@ -4,6 +4,7 @@ import { db } from "../../db/postgres/postgres.js";
 import { member, user } from "../../db/postgres/schema.js";
 
 import { randomBytes } from "crypto";
+import { getUserIsInOrg } from "../../lib/auth-utils.js";
 
 function generateId(len = 32) {
   const alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
@@ -26,6 +27,11 @@ interface AddUserToOrganization {
 export async function addUserToOrganization(request: FastifyRequest<AddUserToOrganization>, reply: FastifyReply) {
   try {
     const { email, role, organizationId } = request.body;
+
+    const userIsInOrg = await getUserIsInOrg(request, organizationId);
+    if (!userIsInOrg || (userIsInOrg.role !== "admin" && userIsInOrg.role !== "owner")) {
+      return reply.status(401).send({ error: "Unauthorized" });
+    }
 
     // Validate input
     if (!email || !role || !organizationId) {

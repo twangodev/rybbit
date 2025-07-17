@@ -1,7 +1,7 @@
 import { FastifyRequest } from "fastify";
 import { auth } from "./auth.js";
 import { sites, member, user } from "../db/postgres/schema.js";
-import { inArray, eq } from "drizzle-orm";
+import { inArray, eq, and } from "drizzle-orm";
 import { db } from "../db/postgres/postgres.js";
 import { isSitePublic } from "../utils.js";
 import NodeCache from "node-cache";
@@ -123,4 +123,19 @@ export async function getUserHasAccessToSite(req: FastifyRequest, siteId: string
 export async function getUserHasAdminAccessToSite(req: FastifyRequest, siteId: string | number) {
   const sites = await getSitesUserHasAccessTo(req, true);
   return sites.some((site) => site.siteId === Number(siteId));
+}
+
+export async function getUserIsInOrg(req: FastifyRequest, organizationId: string) {
+  const session = await getSessionFromReq(req);
+
+  if (!session?.user.id) {
+    return false;
+  }
+
+  // Check if user is a member of this organization
+  const userMembership = await db.query.member.findFirst({
+    where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
+  });
+
+  return userMembership;
 }
