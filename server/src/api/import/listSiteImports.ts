@@ -20,7 +20,6 @@ export async function listSiteImports(
   try {
     const parsed = listSiteImportsRequestSchema.safeParse({
       params: request.params,
-      body: request.body,
     });
 
     if (!parsed.success) {
@@ -42,13 +41,17 @@ export async function listSiteImports(
     return reply.send({
       imports: imports.map(imp => ({
         importId: imp.importId,
-        status: imp.status,
         source: imp.source,
-        fileName: imp.fileName,
-        processedRows: imp.processedRows,
+        status: imp.status,
         totalRows: imp.totalRows,
-        startedAt: imp.startedAt,
+        processedRows: imp.processedRows,
+        errorMessage: imp.errorMessage,
+        startedAt: imp.startedAt, // maybe return import time, or no time data at all
         completedAt: imp.completedAt,
+        fileName: imp.fileName,
+        percentage: imp.totalRows
+          ? Math.round((imp.processedRows / imp.totalRows) * 100)
+          : 0,
       }))
     });
   } catch (error) {
