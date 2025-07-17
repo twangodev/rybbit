@@ -5,7 +5,6 @@ import { z } from "zod";
 
 const getImportStatusRequestSchema = z.object({
   params: z.object({
-    organization: z.string(),
     site: z.string().min(1),
   }),
   body: z.object({
@@ -35,7 +34,7 @@ export async function getImportStatus(
       });
     }
 
-    const { organization, site } = parsed.data.params;
+    const { site } = parsed.data.params;
     const { importId } = parsed.data.body;
 
     const userHasAccess = await getUserHasAccessToSite(request, site);
@@ -47,10 +46,6 @@ export async function getImportStatus(
     if (!importStatus) {
       return reply.status(404).send({ error: "Import not found" });
     }
-
-    // if (importStatus.createdBy !== request.user?.id) {
-    //   return reply.status(403).send({ error: "Forbidden" });
-    // }
 
     return reply.send({
       importId: importStatus.importId,
