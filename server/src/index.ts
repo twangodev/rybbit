@@ -68,6 +68,7 @@ import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
+import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -283,6 +284,7 @@ server.get("/api/site/:siteId/api-config", getSiteApiConfig);
 server.post("/api/site/:siteId/api-config", updateSiteApiConfig);
 server.get("/api/list-organization-members/:organizationId", listOrganizationMembers);
 server.get("/api/user/organizations", getUserOrganizations);
+server.post("/api/add-user-to-organization", addUserToOrganization);
 
 if (IS_CLOUD) {
   // Stripe Routes

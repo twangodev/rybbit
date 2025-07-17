@@ -4,21 +4,13 @@ import { authClient } from "@/lib/auth";
 import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "../../../components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Input } from "../../../components/ui/input";
 import { ChangePassword } from "./ChangePassword";
 import { DeleteAccount } from "./DeleteAccount";
+import { validateEmail } from "../../../lib/auth-utils";
 
-export function AccountInner({
-  session,
-}: {
-  session: ReturnType<typeof authClient.useSession>;
-}) {
+export function AccountInner({ session }: { session: ReturnType<typeof authClient.useSession> }) {
   const [email, setEmail] = useState(session.data?.user.email ?? "");
   const [name, setName] = useState(session.data?.user.name ?? "");
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
@@ -44,9 +36,7 @@ export function AccountInner({
       globalThis.location.reload();
     } catch (error) {
       console.error("Error updating name:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update name"
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to update name");
     } finally {
       setIsUpdatingName(false);
     }
@@ -58,7 +48,7 @@ export function AccountInner({
       return;
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!validateEmail(email)) {
       toast.error("Please enter a valid email address");
       return;
     }
@@ -79,9 +69,7 @@ export function AccountInner({
       globalThis.location.reload();
     } catch (error) {
       console.error("Error updating email:", error);
-      toast.error(
-        error instanceof Error ? error.message : "Failed to update email"
-      );
+      toast.error(error instanceof Error ? error.message : "Failed to update email");
     } finally {
       setIsUpdatingEmail(false);
     }
@@ -96,16 +84,9 @@ export function AccountInner({
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Name</h4>
-            <p className="text-xs text-neutral-500">
-              Update your name displayed across the platform
-            </p>
+            <p className="text-xs text-neutral-500">Update your name displayed across the platform</p>
             <div className="flex space-x-2">
-              <Input
-                id="name"
-                value={name}
-                onChange={({ target }) => setName(target.value)}
-                placeholder="name"
-              />
+              <Input id="name" value={name} onChange={({ target }) => setName(target.value)} placeholder="name" />
               <Button
                 variant="outline"
                 onClick={handleNameUpdate}
@@ -117,9 +98,7 @@ export function AccountInner({
           </div>
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Email</h4>
-            <p className="text-xs text-neutral-500">
-              Update your email address for account notifications
-            </p>
+            <p className="text-xs text-neutral-500">Update your email address for account notifications</p>
             <div className="flex space-x-2">
               <Input
                 id="email"
@@ -147,9 +126,7 @@ export function AccountInner({
         <CardContent className="space-y-6">
           <div className="space-y-2">
             <h4 className="text-sm font-medium">Password</h4>
-            <p className="text-xs text-neutral-500">
-              Change your account password
-            </p>
+            <p className="text-xs text-neutral-500">Change your account password</p>
             <div className="w-[200px]">
               <ChangePassword />
             </div>
@@ -157,9 +134,7 @@ export function AccountInner({
 
           <div className="space-y-2">
             <h4 className="text-sm font-medium text-red-500">Danger Zone</h4>
-            <p className="text-xs text-neutral-500">
-              Permanently delete your account and all associated data
-            </p>
+            <p className="text-xs text-neutral-500">Permanently delete your account and all associated data</p>
             <div className="w-[200px]">
               <DeleteAccount />
             </div>
