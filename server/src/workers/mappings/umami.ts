@@ -91,6 +91,7 @@ export class UmamiImportMapper implements ImportMapper<UmamiEvent[]> {
       const referrer = row.referrer_domain ? `https://${row.referrer_domain}` : "";
       const [screenWidth, screenHeight] = /^\d+x\d+$/.test(row.screen) ? row.screen.split("x") : ["0", "0"];
 
+      // TODO: Handle empty values in Umami data for required columns (e.g., site_id, timestamp, etc.)
       return {
         site_id: Number(site),
         timestamp: row.created_at,
