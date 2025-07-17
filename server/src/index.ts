@@ -105,7 +105,12 @@ server.register(cors, {
   credentials: true,
 });
 
-server.register(multipart);
+server.register(multipart, {
+  limits: {
+    fileSize: 100 * 1024 * 1024, // 100 MB max file size
+    files: 1, // only allow 1 file
+  }
+});
 
 // Serve static files
 server.register(fastifyStatic, {
