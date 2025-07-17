@@ -1,4 +1,7 @@
 import { IS_CLOUD } from "./const.js";
+import { db } from "../db/postgres/postgres.js";
+import { eq, and, inArray, count, sum, isNotNull } from "drizzle-orm";
+import { importStatus } from "../db/postgres/schema.js";
 
 // In-memory rate limiter for API keys
 class ApiKeyRateLimiter {
@@ -50,4 +53,50 @@ if (IS_CLOUD) {
   setInterval(() => {
     apiKeyRateLimiter.cleanup();
   }, 5 * 60 * 1000);
+}
+
+export class ImportRateLimiter {
+  private static readonly IMPORTED_ROWS_LIMIT = 1_000_000;
+  private static readonly CONCURRENT_LIMIT = 1;
+
+  static async checkRateLimit(organizationId: string): Promise<{
+    allowed: boolean;
+    reason?: string;
+  }> {
+    const [concurrentCountResult] = await db
+      .select({ count: count() })
+      .from(importStatus)
+      .where(
+        and(
+          eq(importStatus.organizationId, organizationId),
+          inArray(importStatus.status, ["pending", "processing"])
+        )
+      );
+
+    if (concurrentCountResult.count >= this.CONCURRENT_LIMIT) {
+      return {
+        allowed: false,
+        reason: `Only ${this.CONCURRENT_LIMIT} concurrent import allowed per organization.`,
+      };
+    }
+
+    const [rowsSumResult] = await db
+      .select({ total: sum(importStatus.totalRows) })
+      .from(importStatus)
+      .where(
+        and(
+          eq(importStatus.organizationId, organizationId),
+          isNotNull(importStatus.totalRows)
+        )
+      );
+
+    if (rowsSumResult.total ?? 0 >= this.IMPORTED_ROWS_LIMIT) {
+      return {
+        allowed: false,
+        reason: `Import row limit of ${this.IMPORTED_ROWS_LIMIT.toLocaleString()} exceeded.`,
+      };
+    }
+
+    return { allowed: true };
+  }
 }
