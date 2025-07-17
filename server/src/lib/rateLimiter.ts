@@ -56,13 +56,17 @@ if (IS_CLOUD) {
 }
 
 export class ImportRateLimiter {
-  private static readonly IMPORTED_ROWS_LIMIT = 1_000_000;
+  private static readonly IMPORTED_EVENTS_LIMIT = 1_000_000;
   private static readonly CONCURRENT_LIMIT = 1;
 
-  static async checkRateLimit(organizationId: string): Promise<{
+  static async checkConcurrentImportLimit(organizationId: string): Promise<{
     allowed: boolean;
     reason?: string;
   }> {
+    if (!IS_CLOUD) {
+      return { allowed: true };
+    }
+
     const [concurrentCountResult] = await db
       .select({ count: count() })
       .from(importStatus)
@@ -80,7 +84,15 @@ export class ImportRateLimiter {
       };
     }
 
-    const [rowsSumResult] = await db
+    return { allowed: true };
+  }
+
+  static async countImportableEvents(organizationId: string): Promise<number> {
+    if (!IS_CLOUD) {
+      return Infinity;
+    }
+
+    const [importedEvents] = await db
       .select({ total: sum(importStatus.totalRows) })
       .from(importStatus)
       .where(
@@ -90,13 +102,6 @@ export class ImportRateLimiter {
         )
       );
 
-    if (rowsSumResult.total ?? 0 >= this.IMPORTED_ROWS_LIMIT) {
-      return {
-        allowed: false,
-        reason: `Import row limit of ${this.IMPORTED_ROWS_LIMIT.toLocaleString()} exceeded.`,
-      };
-    }
-
-    return { allowed: true };
+    return this.IMPORTED_EVENTS_LIMIT - Number(importedEvents.total ?? 0);
   }
 }

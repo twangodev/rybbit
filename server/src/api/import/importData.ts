@@ -50,11 +50,11 @@ export async function importData(
       return reply.status(403).send({ error: "Forbidden" });
     }
 
-    const orgLimitResult = await ImportRateLimiter.checkRateLimit(organization);
-    if (!orgLimitResult.allowed) {
+    const concurrentImportLimitResult = await ImportRateLimiter.checkConcurrentImportLimit(organization);
+    if (!concurrentImportLimitResult.allowed) {
       return reply.status(429).send({
         error: "Organization limit exceeded",
-        message: orgLimitResult.reason,
+        message: concurrentImportLimitResult.reason,
       });
     }
 
