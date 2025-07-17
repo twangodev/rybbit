@@ -46,13 +46,6 @@ export class ImportStatusManager {
       .where(eq(importStatus.importId, importId));
   }
 
-  static async getImportStatus(importId: string): Promise<SelectImportStatus | null> {
-    const result = await db.query.importStatus.findFirst({
-      where: eq(importStatus.importId, importId),
-    });
-    return result || null;
-  }
-
   static async getImportsForSite(siteId: number, limit = 10): Promise<SelectImportStatus[]> {
     return db.query.importStatus.findMany({
       where: eq(importStatus.siteId, siteId),
