@@ -1,5 +1,5 @@
 import { db } from "../db/postgres/postgres.js";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, sql } from "drizzle-orm";
 import { importStatus } from "../db/postgres/schema.js";
 
 type SelectImportStatus = typeof importStatus.$inferSelect;
@@ -17,7 +17,8 @@ export class ImportStatusManager {
   ): Promise<void> {
     const completedAt = status === "completed" || status === "failed" ? new Date() : null;
 
-    await db.update(importStatus)
+    await db
+      .update(importStatus)
       .set({ status, errorMessage, completedAt })
       .where(eq(importStatus.importId, importId));
   }
@@ -26,12 +27,11 @@ export class ImportStatusManager {
     importId: string,
     importedEvents: number,
   ): Promise<void> {
-    const updateData: Partial<InsertImportStatus> = {
-      importedEvents,
-    };
-
-    await db.update(importStatus)
-      .set(updateData)
+    await db
+      .update(importStatus)
+      .set({
+        importedEvents: sql`${importStatus.importedEvents} + ${importedEvents}`,
+      })
       .where(eq(importStatus.importId, importId));
   }
 
