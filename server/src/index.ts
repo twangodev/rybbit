@@ -73,7 +73,6 @@ import { importData } from "./api/import/importData.js";
 import boss from "./lib/boss.js";
 import { registerCsvParseWorker } from "./workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./workers/dataInsertWorker.js";
-import { getImportStatus } from "./api/import/getImportStatus.js";
 import { listSiteImports } from "./api/import/listSiteImports.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -293,7 +292,6 @@ server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Imports
 server.post("/api/import/:organization/:site", importData);
-server.post("/api/import-status/:organization/:site", getImportStatus);
 server.get("/api/list-site-imports/:organization/:site", listSiteImports);
 
 // Administrative
