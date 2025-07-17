@@ -284,7 +284,6 @@ export const importStatus = pgTable(
     completedAt: timestamp("completed_at"),
     fileName: text("file_name").notNull(),
     fileSize: bigint("file_size", { mode: "number" }).notNull(),
-    createdBy: text("created_by").notNull(),
   },
   (table) => [
     foreignKey({
@@ -296,11 +295,6 @@ export const importStatus = pgTable(
       columns: [table.organizationId],
       foreignColumns: [organization.id],
       name: "import_status_organization_id_organization_id_fk",
-    }),
-    foreignKey({
-      columns: [table.createdBy],
-      foreignColumns: [user.id],
-      name: "import_status_created_by_user_id_fk",
     }),
   ]
 );
