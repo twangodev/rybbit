@@ -11,6 +11,7 @@ const boss = new PgBoss({
     password: process.env.POSTGRES_PASSWORD,
     schema: "pgboss",
     application_name: "data-import-system",
+    retryLimit: 0,
 });
 
 boss.on("error", error => console.error(error));
