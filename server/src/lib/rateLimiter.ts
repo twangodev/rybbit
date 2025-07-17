@@ -93,12 +93,12 @@ export class ImportRateLimiter {
     }
 
     const [importedEvents] = await db
-      .select({ total: sum(importStatus.totalRows) })
+      .select({ total: sum(importStatus.importedEvents) })
       .from(importStatus)
       .where(
         and(
           eq(importStatus.organizationId, organizationId),
-          isNotNull(importStatus.totalRows)
+          isNotNull(importStatus.importedEvents)
         )
       );
 
