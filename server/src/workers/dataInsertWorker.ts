@@ -5,9 +5,9 @@ import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { Job } from "pg-boss";
 
 export async function registerDataInsertWorker() {
-  await boss.work(DATA_INSERT_QUEUE, async (job: Job<DataInsertJob<UmamiEvent>>[]) => {
+  await boss.work(DATA_INSERT_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<DataInsertJob<UmamiEvent>>[]) => {
     try {
-      const {site, importId, source, chunk, chunkNumber} = job[0].data;
+      const { site, importId, source, chunk, chunkNumber } = job.data;
 
       const dataMapper = getImportDataMapping(source);
       const transformedRecords = dataMapper.transform(chunk, site, importId);

@@ -8,9 +8,9 @@ import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { processResults } from "../api/analytics/utils.js";
 
 export async function registerCsvParseWorker() {
-  await boss.work(CSV_PARSE_QUEUE, async (job: Job<CsvParseJob>[]) => {
+  await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
     try {
-      const {site, importId, source, tempFilePath, organization} = job[0].data;
+      const { site, importId, source, tempFilePath, organization } = job.data;
 
       const query = await clickhouse.query({
         query: `
