@@ -32,7 +32,6 @@ export async function registerDataInsertWorker() {
 
       await ImportStatusManager.updateProgress(
         importId,
-        chunkNumber,
         transformedRecords.length
       );
 

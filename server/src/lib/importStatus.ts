@@ -24,19 +24,13 @@ export class ImportStatusManager {
 
   static async updateProgress(
     importId: string,
-    chunksCompleted: number,
     processedRows: number,
-    totalChunks?: number,
     totalRows?: number
   ): Promise<void> {
     const updateData: Partial<InsertImportStatus> = {
-      chunksCompleted,
       processedRows,
     };
 
-    if (totalChunks !== undefined) {
-      updateData.totalChunks = totalChunks;
-    }
     if (totalRows !== undefined) {
       updateData.totalRows = totalRows;
     }

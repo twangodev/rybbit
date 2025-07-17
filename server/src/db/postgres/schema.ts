@@ -277,8 +277,6 @@ export const importStatus = pgTable(
     status: importStatusEnum("status").notNull().default("pending"),
     totalRows: integer("total_rows"),
     processedRows: integer("processed_rows").notNull().default(0),
-    chunksCompleted: integer("chunks_completed").notNull().default(0),
-    totalChunks: integer("total_chunks"),
     errorMessage: text("error_message"),
     startedAt: timestamp("started_at").notNull().defaultNow(),
     completedAt: timestamp("completed_at"),
