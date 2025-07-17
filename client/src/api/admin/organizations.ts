@@ -16,9 +16,11 @@ function getUserOrganizations(): Promise<UserOrganization[]> {
   return authedFetch("/user/organizations");
 }
 
+export const USER_ORGANIZATIONS_QUERY_KEY = "userOrganizations";
+
 export function useUserOrganizations() {
   return useQuery({
-    queryKey: ["userOrganizations"],
+    queryKey: [USER_ORGANIZATIONS_QUERY_KEY],
     queryFn: getUserOrganizations,
   });
 }

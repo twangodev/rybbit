@@ -14,19 +14,19 @@ import { AlertTriangle, Trash } from "lucide-react";
 import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 import { Organization } from "../page";
+import { USER_ORGANIZATIONS_QUERY_KEY } from "../../../../api/admin/organizations";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DeleteOrganizationDialogProps {
   organization: Organization;
   onSuccess: () => void;
 }
 
-export function DeleteOrganizationDialog({
-  organization,
-  onSuccess,
-}: DeleteOrganizationDialogProps) {
+export function DeleteOrganizationDialog({ organization, onSuccess }: DeleteOrganizationDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
   const [confirmText, setConfirmText] = useState("");
+  const queryClient = useQueryClient();
 
   const handleDelete = async () => {
     if (confirmText !== organization.name) {
@@ -41,6 +41,10 @@ export function DeleteOrganizationDialog({
       });
 
       toast.success("Organization deleted successfully");
+      queryClient.invalidateQueries({ queryKey: [USER_ORGANIZATIONS_QUERY_KEY] });
+      authClient.organization.setActive({
+        organizationId: null,
+      });
       setOpen(false);
       onSuccess();
     } catch (error: any) {
@@ -60,13 +64,12 @@ export function DeleteOrganizationDialog({
       </DialogTrigger>
       <DialogContent className="max-w-lg">
         <DialogHeader>
-          <DialogTitle className="text-destructive flex items-center gap-2">
+          <DialogTitle className="text-red-400 flex items-center gap-2">
             <AlertTriangle className="h-5 w-5" />
             Delete Organization
           </DialogTitle>
           <DialogDescription>
-            This action cannot be undone. This will permanently delete the
-            organization and remove all associated data.
+            This action cannot be undone. This will permanently delete the organization and remove all associated data.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -75,9 +78,7 @@ export function DeleteOrganizationDialog({
           </p>
           <Input
             value={confirmText}
-            onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-              setConfirmText(e.target.value)
-            }
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setConfirmText(e.target.value)}
             placeholder={organization.name}
           />
         </div>

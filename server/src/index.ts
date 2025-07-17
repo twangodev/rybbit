@@ -69,6 +69,7 @@ import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
+import { initPostgres } from "./db/postgres/initPostgres.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -306,12 +307,7 @@ server.get("/api/health", { logLevel: "silent" }, (_, reply) => reply.send("OK")
 const start = async () => {
   try {
     console.info("Starting server...");
-    // Initialize the database
-    await Promise.all([initializeClickhouse()]);
-    await loadAllowedDomains();
-
-    // Load site configurations cache
-    await siteConfig.loadSiteConfigs();
+    await Promise.all([initializeClickhouse(), loadAllowedDomains(), siteConfig.loadSiteConfigs(), initPostgres()]);
 
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });
