@@ -25,15 +25,10 @@ export class ImportStatusManager {
   static async updateProgress(
     importId: string,
     processedRows: number,
-    totalRows?: number
   ): Promise<void> {
     const updateData: Partial<InsertImportStatus> = {
       processedRows,
     };
-
-    if (totalRows !== undefined) {
-      updateData.totalRows = totalRows;
-    }
 
     await db.update(importStatus)
       .set(updateData)

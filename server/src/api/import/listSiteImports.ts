@@ -43,15 +43,11 @@ export async function listSiteImports(
         importId: imp.importId,
         source: imp.source,
         status: imp.status,
-        totalRows: imp.totalRows,
         processedRows: imp.processedRows,
         errorMessage: imp.errorMessage,
         startedAt: imp.startedAt, // maybe return import time, or no time data at all
         completedAt: imp.completedAt,
         fileName: imp.fileName,
-        percentage: imp.totalRows
-          ? Math.round((imp.processedRows / imp.totalRows) * 100)
-          : 0,
       }))
     });
   } catch (error) {
