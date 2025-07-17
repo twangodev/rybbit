@@ -24,10 +24,10 @@ export class ImportStatusManager {
 
   static async updateProgress(
     importId: string,
-    processedRows: number,
+    importedEvents: number,
   ): Promise<void> {
     const updateData: Partial<InsertImportStatus> = {
-      processedRows,
+      importedEvents,
     };
 
     await db.update(importStatus)

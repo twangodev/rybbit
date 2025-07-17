@@ -275,7 +275,7 @@ export const importStatus = pgTable(
     organizationId: text("organization_id").notNull(),
     source: importSourceEnum("source").notNull(),
     status: importStatusEnum("status").notNull().default("pending"),
-    processedRows: integer("processed_rows").notNull().default(0),
+    importedEvents: integer("imported_events").notNull().default(0),
     errorMessage: text("error_message"),
     startedAt: timestamp("started_at").notNull().defaultNow(),
     completedAt: timestamp("completed_at"),

@@ -43,7 +43,7 @@ export async function listSiteImports(
         importId: imp.importId,
         source: imp.source,
         status: imp.status,
-        processedRows: imp.processedRows,
+        importedEvents: imp.importedEvents,
         errorMessage: imp.errorMessage,
         startedAt: imp.startedAt, // maybe return import time, or no time data at all
         completedAt: imp.completedAt,
