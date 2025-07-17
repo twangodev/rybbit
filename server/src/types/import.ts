@@ -16,6 +16,7 @@ export interface CsvParseJob extends ImportJob {
 export interface DataInsertJob<T> extends ImportJob {
   chunk: T[];
   chunkNumber: number;
+  finalChunk: boolean;
 }
 
 export interface ImportMapper<T> {
