@@ -74,7 +74,7 @@ import boss from "./lib/boss.js";
 import { registerCsvParseWorker } from "./workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./workers/dataInsertWorker.js";
 import { getImportStatus } from "./api/import/getImportStatus.js";
-import { listImports } from "./api/import/listImports.js";
+import { listSiteImports } from "./api/import/listSiteImports.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -294,7 +294,7 @@ server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 // Imports
 server.post("/api/import/:organization/:site", importData);
 server.post("/api/import-status/:organization/:site", getImportStatus);
-server.get("/api/list-imports/:organization/:site", listImports);
+server.get("/api/list-site-imports/:organization/:site", listSiteImports);
 
 // Administrative
 server.get("/api/config", getConfig);
