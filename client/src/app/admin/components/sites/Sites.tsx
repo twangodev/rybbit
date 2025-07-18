@@ -96,6 +96,26 @@ export function Sites() {
         cell: ({ row }) => <div>{Number(row.getValue("eventsLast24Hours")).toLocaleString()}</div>,
       },
       {
+        accessorKey: "eventsLast30Days",
+        header: ({ column }) => <SortableHeader column={column}>Events (30d)</SortableHeader>,
+        cell: ({ row }) => <div>{Number(row.getValue("eventsLast30Days")).toLocaleString()}</div>,
+      },
+      {
+        id: "subscription",
+        header: ({ column }) => <SortableHeader column={column}>Subscription</SortableHeader>,
+        accessorFn: (row) => row.subscription.planName,
+        cell: ({ row }) => {
+          const subscription = row.original.subscription;
+          const statusColor =
+            subscription.status === "active"
+              ? "default"
+              : subscription.status === "canceled"
+              ? "destructive"
+              : "secondary";
+          return <Badge variant={statusColor}>{subscription.planName}</Badge>;
+        },
+      },
+      {
         accessorKey: "organizationOwnerEmail",
         header: ({ column }) => <SortableHeader column={column}>Owner Email</SortableHeader>,
         cell: ({ row }) => <div>{row.getValue("organizationOwnerEmail") || "-"}</div>,
@@ -167,6 +187,12 @@ export function Sites() {
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-20" />
                     </TableCell>
                     <TableCell>
                       <Skeleton className="h-5 w-40" />
