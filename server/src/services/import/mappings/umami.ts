@@ -1,6 +1,6 @@
-import { ImportMapper } from "../../types/import.js";
-import { clearSelfReferrer, getAllUrlParams } from "../../services/tracker/utils.js";
-import { getChannel } from "../../services/tracker/getChannel.js";
+import { ImportMapper } from "../../../types/import.js";
+import { clearSelfReferrer, getAllUrlParams } from "../../tracker/utils.js";
+import { getChannel } from "../../tracker/getChannel.js";
 
 export interface UmamiEvent {
   website_id: string; // Ignore

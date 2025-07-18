@@ -1,9 +1,9 @@
-import boss from "../db/postgres/boss.js";
+import boss from "../../db/postgres/boss.js";
 import { UmamiEvent, UmamiImportMapper } from "./mappings/umami.js";
-import { DataInsertJob, DATA_INSERT_QUEUE } from "../types/import.js";
-import { clickhouse } from "../db/clickhouse/clickhouse.js";
+import { DataInsertJob, DATA_INSERT_QUEUE } from "../../types/import.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { Job } from "pg-boss";
-import { ImportStatusManager } from "../services/import/importStatusManager.js";
+import { ImportStatusManager } from "./importStatusManager.js";
 
 export async function registerDataInsertWorker() {
   await boss.work(DATA_INSERT_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<DataInsertJob<UmamiEvent>>[]) => {
