@@ -309,6 +309,9 @@
     }
     async sendSessionReplayBatch(batch) {
       try {
+        if (this.config.apiKey) {
+          batch.apiKey = this.config.apiKey;
+        }
         await fetch(
           `${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`,
           {

@@ -12,16 +12,10 @@ interface ChangeSiteBlockBotsRequest {
   };
 }
 
-export async function changeSiteBlockBots(
-  request: FastifyRequest<ChangeSiteBlockBotsRequest>,
-  reply: FastifyReply
-) {
+export async function changeSiteBlockBots(request: FastifyRequest<ChangeSiteBlockBotsRequest>, reply: FastifyReply) {
   const { siteId, blockBots } = request.body;
 
-  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(
-    request,
-    String(siteId)
-  );
+  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(request, String(siteId));
   if (!userHasAdminAccessToSite) {
     return reply.status(403).send({ error: "Forbidden" });
   }
@@ -41,7 +35,7 @@ export async function changeSiteBlockBots(
       .update(sites)
       .set({
         blockBots: blockBots,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(sites.siteId, siteId));
 

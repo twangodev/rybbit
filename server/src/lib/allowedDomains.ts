@@ -32,6 +32,7 @@ export const loadAllowedDomains = async () => {
       normalizeOrigin(process.env.BASE_URL || ""),
       ...domains.map(({ domain }) => normalizeOrigin(domain)),
     ];
+    initAuth(allowList);
   } catch (error) {
     console.error("Error loading allowed domains:", error);
     // Set default values in case of error

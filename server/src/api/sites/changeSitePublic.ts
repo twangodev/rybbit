@@ -12,16 +12,10 @@ interface ChangeSitePublicRequest {
   };
 }
 
-export async function changeSitePublic(
-  request: FastifyRequest<ChangeSitePublicRequest>,
-  reply: FastifyReply
-) {
+export async function changeSitePublic(request: FastifyRequest<ChangeSitePublicRequest>, reply: FastifyReply) {
   const { siteId, isPublic } = request.body;
 
-  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(
-    request,
-    String(siteId)
-  );
+  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(request, String(siteId));
   if (!userHasAdminAccessToSite) {
     return reply.status(403).send({ error: "Forbidden" });
   }
@@ -41,7 +35,7 @@ export async function changeSitePublic(
       .update(sites)
       .set({
         public: isPublic,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(sites.siteId, siteId));
 

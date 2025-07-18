@@ -9,14 +9,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowUpDown,
-  Monitor,
-  Smartphone,
-  Tablet,
-} from "lucide-react";
+import { ArrowDown, ArrowUp, ArrowUpDown, Monitor, Smartphone, Tablet } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -24,12 +17,7 @@ import { useState } from "react";
 import { useGetUsers, UsersResponse } from "../../../api/analytics/users";
 import { Button } from "../../../components/ui/button";
 import { Pagination } from "../../../components/pagination";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "../../../components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../components/ui/tooltip";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { USER_PAGE_FILTERS } from "../../../lib/store";
 import { getCountryName } from "../../../lib/utils";
@@ -77,9 +65,7 @@ export default function UsersPage() {
     pageIndex: 0,
     pageSize: 50,
   });
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "last_seen", desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "last_seen", desc: true }]);
 
   // Convert page index to 1-based for the API
   const page = pagination.pageIndex + 1;
@@ -131,16 +117,10 @@ export default function UsersPage() {
                 <CountryFlag country={info.getValue() || ""} />
               </TooltipTrigger>
               <TooltipContent>
-                <p>
-                  {info.getValue()
-                    ? getCountryName(info.getValue())
-                    : "Unknown"}
-                </p>
+                <p>{info.getValue() ? getCountryName(info.getValue()) : "Unknown"}</p>
               </TooltipContent>
             </Tooltip>
-            {info.row.original.city ||
-              info.row.original.region ||
-              getCountryName(info.getValue())}
+            {info.row.original.city || info.row.original.region || getCountryName(info.getValue())}
           </div>
         );
       },
@@ -177,35 +157,19 @@ export default function UsersPage() {
       },
     }),
     columnHelper.accessor("pageviews", {
-      header: ({ column }) => (
-        <SortHeader column={column}>Pageviews</SortHeader>
-      ),
-      cell: (info) => (
-        <div className="whitespace-nowrap">
-          {info.getValue().toLocaleString()}
-        </div>
-      ),
+      header: ({ column }) => <SortHeader column={column}>Pageviews</SortHeader>,
+      cell: (info) => <div className="whitespace-nowrap">{info.getValue().toLocaleString()}</div>,
     }),
     columnHelper.accessor("events", {
       header: ({ column }) => <SortHeader column={column}>Events</SortHeader>,
-      cell: (info) => (
-        <div className="whitespace-nowrap">
-          {info.getValue().toLocaleString()}
-        </div>
-      ),
+      cell: (info) => <div className="whitespace-nowrap">{info.getValue().toLocaleString()}</div>,
     }),
     columnHelper.accessor("sessions", {
       header: ({ column }) => <SortHeader column={column}>Sessions</SortHeader>,
-      cell: (info) => (
-        <div className="whitespace-nowrap">
-          {info.getValue().toLocaleString()}
-        </div>
-      ),
+      cell: (info) => <div className="whitespace-nowrap">{info.getValue().toLocaleString()}</div>,
     }),
     columnHelper.accessor("last_seen", {
-      header: ({ column }) => (
-        <SortHeader column={column}>Last Seen</SortHeader>
-      ),
+      header: ({ column }) => <SortHeader column={column}>Last Seen</SortHeader>,
       cell: (info) => {
         const date = DateTime.fromSQL(info.getValue(), {
           zone: "utc",
@@ -228,9 +192,7 @@ export default function UsersPage() {
       },
     }),
     columnHelper.accessor("first_seen", {
-      header: ({ column }) => (
-        <SortHeader column={column}>First Seen</SortHeader>
-      ),
+      header: ({ column }) => <SortHeader column={column}>First Seen</SortHeader>,
       cell: (info) => {
         const date = DateTime.fromSQL(info.getValue(), {
           zone: "utc",
@@ -258,9 +220,7 @@ export default function UsersPage() {
   const table = useReactTable({
     data: data?.data || [],
     columns,
-    pageCount: data?.totalCount
-      ? Math.ceil(data.totalCount / pagination.pageSize)
-      : -1,
+    pageCount: data?.totalCount ? Math.ceil(data.totalCount / pagination.pageSize) : -1,
     state: {
       pagination,
       sorting,
@@ -276,15 +236,11 @@ export default function UsersPage() {
   });
 
   if (isError) {
-    return (
-      <div className="p-8 text-center text-red-500">
-        An error occurred while fetching users data.
-      </div>
-    );
+    return <div className="p-8 text-center text-red-500">An error occurred while fetching users data.</div>;
   }
 
   return (
-    <DisabledOverlay>
+    <DisabledOverlay message="Users" featurePath="users">
       <div className="p-2 md:p-4 max-w-[1400px] mx-auto space-y-3">
         <SubHeader availableFilters={USER_PAGE_FILTERS} />
         <div className="rounded-md border border-neutral-800 bg-neutral-900">
@@ -302,12 +258,7 @@ export default function UsersPage() {
                           minWidth: header.id === "user_id" ? "100px" : "auto",
                         }}
                       >
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
+                        {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                       </th>
                     ))}
                   </tr>
@@ -316,25 +267,17 @@ export default function UsersPage() {
               <tbody>
                 {isLoading ? (
                   Array.from({ length: 15 }).map((_, index) => (
-                    <tr
-                      key={index}
-                      className="border-b border-neutral-800 animate-pulse"
-                    >
-                      {Array.from({ length: columns.length }).map(
-                        (_, cellIndex) => (
-                          <td key={cellIndex} className="px-3 py-3">
-                            <div className="h-4 bg-neutral-800 rounded"></div>
-                          </td>
-                        )
-                      )}
+                    <tr key={index} className="border-b border-neutral-800 animate-pulse">
+                      {Array.from({ length: columns.length }).map((_, cellIndex) => (
+                        <td key={cellIndex} className="px-3 py-3">
+                          <div className="h-4 bg-neutral-800 rounded"></div>
+                        </td>
+                      ))}
                     </tr>
                   ))
                 ) : table.getRowModel().rows.length === 0 ? (
                   <tr>
-                    <td
-                      colSpan={columns.length}
-                      className="px-3 py-8 text-center text-neutral-400"
-                    >
+                    <td colSpan={columns.length} className="px-3 py-8 text-center text-neutral-400">
                       No users found
                     </td>
                   </tr>
@@ -344,10 +287,7 @@ export default function UsersPage() {
                     const href = `/${site}/user/${userId}`;
 
                     return (
-                      <tr
-                        key={row.id}
-                        className="border-b border-neutral-800  group"
-                      >
+                      <tr key={row.id} className="border-b border-neutral-800  group">
                         {row.getVisibleCells().map((cell) => (
                           <td key={cell.id} className="px-3 py-3 relative">
                             {/* <Link
@@ -358,10 +298,7 @@ export default function UsersPage() {
                               <span className="sr-only">View user details</span>
                             </Link> */}
                             <span className="relative z-0">
-                              {flexRender(
-                                cell.column.columnDef.cell,
-                                cell.getContext()
-                              )}
+                              {flexRender(cell.column.columnDef.cell, cell.getContext())}
                             </span>
                           </td>
                         ))}

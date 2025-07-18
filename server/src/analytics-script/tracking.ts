@@ -50,6 +50,11 @@ export class Tracker {
     batch: SessionReplayBatch
   ): Promise<void> {
     try {
+      // Include API key if configured
+      if (this.config.apiKey) {
+        batch.apiKey = this.config.apiKey;
+      }
+      
       await fetch(
         `${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`,
         {

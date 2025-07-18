@@ -11,7 +11,7 @@ import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 export default function PerformancePage() {
   useSetPageTitle("Rybbit · Performance");
   return (
-    <DisabledOverlay message="Performance">
+    <DisabledOverlay message="Performance" featurePath="performance">
       <div className="p-2 md:p-4 max-w-[1100px] mx-auto space-y-3 ">
         <SubHeader />
         <EnableWebVitals />

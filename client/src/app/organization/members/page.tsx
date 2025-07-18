@@ -1,19 +1,7 @@
 "use client";
 import { DateTime } from "luxon";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../../components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table";
 import { authClient } from "../../../lib/auth";
 
 import { useOrganizationMembers } from "../../../api/admin/auth";
@@ -25,6 +13,8 @@ import { EditOrganizationDialog } from "./components/EditOrganizationDialog";
 import { DeleteOrganizationDialog } from "./components/DeleteOrganizationDialog";
 import { RemoveMemberDialog } from "./components/RemoveMemberDialog";
 import { Invitations } from "./components/Invitations";
+import { IS_CLOUD } from "../../../lib/const";
+import { CreateUserDialog } from "./components/CreateUserDialog";
 
 // Types for our component
 export type Organization = {
@@ -59,17 +49,11 @@ function Organization({
     createdAt: Date;
   };
 }) {
-  const {
-    data: members,
-    refetch,
-    isLoading: membersLoading,
-  } = useOrganizationMembers(org.id);
+  const { data: members, refetch, isLoading: membersLoading } = useOrganizationMembers(org.id);
   const { refetch: refetchInvitations } = useOrganizationInvitations(org.id);
   const { data } = authClient.useSession();
 
-  const isOwner = members?.data.find(
-    (member) => member.role === "owner" && member.userId === data?.user?.id
-  );
+  const isOwner = members?.data.find((member) => member.role === "owner" && member.userId === data?.user?.id);
 
   const handleRefresh = () => {
     refetch();
@@ -86,18 +70,13 @@ function Organization({
             <div className="flex items-center gap-2">
               {isOwner && (
                 <>
-                  <InviteMemberDialog
-                    organizationId={org.id}
-                    onSuccess={handleRefresh}
-                  />
-                  <EditOrganizationDialog
-                    organization={org}
-                    onSuccess={handleRefresh}
-                  />
-                  <DeleteOrganizationDialog
-                    organization={org}
-                    onSuccess={handleRefresh}
-                  />
+                  {IS_CLOUD ? (
+                    <InviteMemberDialog organizationId={org.id} onSuccess={handleRefresh} />
+                  ) : (
+                    <CreateUserDialog organizationId={org.id} onSuccess={handleRefresh} />
+                  )}
+                  <EditOrganizationDialog organization={org} onSuccess={handleRefresh} />
+                  <DeleteOrganizationDialog organization={org} onSuccess={handleRefresh} />
                 </>
               )}
             </div>
@@ -144,9 +123,7 @@ function Organization({
                     <TableRow key={member.id}>
                       <TableCell>{member.user?.name || "—"}</TableCell>
                       <TableCell>{member.user?.email}</TableCell>
-                      <TableCell className="capitalize">
-                        {member.role}
-                      </TableCell>
+                      <TableCell className="capitalize">{member.role}</TableCell>
                       <TableCell>
                         {DateTime.fromSQL(member.createdAt, { zone: "utc" })
                           .toLocal()
@@ -155,11 +132,7 @@ function Organization({
                       {isOwner && (
                         <TableCell className="text-right">
                           {member.role !== "owner" && (
-                            <RemoveMemberDialog
-                              member={member}
-                              organizationId={org.id}
-                              onSuccess={handleRefresh}
-                            />
+                            <RemoveMemberDialog member={member} organizationId={org.id} onSuccess={handleRefresh} />
                           )}
                         </TableCell>
                       )}
@@ -167,10 +140,7 @@ function Organization({
                   ))}
                   {(!members?.data || members.data.length === 0) && (
                     <TableRow>
-                      <TableCell
-                        colSpan={isOwner ? 5 : 4}
-                        className="text-center py-6 text-muted-foreground"
-                      >
+                      <TableCell colSpan={isOwner ? 5 : 4} className="text-center py-6 text-muted-foreground">
                         No members found
                       </TableCell>
                     </TableRow>
@@ -190,8 +160,7 @@ function Organization({
 // Main Organizations component
 export default function MembersPage() {
   useSetPageTitle("Rybbit · Organization Members");
-  const { data: activeOrganization, isPending } =
-    authClient.useActiveOrganization();
+  const { data: activeOrganization, isPending } = authClient.useActiveOrganization();
 
   if (isPending) {
     return (

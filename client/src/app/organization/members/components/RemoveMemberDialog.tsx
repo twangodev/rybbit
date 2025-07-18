@@ -1,16 +1,18 @@
 "use client";
 
-import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog";
-import { DialogContent } from "@/components/ui/dialog";
-import { DialogHeader } from "@/components/ui/dialog";
-import { DialogTitle } from "@/components/ui/dialog";
-import { DialogTrigger } from "@/components/ui/dialog";
-import { DialogFooter } from "@/components/ui/dialog";
-import { DialogDescription } from "@/components/ui/dialog";
-import { UserMinus } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { authClient } from "@/lib/auth";
+import { UserMinus } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Member } from "../page";
 
@@ -20,11 +22,7 @@ interface RemoveMemberDialogProps {
   onSuccess: () => void;
 }
 
-export function RemoveMemberDialog({
-  member,
-  organizationId,
-  onSuccess,
-}: RemoveMemberDialogProps) {
+export function RemoveMemberDialog({ member, organizationId, onSuccess }: RemoveMemberDialogProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);
 
@@ -58,19 +56,14 @@ export function RemoveMemberDialog({
         <DialogHeader>
           <DialogTitle>Remove Member</DialogTitle>
           <DialogDescription>
-            Are you sure you want to remove {member.user.name} from the
-            organization?
+            Are you sure you want to remove {member.user.name} from the organization?
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
           <Button variant="outline" onClick={() => setOpen(false)}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={handleRemove}
-            disabled={isLoading}
-          >
+          <Button variant="destructive" onClick={handleRemove} disabled={isLoading}>
             {isLoading ? "Removing..." : "Remove Member"}
           </Button>
         </DialogFooter>

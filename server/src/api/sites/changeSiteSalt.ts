@@ -12,16 +12,10 @@ interface ChangeSiteSaltRequest {
   };
 }
 
-export async function changeSiteSalt(
-  request: FastifyRequest<ChangeSiteSaltRequest>,
-  reply: FastifyReply
-) {
+export async function changeSiteSalt(request: FastifyRequest<ChangeSiteSaltRequest>, reply: FastifyReply) {
   const { siteId, saltUserIds } = request.body;
 
-  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(
-    request,
-    String(siteId)
-  );
+  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(request, String(siteId));
   if (!userHasAdminAccessToSite) {
     return reply.status(403).send({ error: "Forbidden" });
   }
@@ -41,7 +35,7 @@ export async function changeSiteSalt(
       .update(sites)
       .set({
         saltUserIds: saltUserIds,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(sites.siteId, siteId));
 

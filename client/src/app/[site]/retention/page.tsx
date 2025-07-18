@@ -2,25 +2,11 @@
 
 import { DateTime } from "luxon"; // Import Luxon for date formatting
 import { Fragment, useMemo, useState } from "react";
-import {
-  RetentionMode,
-  useGetRetention,
-} from "../../../api/analytics/useGetRetention";
+import { RetentionMode, useGetRetention } from "../../../api/analytics/useGetRetention";
 import { ThreeDotLoader } from "../../../components/Loaders";
 import { MobileSidebar } from "../../../components/MobileSidebar";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { RetentionChart } from "./RetentionChart";
 import { NothingFound } from "../../../components/NothingFound";
@@ -39,9 +25,7 @@ const RANGE_OPTIONS = [
 ];
 
 // Dynamic color function that creates a smooth gradient based on retention percentage
-const getRetentionColor = (
-  percentage: number | null
-): { backgroundColor: string; textColor: string } => {
+const getRetentionColor = (percentage: number | null): { backgroundColor: string; textColor: string } => {
   if (percentage === null || isNaN(percentage)) {
     return {
       backgroundColor: "rgb(38, 38, 38)", // bg-neutral-800
@@ -90,10 +74,7 @@ export default function RetentionPage() {
 
   // Get sorted cohort keys (oldest first)
   const cohortKeys = useMemo(
-    () =>
-      data?.cohorts
-        ? Object.keys(data.cohorts).sort((a, b) => a.localeCompare(b))
-        : [],
+    () => (data?.cohorts ? Object.keys(data.cohorts).sort((a, b) => a.localeCompare(b)) : []),
     [data?.cohorts]
   );
 
@@ -108,19 +89,13 @@ export default function RetentionPage() {
 
       // If same month, don't repeat month name
       if (startDate.month === endDate.month) {
-        return `${startDate.toFormat("MMM dd")} - ${endDate.toFormat(
-          "dd, yyyy"
-        )}`;
+        return `${startDate.toFormat("MMM dd")} - ${endDate.toFormat("dd, yyyy")}`;
       } else if (startDate.year === endDate.year) {
         // Different months, same year
-        return `${startDate.toFormat("MMM dd")} - ${endDate.toFormat(
-          "MMM dd, yyyy"
-        )}`;
+        return `${startDate.toFormat("MMM dd")} - ${endDate.toFormat("MMM dd, yyyy")}`;
       } else {
         // Different years
-        return `${startDate.toFormat("MMM dd, yyyy")} - ${endDate.toFormat(
-          "MMM dd, yyyy"
-        )}`;
+        return `${startDate.toFormat("MMM dd, yyyy")} - ${endDate.toFormat("MMM dd, yyyy")}`;
       }
     }
   };
@@ -146,11 +121,7 @@ export default function RetentionPage() {
       </div>
       <div className="flex items-center gap-3 flex-wrap justify-end">
         <div className="flex items-center gap-2">
-          <Select
-            value={timeRange.toString()}
-            onValueChange={handleRangeChange}
-            disabled={isLoading}
-          >
+          <Select value={timeRange.toString()} onValueChange={handleRangeChange} disabled={isLoading}>
             <SelectTrigger id="time-range">
               <SelectValue />
             </SelectTrigger>
@@ -184,12 +155,9 @@ export default function RetentionPage() {
         <Card>
           <CardContent>
             <div className="p-8 text-center">
-              <div className="text-red-500 mb-2 font-medium">
-                Error loading retention data
-              </div>
+              <div className="text-red-500 mb-2 font-medium">Error loading retention data</div>
               <p className="text-neutral-500 text-sm">
-                There was a problem fetching the retention data. Please try
-                again later.
+                There was a problem fetching the retention data. Please try again later.
               </p>
             </div>
           </CardContent>
@@ -204,21 +172,17 @@ export default function RetentionPage() {
       <div className="p-2 md:p-4 max-w-[1300px] mx-auto flex flex-col gap-3">
         <NothingFound
           title={"No retention data available"}
-          description={
-            "Try selecting a different time range or make sure you have tracking data in the system."
-          }
+          description={"Try selecting a different time range or make sure you have tracking data in the system."}
         />
       </div>
     );
   }
 
   const periodHeaders =
-    !isLoading && data
-      ? Array.from({ length: data.maxPeriods + 1 }, (_, i) => getPeriodLabel(i))
-      : [];
+    !isLoading && data ? Array.from({ length: data.maxPeriods + 1 }, (_, i) => getPeriodLabel(i)) : [];
 
   return (
-    <DisabledOverlay message="Retention">
+    <DisabledOverlay message="Retention" featurePath="retention">
       <div className="p-2 md:p-4 max-w-[1300px] mx-auto flex flex-col gap-3">
         {/* Single Card containing both chart and grid */}
         <FilterControls />
@@ -244,9 +208,7 @@ export default function RetentionPage() {
                   <div
                     className="inline-grid gap-px bg-neutral-900 rounded-lg shadow-lg"
                     style={{
-                      gridTemplateColumns: `minmax(120px, auto) repeat(${
-                        data.maxPeriods + 1
-                      }, minmax(80px, auto))`,
+                      gridTemplateColumns: `minmax(120px, auto) repeat(${data.maxPeriods + 1}, minmax(80px, auto))`,
                     }}
                   >
                     {/* Header Row */}
@@ -267,35 +229,27 @@ export default function RetentionPage() {
                       <Fragment key={cohortPeriod}>
                         {/* Cohort Info Cell */}
                         <div className="py-2 px-2 bg-neutral-900 text-sm sticky left-0 z-10 border-r border-neutral-800">
-                          <div className="whitespace-nowrap text-neutral-100">
-                            {formatDate(cohortPeriod)}
-                          </div>
+                          <div className="whitespace-nowrap text-neutral-100">{formatDate(cohortPeriod)}</div>
                           <div className="text-xs text-neutral-300 mt-1 whitespace-nowrap">
-                            {data.cohorts[cohortPeriod].size.toLocaleString()}{" "}
-                            users
+                            {data.cohorts[cohortPeriod].size.toLocaleString()} users
                           </div>
                         </div>
                         {/* Retention Cells */}
-                        {data.cohorts[cohortPeriod].percentages.map(
-                          (percentage: number | null, index: number) => {
-                            const { backgroundColor, textColor } =
-                              getRetentionColor(percentage);
-                            return (
-                              <div
-                                key={`${cohortPeriod}-period-${index}`}
-                                className="m-[2px] text-center flex items-center justify-center font-medium transition-colors duration-150 bg-neutral-900 rounded-md"
-                                style={{
-                                  backgroundColor,
-                                  color: textColor,
-                                }}
-                              >
-                                {percentage !== null
-                                  ? `${percentage.toFixed(1)}%`
-                                  : "-"}
-                              </div>
-                            );
-                          }
-                        )}
+                        {data.cohorts[cohortPeriod].percentages.map((percentage: number | null, index: number) => {
+                          const { backgroundColor, textColor } = getRetentionColor(percentage);
+                          return (
+                            <div
+                              key={`${cohortPeriod}-period-${index}`}
+                              className="m-[2px] text-center flex items-center justify-center font-medium transition-colors duration-150 bg-neutral-900 rounded-md"
+                              style={{
+                                backgroundColor,
+                                color: textColor,
+                              }}
+                            >
+                              {percentage !== null ? `${percentage.toFixed(1)}%` : "-"}
+                            </div>
+                          );
+                        })}
                       </Fragment>
                     ))}
                   </div>

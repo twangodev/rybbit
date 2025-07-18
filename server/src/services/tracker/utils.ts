@@ -1,10 +1,11 @@
 import { FastifyRequest } from "fastify";
 import UAParser, { UAParser as userAgentParser } from "ua-parser-js";
 import { z } from "zod";
-import { usageService } from "../services/usageService.js";
-import { userIdService } from "../services/userId/userIdService.js";
+import { usageService } from "../usageService.js";
+import { userIdService } from "../userId/userIdService.js";
 import { trackingPayloadSchema } from "./trackEvent.js";
 import { TrackingPayload } from "./types.js";
+import { getIpAddress } from "../../utils.js";
 
 export type TotalTrackingPayload = TrackingPayload & {
   type?: string;
@@ -49,9 +50,7 @@ export function getAllUrlParams(querystring: string): Record<string, string> {
   if (!querystring) return params;
 
   // If querystring starts with ?, remove it
-  const cleanQuerystring = querystring.startsWith("?")
-    ? querystring.substring(1)
-    : querystring;
+  const cleanQuerystring = querystring.startsWith("?") ? querystring.substring(1) : querystring;
 
   try {
     const searchParams = new URLSearchParams(cleanQuerystring);
@@ -92,11 +91,10 @@ export function isSiteOverLimit(siteId: number | string): boolean {
 export function createBasePayload(
   request: FastifyRequest,
   eventType: "pageview" | "custom_event" | "performance" | "error" = "pageview",
-  validatedBody: ValidatedTrackingPayload
+  validatedBody: ValidatedTrackingPayload,
 ): TotalTrackingPayload {
   // Use custom user agent if provided, otherwise fall back to header
-  const userAgent =
-    validatedBody.user_agent || request.headers["user-agent"] || "";
+  const userAgent = validatedBody.user_agent || request.headers["user-agent"] || "";
   // Override IP if provided in payload
   const ipAddress = validatedBody.ip_address || getIpAddress(request);
   const siteId = validatedBody.site_id;
@@ -123,27 +121,3 @@ export function createBasePayload(
     userId: userId,
   };
 }
-
-// Helper function to get IP address
-const getIpAddress = (request: FastifyRequest): string => {
-  // Priority 1: Cloudflare header (already validated by CF)
-  const cfConnectingIp = request.headers["cf-connecting-ip"];
-  if (cfConnectingIp && typeof cfConnectingIp === "string") {
-    return cfConnectingIp.trim();
-  }
-
-  // Priority 2: X-Forwarded-For - just use the first IP
-  const forwardedFor = request.headers["x-forwarded-for"];
-  if (forwardedFor && typeof forwardedFor === "string") {
-    const ips = forwardedFor
-      .split(",")
-      .map((ip) => ip.trim())
-      .filter(Boolean);
-    if (ips.length > 0) {
-      // Always use the first IP - the original client
-      return ips[0];
-    }
-  }
-
-  return request.ip;
-};

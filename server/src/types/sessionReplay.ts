@@ -56,6 +56,7 @@ export interface RecordSessionReplayRequest {
     viewportHeight?: number;
     language?: string;
   };
+  apiKey?: string;
 }
 
 export interface SessionReplayListItem {

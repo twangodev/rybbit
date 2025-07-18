@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  SavedFunnel,
-  useGetFunnels,
-} from "../../../api/analytics/funnels/useGetFunnels";
+import { SavedFunnel, useGetFunnels } from "../../../api/analytics/funnels/useGetFunnels";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "@/lib/store";
 import { ArrowRight, FilterIcon } from "lucide-react";
@@ -86,7 +83,7 @@ export default function FunnelsPage() {
   }
 
   return (
-    <DisabledOverlay message="Funnels">
+    <DisabledOverlay message="Funnels" featurePath="funnels">
       <div className="p-2 md:p-4 max-w-[1300px] mx-auto space-y-3">
         <div className="flex justify-between items-center mb-3">
           <div>
@@ -97,8 +94,7 @@ export default function FunnelsPage() {
 
         {error ? (
           <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-lg">
-            Failed to load funnels:{" "}
-            {error instanceof Error ? error.message : "Unknown error"}
+            Failed to load funnels: {error instanceof Error ? error.message : "Unknown error"}
           </div>
         ) : funnels?.length ? (
           <div className="space-y-4">
@@ -109,9 +105,7 @@ export default function FunnelsPage() {
         ) : (
           <NothingFound
             title={"No funnels yet"}
-            description={
-              "Create your first funnel to track conversions through your site's user journey"
-            }
+            description={"Create your first funnel to track conversions through your site's user journey"}
             action={<CreateFunnelDialog />}
           />
         )}

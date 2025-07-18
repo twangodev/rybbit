@@ -1,8 +1,7 @@
-import { FastifyRequest, FastifyReply } from "fastify";
+import { and, eq } from "drizzle-orm";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { member, user } from "../../db/postgres/schema.js";
-import { eq, and } from "drizzle-orm";
-import { auth } from "../../lib/auth.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 
 interface ListOrganizationMembersRequest {
@@ -21,7 +20,7 @@ interface UserInfo {
 
 export async function listOrganizationMembers(
   request: FastifyRequest<ListOrganizationMembersRequest>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const { organizationId } = request.params;
@@ -37,10 +36,7 @@ export async function listOrganizationMembers(
 
     // Check if user is a member of this organization
     const userMembership = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, session.user.id),
-        eq(member.organizationId, organizationId)
-      ),
+      where: and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
     });
 
     if (!userMembership) {

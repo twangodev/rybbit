@@ -36,7 +36,7 @@ export function EnableErrorTracking() {
           <AlertDescription className="text-sm text-amber-700/80 dark:text-amber-400/80 mb-3">
             Add{" "}
             <code className="bg-amber-100/70 dark:bg-amber-800/50 px-1 py-0.5 rounded text-xs">
-              data-tracking-errors="true"
+              data-track-errors="true"
             </code>{" "}
             to your script tag. <strong>Note:</strong> Enabling error tracking
             will increase your event usage.

@@ -3,13 +3,7 @@
 import { useJourneys } from "@/api/analytics/useJourneys";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import * as d3 from "d3";
 import { AlertCircle } from "lucide-react";
@@ -83,9 +77,7 @@ export default function JourneysPage() {
           const sourceKey = stepKey;
           const targetKey = `${i + 1}_${journey.path[i + 1]}`;
 
-          const existingLink = links.find(
-            (l) => l.source === sourceKey && l.target === targetKey
-          );
+          const existingLink = links.find((l) => l.source === sourceKey && l.target === targetKey);
 
           if (existingLink) {
             existingLink.value += journey.count;
@@ -104,9 +96,7 @@ export default function JourneysPage() {
     const nodesByStep = d3.group(nodes, (d) => d.step);
 
     // Calculate max nodes per step for height calculation
-    const maxNodesInAnyStep = Math.max(
-      ...Array.from(nodesByStep.values()).map((stepNodes) => stepNodes.length)
-    );
+    const maxNodesInAnyStep = Math.max(...Array.from(nodesByStep.values()).map((stepNodes) => stepNodes.length));
 
     // Width calculation that fills available space but doesn't shrink below minimum
     const minStepWidth = 300; // Minimum width per step
@@ -164,22 +154,13 @@ export default function JourneysPage() {
 
     // Find the maximum link value for scaling
     const maxLinkValue = d3.max(links, (link) => link.value) || 1;
-    const linkWidthScale = d3
-      .scaleLinear()
-      .domain([0, maxLinkValue])
-      .range([1, MAX_LINK_HEIGHT]);
+    const linkWidthScale = d3.scaleLinear().domain([0, maxLinkValue]).range([1, MAX_LINK_HEIGHT]);
 
     // Calculate node heights based on connected links
     nodes.forEach((node) => {
       // Sum the values of incoming and outgoing links
-      const incomingValue = node.incomingLinks.reduce(
-        (sum: number, link: any) => sum + link.value,
-        0
-      );
-      const outgoingValue = node.outgoingLinks.reduce(
-        (sum: number, link: any) => sum + link.value,
-        0
-      );
+      const incomingValue = node.incomingLinks.reduce((sum: number, link: any) => sum + link.value, 0);
+      const outgoingValue = node.outgoingLinks.reduce((sum: number, link: any) => sum + link.value, 0);
 
       // Use the larger value to determine height
       const maxValue = Math.max(incomingValue, outgoingValue);
@@ -209,10 +190,7 @@ export default function JourneysPage() {
 
       // Calculate positions for outgoing links
       let currentOutY = 0;
-      const totalOutgoing = node.outgoingLinks.reduce(
-        (sum: number, link: any) => sum + link.value,
-        0
-      );
+      const totalOutgoing = node.outgoingLinks.reduce((sum: number, link: any) => sum + link.value, 0);
 
       node.outgoingLinks.forEach((link: any) => {
         const linkHeight = linkWidthScale(link.value);
@@ -225,18 +203,14 @@ export default function JourneysPage() {
       // Normalize positions to fit within node height
       if (totalOutgoing > 0 && node.outgoingLinks.length > 0) {
         node.outgoingLinks.forEach((link: any) => {
-          link.sourceY =
-            (link.sourceY / currentOutY) * node.height - node.height / 2;
+          link.sourceY = (link.sourceY / currentOutY) * node.height - node.height / 2;
           link.sourceY += node.y; // Adjust to node position
         });
       }
 
       // Calculate positions for incoming links
       let currentInY = 0;
-      const totalIncoming = node.incomingLinks.reduce(
-        (sum: number, link: any) => sum + link.value,
-        0
-      );
+      const totalIncoming = node.incomingLinks.reduce((sum: number, link: any) => sum + link.value, 0);
 
       node.incomingLinks.forEach((link: any) => {
         const linkHeight = linkWidthScale(link.value);
@@ -249,8 +223,7 @@ export default function JourneysPage() {
       // Normalize positions to fit within node height
       if (totalIncoming > 0 && node.incomingLinks.length > 0) {
         node.incomingLinks.forEach((link: any) => {
-          link.targetY =
-            (link.targetY / currentInY) * node.height - node.height / 2;
+          link.targetY = (link.targetY / currentInY) * node.height - node.height / 2;
           link.targetY += node.y; // Adjust to node position
         });
       }
@@ -303,9 +276,7 @@ export default function JourneysPage() {
           .transition()
           .duration(200)
           .attr("opacity", function () {
-            return d3.select(this).attr("data-id") === hoveredLinkId
-              ? 0.9
-              : 0.1;
+            return d3.select(this).attr("data-id") === hoveredLinkId ? 0.9 : 0.1;
           });
 
         // Make all node bars more transparent except the connected ones
@@ -313,9 +284,7 @@ export default function JourneysPage() {
           .transition()
           .duration(200)
           .attr("opacity", function (nodeData: any) {
-            return nodeData.id === source?.id || nodeData.id === target?.id
-              ? 1
-              : 0.2;
+            return nodeData.id === source?.id || nodeData.id === target?.id ? 1 : 0.2;
           });
 
         // Make all node cards more transparent except the connected ones
@@ -323,9 +292,7 @@ export default function JourneysPage() {
           .transition()
           .duration(200)
           .attr("opacity", function (nodeData: any) {
-            return nodeData.id === source?.id || nodeData.id === target?.id
-              ? 0.9
-              : 0.2;
+            return nodeData.id === source?.id || nodeData.id === target?.id ? 0.9 : 0.2;
           });
 
         // Highlight connected node text
@@ -333,9 +300,7 @@ export default function JourneysPage() {
           .transition()
           .duration(200)
           .attr("opacity", function (nodeData: any) {
-            return nodeData.id === source?.id || nodeData.id === target?.id
-              ? 1
-              : 0.3;
+            return nodeData.id === source?.id || nodeData.id === target?.id ? 1 : 0.3;
           });
       })
       .on("mouseout", function () {
@@ -344,15 +309,9 @@ export default function JourneysPage() {
 
         d3.selectAll(".node-bar").transition().duration(200).attr("opacity", 1);
 
-        d3.selectAll(".node-card")
-          .transition()
-          .duration(200)
-          .attr("opacity", 0.8);
+        d3.selectAll(".node-card").transition().duration(200).attr("opacity", 0.8);
 
-        d3.selectAll(".node-text")
-          .transition()
-          .duration(200)
-          .attr("opacity", 1);
+        d3.selectAll(".node-text").transition().duration(200).attr("opacity", 1);
       })
       // Add tooltips showing the exact count
       .append("title")
@@ -432,21 +391,14 @@ export default function JourneysPage() {
   }, [data, steps, maxJourneys, siteMetadata]);
 
   return (
-    <DisabledOverlay message="User Journeys">
+    <DisabledOverlay message="User Journeys" featurePath="journeys">
       <div className="container mx-auto p-2 md:p-4">
         <div className="md:hidden mb-2">
           <MobileSidebar />
         </div>
         <div className="flex justify-end items-center gap-2 mb-2">
-          <DateSelector
-            time={time}
-            setTime={setTime}
-            pastMinutesEnabled={false}
-          />
-          <Select
-            value={steps.toString()}
-            onValueChange={(value) => setSteps(Number(value))}
-          >
+          <DateSelector time={time} setTime={setTime} pastMinutesEnabled={false} />
+          <Select value={steps.toString()} onValueChange={(value) => setSteps(Number(value))}>
             <SelectTrigger className="w-[120px]">
               <SelectValue placeholder="Number of steps" />
             </SelectTrigger>
@@ -458,10 +410,7 @@ export default function JourneysPage() {
               ))}
             </SelectContent>
           </Select>
-          <Select
-            value={maxJourneys.toString()}
-            onValueChange={(value) => setMaxJourneys(Number(value))}
-          >
+          <Select value={maxJourneys.toString()} onValueChange={(value) => setMaxJourneys(Number(value))}>
             <SelectTrigger className="w-[140px]">
               <SelectValue placeholder="Max journeys" />
             </SelectTrigger>
@@ -489,9 +438,7 @@ export default function JourneysPage() {
               <Alert variant="destructive">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Error</AlertTitle>
-                <AlertDescription>
-                  Failed to load journey data. Please try again.
-                </AlertDescription>
+                <AlertDescription>Failed to load journey data. Please try again.</AlertDescription>
               </Alert>
             )}
 
@@ -499,9 +446,7 @@ export default function JourneysPage() {
               <Alert>
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>No Data</AlertTitle>
-                <AlertDescription>
-                  No journey data found for the selected criteria.
-                </AlertDescription>
+                <AlertDescription>No journey data found for the selected criteria.</AlertDescription>
               </Alert>
             )}
 

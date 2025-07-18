@@ -12,11 +12,10 @@ import { EventLog } from "./components/EventLog";
 export default function EventsPage() {
   useSetPageTitle("Rybbit · Events");
 
-  const { data: eventNamesData, isLoading: isLoadingEventNames } =
-    useGetEventNames();
+  const { data: eventNamesData, isLoading: isLoadingEventNames } = useGetEventNames();
 
   return (
-    <DisabledOverlay message="Events">
+    <DisabledOverlay message="Events" featurePath="events">
       <div className="p-2 md:p-4 max-w-[1300px] mx-auto space-y-3">
         <SubHeader availableFilters={EVENT_FILTERS} />
 
@@ -25,11 +24,7 @@ export default function EventsPage() {
             <CardTitle>Custom Events</CardTitle>
           </CardHeader>
           <CardContent>
-            <EventList
-              events={eventNamesData || []}
-              isLoading={isLoadingEventNames}
-              size="large"
-            />
+            <EventList events={eventNamesData || []} isLoading={isLoadingEventNames} size="large" />
           </CardContent>
         </Card>
 

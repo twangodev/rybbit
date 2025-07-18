@@ -25,27 +25,20 @@ export default function SessionReplayPage() {
   const [ref, { height: resolvedHeight, width: resolvedWidth }] = useMeasure();
 
   return (
-    <DisabledOverlay message="Replay">
+    <DisabledOverlay message="Replay" featurePath="replay">
       <div className="p-2 md:p-4 max-w-[2000px] mx-auto flex flex-col gap-1 overflow-y-hidden">
         <SubHeader availableFilters={SESSION_REPLAY_PAGE_FILTERS} />
         <EnableSessionReplay />
         {hasNoReplays ? (
           <NothingFound
             title={"No session replays found"}
-            description={
-              "Replays will appear here once session replay is enabled."
-            }
+            description={"Replays will appear here once session replay is enabled."}
           />
         ) : (
           <div className="grid grid-cols-[200px_1fr_300px] gap-3">
             <ReplayList />
             <div ref={ref} className="w-[calc(min(100vw, 2000px)-780px)]">
-              {resolvedWidth && resolvedHeight && (
-                <ReplayPlayer
-                  width={resolvedWidth}
-                  height={resolvedHeight - 1}
-                />
-              )}
+              {resolvedWidth && resolvedHeight && <ReplayPlayer width={resolvedWidth} height={resolvedHeight - 1} />}
             </div>
             <ReplayBreadcrumbs />
           </div>

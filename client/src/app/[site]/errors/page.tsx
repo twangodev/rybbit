@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  ErrorNameItem,
-  useGetErrorNamesPaginated,
-} from "@/api/analytics/errors/useGetErrorNames";
+import { ErrorNameItem, useGetErrorNamesPaginated } from "@/api/analytics/errors/useGetErrorNames";
 import { Pagination } from "@/components/pagination";
 import { useSetPageTitle } from "@/hooks/useSetPageTitle";
 import { useStore } from "@/lib/store";
@@ -63,37 +60,23 @@ export default function Errors() {
       return (pagination.pageIndex + 1) * pagination.pageSize < totalCount;
     },
     getPageCount: () => totalPages,
-    setPageIndex: (index: number) =>
-      setPagination({ ...pagination, pageIndex: index }),
-    previousPage: () =>
-      setPagination({ ...pagination, pageIndex: pagination.pageIndex - 1 }),
-    nextPage: () =>
-      setPagination({ ...pagination, pageIndex: pagination.pageIndex + 1 }),
+    setPageIndex: (index: number) => setPagination({ ...pagination, pageIndex: index }),
+    previousPage: () => setPagination({ ...pagination, pageIndex: pagination.pageIndex - 1 }),
+    nextPage: () => setPagination({ ...pagination, pageIndex: pagination.pageIndex + 1 }),
   };
 
   useEffect(() => {
     if (!isLoadingErrors && !isPlaceholderData && !isFetching) {
       if (totalCount !== undefined) {
         setTotalPages(Math.ceil(totalCount / pagination.pageSize));
-      } else if (
-        errorsDataArray &&
-        errorsDataArray.length === 0 &&
-        pagination.pageIndex === 0
-      ) {
+      } else if (errorsDataArray && errorsDataArray.length === 0 && pagination.pageIndex === 0) {
         // Fallback if totalCount is somehow undefined but we have an empty array on page 1
         setTotalPages(0);
-      } else if (
-        errorsDataArray &&
-        errorsDataArray.length < pagination.pageSize
-      ) {
+      } else if (errorsDataArray && errorsDataArray.length < pagination.pageSize) {
         // Fallback: if less than a full page is returned, assume it's the last
         setTotalPages(pagination.pageIndex + 1);
       }
-    } else if (
-      pagination.pageIndex === 0 &&
-      isLoadingErrors &&
-      !errorsDataArray
-    ) {
+    } else if (pagination.pageIndex === 0 && isLoadingErrors && !errorsDataArray) {
       // Initial load, no data yet
       setTotalPages(0);
     }
@@ -113,7 +96,7 @@ export default function Errors() {
   }
 
   return (
-    <DisabledOverlay message="errors">
+    <DisabledOverlay message="errors" featurePath="errors">
       <div className="p-2 md:p-4 max-w-[1100px] mx-auto space-y-3">
         <SubHeader />
         <EnableErrorTracking />
@@ -128,10 +111,7 @@ export default function Errors() {
         ) : errorsDataArray && errorsDataArray.length > 0 ? (
           <>
             {errorsDataArray.map((errorItem: ErrorNameItem, index: number) => (
-              <ErrorListItem
-                key={`${errorItem.value}-${index}-${pagination.pageIndex}`}
-                errorData={errorItem}
-              />
+              <ErrorListItem key={`${errorItem.value}-${index}-${pagination.pageIndex}`} errorData={errorItem} />
             ))}
             {totalPages > 0 && (
               <Pagination
@@ -147,9 +127,7 @@ export default function Errors() {
         ) : !isLoadingErrors && !isFetching ? (
           <NothingFound
             title={"No error events found"}
-            description={
-              "Errors will appear here once error tracking is enabled and errors occur on your site."
-            }
+            description={"Errors will appear here once error tracking is enabled and errors occur on your site."}
           />
         ) : null}
       </div>

@@ -49,10 +49,7 @@ export default function GoalsPage() {
       }
     },
     nextPage: () => {
-      if (
-        goalsData?.meta &&
-        pagination.pageIndex + 1 < goalsData.meta.totalPages
-      ) {
+      if (goalsData?.meta && pagination.pageIndex + 1 < goalsData.meta.totalPages) {
         setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
@@ -108,7 +105,7 @@ export default function GoalsPage() {
   );
 
   return (
-    <DisabledOverlay message="Goals">
+    <DisabledOverlay message="Goals" featurePath="goals">
       <div className="p-2 md:p-4 max-w-[1400px] mx-auto space-y-3">
         <SubHeader availableFilters={GOALS_PAGE_FILTERS} />
         <div className="flex items-center justify-between">
@@ -127,9 +124,7 @@ export default function GoalsPage() {
         ) : !goalsData || goalsData.data.length === 0 ? (
           <NothingFound
             title={"No goals found"}
-            description={
-              "Create your first conversion goal to start tracking important user actions."
-            }
+            description={"Create your first conversion goal to start tracking important user actions."}
             action={<CreateGoalButton siteId={Number(site)} />}
           />
         ) : (

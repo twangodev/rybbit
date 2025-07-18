@@ -13,34 +13,26 @@ export async function changeSiteDomain(
       newDomain: string;
     };
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   const { siteId, newDomain } = request.body;
 
-  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(
-    request,
-    String(siteId)
-  );
+  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(request, String(siteId));
   if (!userHasAdminAccessToSite) {
     return reply.status(403).send({ error: "Forbidden" });
   }
 
   // Validate domain format using regex
-  const domainRegex =
-    /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+  const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
   if (!domainRegex.test(newDomain)) {
     return reply.status(400).send({
-      error:
-        "Invalid domain format. Must be a valid domain like example.com or sub.example.com",
+      error: "Invalid domain format. Must be a valid domain like example.com or sub.example.com",
     });
   }
 
   try {
     // Check if site exists and user has permission
-    const siteResult = await db
-      .select()
-      .from(sites)
-      .where(eq(sites.siteId, siteId));
+    const siteResult = await db.select().from(sites).where(eq(sites.siteId, siteId));
 
     if (siteResult.length === 0) {
       return reply.status(404).send({ error: "Site not found" });
@@ -52,7 +44,7 @@ export async function changeSiteDomain(
       .set({
         domain: newDomain,
         name: newDomain,
-        updatedAt: new Date(),
+        updatedAt: new Date().toISOString(),
       })
       .where(eq(sites.siteId, siteId));
 
@@ -65,11 +57,7 @@ export async function changeSiteDomain(
     console.error("Error changing site domain:", err);
 
     // Check for unique constraint violation
-    if (
-      String(err).includes(
-        'duplicate key value violates unique constraint "sites_domain_unique"'
-      )
-    ) {
+    if (String(err).includes('duplicate key value violates unique constraint "sites_domain_unique"')) {
       return reply.status(409).send({ error: "Domain already in use" });
     }
 

@@ -5,13 +5,7 @@ import { useMeasure } from "@uidotdev/usehooks";
 import { useAtom } from "jotai";
 import { useGetLiveUsercount } from "../../../api/analytics/useLiveUserCount";
 import { MobileSidebar } from "../../../components/MobileSidebar";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../../../components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { RealtimeChart } from "./RealtimeChart/RealtimeChart";
 import { RealtimeEvents } from "./RealtimeEvents/RealtimeEvents";
@@ -28,7 +22,7 @@ export default function RealtimePage() {
   const { data } = useGetLiveUsercount(Number(minutes));
 
   return (
-    <DisabledOverlay message="Realtime">
+    <DisabledOverlay message="Realtime" featurePath="realtime">
       <div className="relative overflow-hidden" ref={ref}>
         <World width={width ?? 0} />
 
@@ -44,10 +38,7 @@ export default function RealtimePage() {
                   </span>
                 </div>
                 Visitors in the last{" "}
-                <Select
-                  value={minutes}
-                  onValueChange={(value) => setMinutes(value as MinutesType)}
-                >
+                <Select value={minutes} onValueChange={(value) => setMinutes(value as MinutesType)}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select a time period" />
                   </SelectTrigger>
@@ -65,12 +56,7 @@ export default function RealtimePage() {
                 </Select>
               </div>
               <div className="text-3xl md:text-5xl font-bold flex items-center gap-2">
-                {
-                  <NumberFlow
-                    respectMotionPreference={false}
-                    value={data?.count ?? 0}
-                  />
-                }
+                {<NumberFlow respectMotionPreference={false} value={data?.count ?? 0} />}
               </div>
             </div>
             <div className="h-[50px] md:h-[70px]">

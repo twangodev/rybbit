@@ -2,6 +2,8 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { SessionReplayIngestService } from "../../services/replay/sessionReplayIngestService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
+import { getIpAddress } from "../../utils.js";
+import { validateApiKey, validateOrigin, checkApiKeyRateLimit } from "../../services/shared/requestValidation.js";
 
 const recordSessionReplaySchema = z.object({
   userId: z.string(),
@@ -10,7 +12,7 @@ const recordSessionReplaySchema = z.object({
       type: z.union([z.string(), z.number()]),
       data: z.any(),
       timestamp: z.number(),
-    })
+    }),
   ),
   metadata: z
     .object({
@@ -20,6 +22,7 @@ const recordSessionReplaySchema = z.object({
       language: z.string().optional(),
     })
     .optional(),
+  apiKey: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
 });
 
 export async function recordSessionReplay(
@@ -27,13 +30,51 @@ export async function recordSessionReplay(
     Params: { site: string };
     Body: RecordSessionReplayRequest;
   }>,
-  reply: FastifyReply
+  reply: FastifyReply,
 ) {
   try {
     const siteId = Number(request.params.site);
-    const body = recordSessionReplaySchema.parse(
-      request.body
-    ) as RecordSessionReplayRequest;
+    const body = recordSessionReplaySchema.parse(request.body) as RecordSessionReplayRequest;
+
+    // First check if API key is provided and valid
+    const apiKeyValidation = await validateApiKey(siteId, body.apiKey);
+
+    // If API key validation failed with an error, reject the request
+    if (apiKeyValidation.error) {
+      console.warn(`[SessionReplay] Request rejected for site ${siteId}: ${apiKeyValidation.error}`);
+      return reply.status(403).send({
+        success: false,
+        error: apiKeyValidation.error,
+      });
+    }
+
+    // Check rate limit for API key authenticated requests
+    // ratelimit for session replays doesn't really work right now
+
+    // if (apiKeyValidation.success && body.apiKey) {
+    //   if (!checkApiKeyRateLimit(body.apiKey)) {
+    //     console.warn(
+    //       `[SessionReplay] Rate limit exceeded for API key ${body.apiKey} on site ${siteId}`,
+    //     );
+    //     return reply.status(429).send({
+    //       success: false,
+    //       error: "Rate limit exceeded. Maximum 20 requests per second per API key.",
+    //     });
+    //   }
+    // }
+
+    // If no valid API key, validate origin
+    if (!apiKeyValidation.success) {
+      const originValidation = await validateOrigin(siteId, request.headers.origin as string);
+
+      if (!originValidation.success) {
+        console.warn(`[SessionReplay] Request rejected for site ${siteId}: ${originValidation.error}`);
+        return reply.status(403).send({
+          success: false,
+          error: originValidation.error,
+        });
+      }
+    }
 
     // Extract request metadata for tracking
     const userAgent = request.headers["user-agent"] || "";
@@ -58,24 +99,3 @@ export async function recordSessionReplay(
     return reply.status(500).send({ error: "Internal server error" });
   }
 }
-
-// Helper function to get IP address
-const getIpAddress = (request: FastifyRequest): string => {
-  const cfConnectingIp = request.headers["cf-connecting-ip"];
-  if (cfConnectingIp && typeof cfConnectingIp === "string") {
-    return cfConnectingIp.trim();
-  }
-
-  const forwardedFor = request.headers["x-forwarded-for"];
-  if (forwardedFor && typeof forwardedFor === "string") {
-    const ips = forwardedFor
-      .split(",")
-      .map((ip) => ip.trim())
-      .filter(Boolean);
-    if (ips.length > 0) {
-      return ips[ips.length - 1];
-    }
-  }
-
-  return request.ip;
-};

@@ -11,10 +11,12 @@ import { DialogFooter } from "./ui/dialog";
 import { DialogDescription } from "./ui/dialog";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Building2 } from "lucide-react";
+import { AlertCircle, Building2 } from "lucide-react";
 import { authClient } from "../lib/auth";
 import { toast } from "sonner";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { USER_ORGANIZATIONS_QUERY_KEY } from "../api/admin/organizations";
+import { Alert, AlertDescription, AlertTitle } from "./ui/alert";
 
 interface CreateOrganizationDialogProps {
   open: boolean;
@@ -23,15 +25,11 @@ interface CreateOrganizationDialogProps {
   trigger?: React.ReactNode;
 }
 
-export function CreateOrganizationDialog({
-  open,
-  onOpenChange,
-  onSuccess,
-  trigger,
-}: CreateOrganizationDialogProps) {
+export function CreateOrganizationDialog({ open, onOpenChange, onSuccess, trigger }: CreateOrganizationDialogProps) {
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [error, setError] = useState<string>("");
+  const queryClient = useQueryClient();
 
   // Generate slug from name when name changes
   const handleNameChange = (value: string) => {
@@ -53,6 +51,8 @@ export function CreateOrganizationDialog({
         name,
         slug,
       });
+
+      queryClient.invalidateQueries({ queryKey: [USER_ORGANIZATIONS_QUERY_KEY] });
 
       if (error) {
         throw new Error(error.message || "Failed to create organization");
@@ -106,9 +106,7 @@ export function CreateOrganizationDialog({
             <Building2 className="h-6 w-6" />
             Create Your Organization
           </DialogTitle>
-          <DialogDescription>
-            Set up your organization to get started with Rybbit
-          </DialogDescription>
+          <DialogDescription>Set up your organization to get started with Rybbit</DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
@@ -124,7 +122,7 @@ export function CreateOrganizationDialog({
               />
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="slug">
                 Organization Slug
                 <span className="text-xs text-muted-foreground ml-2">
@@ -149,31 +147,23 @@ export function CreateOrganizationDialog({
               <p className="text-xs text-muted-foreground">
                 This will be used in your URL: rybbit.io/{slug}
               </p>
-            </div>
+            </div> */}
 
             {error && (
-              <div className="bg-destructive/15 text-destructive p-3 rounded-md text-sm">
-                {error}
-              </div>
+              <Alert variant="destructive">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              type="button"
-              onClick={() => onOpenChange(false)}
-            >
+            <Button variant="outline" type="button" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant="success"
-              disabled={createOrgMutation.isPending || !name || !slug}
-            >
-              {createOrgMutation.isPending
-                ? "Creating..."
-                : "Create Organization"}
+            <Button type="submit" variant="success" disabled={createOrgMutation.isPending || !name || !slug}>
+              {createOrgMutation.isPending ? "Creating..." : "Create Organization"}
             </Button>
           </DialogFooter>
         </form>
