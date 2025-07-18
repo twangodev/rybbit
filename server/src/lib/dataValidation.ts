@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { SecurityValidator } from "./security.js";
 
-export class DataValidator {
+export class ImportDataValidator {
   private static readonly MAX_STRING_LENGTH = 1000;
   private static readonly MAX_URL_LENGTH = 2000;
   private static readonly VALID_LANGUAGES = new Set([
@@ -43,7 +43,7 @@ export class DataValidator {
     }),
   });
 
-  static validateUmamiEvent(event: any): z.infer<typeof DataValidator.umamiEventSchema> {
+  static validateUmamiEvent(event: any): z.infer<typeof ImportDataValidator.umamiEventSchema> {
     return this.umamiEventSchema.parse(event);
   }
 

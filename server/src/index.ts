@@ -75,7 +75,7 @@ import { trackEvent } from "./services/tracker/trackEvent.js";
 import { telemetryService } from "./services/telemetryService.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 import { importData } from "./api/import/importData.js";
-import boss from "./lib/boss.js";
+import boss from "./db/postgres/boss.js";
 import { registerCsvParseWorker } from "./workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./workers/dataInsertWorker.js";
 import { listSiteImports } from "./api/import/listSiteImports.js";

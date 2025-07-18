@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { z } from "zod";
 import crypto from "crypto";
-import boss from "../../lib/boss.js";
+import boss from "../../db/postgres/boss.js";
 import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
 import { CSV_PARSE_QUEUE } from "../../types/import.js";
 import { ImportRateLimiter } from "../../lib/rateLimiter.js";

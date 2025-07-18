@@ -1,6 +1,6 @@
 import fs from "fs";
 import { parseStream } from "@fast-csv/parse";
-import boss from "../lib/boss.js";
+import boss from "../db/postgres/boss.js";
 import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE } from "../types/import.js";
 import { Job } from "pg-boss";
 import { UmamiEvent, umamiHeaders } from "./mappings/umami.js";

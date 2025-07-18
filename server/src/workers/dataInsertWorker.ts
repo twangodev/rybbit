@@ -1,4 +1,4 @@
-import boss from "../lib/boss.js";
+import boss from "../db/postgres/boss.js";
 import { UmamiEvent, UmamiImportMapper } from "./mappings/umami.js";
 import { DataInsertJob, DATA_INSERT_QUEUE } from "../types/import.js";
 import { clickhouse } from "../db/clickhouse/clickhouse.js";
