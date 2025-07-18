@@ -70,6 +70,8 @@ import { auth } from "./lib/auth.js";
 import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
+// need to import telemetry service here to start it
+import { telemetryService } from "./services/telemetryService.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
