@@ -9,14 +9,27 @@ import { ImportRateLimiter } from "../lib/rateLimiter.js";
 
 export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
-    try {
-      const { site, importId, source, tempFilePath, organization } = job.data;
+    const { site, importId, source, tempFilePath, organization } = job.data;
 
+    const cleanup = async (reason: string, status: "failed" | "completed" = "failed") => {
+      console.log(`Stopping CSV processing for ${importId}: ${reason}`);
+
+      try {
+        await fs.promises.unlink(tempFilePath);
+        console.log(`Deleted temporary file: ${tempFilePath}`);
+      } catch (error) {
+        console.error(`Failed to delete file ${tempFilePath}:`, error);
+      }
+
+      if (status === "failed") {
+        await ImportStatusManager.updateStatus(importId, "failed", reason);
+      }
+    };
+
+    try {
       const importableEvents = await ImportRateLimiter.countImportableEvents(organization);
       if (importableEvents <= 0) {
-        console.log(`No more events can be imported for importId: ${importId}.`);
-        await fs.promises.unlink(tempFilePath);
-        await ImportStatusManager.updateStatus(importId, "failed", "Event import limit reached");
+        await cleanup("Event import limit reached");
         return;
       }
 
@@ -24,7 +37,6 @@ export async function registerCsvParseWorker() {
       const maxChunks = Math.ceil(importableEvents / chunkSize);
       let chunkNumber = 0;
       let chunk: UmamiEvent[] = [];
-      let shouldStop = false;
 
       const stream = fs.createReadStream(tempFilePath);
 
@@ -42,102 +54,86 @@ export async function registerCsvParseWorker() {
         }
       };
 
-      const cleanup = async (reason: string, error?: unknown) => {
-        console.log(`Stopping CSV processing for ${importId}: ${reason}`);
-        shouldStop = true;
-
-        if (!stream.destroyed) {
-          stream.destroy();
-        }
-
-        try {
-          await fs.promises.unlink(tempFilePath);
-          console.log(`Deleted temporary file: ${tempFilePath}`);
-        } catch (error) {
-          console.error(`Failed to delete file ${tempFilePath}:`, error);
-        }
-      };
-
       await ImportStatusManager.updateStatus(importId, "processing");
 
-      parseStream(stream, { headers: true, maxRows: importableEvents })
-        .on("headers", async (headers) => {
-          if (!validHeaders(headers)) {
-            await cleanup("Header validation failed");
-            await ImportStatusManager.updateStatus(importId, "failed", `Invalid ${source} headers`);
-            return;
-          }
-        })
-        .on("data", async (row) => {
-          if (shouldStop) {
-            return;
-          }
-
-          // TODO: Validate data and skip invalid rows
-          chunk.push(row);
-
-          if (chunk.length >= chunkSize) {
-            chunkNumber++;
-
-            if (chunkNumber > maxChunks) {
-              await cleanup(`Maximum import limit reached`);
-              await ImportStatusManager.updateStatus(importId, "failed", "Event import limit reached");
-              return;
-            }
-
+      return new Promise<void>((resolve, reject) => {
+        parseStream(stream, { headers: true, maxRows: importableEvents })
+          .on("headers", async (headers) => {
             try {
-              await boss.send(DATA_INSERT_QUEUE, {
-                site,
-                importId,
-                source,
-                chunk,
-                chunkNumber,
-                finalChunk: chunkNumber === maxChunks,
-              });
+              if (!validHeaders(headers)) {
+                stream.destroy();
+                await cleanup(`Invalid ${source} headers`);
+                reject(new Error(`Invalid ${source} headers`));
+                return;
+              }
             } catch (error) {
-              await cleanup("Error processing chunk");
-              await ImportStatusManager.updateStatus(importId, "failed", "Error processing chunk");
-              return;
+              stream.destroy();
+              reject(error);
             }
-
-            chunk = [];
-          }
-        })
-        .on("end", async (rowCount: number) => {
-          try {
-            if (!shouldStop && chunk.length > 0) {
-              chunkNumber++;
-
-              await boss.send(DATA_INSERT_QUEUE, {
-                site,
-                importId,
-                source,
-                chunk,
-                chunkNumber,
-                finalChunk: true,
-              });
-            }
-
+          })
+          .on("data", async (row) => {
             try {
-              await fs.promises.unlink(tempFilePath);
-              console.log(`Deleted temporary file: ${tempFilePath}`);
+              // TODO: Validate data and skip invalid rows
+              chunk.push(row);
+
+              if (chunk.length >= chunkSize) {
+                chunkNumber++;
+
+                if (chunkNumber > maxChunks) {
+                  stream.destroy();
+                  await cleanup("Event import limit reached");
+                  reject(new Error("Event import limit reached"));
+                  return;
+                }
+
+                await boss.send(DATA_INSERT_QUEUE, {
+                  site,
+                  importId,
+                  source,
+                  chunk,
+                  chunkNumber,
+                  finalChunk: chunkNumber === maxChunks,
+                });
+
+                chunk = [];
+              }
             } catch (error) {
-              console.error(`Failed to delete file ${tempFilePath}:`, error);
+              stream.destroy();
+              reject(error);
             }
-          } catch (error) {
-            console.error("Error during final CSV chunk processing:", error);
-            await cleanup("Error during final chunk processing");
-            await ImportStatusManager.updateStatus(importId, "failed", "Error during final chunk");
-          }
-        })
-        .on("error", async (error) => {
-          console.error("CSV parsing error:", error);
-          await cleanup("CSV parsing error occurred");
-          await ImportStatusManager.updateStatus(importId, "failed", "CSV parsing error occurred");
-        });
+          })
+          .on("end", async () => {
+            try {
+              // Process any remaining chunk
+              if (chunk.length > 0) {
+                chunkNumber++;
+
+                await boss.send(DATA_INSERT_QUEUE, {
+                  site,
+                  importId,
+                  source,
+                  chunk,
+                  chunkNumber,
+                  finalChunk: true,
+                });
+              }
+
+              await cleanup("Processing completed", "completed");
+              resolve();
+            } catch (error) {
+              reject(error);
+            }
+          })
+          .on("error", (error) => {
+            stream.destroy();
+            reject(error);
+          });
+      });
+
     } catch (error) {
       console.error("Error in CSV parse worker:", error);
-      // cleanup, throw, and mark as failed
+      await cleanup(error instanceof Error ? error.message : "Unknown error occurred");
+      throw error;
     }
   });
 }
