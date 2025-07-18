@@ -21,6 +21,7 @@ import { SortableHeader } from "../shared/SortableHeader";
 import { SearchInput } from "../shared/SearchInput";
 import { ErrorAlert } from "../shared/ErrorAlert";
 import { AdminLayout } from "../shared/AdminLayout";
+import { GrowthChart } from "../shared/GrowthChart";
 import Link from "next/link";
 import { Favicon } from "../../../../components/Favicon";
 
@@ -150,6 +151,8 @@ export function Sites() {
 
   return (
     <AdminLayout title="Sites">
+      <GrowthChart data={sites || []} title="Sites" color="#10b981" />
+      
       <div className="mb-4">
         <SearchInput placeholder="Search by domain or owner email..." value={searchQuery} onChange={setSearchQuery} />
       </div>

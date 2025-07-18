@@ -26,6 +26,7 @@ import { SortableHeader } from "../shared/SortableHeader";
 import { SearchInput } from "../shared/SearchInput";
 import { ErrorAlert } from "../shared/ErrorAlert";
 import { AdminLayout } from "../shared/AdminLayout";
+import { GrowthChart } from "../shared/GrowthChart";
 
 export function Organizations() {
   const router = useRouter();
@@ -234,6 +235,8 @@ export function Organizations() {
 
   return (
     <AdminLayout title="Organizations">
+      <GrowthChart data={organizations || []} title="Organizations" color="#8b5cf6" />
+      
       <div className="mb-4">
         <SearchInput
           placeholder="Search by name, slug, domain, or member email..."
