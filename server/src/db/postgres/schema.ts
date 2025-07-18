@@ -58,7 +58,7 @@ export const sites = pgTable(
     createdBy: text("created_by")
       .notNull()
       .references(() => user.id),
-    organizationId: text("organization_id").references(() => organization.id),
+    organizationId: text("organization_id").notNull().references(() => organization.id),
     public: boolean().default(false),
     saltUserIds: boolean().default(false),
     blockBots: boolean().default(true).notNull(),
