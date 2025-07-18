@@ -104,6 +104,8 @@ server.register(cors, {
   credentials: true,
 });
 
+// TODO: Remove fileSize limit for self-hosted?
+// Would be bad if users accidentally crashed server with file that's too large though
 server.register(multipart, {
   limits: {
     fileSize: 100 * 1024 * 1024, // 100 MB max file size
