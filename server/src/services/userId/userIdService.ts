@@ -1,4 +1,5 @@
 import crypto from "crypto";
+import { SECRET } from "../../lib/const.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 
 class UserIdService {
@@ -14,11 +15,9 @@ class UserIdService {
    * @returns {string} The daily salt as a hex string.
    */
   private getDailySalt(): string {
-    const secretKey = process.env.BETTER_AUTH_SECRET;
-
-    if (!secretKey) {
+    if (!SECRET) {
       console.error(
-        "FATAL: BETTER_AUTH_SECRET environment variable is not set. User ID generation will be insecure or fail."
+        "FATAL: BETTER_AUTH_SECRET environment variable is not set. User ID generation will be insecure or fail.",
       );
       throw new Error("BETTER_AUTH_SECRET environment variable is missing.");
     }
@@ -31,7 +30,7 @@ class UserIdService {
       return this.cachedSalt;
     }
 
-    const input = secretKey + currentDate;
+    const input = SECRET + currentDate;
     const newSalt = crypto.createHash("sha256").update(input).digest("hex");
 
     this.cachedSalt = newSalt;
@@ -48,11 +47,7 @@ class UserIdService {
    * @param siteId The site ID to check for salting configuration
    * @returns A sha256 hash to identify the user
    */
-  generateUserId(
-    ip: string,
-    userAgent: string,
-    siteId?: string | number
-  ): string {
+  generateUserId(ip: string, userAgent: string, siteId?: string | number): string {
     // Only apply salt if the site has salting enabled
     if (siteId && siteConfig.shouldSaltUserIds(siteId)) {
       const dailySalt = this.getDailySalt(); // Get the salt for the current day

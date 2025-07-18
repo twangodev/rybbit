@@ -4,6 +4,7 @@ import { toNodeHandler } from "better-auth/node";
 import Fastify from "fastify";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
+import { collectTelemetry } from "./api/admin/collectTelemetry.js";
 import { getAdminOrganizations } from "./api/admin/getAdminOrganizations.js";
 import { getAdminSites } from "./api/admin/getAdminSites.js";
 import { getEventNames } from "./api/analytics/events/getEventNames.js";
@@ -58,9 +59,11 @@ import { createCheckoutSession } from "./api/stripe/createCheckoutSession.js";
 import { createPortalSession } from "./api/stripe/createPortalSession.js";
 import { getSubscription } from "./api/stripe/getSubscription.js";
 import { handleWebhook } from "./api/stripe/webhook.js";
+import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
 import { getUserOrganizations } from "./api/user/getUserOrganizations.js";
 import { listOrganizationMembers } from "./api/user/listOrganizationMembers.js";
 import { initializeClickhouse } from "./db/clickhouse/clickhouse.js";
+import { initPostgres } from "./db/postgres/initPostgres.js";
 import { loadAllowedDomains } from "./lib/allowedDomains.js";
 import { getSessionFromReq, mapHeaders } from "./lib/auth-utils.js";
 import { auth } from "./lib/auth.js";
@@ -68,8 +71,6 @@ import { IS_CLOUD } from "./lib/const.js";
 import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
-import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
-import { initPostgres } from "./db/postgres/initPostgres.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -146,6 +147,7 @@ const PUBLIC_ROUTES: string[] = [
   "/api/auth/callback/github",
   "/api/stripe/webhook",
   "/api/session-replay/record",
+  "/api/admin/telemetry",
 ];
 
 // Define analytics routes that can be public
@@ -297,6 +299,7 @@ if (IS_CLOUD) {
   // Admin Routes
   server.get("/api/admin/sites", getAdminSites);
   server.get("/api/admin/organizations", getAdminOrganizations);
+  server.post("/api/admin/telemetry", collectTelemetry);
 }
 
 server.post("/track", trackEvent);

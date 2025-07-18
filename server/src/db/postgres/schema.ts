@@ -8,6 +8,7 @@ import {
   timestamp,
   foreignKey,
   unique,
+  real,
 } from "drizzle-orm/pg-core";
 
 // User table
@@ -31,10 +32,7 @@ export const user = pgTable(
     overMonthlyLimit: boolean().default(false),
     monthlyEventCount: integer().default(0),
   },
-  (table) => [
-    unique("user_username_unique").on(table.username),
-    unique("user_email_unique").on(table.email),
-  ]
+  (table) => [unique("user_username_unique").on(table.username), unique("user_email_unique").on(table.email)],
 );
 
 export const verification = pgTable("verification", {
@@ -75,7 +73,7 @@ export const sites = pgTable(
       foreignColumns: [organization.id],
       name: "sites_organization_id_organization_id_fk",
     }),
-  ]
+  ],
 );
 
 // Active sessions table
@@ -108,7 +106,7 @@ export const funnels = pgTable(
       foreignColumns: [user.id],
       name: "funnels_user_id_user_id_fk",
     }),
-  ]
+  ],
 );
 
 export const account = pgTable(
@@ -134,7 +132,7 @@ export const account = pgTable(
       foreignColumns: [user.id],
       name: "account_userId_user_id_fk",
     }),
-  ]
+  ],
 );
 
 export const organization = pgTable(
@@ -150,7 +148,7 @@ export const organization = pgTable(
     monthlyEventCount: integer().default(0),
     overMonthlyLimit: boolean().default(false),
   },
-  (table) => [unique("organization_slug_unique").on(table.slug)]
+  (table) => [unique("organization_slug_unique").on(table.slug)],
 );
 
 export const member = pgTable(
@@ -173,7 +171,7 @@ export const member = pgTable(
       foreignColumns: [user.id],
       name: "member_userId_user_id_fk",
     }),
-  ]
+  ],
 );
 
 export const invitation = pgTable(
@@ -198,7 +196,7 @@ export const invitation = pgTable(
       foreignColumns: [organization.id],
       name: "invitation_organizationId_organization_id_fk",
     }),
-  ]
+  ],
 );
 
 export const session = pgTable(
@@ -222,7 +220,7 @@ export const session = pgTable(
       name: "session_userId_user_id_fk",
     }),
     unique("session_token_unique").on(table.token),
-  ]
+  ],
 );
 
 // Goals table for tracking conversion goals
@@ -250,5 +248,15 @@ export const goals = pgTable(
       foreignColumns: [sites.siteId],
       name: "goals_site_id_sites_site_id_fk",
     }),
-  ]
+  ],
 );
+
+// Telemetry table for tracking self-hosted instances
+export const telemetry = pgTable("telemetry", {
+  id: serial("id").primaryKey().notNull(),
+  instanceId: text("instance_id").notNull(),
+  timestamp: timestamp("timestamp", { mode: "string" }).notNull().defaultNow(),
+  version: text("version").notNull(),
+  tableCounts: jsonb("table_counts").notNull().$type<Record<string, number>>(),
+  clickhouseSizeGb: real("clickhouse_size_gb").notNull(),
+});
