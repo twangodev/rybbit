@@ -74,11 +74,11 @@ import { trackEvent } from "./services/tracker/trackEvent.js";
 // need to import telemetry service here to start it
 import { telemetryService } from "./services/telemetryService.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
-import { importData } from "./api/import/importData.js";
+import { importSiteData } from "./api/sites/importSiteData.js";
 import boss from "./db/postgres/boss.js";
 import { registerCsvParseWorker } from "./workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./workers/dataInsertWorker.js";
-import { listSiteImports } from "./api/import/listSiteImports.js";
+import { listSiteImports } from "./api/sites/listSiteImports.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -291,8 +291,8 @@ server.get("/api/session-replay/list/:site", getSessionReplays);
 server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Imports
-server.post("/api/import/:organization/:site", importData);
-server.get("/api/list-site-imports/:organization/:site", listSiteImports);
+server.post("/api/import-site-data/:organization/:site", importSiteData);
+server.get("/api/list-site-imports/:site", listSiteImports);
 
 // Administrative
 server.get("/api/config", getConfig);

@@ -25,7 +25,7 @@ type ImportDataRequest = {
   Body: z.infer<typeof importDataRequestSchema.shape.body>;
 };
 
-export async function importData(
+export async function importSiteData(
   request: FastifyRequest<ImportDataRequest>,
   reply: FastifyReply,
 ) {
