@@ -13,13 +13,12 @@ const __dirname = path.dirname(__filename);
 class TelemetryService {
   private telemetryTask: cron.ScheduledTask | null = null;
 
-  constructor() {
-    this.initializeTelemetryCron();
-  }
+  constructor() {}
 
   private initializeTelemetryCron() {
     // Only initialize if not cloud and telemetry is not disabled
     if (!IS_CLOUD && !DISABLE_TELEMETRY) {
+      console.info("[TelemetryService] Initializing telemetry cron");
       // Schedule telemetry to run every 24 hours at midnight
       this.telemetryTask = cron.schedule("0 0 * * *", async () => {
         try {
@@ -32,9 +31,7 @@ class TelemetryService {
       // Run immediately on startup
       this.collectAndSendTelemetry();
 
-      console.log(
-        "[TelemetryService] Telemetry collection initialized (runs daily at midnight)"
-      );
+      console.log("[TelemetryService] Telemetry collection initialized (runs daily at midnight)");
     }
   }
 
@@ -44,7 +41,7 @@ class TelemetryService {
       // Fallback to a default value if SECRET is not set
       return "no-secret-configured";
     }
-    
+
     // Create a SHA-256 hash of the secret and take first 12 characters
     const hash = createHash("sha256").update(SECRET).digest("hex");
     return hash.substring(0, 12);
@@ -52,12 +49,7 @@ class TelemetryService {
 
   // Get table row counts from ClickHouse
   private async getTableCounts() {
-    const tables = [
-      "events",
-      "session_replay_events",
-      "session_replay_metadata",
-      "hourly_events_by_site_mv_target",
-    ];
+    const tables = ["events", "session_replay_events", "session_replay_metadata", "hourly_events_by_site_mv_target"];
 
     const counts: Record<string, number> = {};
 
@@ -158,6 +150,10 @@ class TelemetryService {
       this.telemetryTask.stop();
       console.log("[TelemetryService] Telemetry collection cron stopped");
     }
+  }
+
+  public startTelemetryCron() {
+    this.initializeTelemetryCron();
   }
 }
 

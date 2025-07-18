@@ -314,6 +314,8 @@ const start = async () => {
     console.info("Starting server...");
     await Promise.all([initializeClickhouse(), loadAllowedDomains(), siteConfig.loadSiteConfigs(), initPostgres()]);
 
+    telemetryService.startTelemetryCron();
+
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });
   } catch (err) {
