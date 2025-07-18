@@ -12,7 +12,6 @@ import { ImportLimiter } from "../../services/import/importLimiter.js";
 
 const importDataRequestSchema = z.object({
   params: z.object({
-    organization: z.string(),
     site: z.string().min(1),
   }),
   body: z.object({
@@ -42,7 +41,7 @@ export async function importSiteData(
       });
     }
 
-    const { organization, site } = parsed.data.params;
+    const { site } = parsed.data.params;
     const { source } = parsed.data.body;
 
     const userHasAccess = await getUserHasAdminAccessToSite(request, site);
@@ -50,7 +49,7 @@ export async function importSiteData(
       return reply.status(403).send({ error: "Forbidden" });
     }
 
-    const concurrentImportLimitResult = await ImportLimiter.checkConcurrentImportLimit(organization);
+    const concurrentImportLimitResult = await ImportLimiter.checkConcurrentImportLimit(Number(site));
     if (!concurrentImportLimitResult.allowed) {
       return reply.status(429).send({
         error: "Organization limit exceeded",
@@ -73,7 +72,8 @@ export async function importSiteData(
       });
     }
 
-    const importDir = "/tmp/imports"; // ./tmp/imports?
+    const organization = concurrentImportLimitResult.organizationId;
+    const importDir = "/tmp/imports"; // TODO: ./tmp/imports?
     const importId = crypto.randomUUID();
     const savedFileName = `${importId}.csv`;
     const tempFilePath = path.join(importDir, savedFileName);

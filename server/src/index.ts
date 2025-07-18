@@ -291,7 +291,7 @@ server.get("/api/session-replay/list/:site", getSessionReplays);
 server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Imports
-server.post("/api/import-site-data/:organization/:site", importSiteData);
+server.post("/api/import-site-data/:site", importSiteData);
 server.get("/api/list-site-imports/:site", listSiteImports);
 
 // Administrative
