@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { getUserHasAccessToSite } from "../../lib/auth-utils.js";
-import { ImportStatusManager } from "../../lib/importStatus.js";
+import { ImportStatusManager } from "../../services/import/importStatusManager.js";
 import { z } from "zod";
 
 const listSiteImportsRequestSchema = z.object({

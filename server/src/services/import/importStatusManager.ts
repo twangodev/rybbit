@@ -1,6 +1,6 @@
-import { db } from "../db/postgres/postgres.js";
+import { db } from "../../db/postgres/postgres.js";
 import { eq, desc, sql } from "drizzle-orm";
-import { importStatus } from "../db/postgres/schema.js";
+import { importStatus } from "../../db/postgres/schema.js";
 
 type SelectImportStatus = typeof importStatus.$inferSelect;
 type InsertImportStatus = typeof importStatus.$inferInsert;
