@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { SecurityValidator } from "./security.js";
+import { SecurityValidator } from "../../lib/security.js";
 
 export class ImportDataValidator {
   private static readonly MAX_STRING_LENGTH = 1000;
