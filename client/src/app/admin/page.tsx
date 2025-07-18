@@ -9,20 +9,16 @@ import { Organizations } from "./components/organizations/Organizations";
 import { AdminLayout } from "./components/shared/AdminLayout";
 
 export default function AdminPage() {
-  const [activeTab, setActiveTab] = useState("users");
+  const [activeTab, setActiveTab] = useState("organizations");
 
   return (
     <StandardPage>
       <AdminLayout title="Admin Dashboard">
-        <Tabs
-          defaultValue="users"
-          value={activeTab}
-          onValueChange={setActiveTab}
-        >
+        <Tabs defaultValue="organizations" value={activeTab} onValueChange={setActiveTab}>
           <TabsList className="mb-4">
-            <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="organizations">Organizations</TabsTrigger>
             <TabsTrigger value="sites">Sites</TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="settings">Settings</TabsTrigger>
           </TabsList>
 
@@ -41,9 +37,7 @@ export default function AdminPage() {
           <TabsContent value="settings">
             <div className="p-4 border rounded-md">
               <h2 className="text-xl font-bold mb-4">Admin Settings</h2>
-              <p className="text-muted-foreground">
-                Settings panel coming soon...
-              </p>
+              <p className="text-muted-foreground">Settings panel coming soon...</p>
             </div>
           </TabsContent>
         </Tabs>

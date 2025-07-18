@@ -12,10 +12,7 @@ interface EventCountResult {
   total_events: number;
 }
 
-export async function getAdminSites(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function getAdminSites(request: FastifyRequest, reply: FastifyReply) {
   const isAdmin = await getIsUserAdmin(request);
 
   if (!isAdmin) {
@@ -23,7 +20,9 @@ export async function getAdminSites(
   }
 
   // Get all sites (including organizationId for owner lookup)
-  const sitesData = await db.query.sites.findMany();
+  const sitesData = await db.query.sites.findMany({
+    orderBy: (sites, { desc }) => [desc(sites.createdAt)],
+  });
 
   // Get organization owners and their emails
   const orgOwners = await db
@@ -81,14 +80,9 @@ export async function getAdminSites(
       createdAt: site.createdAt,
       public: site.public,
       eventsLast24Hours: siteEventMap.get(site.siteId) || 0,
-      organizationOwnerEmail: site.organizationId
-        ? orgOwnerMap.get(site.organizationId)
-        : null,
+      organizationOwnerEmail: site.organizationId ? orgOwnerMap.get(site.organizationId) : null,
     };
   });
-
-  // Sort by events count in descending order
-  enrichedSites.sort((a, b) => b.eventsLast24Hours - a.eventsLast24Hours);
 
   return reply.status(200).send(enrichedSites);
 }

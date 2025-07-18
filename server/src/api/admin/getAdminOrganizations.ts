@@ -5,11 +5,7 @@ import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { db } from "../../db/postgres/postgres.js";
 import { member, sites, user } from "../../db/postgres/schema.js";
 import { getIsUserAdmin } from "../../lib/auth-utils.js";
-import {
-  DEFAULT_EVENT_LIMIT,
-  getStripePrices,
-  StripePlan,
-} from "../../lib/const.js";
+import { DEFAULT_EVENT_LIMIT, getStripePrices, StripePlan } from "../../lib/const.js";
 import { stripe } from "../../lib/stripe.js";
 
 // Define event count result type
@@ -22,8 +18,7 @@ interface EventCountResult {
 function findPlanDetails(priceId: string): StripePlan | undefined {
   return getStripePrices().find(
     (plan: StripePlan) =>
-      plan.priceId === priceId ||
-      (plan.annualDiscountPriceId && plan.annualDiscountPriceId === priceId)
+      plan.priceId === priceId || (plan.annualDiscountPriceId && plan.annualDiscountPriceId === priceId),
   );
 }
 
@@ -62,10 +57,7 @@ export interface AdminOrganizationData {
   }[];
 }
 
-export async function getAdminOrganizations(
-  request: FastifyRequest,
-  reply: FastifyReply
-) {
+export async function getAdminOrganizations(request: FastifyRequest, reply: FastifyReply) {
   const isAdmin = await getIsUserAdmin(request);
 
   if (!isAdmin) {
@@ -75,9 +67,7 @@ export async function getAdminOrganizations(
   try {
     // Get all organizations with their basic data
     const organizationsData = await db.query.organization.findMany({
-      orderBy: (organization, { desc }) => [
-        desc(organization.monthlyEventCount),
-      ],
+      orderBy: (organization, { desc }) => [desc(organization.createdAt)],
     });
 
     // Get all members for all organizations
@@ -119,11 +109,7 @@ export async function getAdminOrganizations(
         organizationId: sites.organizationId,
       })
       .from(sites)
-      .where(
-        allOrgIds.length > 0
-          ? inArray(sites.organizationId, allOrgIds)
-          : undefined
-      );
+      .where(allOrgIds.length > 0 ? inArray(sites.organizationId, allOrgIds) : undefined);
 
     // Get event counts for the past 24 hours from ClickHouse
     const now = DateTime.now();
@@ -155,10 +141,7 @@ export async function getAdminOrganizations(
         siteEventMap.set(Number(event.site_id), event.total_events);
       }
     } catch (clickhouseError) {
-      console.warn(
-        "ClickHouse query failed, continuing without event counts:",
-        clickhouseError
-      );
+      console.warn("ClickHouse query failed, continuing without event counts:", clickhouseError);
     }
 
     // Create map of organization IDs to their sites with event counts
@@ -179,12 +162,8 @@ export async function getAdminOrganizations(
     }
 
     // Get subscription data for organizations with Stripe customer IDs
-    const orgsWithStripe = organizationsData.filter(
-      (org) => org.stripeCustomerId
-    );
-    const stripeCustomerIds = new Set(
-      orgsWithStripe.map((org) => org.stripeCustomerId!)
-    );
+    const orgsWithStripe = organizationsData.filter((org) => org.stripeCustomerId);
+    const stripeCustomerIds = new Set(orgsWithStripe.map((org) => org.stripeCustomerId!));
 
     // Use bulk fetch approach: get all active subscriptions and filter by customer IDs
     const subscriptionMap = new Map<string, any>();
@@ -218,16 +197,11 @@ export async function getAdminOrganizations(
                   id: subscription.id,
                   planName: planDetails?.name || "Unknown Plan",
                   status: subscription.status,
-                  currentPeriodStart: new Date(
-                    subscriptionItem.current_period_start * 1000
-                  ),
-                  currentPeriodEnd: new Date(
-                    subscriptionItem.current_period_end * 1000
-                  ),
+                  currentPeriodStart: new Date(subscriptionItem.current_period_start * 1000),
+                  currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
                   cancelAtPeriodEnd: subscription.cancel_at_period_end,
                   eventLimit: planDetails?.limits.events || 0,
-                  interval:
-                    subscriptionItem.price.recurring?.interval ?? "unknown",
+                  interval: subscriptionItem.price.recurring?.interval ?? "unknown",
                 });
               }
             }
@@ -235,8 +209,7 @@ export async function getAdminOrganizations(
 
           hasMore = subscriptions.has_more;
           if (hasMore && subscriptions.data.length > 0) {
-            startingAfter =
-              subscriptions.data[subscriptions.data.length - 1].id;
+            startingAfter = subscriptions.data[subscriptions.data.length - 1].id;
           }
 
           // Rate limiting: wait 50ms between requests (20 req/s)
@@ -250,29 +223,26 @@ export async function getAdminOrganizations(
     }
 
     // Build the final response with subscription data
-    const enrichedOrganizations: AdminOrganizationData[] =
-      organizationsData.map((org) => {
-        const subscriptionData = org.stripeCustomerId
-          ? subscriptionMap.get(org.stripeCustomerId)
-          : null;
+    const enrichedOrganizations: AdminOrganizationData[] = organizationsData.map((org) => {
+      const subscriptionData = org.stripeCustomerId ? subscriptionMap.get(org.stripeCustomerId) : null;
 
-        return {
-          id: org.id,
-          name: org.name,
-          createdAt: org.createdAt,
-          monthlyEventCount: org.monthlyEventCount || 0,
-          overMonthlyLimit: org.overMonthlyLimit || false,
-          subscription: subscriptionData || {
-            id: null,
-            planName: "free",
-            status: "free",
-            eventLimit: DEFAULT_EVENT_LIMIT,
-            currentPeriodEnd: getStartOfNextMonth(),
-          },
-          sites: orgSitesMap.get(org.id) || [],
-          members: orgMembersMap.get(org.id) || [],
-        };
-      });
+      return {
+        id: org.id,
+        name: org.name,
+        createdAt: org.createdAt,
+        monthlyEventCount: org.monthlyEventCount || 0,
+        overMonthlyLimit: org.overMonthlyLimit || false,
+        subscription: subscriptionData || {
+          id: null,
+          planName: "free",
+          status: "free",
+          eventLimit: DEFAULT_EVENT_LIMIT,
+          currentPeriodEnd: getStartOfNextMonth(),
+        },
+        sites: orgSitesMap.get(org.id) || [],
+        members: orgMembersMap.get(org.id) || [],
+      };
+    });
 
     return reply.status(200).send(enrichedOrganizations);
   } catch (error) {
