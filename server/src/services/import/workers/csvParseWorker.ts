@@ -129,7 +129,6 @@ export async function registerCsvParseWorker() {
             reject(error);
           });
       });
-
     } catch (error) {
       console.error("Error in CSV parse worker:", error);
       await cleanup(error instanceof Error ? error.message : "Unknown error occurred");

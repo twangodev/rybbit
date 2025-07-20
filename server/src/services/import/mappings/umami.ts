@@ -1,6 +1,6 @@
-import { ImportMapper } from "../workers/jobs.js";
 import { clearSelfReferrer, getAllUrlParams } from "../../tracker/utils.js";
 import { getChannel } from "../../tracker/getChannel.js";
+import { RybbitEvent } from "./rybbit.js";
 
 export interface UmamiEvent {
   website_id: string; // Ignore
@@ -84,8 +84,8 @@ export const umamiHeaders = [
   "job_id"
 ];
 
-export class UmamiImportMapper implements ImportMapper<UmamiEvent[]> {
-  transform(rows: UmamiEvent[], site: string, importId: string) {
+export class UmamiImportMapper {
+  transform(rows: UmamiEvent[], site: string, importId: string): RybbitEvent[] {
     return rows.map(row => {
       const querystring = row.url_query ? `?${row.url_query}` : "";
       const referrer = row.referrer_domain ? `https://${row.referrer_domain}` : "";
