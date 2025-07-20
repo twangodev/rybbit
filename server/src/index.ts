@@ -76,8 +76,8 @@ import { telemetryService } from "./services/telemetryService.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 import { importSiteData } from "./api/sites/importSiteData.js";
 import boss from "./db/postgres/boss.js";
-import { registerCsvParseWorker } from "./services/import/csvParseWorker.js";
-import { registerDataInsertWorker } from "./services/import/dataInsertWorker.js";
+import { registerCsvParseWorker } from "./services/import/workers/csvParseWorker.js";
+import { registerDataInsertWorker } from "./services/import/workers/dataInsertWorker.js";
 import { listSiteImports } from "./api/sites/listSiteImports.js";
 
 const __filename = fileURLToPath(import.meta.url);

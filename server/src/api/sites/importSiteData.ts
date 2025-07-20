@@ -6,7 +6,7 @@ import { z } from "zod";
 import crypto from "crypto";
 import boss from "../../db/postgres/boss.js";
 import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
-import { CSV_PARSE_QUEUE } from "../../types/import.js";
+import { CSV_PARSE_QUEUE } from "../../services/import/workers/jobs.js";
 import { ImportStatusManager } from "../../services/import/importStatusManager.js";
 import { ImportLimiter } from "../../services/import/importLimiter.js";
 

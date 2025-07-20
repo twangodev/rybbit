@@ -1,4 +1,4 @@
-import { ImportMapper } from "../../../types/import.js";
+import { ImportMapper } from "../workers/jobs.js";
 import { clearSelfReferrer, getAllUrlParams } from "../../tracker/utils.js";
 import { getChannel } from "../../tracker/getChannel.js";
 
