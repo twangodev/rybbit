@@ -13,7 +13,7 @@ export async function registerDataInsertWorker() {
       const getImportDataMapping = (source: string) => {
         switch (source) {
           case "umami":
-            return new UmamiImportMapper();
+            return UmamiImportMapper;
           default:
             throw new Error(`Unsupported import source: ${source}`);
         }

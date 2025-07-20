@@ -85,7 +85,7 @@ export const umamiHeaders = [
 ];
 
 export class UmamiImportMapper {
-  transform(rows: UmamiEvent[], site: string, importId: string): RybbitEvent[] {
+  static transform(rows: UmamiEvent[], site: string, importId: string): RybbitEvent[] {
     return rows.map(row => {
       const querystring = row.url_query ? `?${row.url_query}` : "";
       const referrer = row.referrer_domain ? `https://${row.referrer_domain}` : "";
