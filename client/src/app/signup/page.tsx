@@ -46,7 +46,7 @@ export default function SignupPage() {
   const { configs, isLoading: isLoadingConfigs } = useConfigs();
   useSetPageTitle("Rybbit · Signup");
 
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const router = useRouter();
@@ -173,7 +173,7 @@ export default function SignupPage() {
       case 1:
         return (
           <motion.div initial="hidden" animate="visible" variants={contentVariants}>
-            <h2 className="text-2xl font-semibold mb-6">Create your account</h2>
+            <h2 className="text-2xl font-semibold mb-6">Signup</h2>
             <div className="space-y-4">
               <AuthInput
                 id="email"
@@ -224,8 +224,6 @@ export default function SignupPage() {
                   Log in
                 </Link>
               </div>
-
-              <AuthError error={error} />
             </div>
           </motion.div>
         );
@@ -267,7 +265,7 @@ export default function SignupPage() {
                 />
               </div> */}
 
-              <div className="flex flex-col gap-4 pt-4">
+              <div className="flex flex-col gap-4">
                 <Button
                   className="w-full transition-all duration-300 h-11 bg-emerald-600 hover:bg-emerald-500 text-white"
                   onClick={handleOrganizationSubmit}
@@ -376,9 +374,9 @@ export default function SignupPage() {
           <p className="text-muted-foreground mt-2">Get started with privacy-focused web analytics</p>
         </div>
 
-        <Card className="w-full max-w-[500px] p-0 overflow-hidden shadow-2xl border-neutral-700/50 backdrop-blur-sm bg-neutral-800/20 z-10 p-8">
+        <Card className="w-full md:w-[500px] p-0 overflow-hidden shadow-2xl border-neutral-700/50 backdrop-blur-sm bg-neutral-800/20 z-10 p-8">
           {/* Horizontal step indicator */}
-          <div className="flex items-center justify-center mb-8">
+          <div className="flex items-center justify-center mb-4">
             {[1, 2, 3].map((step, index) => (
               <div key={step} className="flex items-center">
                 <div
@@ -406,9 +404,9 @@ export default function SignupPage() {
           </div>
 
           {/* Content area */}
-          <div>
-            {/* {error && <AuthError error={error} />} */}
+          <div className="flex flex-col gap-4">
             {renderStepContent()}
+            <AuthError error={error} />
           </div>
         </Card>
 
