@@ -13,7 +13,7 @@ import { ArrowRight, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useState } from "react";
+import React, { Suspense, useEffect, useState } from "react";
 import { addSite } from "../../api/admin/sites";
 import { useSetPageTitle } from "../../hooks/useSetPageTitle";
 import { authClient } from "../../lib/auth";
@@ -46,7 +46,7 @@ export default function SignupPage() {
   const { configs, isLoading: isLoadingConfigs } = useConfigs();
   useSetPageTitle("Rybbit · Signup");
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const router = useRouter();
@@ -173,7 +173,7 @@ export default function SignupPage() {
       case 1:
         return (
           <motion.div initial="hidden" animate="visible" variants={contentVariants}>
-            <h2 className="text-2xl font-semibold mb-6">Signup</h2>
+            <h2 className="text-2xl font-semibold mb-4">Signup</h2>
             <div className="space-y-4">
               <AuthInput
                 id="email"
@@ -230,7 +230,7 @@ export default function SignupPage() {
       case 2:
         return (
           <motion.div initial="hidden" animate="visible" variants={contentVariants}>
-            <h2 className="text-2xl font-semibold mb-6">Create your organization</h2>
+            <h2 className="text-2xl font-semibold mb-4">Create your organization</h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="orgName">Organization Name</Label>
@@ -285,7 +285,7 @@ export default function SignupPage() {
       case 3:
         return (
           <motion.div initial="hidden" animate="visible" variants={contentVariants}>
-            <h2 className="text-2xl font-semibold mb-6">Add your first website</h2>
+            <h2 className="text-2xl font-semibold mb-4">Add your site</h2>
             <div className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="domain">Website Domain</Label>
@@ -301,7 +301,7 @@ export default function SignupPage() {
                 <p className="text-xs text-muted-foreground">Enter the domain of the website you want to track</p>
               </div>
 
-              <div className="flex justify-between pt-4">
+              <div className="flex justify-between">
                 <Button
                   className="w-full transition-all duration-300 h-11 bg-emerald-600 hover:bg-emerald-500 text-white"
                   onClick={handleWebsiteSubmit}
@@ -366,19 +366,18 @@ export default function SignupPage() {
         <div className="absolute top-1/4 right-0 w-[320px] h-[320px] bg-purple-500/40 rounded-full blur-[70px] opacity-20"></div>
 
         {/* Logo and title above the card */}
-        <div className="relative z-10 mb-8 text-center">
-          <a href="https://rybbit.io" target="_blank" className="inline-block mb-4">
+        <div className="relative z-10 mb-6 text-center">
+          <a href="https://rybbit.io" target="_blank" className="inline-block mb-2">
             <Image src="/rybbit-text.svg" alt="Rybbit" width={150} height={34} />
           </a>
-          <h1 className="text-3xl font-semibold text-foreground">Create your account</h1>
-          <p className="text-muted-foreground mt-2">Get started with privacy-focused web analytics</p>
+          <h1 className="text-lg text-neutral-300">Get started with Rybbit</h1>
         </div>
 
         <Card className="w-full md:w-[500px] p-0 overflow-hidden shadow-2xl border-neutral-700/50 backdrop-blur-sm bg-neutral-800/20 z-10 p-8">
           {/* Horizontal step indicator */}
-          <div className="flex items-center justify-center mb-4">
+          <div className="flex items-center w-full mb-4">
             {[1, 2, 3].map((step, index) => (
-              <div key={step} className="flex items-center">
+              <React.Fragment key={step}>
                 <div
                   className={cn(
                     "flex items-center justify-center w-10 h-10 rounded-full text-sm font-semibold transition-all duration-300",
@@ -394,12 +393,12 @@ export default function SignupPage() {
                 {index < 2 && (
                   <div
                     className={cn(
-                      "w-24 h-0.5 mx-0 transition-all duration-300",
+                      "flex-1 h-0.5 transition-all duration-300",
                       currentStep > step ? "bg-emerald-600" : "bg-muted-foreground/40"
                     )}
                   />
                 )}
-              </div>
+              </React.Fragment>
             ))}
           </div>
 
@@ -410,16 +409,18 @@ export default function SignupPage() {
           </div>
         </Card>
 
-        <div className="text-xs text-muted-foreground relative z-10 mt-8">
-          <a
-            href="https://rybbit.io"
-            target="_blank"
-            rel="noopener"
-            title="Rybbit - Open Source Privacy-Focused Web Analytics"
-          >
-            Open source web analytics powered by Rybbit
-          </a>
-        </div>
+        {!IS_CLOUD && (
+          <div className="text-xs text-muted-foreground relative z-10 mt-8">
+            <a
+              href="https://rybbit.io"
+              target="_blank"
+              rel="noopener"
+              title="Rybbit - Open Source Privacy-Focused Web Analytics"
+            >
+              Open source web analytics powered by Rybbit
+            </a>
+          </div>
+        )}
       </div>
     </div>
   );
