@@ -20,7 +20,7 @@ import { authClient } from "../../lib/auth";
 import { useConfigs } from "../../lib/configs";
 import { IS_CLOUD } from "../../lib/const";
 import { userStore } from "../../lib/userStore";
-import { cn, normalizeDomain } from "../../lib/utils";
+import { cn, isValidDomain, normalizeDomain } from "../../lib/utils";
 
 // Animation variants for step transitions
 const contentVariants = {
@@ -46,7 +46,7 @@ export default function SignupPage() {
   const { configs, isLoading: isLoadingConfigs } = useConfigs();
   useSetPageTitle("Rybbit · Signup");
 
-  const [currentStep, setCurrentStep] = useState(1);
+  const [currentStep, setCurrentStep] = useState(3);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string>("");
   const router = useRouter();
@@ -73,12 +73,6 @@ export default function SignupPage() {
         .replace(/[^a-z0-9-]/g, "");
       setOrgSlug(generatedSlug);
     }
-  };
-
-  // Validate domain
-  const isValidDomain = (domain: string): boolean => {
-    const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
-    return domainRegex.test(domain);
   };
 
   // Step 1: Account creation submission
@@ -313,7 +307,7 @@ export default function SignupPage() {
                 <Button
                   className="w-full transition-all duration-300 h-11 bg-emerald-600 hover:bg-emerald-500 text-white"
                   onClick={handleWebsiteSubmit}
-                  disabled={isLoading || !domain}
+                  disabled={isLoading || !domain || !isValidDomain(domain)}
                   variant="success"
                 >
                   Continue

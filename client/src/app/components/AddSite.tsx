@@ -16,37 +16,15 @@ import {
 import { Input } from "../../components/ui/input";
 import { Label } from "../../components/ui/label";
 import { Switch } from "../../components/ui/switch";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "../../components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../components/ui/tooltip";
 import { authClient } from "../../lib/auth";
 import { IS_CLOUD } from "../../lib/const";
 import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
 import { resetStore, useStore } from "../../lib/store";
 import { useRouter } from "next/navigation";
-import { normalizeDomain } from "../../lib/utils";
+import { isValidDomain, normalizeDomain } from "../../lib/utils";
 
-/**
- * A simple domain validation function:
- * - Ensures at least one dot separator
- * - Allows subdomains (e.g. sub.example.com)
- * - Requires the TLD to be alphabetical (e.g. .com)
- */
-function isValidDomain(domain: string): boolean {
-  const domainRegex =
-    /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
-  return domainRegex.test(domain);
-}
-
-export function AddSite({
-  trigger,
-  disabled,
-}: {
-  trigger?: React.ReactNode;
-  disabled?: boolean;
-}) {
+export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disabled?: boolean }) {
   const { setSite } = useStore();
   const router = useRouter();
 
@@ -55,10 +33,7 @@ export function AddSite({
   const { data: subscription } = useStripeSubscription();
 
   // Disable if user is on free plan and has 3+ sites
-  const isDisabledDueToLimit =
-    subscription?.status !== "active" &&
-    (sites?.sites?.length || 0) >= 3 &&
-    IS_CLOUD;
+  const isDisabledDueToLimit = subscription?.status !== "active" && (sites?.sites?.length || 0) >= 3 && IS_CLOUD;
   const finalDisabled = disabled || isDisabledDueToLimit;
 
   const [open, setOpen] = useState(false);
@@ -77,23 +52,16 @@ export function AddSite({
 
     // Validate before attempting to add
     if (!isValidDomain(domain)) {
-      setError(
-        "Invalid domain format. Must be a valid domain like example.com or sub.example.com"
-      );
+      setError("Invalid domain format. Must be a valid domain like example.com or sub.example.com");
       return;
     }
 
     try {
       const normalizedDomain = normalizeDomain(domain);
-      const site = await addSite(
-        normalizedDomain,
-        normalizedDomain,
-        activeOrganization.id,
-        {
-          isPublic,
-          saltUserIds,
-        }
-      );
+      const site = await addSite(normalizedDomain, normalizedDomain, activeOrganization.id, {
+        isPublic,
+        saltUserIds,
+      });
 
       resetStore();
       setSite(site.siteId.toString());
@@ -156,17 +124,12 @@ export function AddSite({
               <AppWindow className="h-6 w-6" />
               Add Website
             </DialogTitle>
-            <DialogDescription>
-              Track analytics for a new website in your organization
-            </DialogDescription>
+            <DialogDescription>Track analytics for a new website in your organization</DialogDescription>
           </DialogHeader>
 
           <div className="grid gap-4 py-2">
             <div className="grid w-full items-center gap-1.5">
-              <Label
-                htmlFor="domain"
-                className="text-sm font-medium text-white"
-              >
+              <Label htmlFor="domain" className="text-sm font-medium text-white">
                 Domain
               </Label>
               <Input
@@ -179,41 +142,27 @@ export function AddSite({
             {/* Public Analytics Setting */}
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="isPublic"
-                  className="text-sm font-medium text-white"
-                >
+                <Label htmlFor="isPublic" className="text-sm font-medium text-white">
                   Public Analytics
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
                   When enabled, anyone can view analytics without logging in
                 </p>
               </div>
-              <Switch
-                id="isPublic"
-                checked={isPublic}
-                onCheckedChange={setIsPublic}
-              />
+              <Switch id="isPublic" checked={isPublic} onCheckedChange={setIsPublic} />
             </div>
 
             {/* User ID Salting Setting */}
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="saltUserIds"
-                  className="text-sm font-medium text-white"
-                >
+                <Label htmlFor="saltUserIds" className="text-sm font-medium text-white">
                   Enable User ID Salting
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
                   Enhance privacy with daily rotating salts for user IDs
                 </p>
               </div>
-              <Switch
-                id="saltUserIds"
-                checked={saltUserIds}
-                onCheckedChange={setSaltUserIds}
-              />
+              <Switch id="saltUserIds" checked={saltUserIds} onCheckedChange={setSaltUserIds} />
             </div>
           </div>
 
@@ -225,19 +174,10 @@ export function AddSite({
             </Alert>
           )}
           <DialogFooter>
-            <Button
-              type="button"
-              onClick={() => setOpen(false)}
-              variant="outline"
-            >
+            <Button type="button" onClick={() => setOpen(false)} variant="outline">
               Cancel
             </Button>
-            <Button
-              type="submit"
-              variant={"success"}
-              onClick={handleSubmit}
-              disabled={!domain}
-            >
+            <Button type="submit" variant={"success"} onClick={handleSubmit} disabled={!domain}>
               Add
             </Button>
           </DialogFooter>
