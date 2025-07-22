@@ -1,5 +1,5 @@
 import fs from "fs";
-import { parseStream } from "@fast-csv/parse";
+import { parse } from "@fast-csv/parse";
 import boss from "../../../db/postgres/boss.js";
 import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE, IMPORT_COMPLETION_QUEUE } from "./jobs.js";
 import { Job } from "pg-boss";
@@ -23,18 +23,16 @@ export async function registerCsvParseWorker() {
       let chunk: UmamiEvent[] = [];
       let rowsProcessed = 0;
 
-      const stream = fs.createReadStream(tempFilePath);
-
-      await ImportStatusManager.updateStatus(importId, "processing");
-
-      const csvStream = parseStream(stream, {
+      const stream = fs.createReadStream(tempFilePath).pipe(parse({
         headers: umamiHeaders,
         // maxRows: importableEvents,
         // strictColumnHandling: true,
         ignoreEmpty: true
-      });
+      }));
 
-      for await (const data of csvStream) {
+      await ImportStatusManager.updateStatus(importId, "processing");
+
+      for await (const data of stream) {
         if (rowsProcessed >= importableEvents) {
           break;
         }
