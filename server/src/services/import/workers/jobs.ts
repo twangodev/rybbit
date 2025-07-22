@@ -23,5 +23,4 @@ export interface DataInsertJob extends ImportJob {
 
 export interface ImportCompletionJob {
   importId: string;
-  totalEvents: number;
 }

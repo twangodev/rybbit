@@ -5,11 +5,11 @@ import { ImportStatusManager } from "../importStatusManager.js";
 
 export async function registerImportCompletionWorker() {
   await boss.work(IMPORT_COMPLETION_QUEUE, { batchSize: 1, pollingIntervalSeconds: 30 }, async ([ job ]: Job<ImportCompletionJob>[]) => {
-    const { importId, totalEvents } = job.data;
+    const { importId } = job.data;
 
     try {
       await ImportStatusManager.updateStatus(importId, "completed");
-      console.log(`Import ${importId} completed: ${totalEvents} events`);
+      console.log(`Import ${importId} completed`);
     } catch (error) {
       console.error(`Failed to mark import ${importId} as completed:`, error);
       await ImportStatusManager.updateStatus(importId, "failed", "Failed to complete import");

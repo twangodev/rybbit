@@ -21,24 +21,18 @@ export async function registerCsvParseWorker() {
 
       const chunkSize = 1000;
       let chunk: UmamiEvent[] = [];
-      let rowsProcessed = 0;
 
       const stream = fs.createReadStream(tempFilePath).pipe(parse({
         headers: umamiHeaders,
         renameHeaders: true,
         ignoreEmpty: true,
-        // maxRows: importableEvents,
+        maxRows: importableEvents,
       }));
 
       await ImportStatusManager.updateStatus(importId, "processing");
 
       for await (const data of stream) {
-        if (rowsProcessed >= importableEvents) {
-          break;
-        }
-
         chunk.push(data);
-        rowsProcessed++;
 
         if (chunk.length >= chunkSize) {
           await boss.send(DATA_INSERT_QUEUE, {
@@ -62,7 +56,6 @@ export async function registerCsvParseWorker() {
 
       await boss.send(IMPORT_COMPLETION_QUEUE, {
         importId,
-        totalEvents: rowsProcessed,
       });
     } catch (error) {
       console.error("Error in CSV parse worker:", error);
