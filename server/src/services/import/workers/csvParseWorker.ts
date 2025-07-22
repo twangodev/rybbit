@@ -11,6 +11,20 @@ export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
     const { site, importId, source, tempFilePath, organization } = job.data;
 
+    const validHeaders = (headers: string[]): boolean => {
+      const arraysAreEqual = (arr1: string[], arr2: string[]) => {
+        return arr1.length === arr2.length &&
+          arr1.every((value, index) => value === arr2[index]);
+      };
+
+      switch (source) {
+        case "umami":
+          return arraysAreEqual(umamiHeaders, headers);
+        default:
+          return false;
+      }
+    };
+
     try {
       const importableEvents = await ImportLimiter.countImportableEvents(organization);
       if (importableEvents <= 0) {
@@ -25,75 +39,57 @@ export async function registerCsvParseWorker() {
 
       const stream = fs.createReadStream(tempFilePath);
 
-      const validHeaders = (headers: string[]): boolean => {
-        const arraysAreEqual = (arr1: string[], arr2: string[]) => {
-          return arr1.length === arr2.length &&
-            arr1.every((value, index) => value === arr2[index]);
-        };
-
-        switch (source) {
-          case "umami":
-            return arraysAreEqual(umamiHeaders, headers);
-          default:
-            return false;
-        }
-      };
-
       await ImportStatusManager.updateStatus(importId, "processing");
 
-      return new Promise<void>((resolve, reject) => {
-        parseStream(stream, { headers: true, maxRows: importableEvents, discardUnmappedColumns: true, ignoreEmpty: true })
-          .on("headers", (headers) => {
-            if (!validHeaders(headers)) {
-              reject(new Error(`Invalid ${source} headers`));
-              return;
-            }
-          })
-          .on("data", (row) => {
-            if (rowsProcessed >= importableEvents) {
-              stream.destroy();
-              return;
-            }
+      const csvStream = parseStream(stream, {
+        headers: true,
+        maxRows: importableEvents,
+        discardUnmappedColumns: true,
+        ignoreEmpty: true
+      });
 
-            chunk.push(row);
-            rowsProcessed++;
+      await new Promise<void>((resolve, reject) => {
+        csvStream.once("headers", (headers) => {
+          if (!validHeaders(headers)) {
+            reject(new Error(`Invalid ${source} headers`));
+            return;
+          }
+          resolve();
+        });
+        csvStream.once("error", reject);
+      });
 
-            if (chunk.length >= chunkSize) {
-              boss.send(DATA_INSERT_QUEUE, {
-                site,
-                importId,
-                source,
-                chunk: [...chunk],
-              });
+      for await (const data of csvStream) {
+        if (rowsProcessed >= importableEvents) {
+          break;
+        }
 
-              chunk = [];
-            }
-          })
-          .on("end", async () => {
-            try {
-              if (chunk.length > 0) {
-                await boss.send(DATA_INSERT_QUEUE, {
-                  site,
-                  importId,
-                  source,
-                  chunk: [...chunk],
-                });
-              }
+        chunk.push(data);
+        rowsProcessed++;
 
-              await boss.send(IMPORT_COMPLETION_QUEUE, {
-                importId,
-                totalEvents: rowsProcessed,
-              });
-
-              await fs.promises.unlink(tempFilePath);
-              resolve();
-            } catch (error) {
-              reject(error);
-            }
-          })
-          .on("error", (error) => {
-            reject(error);
+        if (chunk.length >= chunkSize) {
+          await boss.send(DATA_INSERT_QUEUE, {
+            site,
+            importId,
+            source,
+            chunk: [...chunk],
           });
+          chunk = [];
+        }
+      }
+
+      if (chunk.length > 0) {
+        await boss.send(DATA_INSERT_QUEUE, {
+          site,
+          importId,
+          source,
+          chunk: [...chunk],
+        });
+      }
+
+      await boss.send(IMPORT_COMPLETION_QUEUE, {
+        importId,
+        totalEvents: rowsProcessed,
       });
     } catch (error) {
       console.error("Error in CSV parse worker:", error);
@@ -102,8 +98,9 @@ export async function registerCsvParseWorker() {
         "failed",
         error instanceof Error ? error.message : "Unknown error occurred"
       );
-      await fs.promises.unlink(tempFilePath);
       throw error;
+    } finally {
+      await fs.promises.unlink(tempFilePath);
     }
   });
 }
