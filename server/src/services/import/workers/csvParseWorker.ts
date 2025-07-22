@@ -72,7 +72,7 @@ export async function registerCsvParseWorker() {
             site,
             importId,
             source,
-            chunk: [...chunk],
+            chunk,
           });
           chunk = [];
         }
@@ -83,7 +83,7 @@ export async function registerCsvParseWorker() {
           site,
           importId,
           source,
-          chunk: [...chunk],
+          chunk,
         });
       }
 
