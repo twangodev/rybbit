@@ -11,20 +11,11 @@ export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
     const { site, importId, source, tempFilePath, organization } = job.data;
 
-    const cleanup = async () => {
-      try {
-        await fs.promises.unlink(tempFilePath);
-        console.log(`Deleted temporary file: ${tempFilePath}`);
-      } catch (error) {
-        console.error(`Failed to delete file ${tempFilePath}:`, error);
-      }
-    };
-
     try {
       const importableEvents = await ImportLimiter.countImportableEvents(organization);
       if (importableEvents <= 0) {
         await ImportStatusManager.updateStatus(importId, "failed", "Event import limit reached");
-        await cleanup();
+        await fs.promises.unlink(tempFilePath);
         return;
       }
 
@@ -103,7 +94,7 @@ export async function registerCsvParseWorker() {
               // });
 
               console.log(`Queued ${chunkNumber} chunks and completion job for import ${importId}`);
-              await cleanup();
+              await fs.promises.unlink(tempFilePath);
               resolve();
             } catch (error) {
               reject(error);
@@ -120,7 +111,7 @@ export async function registerCsvParseWorker() {
         "failed",
         error instanceof Error ? error.message : "Unknown error occurred"
       );
-      await cleanup();
+      await fs.promises.unlink(tempFilePath);
       throw error;
     }
   });

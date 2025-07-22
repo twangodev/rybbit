@@ -18,5 +18,4 @@ export interface CsvParseJob extends ImportJob {
 export interface DataInsertJob extends ImportJob {
   chunk: UmamiEvent[];
   chunkNumber: number;
-  finalChunk: boolean;
 }

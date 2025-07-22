@@ -7,7 +7,7 @@ import { ImportStatusManager } from "../importStatusManager.js";
 
 export async function registerDataInsertWorker() {
   await boss.work(DATA_INSERT_QUEUE, { batchSize: 1, pollingIntervalSeconds: 2 }, async ([ job ]: Job<DataInsertJob>[]) => {
-    const { site, importId, source, chunk, chunkNumber, finalChunk } = job.data;
+    const { site, importId, source, chunk, chunkNumber } = job.data;
 
     try {
       const getImportDataMapping = (source: string) => {
@@ -34,10 +34,6 @@ export async function registerDataInsertWorker() {
         importId,
         transformedRecords.length
       );
-
-      if (finalChunk) {
-        await ImportStatusManager.updateStatus(importId, "completed");
-      }
     } catch (error) {
       console.error("Error in data insert worker:", error);
       await ImportStatusManager.updateStatus(importId, "failed", "Error inserting chunk");
