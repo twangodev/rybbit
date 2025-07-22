@@ -11,20 +11,6 @@ export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
     const { site, importId, source, tempFilePath, organization } = job.data;
 
-    const validHeaders = (headers: string[]): boolean => {
-      const arraysAreEqual = (arr1: string[], arr2: string[]) => {
-        return arr1.length === arr2.length &&
-          arr1.every((value, index) => value === arr2[index]);
-      };
-
-      switch (source) {
-        case "umami":
-          return arraysAreEqual(umamiHeaders, headers);
-        default:
-          return false;
-      }
-    };
-
     try {
       const importableEvents = await ImportLimiter.countImportableEvents(organization);
       if (importableEvents <= 0) {
@@ -42,21 +28,10 @@ export async function registerCsvParseWorker() {
       await ImportStatusManager.updateStatus(importId, "processing");
 
       const csvStream = parseStream(stream, {
-        headers: true,
-        maxRows: importableEvents,
-        discardUnmappedColumns: true,
+        headers: umamiHeaders,
+        // maxRows: importableEvents,
+        // strictColumnHandling: true,
         ignoreEmpty: true
-      });
-
-      await new Promise<void>((resolve, reject) => {
-        csvStream.once("headers", (headers) => {
-          if (!validHeaders(headers)) {
-            reject(new Error(`Invalid ${source} headers`));
-            return;
-          }
-          resolve();
-        });
-        csvStream.once("error", reject);
       });
 
       for await (const data of csvStream) {

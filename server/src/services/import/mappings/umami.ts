@@ -4,10 +4,10 @@ import { RybbitEvent } from "./rybbit.js";
 import { z } from "zod";
 
 export interface UmamiEvent {
-  website_id: string; // Ignore
+  // website_id: string; // Ignore
   session_id: string;
-  visit_id: string; // Ignore
-  event_id: string; // Ignore
+  // visit_id: string; // Ignore
+  // event_id: string; // Ignore
 
   hostname: string;
   browser: string;
@@ -21,36 +21,36 @@ export interface UmamiEvent {
 
   url_path: string;
   url_query: string;
-  utm_source: string; // Ignore, part of url_query
-  utm_medium: string; // Ignore, part of url_query
-  utm_campaign: string; // Ignore, part of url_query
-  utm_content: string; // Ignore, part of url_query
-  utm_term: string; // Ignore, part of url_query
+  // utm_source: string; // Ignore, part of url_query
+  // utm_medium: string; // Ignore, part of url_query
+  // utm_campaign: string; // Ignore, part of url_query
+  // utm_content: string; // Ignore, part of url_query
+  // utm_term: string; // Ignore, part of url_query
   referrer_path: string;
   referrer_query: string;
   referrer_domain: string;
   page_title: string;
 
-  gclid: string; // Ignore, part of url_query
-  fbclid: string; // Ignore, part of url_query
-  msclkid: string; // Ignore, part of url_query
-  ttclid: string; // Ignore, part of url_query
-  li_fat_id: string; // Ignore, part of url_query
-  twclid: string; // Ignore, part of url_query
+  // gclid: string; // Ignore, part of url_query
+  // fbclid: string; // Ignore, part of url_query
+  // msclkid: string; // Ignore, part of url_query
+  // ttclid: string; // Ignore, part of url_query
+  // li_fat_id: string; // Ignore, part of url_query
+  // twclid: string; // Ignore, part of url_query
 
   event_type: number;
   event_name: string;
-  tag: string; // Ignore
+  // tag: string; // Ignore
   distinct_id: string;
   created_at: string;
-  job_id: string | null; // Ignore
+  // job_id: string | null; // Ignore
 }
 
 export const umamiHeaders = [
-  "website_id",
+  undefined,
   "session_id",
-  "visit_id",
-  "event_id",
+  undefined,
+  undefined,
   "hostname",
   "browser",
   "os",
@@ -62,27 +62,27 @@ export const umamiHeaders = [
   "city",
   "url_path",
   "url_query",
-  "utm_source",
-  "utm_medium",
-  "utm_campaign",
-  "utm_content",
-  "utm_term",
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
   "referrer_path",
   "referrer_query",
   "referrer_domain",
   "page_title",
-  "gclid",
-  "fbclid",
-  "msclkid",
-  "ttclid",
-  "li_fat_id",
-  "twclid",
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
+  undefined,
   "event_type",
   "event_name",
-  "tag",
+  undefined,
   "distinct_id",
   "created_at",
-  "job_id"
+  undefined,
 ];
 
 export class UmamiImportMapper {
