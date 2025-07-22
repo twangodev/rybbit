@@ -1,7 +1,7 @@
 import fs from "fs";
 import { parseStream } from "@fast-csv/parse";
 import boss from "../../../db/postgres/boss.js";
-import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE } from "./jobs.js";
+import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE, IMPORT_COMPLETION_QUEUE } from "./jobs.js";
 import { Job } from "pg-boss";
 import { UmamiEvent, umamiHeaders } from "../mappings/umami.js";
 import { ImportStatusManager } from "../importStatusManager.js";
@@ -80,11 +80,10 @@ export async function registerCsvParseWorker() {
                 });
               }
 
-              // Send completion job
-              // await boss.send(IMPORT_COMPLETION_QUEUE, {
-              //   importId,
-              //   totalRecords: rowsProcessed,
-              // });
+              await boss.send(IMPORT_COMPLETION_QUEUE, {
+                importId,
+                totalEvents: rowsProcessed,
+              });
 
               await fs.promises.unlink(tempFilePath);
               resolve();
