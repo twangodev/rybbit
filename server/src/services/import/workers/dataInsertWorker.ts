@@ -35,7 +35,7 @@ export async function registerDataInsertWorker() {
     } catch (error) {
       console.error("Error in data insert worker:", error);
       await ImportStatusManager.updateStatus(importId, "failed", "Error inserting chunk");
-      // throw error;
+      throw error;
     }
   });
 }
