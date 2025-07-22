@@ -260,3 +260,195 @@ export const telemetry = pgTable("telemetry", {
   tableCounts: jsonb("table_counts").notNull().$type<Record<string, number>>(),
   clickhouseSizeGb: real("clickhouse_size_gb").notNull(),
 });
+
+// Uptime monitor definitions
+export const uptimeMonitors = pgTable(
+  "uptime_monitors",
+  {
+    id: serial("id").primaryKey().notNull(),
+    organizationId: text("organization_id")
+      .notNull()
+      .references(() => organization.id),
+    name: text("name").notNull(),
+    monitorType: text("monitor_type").notNull(), // 'http', 'tcp'
+
+    // Common settings
+    intervalSeconds: integer("interval_seconds").notNull(),
+    enabled: boolean("enabled").default(true),
+
+    // HTTP/HTTPS specific configuration
+    httpConfig: jsonb("http_config").$type<{
+      url: string;
+      method: "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "OPTIONS" | "PATCH";
+      headers?: Record<string, string>;
+      body?: string;
+      auth?: {
+        type: "none" | "basic" | "bearer" | "api_key" | "custom_header";
+        credentials?: {
+          username?: string;
+          password?: string;
+          token?: string;
+          headerName?: string;
+          headerValue?: string;
+        };
+      };
+      followRedirects?: boolean;
+      timeoutMs?: number;
+      ipVersion?: "any" | "ipv4" | "ipv6";
+    }>(),
+
+    // TCP specific configuration
+    tcpConfig: jsonb("tcp_config").$type<{
+      host: string;
+      port: number;
+      timeoutMs?: number;
+    }>(),
+
+    // Validation rules
+    validationRules: jsonb("validation_rules")
+      .notNull()
+      .default([])
+      .$type<
+        Array<
+          | {
+              type: "status_code";
+              operator: "equals" | "not_equals" | "in" | "not_in";
+              value: number | number[];
+            }
+          | {
+              type: "response_time";
+              operator: "less_than" | "greater_than";
+              value: number;
+            }
+          | {
+              type: "response_body_contains" | "response_body_not_contains";
+              value: string;
+              caseSensitive?: boolean;
+            }
+          | {
+              type: "header_exists";
+              header: string;
+            }
+          | {
+              type: "header_value";
+              header: string;
+              operator: "equals" | "contains";
+              value: string;
+            }
+          | {
+              type: "response_size";
+              operator: "less_than" | "greater_than";
+              value: number;
+            }
+        >
+      >(),
+
+    // Multi-region configuration (for future use)
+    regions: jsonb("regions").default(["local"]).$type<string[]>(),
+
+    // Metadata
+    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.organizationId],
+      foreignColumns: [organization.id],
+      name: "uptime_monitors_organization_id_organization_id_fk",
+    }),
+    foreignKey({
+      columns: [table.createdBy],
+      foreignColumns: [user.id],
+      name: "uptime_monitors_created_by_user_id_fk",
+    }),
+  ],
+);
+
+// Monitor status tracking
+export const uptimeMonitorStatus = pgTable(
+  "uptime_monitor_status",
+  {
+    monitorId: integer("monitor_id")
+      .primaryKey()
+      .notNull()
+      .references(() => uptimeMonitors.id, { onDelete: "cascade" }),
+    lastCheckedAt: timestamp("last_checked_at", { mode: "string" }),
+    nextCheckAt: timestamp("next_check_at", { mode: "string" }),
+    currentStatus: text("current_status").default("unknown"), // 'up', 'down', 'unknown'
+    consecutiveFailures: integer("consecutive_failures").default(0),
+    consecutiveSuccesses: integer("consecutive_successes").default(0),
+    uptimePercentage24h: real("uptime_percentage_24h"),
+    uptimePercentage7d: real("uptime_percentage_7d"),
+    uptimePercentage30d: real("uptime_percentage_30d"),
+    averageResponseTime24h: real("average_response_time_24h"),
+    updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.monitorId],
+      foreignColumns: [uptimeMonitors.id],
+      name: "uptime_monitor_status_monitor_id_uptime_monitors_id_fk",
+    }),
+  ],
+);
+
+// Alert configuration (scaffolding)
+export const uptimeAlerts = pgTable(
+  "uptime_alerts",
+  {
+    id: serial("id").primaryKey().notNull(),
+    monitorId: integer("monitor_id")
+      .notNull()
+      .references(() => uptimeMonitors.id, { onDelete: "cascade" }),
+    alertType: text("alert_type").notNull(), // 'email', 'webhook', 'slack', etc.
+    alertConfig: jsonb("alert_config").notNull(), // Type-specific configuration
+    conditions: jsonb("conditions")
+      .notNull()
+      .$type<{
+        consecutiveFailures?: number;
+        responseTimeThresholdMs?: number;
+        uptimePercentageThreshold?: number;
+      }>(),
+    enabled: boolean("enabled").default(true),
+    createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.monitorId],
+      foreignColumns: [uptimeMonitors.id],
+      name: "uptime_alerts_monitor_id_uptime_monitors_id_fk",
+    }),
+  ],
+);
+
+// Alert history (scaffolding)
+export const uptimeAlertHistory = pgTable(
+  "uptime_alert_history",
+  {
+    id: serial("id").primaryKey().notNull(),
+    alertId: integer("alert_id")
+      .notNull()
+      .references(() => uptimeAlerts.id, { onDelete: "cascade" }),
+    monitorId: integer("monitor_id")
+      .notNull()
+      .references(() => uptimeMonitors.id, { onDelete: "cascade" }),
+    triggeredAt: timestamp("triggered_at", { mode: "string" }).defaultNow(),
+    resolvedAt: timestamp("resolved_at", { mode: "string" }),
+    alertData: jsonb("alert_data"), // Context about what triggered the alert
+  },
+  (table) => [
+    foreignKey({
+      columns: [table.alertId],
+      foreignColumns: [uptimeAlerts.id],
+      name: "uptime_alert_history_alert_id_uptime_alerts_id_fk",
+    }),
+    foreignKey({
+      columns: [table.monitorId],
+      foreignColumns: [uptimeMonitors.id],
+      name: "uptime_alert_history_monitor_id_uptime_monitors_id_fk",
+    }),
+  ],
+);
