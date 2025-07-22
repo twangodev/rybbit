@@ -79,6 +79,7 @@ import boss from "./db/postgres/boss.js";
 import { registerCsvParseWorker } from "./services/import/workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./services/import/workers/dataInsertWorker.js";
 import { listSiteImports } from "./api/sites/listSiteImports.js";
+import { registerImportCompletionWorker } from "./services/import/workers/importCompletionWorker.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -338,6 +339,7 @@ const start = async () => {
     await boss.start();
     await registerCsvParseWorker();
     await registerDataInsertWorker();
+    await registerImportCompletionWorker();
 
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });
