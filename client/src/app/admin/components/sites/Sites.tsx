@@ -42,7 +42,8 @@ export function Sites() {
       const lowerSearchQuery = searchQuery.toLowerCase();
       return (
         site.domain.toLowerCase().includes(lowerSearchQuery) ||
-        (site.organizationOwnerEmail && site.organizationOwnerEmail.toLowerCase().includes(lowerSearchQuery))
+-        (site.organizationOwnerEmail && site.organizationOwnerEmail.toLowerCase().includes(lowerSearchQuery))
++        site.organizationOwnerEmail?.toLowerCase().includes(lowerSearchQuery)
       );
     });
   }, [sites, searchQuery]);
