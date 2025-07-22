@@ -38,7 +38,7 @@ export interface UmamiEvent {
   // li_fat_id: string; // Ignore, part of url_query
   // twclid: string; // Ignore, part of url_query
 
-  event_type: number;
+  event_type: string;
   event_name: string;
   // tag: string; // Ignore
   distinct_id: string;

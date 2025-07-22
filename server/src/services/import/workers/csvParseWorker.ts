@@ -25,9 +25,9 @@ export async function registerCsvParseWorker() {
 
       const stream = fs.createReadStream(tempFilePath).pipe(parse({
         headers: umamiHeaders,
+        renameHeaders: true,
+        ignoreEmpty: true,
         // maxRows: importableEvents,
-        // strictColumnHandling: true,
-        ignoreEmpty: true
       }));
 
       await ImportStatusManager.updateStatus(importId, "processing");
