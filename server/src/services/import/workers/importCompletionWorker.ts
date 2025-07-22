@@ -13,6 +13,7 @@ export async function registerImportCompletionWorker() {
     } catch (error) {
       console.error(`Failed to mark import ${importId} as completed:`, error);
       await ImportStatusManager.updateStatus(importId, "failed", "Failed to complete import");
+      throw error;
     }
   });
 }

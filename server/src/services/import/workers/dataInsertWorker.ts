@@ -5,20 +5,20 @@ import { clickhouse } from "../../../db/clickhouse/clickhouse.js";
 import { Job } from "pg-boss";
 import { ImportStatusManager } from "../importStatusManager.js";
 
+const getImportDataMapping = (source: string) => {
+  switch (source) {
+    case "umami":
+      return UmamiImportMapper;
+    default:
+      throw new Error(`Unsupported import source: ${source}`);
+  }
+}
+
 export async function registerDataInsertWorker() {
   await boss.work(DATA_INSERT_QUEUE, { batchSize: 1, pollingIntervalSeconds: 2 }, async ([ job ]: Job<DataInsertJob>[]) => {
     const { site, importId, source, chunk } = job.data;
 
     try {
-      const getImportDataMapping = (source: string) => {
-        switch (source) {
-          case "umami":
-            return UmamiImportMapper;
-          default:
-            throw new Error(`Unsupported import source: ${source}`);
-        }
-      }
-
       const dataMapper = getImportDataMapping(source);
       const transformedRecords = dataMapper.transform(chunk, site, importId);
 
