@@ -20,7 +20,6 @@ export async function registerCsvParseWorker() {
       }
 
       const chunkSize = 1000;
-      let chunkNumber = 0;
       let chunk: UmamiEvent[] = [];
       let rowsProcessed = 0;
 
@@ -60,14 +59,11 @@ export async function registerCsvParseWorker() {
             rowsProcessed++;
 
             if (chunk.length >= chunkSize) {
-              chunkNumber++;
-
               boss.send(DATA_INSERT_QUEUE, {
                 site,
                 importId,
                 source,
                 chunk: [...chunk],
-                chunkNumber,
               });
 
               chunk = [];
@@ -76,24 +72,20 @@ export async function registerCsvParseWorker() {
           .on("end", async () => {
             try {
               if (chunk.length > 0) {
-                chunkNumber++;
                 await boss.send(DATA_INSERT_QUEUE, {
                   site,
                   importId,
                   source,
                   chunk: [...chunk],
-                  chunkNumber,
                 });
               }
 
               // Send completion job
               // await boss.send(IMPORT_COMPLETION_QUEUE, {
               //   importId,
-              //   totalChunks: chunkNumber,
               //   totalRecords: rowsProcessed,
               // });
 
-              console.log(`Queued ${chunkNumber} chunks and completion job for import ${importId}`);
               await fs.promises.unlink(tempFilePath);
               resolve();
             } catch (error) {
