@@ -16,7 +16,19 @@ const getImportDataMapping = (source: string) => {
 
 export async function registerDataInsertWorker() {
   await boss.work(DATA_INSERT_QUEUE, { batchSize: 1, pollingIntervalSeconds: 2 }, async ([ job ]: Job<DataInsertJob>[]) => {
-    const { site, importId, source, chunk } = job.data;
+    const { site, importId, source, chunk, allChunksSent } = job.data;
+
+    if (allChunksSent) {
+      try {
+        await ImportStatusManager.updateStatus(importId, "completed");
+        console.log(`Import ${importId} completed`);
+        return;
+      } catch (error) {
+        console.error(`Failed to mark import ${importId} as completed:`, error);
+        await ImportStatusManager.updateStatus(importId, "failed", "Failed to complete import");
+        throw error;
+      }
+    }
 
     try {
       const dataMapper = getImportDataMapping(source);

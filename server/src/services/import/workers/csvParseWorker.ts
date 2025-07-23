@@ -1,7 +1,7 @@
 import fs from "fs";
 import { parse } from "@fast-csv/parse";
 import boss from "../../../db/postgres/boss.js";
-import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE, IMPORT_COMPLETION_QUEUE } from "./jobs.js";
+import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE } from "./jobs.js";
 import { Job } from "pg-boss";
 import { UmamiEvent, umamiHeaders } from "../mappings/umami.js";
 import { ImportStatusManager } from "../importStatusManager.js";
@@ -40,6 +40,7 @@ export async function registerCsvParseWorker() {
             importId,
             source,
             chunk,
+            allChunksSent: false,
           });
           chunk = [];
         }
@@ -51,11 +52,16 @@ export async function registerCsvParseWorker() {
           importId,
           source,
           chunk,
+          allChunksSent: false,
         });
       }
 
-      await boss.send(IMPORT_COMPLETION_QUEUE, {
+      await boss.send(DATA_INSERT_QUEUE, {
+        site,
         importId,
+        source,
+        chunk: [],
+        allChunksSent: true,
       });
     } catch (error) {
       console.error("Error in CSV parse worker:", error);

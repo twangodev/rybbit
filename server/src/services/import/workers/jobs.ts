@@ -4,8 +4,6 @@ export const CSV_PARSE_QUEUE = "csv-parse";
 
 export const DATA_INSERT_QUEUE = "data-insert";
 
-export const IMPORT_COMPLETION_QUEUE = "import-completion";
-
 interface ImportJob {
   site: string;
   importId: string;
@@ -19,8 +17,5 @@ export interface CsvParseJob extends ImportJob {
 
 export interface DataInsertJob extends ImportJob {
   chunk: UmamiEvent[];
-}
-
-export interface ImportCompletionJob {
-  importId: string;
+  allChunksSent: boolean;
 }
