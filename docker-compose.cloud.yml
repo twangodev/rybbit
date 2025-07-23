@@ -63,9 +63,9 @@ services:
     volumes:
       - dragonfly-data:/data
     environment:
-      - DFLY_PASSWORD=${DRAGONFLY_PASSWORD:-frog} # Set a strong password in your .env
+      - DFLY_requirepass=${DRAGONFLY_PASSWORD:-frog}
     restart: unless-stopped
-    command: ["dragonfly", "--logtostderr", "--requirepass", "${DRAGONFLY_PASSWORD:-frog}"]
+    command: ["dragonfly", "--logtostderr"]
 
   backend:
     container_name: backend
