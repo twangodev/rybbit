@@ -6,6 +6,7 @@ import { UptimeBar } from "./UptimeBar";
 import { UptimeMonitor, MonitorEvent } from "@/api/uptime/monitors";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Radio } from "lucide-react";
 
 interface MonitorsTableProps {
   monitors: UptimeMonitor[];
@@ -53,6 +54,43 @@ const formatLastPing = (lastCheckedAt?: string) => {
   return "just now";
 };
 
+const calculateTotalUptime = (monitor: UptimeMonitor, events: MonitorEvent[]) => {
+  // Get monitor creation time
+  const createdAt = DateTime.fromSQL(monitor.createdAt, { zone: "utc" });
+  const now = DateTime.now();
+
+  // Find the most recent downtime event
+  const lastDownEvent = events
+    .filter((e) => e.status === "failure" || e.status === "timeout")
+    .sort((a, b) => {
+      const timeA = DateTime.fromSQL(a.timestamp, { zone: "utc" }).toMillis();
+      const timeB = DateTime.fromSQL(b.timestamp, { zone: "utc" }).toMillis();
+      return timeB - timeA; // Sort descending
+    })[0];
+
+  // Calculate uptime from last down event or creation
+  let uptimeStart = createdAt;
+  if (lastDownEvent) {
+    const lastDownTime = DateTime.fromSQL(lastDownEvent.timestamp, { zone: "utc" });
+    if (lastDownTime > createdAt) {
+      uptimeStart = lastDownTime;
+    }
+  }
+
+  const uptimeMs = now.toMillis() - uptimeStart.toMillis();
+  const days = Math.floor(uptimeMs / (1000 * 60 * 60 * 24));
+  const hours = Math.floor((uptimeMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+  const minutes = Math.floor((uptimeMs % (1000 * 60 * 60)) / (1000 * 60));
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  } else if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  } else {
+    return `${minutes}m`;
+  }
+};
+
 export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorClick }: MonitorsTableProps) {
   console.info(monitors);
   console.info(monitorEvents);
@@ -62,37 +100,49 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="w-12">Status</TableHead>
+            <TableHead className="w-12">
+              <Radio className="ml-2 w-4 h-4" />
+            </TableHead>
             <TableHead>Name</TableHead>
             <TableHead className="w-24">Type</TableHead>
             <TableHead className="w-48">Last 7 Days</TableHead>
             <TableHead className="w-28">Last Ping</TableHead>
             <TableHead className="w-20 text-right whitespace-nowrap">Uptime %</TableHead>
-            <TableHead className="w-20 text-right">P50</TableHead>
-            <TableHead className="w-20 text-right">P75</TableHead>
+            <TableHead className="w-32 text-right">Total Uptime</TableHead>
             <TableHead className="w-20 text-right">P90</TableHead>
-            <TableHead className="w-20 text-right">P99</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {isLoading ? (
             Array.from({ length: 5 }).map((_, i) => (
               <TableRow key={`skeleton-${i}`}>
-                <TableCell><Skeleton className="h-4 w-4 rounded-full mx-auto" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-4 rounded-full mx-auto" />
+                </TableCell>
                 <TableCell>
                   <div className="space-y-1">
                     <Skeleton className="h-4 w-32" />
                     <Skeleton className="h-3 w-48" />
                   </div>
                 </TableCell>
-                <TableCell><Skeleton className="h-6 w-12" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
-                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                <TableCell>
+                  <Skeleton className="h-6 w-12" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-full" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-20" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-12 ml-auto" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-24 ml-auto" />
+                </TableCell>
+                <TableCell>
+                  <Skeleton className="h-4 w-12 ml-auto" />
+                </TableCell>
               </TableRow>
             ))
           ) : monitors.length === 0 ? (
@@ -105,12 +155,10 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
             monitors.map((monitor) => {
               const events = monitorEvents[monitor.id] || [];
               const stats = monitor.status;
+              const totalUptime = calculateTotalUptime(monitor, events);
 
               // Calculate percentiles from events if not available in status
-              let p50 = "-",
-                p75 = "-",
-                p90 = "-",
-                p99 = "-";
+              let p90 = "-";
               if (events.length > 0) {
                 const responseTimes = events
                   .filter((e) => e.status === "success" && e.response_time_ms)
@@ -123,10 +171,7 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
                     return arr[index];
                   };
 
-                  p50 = formatResponseTime(getPercentile(responseTimes, 50));
-                  p75 = formatResponseTime(getPercentile(responseTimes, 75));
                   p90 = formatResponseTime(getPercentile(responseTimes, 90));
-                  p99 = formatResponseTime(getPercentile(responseTimes, 99));
                 }
               }
 
@@ -164,10 +209,8 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
                   </TableCell>
                   <TableCell>{formatLastPing(stats?.lastCheckedAt)}</TableCell>
                   <TableCell className="text-right">{formatPercentage(stats?.uptimePercentage7d)}</TableCell>
-                  <TableCell className="text-right font-mono text-sm">{p50}</TableCell>
-                  <TableCell className="text-right font-mono text-sm">{p75}</TableCell>
+                  <TableCell className="text-right">{totalUptime}</TableCell>
                   <TableCell className="text-right font-mono text-sm">{p90}</TableCell>
-                  <TableCell className="text-right font-mono text-sm">{p99}</TableCell>
                 </TableRow>
               );
             })

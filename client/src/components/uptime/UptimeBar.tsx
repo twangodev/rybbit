@@ -50,7 +50,7 @@ export function UptimeBar({ monitorId, events, className }: UptimeBarProps) {
 
           let barColor = "bg-green-500";
           if (totalEvents === 0) {
-            barColor = "bg-gray-300 dark:bg-gray-600";
+            barColor = "bg-neutral-300 dark:bg-neutral-600";
           } else if (day.failureCount > 0 || day.timeoutCount > 0) {
             const issuePercentage = (day.failureCount + day.timeoutCount) / totalEvents;
             if (issuePercentage >= 0.5) barColor = "bg-red-500";
@@ -69,18 +69,18 @@ export function UptimeBar({ monitorId, events, className }: UptimeBarProps) {
                 <div className="text-sm space-y-1">
                   <div className="flex items-center gap-4">
                     <div className="font-medium">{uptimePercentage}%</div>
-                    <div className="text-gray-300">{day.dateFormatted}</div>
+                    <div className="text-neutral-300">{day.dateFormatted}</div>
                   </div>
                   {totalEvents > 0 ? (
                     <>
-                      <div className="text-xs text-gray-300">
+                      <div className="text-xs text-neutral-300">
                         <span className="text-green-400">{day.successCount}</span> /{" "}
                         <span className="text-red-400">{day.failureCount}</span> /{" "}
                         <span className="text-orange-400">{day.timeoutCount}</span>
                       </div>
                     </>
                   ) : (
-                    <div className="text-xs text-gray-300 mt-1">No data</div>
+                    <div className="text-xs text-neutral-300 mt-1">No data</div>
                   )}
                 </div>
               </TooltipContent>
