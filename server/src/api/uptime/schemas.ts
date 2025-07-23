@@ -162,6 +162,7 @@ export const getMonitorStatsQuerySchema = z.object({
   ).optional(),
   region: z.string().optional(),
   interval: z.enum(["1h", "6h", "24h", "7d", "30d"]).default("24h"),
+  bucket: z.enum(["minute", "five_minutes", "ten_minutes", "fifteen_minutes", "hour", "day", "week", "month", "year"]).optional(),
 });
 
 // Type exports

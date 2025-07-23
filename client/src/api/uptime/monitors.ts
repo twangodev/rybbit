@@ -59,6 +59,8 @@ export interface MonitorStats {
   startTime: string;
   endTime: string;
   region?: string;
+  bucket?: string;
+  monitorType?: string;
   stats: {
     totalChecks: number;
     successfulChecks: number;
@@ -77,6 +79,11 @@ export interface MonitorStats {
   distribution: Array<{
     hour: string;
     avg_response_time: number;
+    avg_dns_time?: number;
+    avg_tcp_time?: number;
+    avg_tls_time?: number;
+    avg_ttfb?: number;
+    avg_transfer_time?: number;
     check_count: number;
     success_count: number;
   }>;
@@ -135,12 +142,14 @@ async function getMonitorStats(monitorId: number, params?: {
   endTime?: string;
   region?: string;
   interval?: "1h" | "6h" | "24h" | "7d" | "30d";
+  bucket?: "minute" | "five_minutes" | "ten_minutes" | "fifteen_minutes" | "hour" | "day" | "week" | "month" | "year";
 }) {
   const queryParams = new URLSearchParams();
   if (params?.startTime) queryParams.append("startTime", params.startTime);
   if (params?.endTime) queryParams.append("endTime", params.endTime);
   if (params?.region) queryParams.append("region", params.region);
   if (params?.interval) queryParams.append("interval", params.interval);
+  if (params?.bucket) queryParams.append("bucket", params.bucket);
   
   const queryString = queryParams.toString();
   const url = queryString ? `/uptime/monitors/${monitorId}/stats?${queryString}` : `/uptime/monitors/${monitorId}/stats`;

@@ -4,7 +4,7 @@ import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
-import { processResults } from "../analytics/utils.js";
+import { processResults, TimeBucketToFn } from "../analytics/utils.js";
 import { getMonitorStatsQuerySchema, type GetMonitorStatsQuery } from "./schemas.js";
 
 // Convert ISO date/datetime to ClickHouse format
@@ -14,7 +14,7 @@ function toClickHouseDateTime(dateString: string): string {
     return `${dateString} 00:00:00`;
   }
   // Otherwise, convert ISO datetime to ClickHouse format (YYYY-MM-DD HH:MM:SS)
-  return dateString.replace('T', ' ').replace(/\.\d{3}Z$/, '');
+  return dateString.replace("T", " ").replace(/\.\d{3}Z$/, "");
 }
 
 interface GetMonitorStatsRequest {
@@ -24,10 +24,7 @@ interface GetMonitorStatsRequest {
   Querystring: GetMonitorStatsQuery;
 }
 
-export async function getMonitorStats(
-  request: FastifyRequest<GetMonitorStatsRequest>,
-  reply: FastifyReply
-) {
+export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsRequest>, reply: FastifyReply) {
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
@@ -51,10 +48,7 @@ export async function getMonitorStats(
 
     // Check if user has access to the monitor's organization
     const userHasAccess = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, userId),
-        eq(member.organizationId, monitor.organizationId)
-      ),
+      where: and(eq(member.userId, userId), eq(member.organizationId, monitor.organizationId)),
     });
 
     if (!userHasAccess) {
@@ -154,11 +148,39 @@ export async function getMonitorStats(
       uptime_percentage: 0,
     };
 
+    // Determine time bucket based on time range and interval
+    const timeDiff = new Date(calculatedEndTime).getTime() - new Date(calculatedStartTime).getTime();
+    const days = timeDiff / (1000 * 60 * 60 * 24);
+
+    let bucket = query.bucket || "hour"; // Default to hour if not specified
+    if (!query.bucket) {
+      // Auto-select bucket based on time range
+      if (days <= 1) {
+        bucket = "minute";
+      } else if (days <= 3) {
+        bucket = "five_minutes";
+      } else if (days <= 7) {
+        bucket = "ten_minutes";
+      } else if (days <= 60) {
+        bucket = "hour";
+      } else {
+        bucket = "day";
+      }
+    }
+
+    // Validate bucket is in TimeBucketToFn
+    const bucketFn = TimeBucketToFn[bucket as keyof typeof TimeBucketToFn] || TimeBucketToFn.hour;
+
     // Get response time distribution
     let distributionQuery = `
       SELECT 
-        toStartOfHour(timestamp) as hour,
+        ${bucketFn}(timestamp) as time_bucket,
         avg(response_time_ms) as avg_response_time,
+        avg(dns_time_ms) as avg_dns_time,
+        avg(tcp_time_ms) as avg_tcp_time,
+        avg(tls_time_ms) as avg_tls_time,
+        avg(ttfb_ms) as avg_ttfb,
+        avg(transfer_time_ms) as avg_transfer_time,
         count() as check_count,
         countIf(status = 'success') as success_count
       FROM monitor_events
@@ -166,14 +188,14 @@ export async function getMonitorStats(
         AND timestamp >= {startTime: DateTime}
         AND timestamp <= {endTime: DateTime}
     `;
-    
+
     if (region) {
       distributionQuery += ` AND region = {region: String}`;
     }
-    
+
     distributionQuery += `
-      GROUP BY hour
-      ORDER BY hour ASC
+      GROUP BY time_bucket
+      ORDER BY time_bucket ASC
     `;
 
     const distributionResult = await clickhouse.query({
@@ -183,6 +205,12 @@ export async function getMonitorStats(
     });
 
     const distribution = await processResults(distributionResult);
+
+    // Rename time_bucket back to hour for backward compatibility with frontend
+    const formattedDistribution = distribution.map((item: any) => ({
+      ...item,
+      hour: item.time_bucket,
+    }));
 
     return reply.status(200).send({
       interval,
@@ -204,14 +232,16 @@ export async function getMonitorStats(
           p99: Number(stats.p99_response_time),
         },
       },
-      distribution,
+      distribution: formattedDistribution,
+      monitorType: monitor.monitorType,
+      bucket,
     });
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       const zodError = error as any;
-      return reply.status(400).send({ 
+      return reply.status(400).send({
         error: "Validation error",
-        details: zodError.errors 
+        details: zodError.errors,
       });
     }
     console.error("Error retrieving monitor stats:", error);

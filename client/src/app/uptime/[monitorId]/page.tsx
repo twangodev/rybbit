@@ -13,6 +13,7 @@ import {
 import { StatusOrb } from "../../../components/uptime/StatusOrb";
 import { UptimeBar } from "../../../components/uptime/UptimeBar";
 import { EditMonitorDialog } from "../../../components/uptime/EditMonitorDialog";
+import { MonitorResponseTimeChart } from "../../../components/uptime/MonitorResponseTimeChart";
 import { 
   ArrowLeft, 
   Edit2, 
@@ -241,6 +242,12 @@ export default function MonitorDetailPage() {
           </Card>
         </div>
         
+        {/* Response Time Chart */}
+        <MonitorResponseTimeChart 
+          monitorId={monitor.id}
+          monitorType={monitor.monitorType}
+        />
+        
         {/* Response Time Stats */}
         {stats && (
           <Card>
@@ -316,7 +323,7 @@ export default function MonitorDetailPage() {
                           {event.status === "success" ? "Check passed" : "Check failed"}
                         </p>
                         <p className="text-xs text-neutral-500">
-                          {DateTime.fromISO(event.timestamp).toRelative()}
+                          {DateTime.fromSQL(event.timestamp, { zone: "utc" }).toRelative()}
                         </p>
                       </div>
                     </div>
