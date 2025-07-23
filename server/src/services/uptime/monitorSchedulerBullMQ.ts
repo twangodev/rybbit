@@ -11,14 +11,14 @@ export class MonitorSchedulerBullMQ {
   private connection: { host: string; port: number; password?: string };
 
   constructor() {
-    // Get Dragonfly connection from environment
+    // Get Redis connection from environment
     this.connection = {
-      host: process.env.DRAGONFLY_HOST || 'localhost',
-      port: parseInt(process.env.DRAGONFLY_PORT || '6379', 10),
-      ...(process.env.DRAGONFLY_PASSWORD && { password: process.env.DRAGONFLY_PASSWORD })
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD })
     };
     
-    console.log(`BullMQ connecting to Dragonfly at ${this.connection.host}:${this.connection.port}`);
+    console.log(`BullMQ connecting to Redis at ${this.connection.host}:${this.connection.port}`);
     
     this.queue = new Queue('monitor-checks', {
       connection: this.connection,
@@ -59,16 +59,39 @@ export class MonitorSchedulerBullMQ {
 
   private async clearStaleJobs(): Promise<void> {
     try {
-      // Clean up old jobs
-      const jobs = await this.queue.getJobs(['delayed', 'waiting', 'active']);
-      console.log(`Found ${jobs.length} existing jobs`);
+      // For Dragonfly compatibility, we'll clear jobs more carefully
+      // First, try to get counts to see if there are any jobs
+      const counts = await this.queue.getJobCounts();
+      console.log('Current job counts:', counts);
       
-      // Remove all existing jobs
-      await Promise.all(jobs.map(job => job.remove()));
-      
-      console.log('Cleared all stale jobs');
+      // Only try to clear if there are actually jobs
+      if (counts.delayed > 0 || counts.waiting > 0 || counts.active > 0) {
+        try {
+          // Try to clean specific job types one by one
+          const waitingJobs = await this.queue.getJobs(['waiting']);
+          const activeJobs = await this.queue.getJobs(['active']);
+          
+          console.log(`Found ${waitingJobs.length} waiting and ${activeJobs.length} active jobs`);
+          
+          // Remove jobs individually
+          for (const job of [...waitingJobs, ...activeJobs]) {
+            try {
+              await job.remove();
+            } catch (err) {
+              console.warn(`Failed to remove job ${job.id}:`, err);
+            }
+          }
+          
+          console.log('Cleared stale jobs');
+        } catch (err) {
+          console.warn('Could not clear all job types:', err);
+        }
+      } else {
+        console.log('No stale jobs to clear');
+      }
     } catch (error) {
       console.error('Error clearing stale jobs:', error);
+      // Continue anyway - this is not critical for startup
     }
   }
 

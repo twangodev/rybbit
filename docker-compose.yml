@@ -57,17 +57,15 @@ services:
       start_period: 10s
     restart: unless-stopped
 
-  dragonfly:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly
-    container_name: dragonfly
-    ulimits:
-      memlock: -1
+  redis:
+    image: redis:7-alpine
+    container_name: redis
     ports:
-      - "127.0.0.1:6379:6379"
+      - "127.0.0.1:6379:6379"  # Only accessible locally
     volumes:
-      - dragonfly-data:/data
+      - redis-data:/data
     restart: unless-stopped
-    command: ["dragonfly", "--logtostderr"]
+    command: ["redis-server", "--appendonly", "yes"]
 
   backend:
     image: ghcr.io/rybbit-io/rybbit-backend:${IMAGE_TAG:-latest}
@@ -91,15 +89,15 @@ services:
       - BASE_URL=${BASE_URL}
       - DISABLE_SIGNUP=${DISABLE_SIGNUP}
       - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
-      # Dragonfly configuration
-      - DRAGONFLY_HOST=dragonfly
-      - DRAGONFLY_PORT=6379
+      # Redis configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
     depends_on:
       clickhouse:
         condition: service_healthy
       postgres:
         condition: service_started
-      dragonfly:
+      redis:
         condition: service_started
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3001/api/health"]
@@ -131,6 +129,6 @@ services:
 volumes:
   clickhouse-data:
   postgres-data:
-  dragonfly-data:
+  redis-data:
   caddy_data: # Persistent volume for Caddy's certificates and state
   caddy_config: # Persistent volume for Caddy's configuration cache (optional but good practice)

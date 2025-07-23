@@ -1,9 +1,10 @@
 export interface MonitorCheckJob {
   monitorId: number;
+  intervalSeconds: number;
 }
 
 export interface HttpCheckResult {
-  status: 'success' | 'failure' | 'timeout';
+  status: "success" | "failure" | "timeout";
   statusCode?: number;
   responseTimeMs: number;
   timing: {
@@ -23,7 +24,7 @@ export interface HttpCheckResult {
 }
 
 export interface TcpCheckResult {
-  status: 'success' | 'failure' | 'timeout';
+  status: "success" | "failure" | "timeout";
   responseTimeMs: number;
   validationErrors: string[];
   error?: {
@@ -35,10 +36,15 @@ export interface TcpCheckResult {
 export type CheckResult = HttpCheckResult | TcpCheckResult;
 
 export interface ValidationRule {
-  type: 'status_code' | 'response_time' | 'response_body_contains' | 
-        'response_body_not_contains' | 'header_exists' | 'header_value' | 'response_size';
-  operator?: 'equals' | 'not_equals' | 'in' | 'not_in' | 'less_than' | 
-             'greater_than' | 'contains';
+  type:
+    | "status_code"
+    | "response_time"
+    | "response_body_contains"
+    | "response_body_not_contains"
+    | "header_exists"
+    | "header_value"
+    | "response_size";
+  operator?: "equals" | "not_equals" | "in" | "not_in" | "less_than" | "greater_than" | "contains";
   value?: number | number[] | string;
   header?: string;
   caseSensitive?: boolean;

@@ -1,10 +1,10 @@
 # Uptime Monitoring Setup
 
-The uptime monitoring system uses BullMQ with Dragonfly for job scheduling and execution.
+The uptime monitoring system uses BullMQ with Redis for job scheduling and execution.
 
 ## Prerequisites
 
-1. **Dragonfly** - A Redis-compatible in-memory datastore
+1. **Redis** - In-memory data structure store
    - Can be deployed on the same server or a separate server
    - Default port: 6379
 
@@ -13,52 +13,41 @@ The uptime monitoring system uses BullMQ with Dragonfly for job scheduling and e
 Add these to your `.env` file:
 
 ```env
-# Dragonfly configuration
-DRAGONFLY_HOST=your-server-ip  # e.g., 5.78.110.218
-DRAGONFLY_PORT=6379            # Default Dragonfly port
-DRAGONFLY_PASSWORD=your-secure-password  # Required for production
+# Redis configuration
+REDIS_HOST=your-server-ip  # e.g., 5.78.110.218
+REDIS_PORT=6379           # Default Redis port
+REDIS_PASSWORD=your-secure-password  # Required for production
 ```
 
-## Dragonfly Installation
+## Redis Installation
 
 ### On Ubuntu/Debian:
 
 ```bash
-# Install Dragonfly
-curl -L https://github.com/dragonflydb/dragonfly/releases/latest/download/dragonfly-x86_64.tar.gz | tar xz
-sudo mv dragonfly /usr/local/bin/
+# Install Redis
+sudo apt update
+sudo apt install redis-server
 
-# Create systemd service
-sudo tee /etc/systemd/system/dragonfly.service > /dev/null <<EOF
-[Unit]
-Description=Dragonfly In-Memory Datastore
-After=network.target
+# Configure Redis for production
+sudo nano /etc/redis/redis.conf
+# Set: requirepass your-secure-password
+# Set: bind 0.0.0.0 (to allow external connections)
+# Set: protected-mode no (if using password)
 
-[Service]
-Type=simple
-ExecStart=/usr/local/bin/dragonfly --logtostderr
-Restart=always
-User=dragonfly
-Group=dragonfly
-
-[Install]
-WantedBy=multi-user.target
-EOF
-
-# Create user and start service
-sudo useradd -r -s /bin/false dragonfly
-sudo systemctl enable dragonfly
-sudo systemctl start dragonfly
+# Start Redis
+sudo systemctl enable redis-server
+sudo systemctl start redis-server
 ```
 
 ### Using Docker:
 
 ```bash
 docker run -d \
-  --name dragonfly \
+  --name redis \
   -p 6379:6379 \
+  -v redis-data:/data \
   --restart unless-stopped \
-  docker.dragonflydb.io/dragonflydb/dragonfly
+  redis:7-alpine redis-server --requirepass your-secure-password --appendonly yes
 ```
 
 ## How It Works
@@ -80,9 +69,9 @@ docker run -d \
 
 ## Troubleshooting
 
-### Check Dragonfly Connection
+### Check Redis Connection
 ```bash
-redis-cli -h YOUR_DRAGONFLY_HOST ping
+redis-cli -h YOUR_REDIS_HOST -a YOUR_REDIS_PASSWORD ping
 # Should return: PONG
 ```
 

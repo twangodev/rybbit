@@ -17,9 +17,9 @@ export class MonitorExecutorBullMQ {
   constructor(concurrency: number = 10) {
     this.concurrency = concurrency;
     this.connection = {
-      host: process.env.DRAGONFLY_HOST || 'localhost',
-      port: parseInt(process.env.DRAGONFLY_PORT || '6379', 10),
-      ...(process.env.DRAGONFLY_PASSWORD && { password: process.env.DRAGONFLY_PASSWORD })
+      host: process.env.REDIS_HOST || 'localhost',
+      port: parseInt(process.env.REDIS_PORT || '6379', 10),
+      ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD })
     };
   }
 
