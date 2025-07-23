@@ -29,9 +29,9 @@ export function UptimeBar({ monitorId, events, className }: UptimeBarProps) {
   });
 
   // Group events by day
-  events.forEach(event => {
-    const eventDate = DateTime.fromISO(event.timestamp).toISODate();
-    const dayData = days.find(d => d.date === eventDate);
+  events.forEach((event) => {
+    const eventDate = DateTime.fromSQL(event.timestamp, { zone: "utc" }).toISODate();
+    const dayData = days.find((d) => d.date === eventDate);
     if (dayData) {
       dayData.events.push(event);
       if (event.status === "success") dayData.successCount++;
@@ -42,13 +42,11 @@ export function UptimeBar({ monitorId, events, className }: UptimeBarProps) {
 
   return (
     <TooltipProvider>
-      <div className={cn("flex gap-0.5 h-8", className)}>
+      <div className={cn("flex gap-1 h-6", className)}>
         {days.map((day, index) => {
           const totalEvents = day.events.length;
           const hasIssues = day.failureCount > 0 || day.timeoutCount > 0;
-          const uptimePercentage = totalEvents > 0 
-            ? (day.successCount / totalEvents * 100).toFixed(1)
-            : "100.0";
+          const uptimePercentage = totalEvents > 0 ? ((day.successCount / totalEvents) * 100).toFixed(1) : "100.0";
 
           let barColor = "bg-green-500";
           if (totalEvents === 0) {
@@ -64,43 +62,25 @@ export function UptimeBar({ monitorId, events, className }: UptimeBarProps) {
             <Tooltip key={day.date}>
               <TooltipTrigger asChild>
                 <div
-                  className={cn(
-                    "flex-1 rounded-sm cursor-pointer transition-opacity hover:opacity-80",
-                    barColor
-                  )}
+                  className={cn("w-[10px] rounded-md cursor-pointer transition-opacity hover:opacity-80", barColor)}
                 />
               </TooltipTrigger>
               <TooltipContent>
-                <div className="text-sm">
-                  <div className="font-medium">{day.dayOfWeek}, {day.dateFormatted}</div>
+                <div className="text-sm space-y-1">
+                  <div className="flex items-center gap-4">
+                    <div className="font-medium">{uptimePercentage}%</div>
+                    <div className="text-gray-300">{day.dateFormatted}</div>
+                  </div>
                   {totalEvents > 0 ? (
                     <>
-                      <div className="text-xs text-gray-300 mt-1">
-                        Uptime: {uptimePercentage}%
-                      </div>
                       <div className="text-xs text-gray-300">
-                        Checks: {totalEvents}
+                        <span className="text-green-400">{day.successCount}</span> /{" "}
+                        <span className="text-red-400">{day.failureCount}</span> /{" "}
+                        <span className="text-orange-400">{day.timeoutCount}</span>
                       </div>
-                      {day.successCount > 0 && (
-                        <div className="text-xs text-green-400">
-                          Success: {day.successCount}
-                        </div>
-                      )}
-                      {day.failureCount > 0 && (
-                        <div className="text-xs text-red-400">
-                          Failures: {day.failureCount}
-                        </div>
-                      )}
-                      {day.timeoutCount > 0 && (
-                        <div className="text-xs text-orange-400">
-                          Timeouts: {day.timeoutCount}
-                        </div>
-                      )}
                     </>
                   ) : (
-                    <div className="text-xs text-gray-300 mt-1">
-                      No data
-                    </div>
+                    <div className="text-xs text-gray-300 mt-1">No data</div>
                   )}
                 </div>
               </TooltipContent>

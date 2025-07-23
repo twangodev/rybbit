@@ -57,16 +57,6 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
   console.info(monitors);
   console.info(monitorEvents);
 
-  if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {Array.from({ length: 5 }).map((_, i) => (
-          <Skeleton key={i} className="h-16 w-full" />
-        ))}
-      </div>
-    );
-  }
-
   return (
     <div className="rounded-md border border-neutral-800">
       <Table>
@@ -85,7 +75,27 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
           </TableRow>
         </TableHeader>
         <TableBody>
-          {monitors.length === 0 ? (
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <TableRow key={`skeleton-${i}`}>
+                <TableCell><Skeleton className="h-4 w-4 rounded-full mx-auto" /></TableCell>
+                <TableCell>
+                  <div className="space-y-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-48" />
+                  </div>
+                </TableCell>
+                <TableCell><Skeleton className="h-6 w-12" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+                <TableCell><Skeleton className="h-4 w-12 ml-auto" /></TableCell>
+              </TableRow>
+            ))
+          ) : monitors.length === 0 ? (
             <TableRow>
               <TableCell colSpan={10} className="text-center text-neutral-500">
                 No monitors configured
