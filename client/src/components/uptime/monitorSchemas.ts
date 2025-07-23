@@ -1,0 +1,90 @@
+import { z } from "zod";
+
+// HTTP method enum
+const httpMethodSchema = z.enum(["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"]);
+
+// Auth type enum
+const authTypeSchema = z.enum(["none", "basic", "bearer", "api_key", "custom_header"]);
+
+// IP version enum
+const ipVersionSchema = z.enum(["any", "ipv4", "ipv6"]);
+
+// Base monitor schema
+const baseMonitorSchema = z.object({
+  organizationId: z.string().min(1, "Organization is required"),
+  name: z.string().min(1, "Monitor name is required").max(256),
+  intervalSeconds: z.number().int().min(1).max(86400),
+  enabled: z.boolean(),
+  validationRules: z.array(z.any()).default([]),
+  regions: z.array(z.string()).default(["local"]),
+});
+
+// HTTP config schema
+const httpConfigSchema = z.object({
+  url: z.string().url("Please enter a valid URL"),
+  method: httpMethodSchema,
+  headers: z.record(z.string()).optional(),
+  body: z.string().optional(),
+  auth: z.object({
+    type: authTypeSchema,
+    credentials: z.object({
+      username: z.string().optional(),
+      password: z.string().optional(),
+      token: z.string().optional(),
+      headerName: z.string().optional(),
+      headerValue: z.string().optional(),
+    }).optional(),
+  }).optional(),
+  followRedirects: z.boolean(),
+  timeoutMs: z.number().int().min(1000).max(300000),
+  ipVersion: ipVersionSchema,
+  userAgent: z.string().max(256).optional(),
+});
+
+// TCP config schema
+const tcpConfigSchema = z.object({
+  host: z.string().min(1, "Host is required"),
+  port: z.number().int().min(1, "Invalid port").max(65535, "Port must be between 1 and 65535"),
+  timeoutMs: z.number().int().min(1000).max(300000),
+});
+
+// Create monitor schema
+export const createMonitorSchema = z.object({
+  organizationId: z.string().min(1, "Organization is required"),
+  name: z.string().min(1, "Monitor name is required").max(256),
+  monitorType: z.enum(["http", "tcp"]),
+  intervalSeconds: z.number().int().min(1).max(86400),
+  enabled: z.boolean(),
+  httpConfig: httpConfigSchema.optional(),
+  tcpConfig: tcpConfigSchema.optional(),
+  validationRules: z.array(z.any()).optional(),
+  regions: z.array(z.string()).optional(),
+}).refine(
+  (data) => {
+    if (data.monitorType === "http") {
+      return data.httpConfig !== undefined && data.httpConfig.url !== "";
+    }
+    if (data.monitorType === "tcp") {
+      return data.tcpConfig !== undefined && data.tcpConfig.host !== "";
+    }
+    return false;
+  },
+  {
+    message: "Monitor type specific configuration is required",
+  }
+);
+
+// Update monitor schema (all fields optional except what's being updated)
+export const updateMonitorSchema = z.object({
+  name: z.string().min(1).max(256).optional(),
+  intervalSeconds: z.number().int().min(1).max(86400).optional(),
+  enabled: z.boolean().optional(),
+  httpConfig: httpConfigSchema.partial().optional(),
+  tcpConfig: tcpConfigSchema.partial().optional(),
+  validationRules: z.array(z.any()).optional(),
+  regions: z.array(z.string()).optional(),
+});
+
+// Type exports
+export type CreateMonitorFormData = z.infer<typeof createMonitorSchema>;
+export type UpdateMonitorFormData = z.infer<typeof updateMonitorSchema>;

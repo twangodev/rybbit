@@ -7,6 +7,16 @@ import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils.js";
 import { getMonitorStatsQuerySchema, type GetMonitorStatsQuery } from "./schemas.js";
 
+// Convert ISO date/datetime to ClickHouse format
+function toClickHouseDateTime(dateString: string): string {
+  // If it's just a date (YYYY-MM-DD), add time as 00:00:00
+  if (dateString.length === 10) {
+    return `${dateString} 00:00:00`;
+  }
+  // Otherwise, convert ISO datetime to ClickHouse format (YYYY-MM-DD HH:MM:SS)
+  return dateString.replace('T', ' ').replace(/\.\d{3}Z$/, '');
+}
+
 interface GetMonitorStatsRequest {
   Params: {
     monitorId: string;
@@ -102,8 +112,8 @@ export async function getMonitorStats(
 
     const queryParams: any = {
       monitorId: Number(monitorId),
-      startTime: calculatedStartTime,
-      endTime: calculatedEndTime,
+      startTime: toClickHouseDateTime(calculatedStartTime),
+      endTime: toClickHouseDateTime(calculatedEndTime),
     };
 
     if (region) {

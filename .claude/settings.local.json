@@ -22,7 +22,11 @@
       "Bash(find:*)",
       "Bash(clickhouse-client:*)",
       "Bash(curl:*)",
-      "Bash(npm uninstall:*)"
+      "Bash(npm uninstall:*)",
+      "Bash(pkill:*)",
+      "Bash(psql:*)",
+      "Bash(source .env)",
+      "Bash(POSTGRES_PASSWORD=carbink node src/test-pgboss.js)"
     ]
   },
   "enableAllProjectMcpServers": false

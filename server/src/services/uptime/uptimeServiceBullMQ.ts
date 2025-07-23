@@ -1,28 +1,14 @@
-import { MonitorScheduler } from './monitorScheduler.js';
-import { MonitorExecutor } from './monitorExecutor.js';
+import { MonitorSchedulerBullMQ } from './monitorSchedulerBullMQ.js';
+import { MonitorExecutorBullMQ } from './monitorExecutorBullMQ.js';
 
-export class UptimeService {
-  private scheduler: MonitorScheduler;
-  private executor: MonitorExecutor;
+export class UptimeServiceBullMQ {
+  private scheduler: MonitorSchedulerBullMQ;
+  private executor: MonitorExecutorBullMQ;
   private initialized = false;
 
   constructor() {
-    // Build PostgreSQL connection string from environment variables
-    const connectionString = this.buildConnectionString();
-    
-    this.scheduler = new MonitorScheduler(connectionString);
-    // Pass the pg-boss instance from scheduler to executor with default concurrency of 10
-    this.executor = new MonitorExecutor(this.scheduler.getBoss(), 10);
-  }
-
-  private buildConnectionString(): string {
-    const host = process.env.POSTGRES_HOST || 'localhost';
-    const port = process.env.POSTGRES_PORT || '5432';
-    const database = process.env.POSTGRES_DB || 'analytics';
-    const user = process.env.POSTGRES_USER || 'postgres';
-    const password = process.env.POSTGRES_PASSWORD || '';
-    
-    return `postgresql://${user}:${password}@${host}:${port}/${database}`;
+    this.scheduler = new MonitorSchedulerBullMQ();
+    this.executor = new MonitorExecutorBullMQ(10); // 10 concurrent workers
   }
 
   async initialize(): Promise<void> {
@@ -32,16 +18,16 @@ export class UptimeService {
     }
     
     try {
-      console.log('Initializing uptime monitoring service...');
+      console.log('Initializing BullMQ uptime monitoring service...');
       
-      // Initialize scheduler (creates pg-boss schema, loads and schedules all monitors)
+      // Initialize scheduler (creates queue, loads and schedules all monitors)
       await this.scheduler.initialize();
       
       // Start executor (begins processing jobs)
       await this.executor.start();
       
       this.initialized = true;
-      console.log('Uptime monitoring service initialized successfully');
+      console.log('BullMQ uptime monitoring service initialized successfully');
     } catch (error) {
       console.error('Failed to initialize uptime service:', error);
       throw error;
@@ -49,17 +35,17 @@ export class UptimeService {
   }
 
   async shutdown(): Promise<void> {
-    console.log('Shutting down uptime monitoring service...');
+    console.log('Shutting down BullMQ uptime monitoring service...');
     
     try {
       // Shutdown executor first (stops processing new jobs)
       await this.executor.shutdown();
       
-      // Then shutdown scheduler (stops pg-boss)
+      // Then shutdown scheduler (closes queue)
       await this.scheduler.shutdown();
       
       this.initialized = false;
-      console.log('Uptime monitoring service shut down successfully');
+      console.log('BullMQ uptime monitoring service shut down successfully');
     } catch (error) {
       console.error('Error during uptime service shutdown:', error);
     }
@@ -88,4 +74,4 @@ export class UptimeService {
 }
 
 // Export singleton instance
-export const uptimeService = new UptimeService();
+export const uptimeServiceBullMQ = new UptimeServiceBullMQ();

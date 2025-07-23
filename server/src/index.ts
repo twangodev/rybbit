@@ -80,7 +80,7 @@ import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
 // need to import telemetry service here to start it
 import { telemetryService } from "./services/telemetryService.js";
-import { uptimeService } from "./services/uptime/uptimeService.js";
+import { uptimeServiceBullMQ as uptimeService } from "./services/uptime/uptimeServiceBullMQ.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 
 const __filename = fileURLToPath(import.meta.url);

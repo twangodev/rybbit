@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
-import { uptimeService } from "../../services/uptime/uptimeService.js";
+import { uptimeServiceBullMQ } from "../../services/uptime/uptimeServiceBullMQ.js";
 import { updateMonitorSchema, type UpdateMonitorInput } from "./schemas.js";
 
 interface UpdateMonitorRequest {
@@ -82,7 +82,7 @@ export async function updateMonitor(
       const enabled = updateData.enabled !== undefined ? updateData.enabled : existingMonitor.enabled!;
       const intervalSeconds = updateData.intervalSeconds || existingMonitor.intervalSeconds;
       
-      await uptimeService.onMonitorUpdated(
+      await uptimeServiceBullMQ.onMonitorUpdated(
         Number(monitorId),
         intervalSeconds,
         enabled

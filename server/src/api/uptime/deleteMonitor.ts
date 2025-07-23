@@ -1,9 +1,9 @@
 import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, member } from "../../db/postgres/schema.js";
+import { uptimeMonitors, uptimeMonitorStatus, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
-import { uptimeService } from "../../services/uptime/uptimeService.js";
+import { uptimeServiceBullMQ } from "../../services/uptime/uptimeServiceBullMQ.js";
 
 interface DeleteMonitorParams {
   Params: {
@@ -46,12 +46,20 @@ export async function deleteMonitor(
     }
 
     // Remove the monitor from the scheduler first
-    await uptimeService.onMonitorDeleted(Number(monitorId));
+    await uptimeServiceBullMQ.onMonitorDeleted(Number(monitorId));
 
-    // Delete the monitor (cascade will handle related records)
-    await db
-      .delete(uptimeMonitors)
-      .where(eq(uptimeMonitors.id, Number(monitorId)));
+    // Delete monitor and related records in a transaction
+    await db.transaction(async (tx) => {
+      // Delete monitor status first
+      await tx
+        .delete(uptimeMonitorStatus)
+        .where(eq(uptimeMonitorStatus.monitorId, Number(monitorId)));
+
+      // Delete the monitor
+      await tx
+        .delete(uptimeMonitors)
+        .where(eq(uptimeMonitors.id, Number(monitorId)));
+    });
 
     return reply.status(204).send();
   } catch (error) {

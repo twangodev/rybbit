@@ -95,7 +95,7 @@ export const createMonitorSchema = z.object({
   organizationId: z.string().min(1, "Organization ID is required"),
   name: z.string().min(1, "Name is required").max(256),
   monitorType: z.enum(["http", "tcp"]),
-  intervalSeconds: z.number().int().min(1).max(86400, "Interval must be between 1 and 86400 seconds"),
+  intervalSeconds: z.number().int().min(60).max(86400, "Interval must be between 60 and 86400 seconds"),
   enabled: z.boolean().default(true),
   httpConfig: httpConfigSchema.optional(),
   tcpConfig: tcpConfigSchema.optional(),
@@ -119,7 +119,7 @@ export const createMonitorSchema = z.object({
 // Update monitor schema (similar to create but with optional fields)
 export const updateMonitorSchema = z.object({
   name: z.string().min(1).max(256).optional(),
-  intervalSeconds: z.number().int().min(1).max(86400).optional(),
+  intervalSeconds: z.number().int().min(60).max(86400).optional(),
   enabled: z.boolean().optional(),
   httpConfig: httpConfigSchema.optional(),
   tcpConfig: tcpConfigSchema.optional(),
@@ -137,8 +137,14 @@ export const getMonitorsQuerySchema = z.object({
 });
 
 export const getMonitorEventsQuerySchema = z.object({
-  startTime: z.string().datetime().optional(),
-  endTime: z.string().datetime().optional(),
+  startTime: z.string().refine(
+    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
+    "Invalid date or datetime format"
+  ).optional(),
+  endTime: z.string().refine(
+    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
+    "Invalid date or datetime format"
+  ).optional(),
   status: z.enum(["success", "failure", "timeout"]).optional(),
   region: z.string().optional(),
   limit: z.string().transform(Number).pipe(z.number().int().positive().max(1000)).default("100"),
@@ -146,8 +152,14 @@ export const getMonitorEventsQuerySchema = z.object({
 });
 
 export const getMonitorStatsQuerySchema = z.object({
-  startTime: z.string().datetime().optional(),
-  endTime: z.string().datetime().optional(),
+  startTime: z.string().refine(
+    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
+    "Invalid date or datetime format"
+  ).optional(),
+  endTime: z.string().refine(
+    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
+    "Invalid date or datetime format"
+  ).optional(),
   region: z.string().optional(),
   interval: z.enum(["1h", "6h", "24h", "7d", "30d"]).default("24h"),
 });

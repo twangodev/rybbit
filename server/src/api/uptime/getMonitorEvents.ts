@@ -7,6 +7,16 @@ import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils.js";
 import { getMonitorEventsQuerySchema, type GetMonitorEventsQuery } from "./schemas.js";
 
+// Convert ISO date/datetime to ClickHouse format
+function toClickHouseDateTime(dateString: string): string {
+  // If it's just a date (YYYY-MM-DD), add time as 00:00:00
+  if (dateString.length === 10) {
+    return `${dateString} 00:00:00`;
+  }
+  // Otherwise, convert ISO datetime to ClickHouse format (YYYY-MM-DD HH:MM:SS)
+  return dateString.replace('T', ' ').replace(/\.\d{3}Z$/, '');
+}
+
 interface GetMonitorEventsRequest {
   Params: {
     monitorId: string;
@@ -83,12 +93,12 @@ export async function getMonitorEvents(
 
     if (startTime) {
       queryStr += ` AND timestamp >= {startTime: DateTime}`;
-      queryParams.startTime = startTime;
+      queryParams.startTime = toClickHouseDateTime(startTime);
     }
 
     if (endTime) {
       queryStr += ` AND timestamp <= {endTime: DateTime}`;
-      queryParams.endTime = endTime;
+      queryParams.endTime = toClickHouseDateTime(endTime);
     }
 
     if (status) {

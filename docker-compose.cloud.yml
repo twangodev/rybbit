@@ -33,15 +33,7 @@ services:
       - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-frog}
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:8123/ping",
-        ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
       interval: 3s
       timeout: 5s
       retries: 5
@@ -60,6 +52,20 @@ services:
     restart: unless-stopped
     ports:
       - "5432:5432"
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly
+    container_name: dragonfly
+    ulimits:
+      memlock: -1
+    ports:
+      - "6379:6379" # Exposed to internet for remote connections
+    volumes:
+      - dragonfly-data:/data
+    environment:
+      - DFLY_PASSWORD=${DRAGONFLY_PASSWORD:-frog} # Set a strong password in your .env
+    restart: unless-stopped
+    command: ["dragonfly", "--logtostderr", "--requirepass", "${DRAGONFLY_PASSWORD:-frog}"]
 
   backend:
     container_name: backend
@@ -93,10 +99,16 @@ services:
       - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
       - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
       - R2_BUCKET_NAME=${R2_BUCKET_NAME:-rybbit}
+      # Dragonfly configuration
+      - DRAGONFLY_HOST=dragonfly
+      - DRAGONFLY_PORT=6379
+      - DRAGONFLY_PASSWORD=${DRAGONFLY_PASSWORD:-frog}
     depends_on:
       clickhouse:
         condition: service_healthy
       postgres:
+        condition: service_started
+      dragonfly:
         condition: service_started
     restart: unless-stopped
     ports:
@@ -125,5 +137,6 @@ services:
 volumes:
   clickhouse-data:
   postgres-data:
+  dragonfly-data:
   caddy_data: # Persistent volume for Caddy's certificates and state
   caddy_config: # Persistent volume for Caddy's configuration cache (optional but good practice)
