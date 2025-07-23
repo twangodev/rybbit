@@ -262,9 +262,6 @@ export class MonitorExecutorBullMQ {
           updatedAt: now.toISOString(),
         });
       }
-
-      // TODO: Calculate and update uptime percentages asynchronously
-      // This would involve querying ClickHouse for historical data
     } catch (error) {
       console.error("Failed to update monitor status:", error);
     }

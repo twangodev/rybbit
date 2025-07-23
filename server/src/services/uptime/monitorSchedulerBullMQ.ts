@@ -150,14 +150,7 @@ export class MonitorSchedulerBullMQ {
     try {
       const jobName = `monitor-${monitorId}`;
       
-      // Get all jobs for this monitor
-      const jobs = await this.queue.getJobs(['delayed', 'waiting', 'active', 'completed', 'failed']);
-      const monitorJobs = jobs.filter(job => job.name === jobName || job.id === jobName);
-      
-      // Remove all jobs for this monitor
-      await Promise.all(monitorJobs.map(job => job.remove()));
-      
-      // Remove repeatable job configuration
+      // First, remove repeatable job configuration
       const repeatableJobs = await this.queue.getRepeatableJobs();
       const monitorRepeatableJobs = repeatableJobs.filter(
         job => job.name === jobName || job.id === jobName
@@ -168,6 +161,22 @@ export class MonitorSchedulerBullMQ {
           this.queue.removeRepeatableByKey(job.key)
         )
       );
+      
+      // Then remove any non-repeat jobs (only remove jobs that don't belong to scheduler)
+      const jobs = await this.queue.getJobs(['waiting', 'active', 'completed', 'failed']);
+      const monitorJobs = jobs.filter(job => {
+        // Only remove jobs that match our monitor and aren't repeat jobs
+        return (job.name === jobName || job.id === jobName) && !job.repeatJobKey;
+      });
+      
+      await Promise.all(monitorJobs.map(async job => {
+        try {
+          await job.remove();
+        } catch (err) {
+          // Ignore errors for jobs that can't be removed (e.g., repeat jobs)
+          console.warn(`Could not remove job ${job.id}:`, err);
+        }
+      }));
       
       console.log(`Removed schedule for monitor ${monitorId}`);
     } catch (error) {
