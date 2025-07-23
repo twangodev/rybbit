@@ -14,28 +14,48 @@ interface MonitorsTableProps {
   onMonitorClick?: (monitor: UptimeMonitor) => void;
 }
 
+const formatResponseTime = (value?: number) => {
+  if (value === undefined || value === null) return "-";
+  return `${Math.round(value)}ms`;
+};
+
+const formatPercentage = (value?: number) => {
+  if (value === undefined || value === null) return "-";
+  return `${value.toFixed(1)}%`;
+};
+
+const formatLastPing = (lastCheckedAt?: string) => {
+  if (!lastCheckedAt) return "-";
+
+  // PostgreSQL timestamps are in SQL format, treated as local time
+  const lastPing = DateTime.fromSQL(lastCheckedAt, {
+    zone: "utc",
+  }).toLocal();
+
+  if (!lastPing.isValid) return "-";
+
+  const now = DateTime.now();
+  const diffMs = now.toMillis() - lastPing.toMillis();
+
+  // If timestamp is in the future, show "just now"
+  if (diffMs < 0) return "just now";
+
+  const seconds = Math.floor(diffMs / 1000);
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+  const days = Math.floor(hours / 24);
+
+  if (days > 0) return `${days}d ago`;
+  if (hours > 0) return `${hours}h ago`;
+  if (minutes > 0) return `${minutes}m ago`;
+  if (seconds > 0) return `${seconds}s ago`;
+
+  return "just now";
+};
+
 export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorClick }: MonitorsTableProps) {
-  const formatLastPing = (lastCheckedAt?: string) => {
-    if (!lastCheckedAt) return "-";
-    const lastPing = DateTime.fromISO(lastCheckedAt);
-    const now = DateTime.now();
-    const diff = now.diff(lastPing, ["days", "hours", "minutes", "seconds"]);
-
-    if (diff.days > 0) return `${Math.floor(diff.days)}d ago`;
-    if (diff.hours > 0) return `${Math.floor(diff.hours)}h ago`;
-    if (diff.minutes > 0) return `${Math.floor(diff.minutes)}m ago`;
-    return `${Math.floor(diff.seconds)}s ago`;
-  };
-
-  const formatResponseTime = (value?: number) => {
-    if (value === undefined || value === null) return "-";
-    return `${Math.round(value)}ms`;
-  };
-
-  const formatPercentage = (value?: number) => {
-    if (value === undefined || value === null) return "-";
-    return `${value.toFixed(1)}%`;
-  };
+  console.info(monitors);
+  console.info(monitorEvents);
 
   if (isLoading) {
     return (
@@ -57,7 +77,7 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
             <TableHead className="w-24">Type</TableHead>
             <TableHead className="w-48">Last 7 Days</TableHead>
             <TableHead className="w-28">Last Ping</TableHead>
-            <TableHead className="w-20 text-right">Uptime %</TableHead>
+            <TableHead className="w-20 text-right whitespace-nowrap">Uptime %</TableHead>
             <TableHead className="w-20 text-right">P50</TableHead>
             <TableHead className="w-20 text-right">P75</TableHead>
             <TableHead className="w-20 text-right">P90</TableHead>
