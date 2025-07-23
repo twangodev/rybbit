@@ -1,5 +1,6 @@
 import { Worker, Job } from 'bullmq';
 import { eq } from 'drizzle-orm';
+import { DateTime } from 'luxon';
 import { db } from '../../db/postgres/postgres.js';
 import { uptimeMonitors, uptimeMonitorStatus } from '../../db/postgres/schema.js';
 import { clickhouse } from '../../db/clickhouse/clickhouse.js';
@@ -186,7 +187,7 @@ export class MonitorExecutorBullMQ {
     const event: MonitorEvent = {
       monitor_id: monitor.id,
       organization_id: monitor.organizationId,
-      timestamp: new Date(),
+      timestamp: DateTime.now().toFormat("yyyy-MM-dd HH:mm:ss"),
       monitor_type: monitor.monitorType,
       monitor_url: monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`,
       monitor_name: monitor.name,
