@@ -295,6 +295,7 @@ export const uptimeMonitors = pgTable(
       followRedirects?: boolean;
       timeoutMs?: number;
       ipVersion?: "any" | "ipv4" | "ipv6";
+      userAgent?: string;
     }>(),
 
     // TCP specific configuration

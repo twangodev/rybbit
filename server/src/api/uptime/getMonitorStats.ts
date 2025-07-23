@@ -5,16 +5,13 @@ import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils.js";
+import { getMonitorStatsQuerySchema, type GetMonitorStatsQuery } from "./schemas.js";
 
 interface GetMonitorStatsRequest {
   Params: {
     monitorId: string;
   };
-  Querystring: {
-    period?: "24h" | "7d" | "30d" | "custom";
-    start_date?: string;
-    end_date?: string;
-  };
+  Querystring: GetMonitorStatsQuery;
 }
 
 export async function getMonitorStats(
@@ -24,13 +21,15 @@ export async function getMonitorStats(
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
-  const { period = "24h", start_date, end_date } = request.query;
 
   if (!userId) {
     return reply.status(401).send({ error: "Unauthorized" });
   }
 
   try {
+    // Validate query parameters with Zod
+    const query = getMonitorStatsQuerySchema.parse(request.query);
+    const { startTime, endTime, region, interval } = query;
     // First check if monitor exists and user has access
     const monitor = await db.query.uptimeMonitors.findFirst({
       where: eq(uptimeMonitors.id, Number(monitorId)),
@@ -52,32 +51,37 @@ export async function getMonitorStats(
       return reply.status(403).send({ error: "Access denied" });
     }
 
-    // Calculate date range based on period
-    let startDate: string;
-    let endDate: string = new Date().toISOString();
+    // Calculate date range based on interval or provided times
+    let calculatedStartTime: string;
+    let calculatedEndTime: string = endTime || new Date().toISOString();
 
-    if (period === "custom" && start_date && end_date) {
-      startDate = start_date;
-      endDate = end_date;
+    if (startTime) {
+      calculatedStartTime = startTime;
     } else {
       const now = new Date();
-      switch (period) {
+      switch (interval) {
+        case "1h":
+          calculatedStartTime = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
+          break;
+        case "6h":
+          calculatedStartTime = new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString();
+          break;
         case "24h":
-          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+          calculatedStartTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
           break;
         case "7d":
-          startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
+          calculatedStartTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
           break;
         case "30d":
-          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
+          calculatedStartTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
           break;
         default:
-          startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
+          calculatedStartTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
       }
     }
 
     // Get aggregated stats from ClickHouse
-    const statsQuery = `
+    let statsQuery = `
       SELECT 
         count() as total_checks,
         countIf(status = 'success') as successful_checks,
@@ -92,17 +96,24 @@ export async function getMonitorStats(
         100 * countIf(status = 'success') / count() as uptime_percentage
       FROM monitor_events
       WHERE monitor_id = {monitorId: UInt32}
-        AND timestamp >= {startDate: DateTime}
-        AND timestamp <= {endDate: DateTime}
+        AND timestamp >= {startTime: DateTime}
+        AND timestamp <= {endTime: DateTime}
     `;
+
+    const queryParams: any = {
+      monitorId: Number(monitorId),
+      startTime: calculatedStartTime,
+      endTime: calculatedEndTime,
+    };
+
+    if (region) {
+      statsQuery += ` AND region = {region: String}`;
+      queryParams.region = region;
+    }
 
     const statsResult = await clickhouse.query({
       query: statsQuery,
-      query_params: {
-        monitorId: Number(monitorId),
-        startDate,
-        endDate,
-      },
+      query_params: queryParams,
       format: "JSONEachRow",
     });
 
@@ -134,7 +145,7 @@ export async function getMonitorStats(
     };
 
     // Get response time distribution
-    const distributionQuery = `
+    let distributionQuery = `
       SELECT 
         toStartOfHour(timestamp) as hour,
         avg(response_time_ms) as avg_response_time,
@@ -142,28 +153,32 @@ export async function getMonitorStats(
         countIf(status = 'success') as success_count
       FROM monitor_events
       WHERE monitor_id = {monitorId: UInt32}
-        AND timestamp >= {startDate: DateTime}
-        AND timestamp <= {endDate: DateTime}
+        AND timestamp >= {startTime: DateTime}
+        AND timestamp <= {endTime: DateTime}
+    `;
+    
+    if (region) {
+      distributionQuery += ` AND region = {region: String}`;
+    }
+    
+    distributionQuery += `
       GROUP BY hour
       ORDER BY hour ASC
     `;
 
     const distributionResult = await clickhouse.query({
       query: distributionQuery,
-      query_params: {
-        monitorId: Number(monitorId),
-        startDate,
-        endDate,
-      },
+      query_params: queryParams,
       format: "JSONEachRow",
     });
 
     const distribution = await processResults(distributionResult);
 
     return reply.status(200).send({
-      period,
-      startDate,
-      endDate,
+      interval,
+      startTime: calculatedStartTime,
+      endTime: calculatedEndTime,
+      region,
       stats: {
         totalChecks: Number(stats.total_checks),
         successfulChecks: Number(stats.successful_checks),
@@ -182,6 +197,13 @@ export async function getMonitorStats(
       distribution,
     });
   } catch (error) {
+    if (error instanceof Error && error.name === "ZodError") {
+      const zodError = error as any;
+      return reply.status(400).send({ 
+        error: "Validation error",
+        details: zodError.errors 
+      });
+    }
     console.error("Error retrieving monitor stats:", error);
     return reply.status(500).send({ error: "Internal server error" });
   }

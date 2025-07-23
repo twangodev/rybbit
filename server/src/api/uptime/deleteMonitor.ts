@@ -3,6 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
+import { uptimeService } from "../../services/uptime/uptimeService.js";
 
 interface DeleteMonitorParams {
   Params: {
@@ -43,6 +44,9 @@ export async function deleteMonitor(
     if (!userHasAccess) {
       return reply.status(403).send({ error: "Access denied" });
     }
+
+    // Remove the monitor from the scheduler first
+    await uptimeService.onMonitorDeleted(Number(monitorId));
 
     // Delete the monitor (cascade will handle related records)
     await db

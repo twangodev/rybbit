@@ -80,6 +80,7 @@ import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
 // need to import telemetry service here to start it
 import { telemetryService } from "./services/telemetryService.js";
+import { uptimeService } from "./services/uptime/uptimeService.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -335,6 +336,14 @@ const start = async () => {
     await Promise.all([initializeClickhouse(), loadAllowedDomains(), siteConfig.loadSiteConfigs(), initPostgres()]);
 
     telemetryService.startTelemetryCron();
+    
+    // Initialize uptime monitoring service
+    try {
+      await uptimeService.initialize();
+    } catch (error) {
+      console.error("Failed to initialize uptime service:", error);
+      // Continue running without uptime monitoring
+    }
 
     // Start the server
     await server.listen({ port: 3001, host: "0.0.0.0" });
@@ -345,6 +354,31 @@ const start = async () => {
 };
 
 start();
+
+// Graceful shutdown
+process.on('SIGTERM', async () => {
+  console.log('SIGTERM received, shutting down gracefully...');
+  try {
+    await uptimeService.shutdown();
+    await server.close();
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+});
+
+process.on('SIGINT', async () => {
+  console.log('SIGINT received, shutting down gracefully...');
+  try {
+    await uptimeService.shutdown();
+    await server.close();
+    process.exit(0);
+  } catch (error) {
+    console.error('Error during shutdown:', error);
+    process.exit(1);
+  }
+});
 
 declare module "fastify" {
   interface FastifyRequest {

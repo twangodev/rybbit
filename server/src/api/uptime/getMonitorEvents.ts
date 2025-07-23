@@ -5,17 +5,13 @@ import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils.js";
+import { getMonitorEventsQuerySchema, type GetMonitorEventsQuery } from "./schemas.js";
 
 interface GetMonitorEventsRequest {
   Params: {
     monitorId: string;
   };
-  Querystring: {
-    start_date?: string;
-    end_date?: string;
-    limit?: string;
-    offset?: string;
-  };
+  Querystring: GetMonitorEventsQuery;
 }
 
 export async function getMonitorEvents(
@@ -25,13 +21,15 @@ export async function getMonitorEvents(
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
-  const { start_date, end_date, limit = "100", offset = "0" } = request.query;
 
   if (!userId) {
     return reply.status(401).send({ error: "Unauthorized" });
   }
 
   try {
+    // Validate query parameters with Zod
+    const query = getMonitorEventsQuerySchema.parse(request.query);
+    const { startTime, endTime, status, region, limit, offset } = query;
     // First check if monitor exists and user has access
     const monitor = await db.query.uptimeMonitors.findFirst({
       where: eq(uptimeMonitors.id, Number(monitorId)),
@@ -54,7 +52,7 @@ export async function getMonitorEvents(
     }
 
     // Build query for ClickHouse
-    let query = `
+    let queryStr = `
       SELECT 
         monitor_id,
         organization_id,
@@ -83,23 +81,33 @@ export async function getMonitorEvents(
 
     const queryParams: any = { monitorId: Number(monitorId) };
 
-    if (start_date) {
-      query += ` AND timestamp >= {startDate: DateTime}`;
-      queryParams.startDate = start_date;
+    if (startTime) {
+      queryStr += ` AND timestamp >= {startTime: DateTime}`;
+      queryParams.startTime = startTime;
     }
 
-    if (end_date) {
-      query += ` AND timestamp <= {endDate: DateTime}`;
-      queryParams.endDate = end_date;
+    if (endTime) {
+      queryStr += ` AND timestamp <= {endTime: DateTime}`;
+      queryParams.endTime = endTime;
     }
 
-    query += ` ORDER BY timestamp DESC`;
-    query += ` LIMIT {limit: UInt32} OFFSET {offset: UInt32}`;
-    queryParams.limit = Number(limit);
-    queryParams.offset = Number(offset);
+    if (status) {
+      queryStr += ` AND status = {status: String}`;
+      queryParams.status = status;
+    }
+
+    if (region) {
+      queryStr += ` AND region = {region: String}`;
+      queryParams.region = region;
+    }
+
+    queryStr += ` ORDER BY timestamp DESC`;
+    queryStr += ` LIMIT {limit: UInt32} OFFSET {offset: UInt32}`;
+    queryParams.limit = limit;
+    queryParams.offset = offset;
 
     const result = await clickhouse.query({
-      query,
+      query: queryStr,
       query_params: queryParams,
       format: "JSONEachRow",
     });
@@ -115,14 +123,24 @@ export async function getMonitorEvents(
 
     const countParams: any = { monitorId: Number(monitorId) };
 
-    if (start_date) {
-      countQuery += ` AND timestamp >= {startDate: DateTime}`;
-      countParams.startDate = start_date;
+    if (startTime) {
+      countQuery += ` AND timestamp >= {startTime: DateTime}`;
+      countParams.startTime = startTime;
     }
 
-    if (end_date) {
-      countQuery += ` AND timestamp <= {endDate: DateTime}`;
-      countParams.endDate = end_date;
+    if (endTime) {
+      countQuery += ` AND timestamp <= {endTime: DateTime}`;
+      countParams.endTime = endTime;
+    }
+
+    if (status) {
+      countQuery += ` AND status = {status: String}`;
+      countParams.status = status;
+    }
+
+    if (region) {
+      countQuery += ` AND region = {region: String}`;
+      countParams.region = region;
     }
 
     const countResult = await clickhouse.query({
@@ -138,11 +156,18 @@ export async function getMonitorEvents(
       events,
       pagination: {
         total: Number(total),
-        limit: Number(limit),
-        offset: Number(offset),
+        limit: limit,
+        offset: offset,
       },
     });
   } catch (error) {
+    if (error instanceof Error && error.name === "ZodError") {
+      const zodError = error as any;
+      return reply.status(400).send({ 
+        error: "Validation error",
+        details: zodError.errors 
+      });
+    }
     console.error("Error retrieving monitor events:", error);
     return reply.status(500).send({ error: "Internal server error" });
   }

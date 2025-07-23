@@ -3,42 +3,14 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
+import { uptimeService } from "../../services/uptime/uptimeService.js";
+import { updateMonitorSchema, type UpdateMonitorInput } from "./schemas.js";
 
 interface UpdateMonitorRequest {
   Params: {
     monitorId: string;
   };
-  Body: Partial<{
-    name: string;
-    intervalSeconds: number;
-    enabled: boolean;
-    httpConfig: {
-      url: string;
-      method: "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "OPTIONS" | "PATCH";
-      headers?: Record<string, string>;
-      body?: string;
-      auth?: {
-        type: "none" | "basic" | "bearer" | "api_key" | "custom_header";
-        credentials?: {
-          username?: string;
-          password?: string;
-          token?: string;
-          headerName?: string;
-          headerValue?: string;
-        };
-      };
-      followRedirects?: boolean;
-      timeoutMs?: number;
-      ipVersion?: "any" | "ipv4" | "ipv6";
-    };
-    tcpConfig: {
-      host: string;
-      port: number;
-      timeoutMs?: number;
-    };
-    validationRules: Array<any>;
-    regions: string[];
-  }>;
+  Body: UpdateMonitorInput;
 }
 
 export async function updateMonitor(
@@ -75,18 +47,14 @@ export async function updateMonitor(
       return reply.status(403).send({ error: "Access denied" });
     }
 
-    const updateData = request.body;
-
-    // Validate interval if provided
-    if (updateData.intervalSeconds !== undefined) {
-      if (updateData.intervalSeconds < 1 || updateData.intervalSeconds > 86400) {
-        return reply.status(400).send({ error: "Interval must be between 1 and 86400 seconds" });
+    // Validate request body with Zod
+    const updateData = updateMonitorSchema.parse(request.body);
+    
+    // Additional validation for monitor type specific config if changing config
+    if (existingMonitor.monitorType === "http" && updateData.httpConfig) {
+      if (!updateData.httpConfig.url) {
+        return reply.status(400).send({ error: "HTTP monitor requires URL" });
       }
-    }
-
-    // Validate monitor type specific config
-    if (existingMonitor.monitorType === "http" && updateData.httpConfig && !updateData.httpConfig.url) {
-      return reply.status(400).send({ error: "HTTP monitor requires URL" });
     }
     if (existingMonitor.monitorType === "tcp" && updateData.tcpConfig) {
       if (!updateData.tcpConfig.host || !updateData.tcpConfig.port) {
@@ -104,8 +72,32 @@ export async function updateMonitor(
       .where(eq(uptimeMonitors.id, Number(monitorId)))
       .returning();
 
+    // Update the monitor schedule if interval or enabled status changed
+    const intervalChanged = updateData.intervalSeconds !== undefined && 
+                          updateData.intervalSeconds !== existingMonitor.intervalSeconds;
+    const enabledChanged = updateData.enabled !== undefined && 
+                          updateData.enabled !== existingMonitor.enabled;
+    
+    if (intervalChanged || enabledChanged) {
+      const enabled = updateData.enabled !== undefined ? updateData.enabled : existingMonitor.enabled!;
+      const intervalSeconds = updateData.intervalSeconds || existingMonitor.intervalSeconds;
+      
+      await uptimeService.onMonitorUpdated(
+        Number(monitorId),
+        intervalSeconds,
+        enabled
+      );
+    }
+
     return reply.status(200).send(updatedMonitor);
   } catch (error) {
+    if (error instanceof Error && error.name === "ZodError") {
+      const zodError = error as any;
+      return reply.status(400).send({ 
+        error: "Validation error",
+        details: zodError.errors 
+      });
+    }
     console.error("Error updating monitor:", error);
     return reply.status(500).send({ error: "Internal server error" });
   }

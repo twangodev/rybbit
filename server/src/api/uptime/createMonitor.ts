@@ -3,41 +3,11 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, uptimeMonitorStatus, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
+import { uptimeService } from "../../services/uptime/uptimeService.js";
+import { createMonitorSchema, type CreateMonitorInput } from "./schemas.js";
 
 interface CreateMonitorBody {
-  Body: {
-    organizationId: string;
-    name: string;
-    monitorType: "http" | "tcp";
-    intervalSeconds: number;
-    enabled?: boolean;
-    httpConfig?: {
-      url: string;
-      method: "GET" | "POST" | "PUT" | "DELETE" | "HEAD" | "OPTIONS" | "PATCH";
-      headers?: Record<string, string>;
-      body?: string;
-      auth?: {
-        type: "none" | "basic" | "bearer" | "api_key" | "custom_header";
-        credentials?: {
-          username?: string;
-          password?: string;
-          token?: string;
-          headerName?: string;
-          headerValue?: string;
-        };
-      };
-      followRedirects?: boolean;
-      timeoutMs?: number;
-      ipVersion?: "any" | "ipv4" | "ipv6";
-    };
-    tcpConfig?: {
-      host: string;
-      port: number;
-      timeoutMs?: number;
-    };
-    validationRules?: Array<any>;
-    regions?: string[];
-  };
+  Body: CreateMonitorInput;
 }
 
 export async function createMonitor(
@@ -51,36 +21,21 @@ export async function createMonitor(
     return reply.status(401).send({ error: "Unauthorized" });
   }
 
-  const {
-    organizationId,
-    name,
-    monitorType,
-    intervalSeconds,
-    enabled = true,
-    httpConfig,
-    tcpConfig,
-    validationRules = [],
-    regions = ["local"],
-  } = request.body;
-
   try {
-    // Validate required fields
-    if (!organizationId || !name || !monitorType || !intervalSeconds) {
-      return reply.status(400).send({ error: "Missing required fields" });
-    }
-
-    // Validate monitor type specific config
-    if (monitorType === "http" && !httpConfig?.url) {
-      return reply.status(400).send({ error: "HTTP monitor requires URL" });
-    }
-    if (monitorType === "tcp" && (!tcpConfig?.host || !tcpConfig?.port)) {
-      return reply.status(400).send({ error: "TCP monitor requires host and port" });
-    }
-
-    // Validate interval
-    if (intervalSeconds < 1 || intervalSeconds > 86400) {
-      return reply.status(400).send({ error: "Interval must be between 1 and 86400 seconds" });
-    }
+    // Validate request body with Zod
+    const validatedBody = createMonitorSchema.parse(request.body);
+    
+    const {
+      organizationId,
+      name,
+      monitorType,
+      intervalSeconds,
+      enabled,
+      httpConfig,
+      tcpConfig,
+      validationRules,
+      regions,
+    } = validatedBody;
 
     // Check if user has access to the organization
     const userHasAccess = await db.query.member.findFirst({
@@ -119,8 +74,20 @@ export async function createMonitor(
       consecutiveSuccesses: 0,
     });
 
+    // Schedule the monitor if enabled
+    if (enabled) {
+      await uptimeService.onMonitorCreated(newMonitor.id, intervalSeconds);
+    }
+
     return reply.status(201).send(newMonitor);
   } catch (error) {
+    if (error instanceof Error && error.name === "ZodError") {
+      const zodError = error as any;
+      return reply.status(400).send({ 
+        error: "Validation error",
+        details: zodError.errors 
+      });
+    }
     console.error("Error creating monitor:", error);
     return reply.status(500).send({ error: "Internal server error" });
   }

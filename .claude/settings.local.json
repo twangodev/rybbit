@@ -21,7 +21,8 @@
       "Bash(cat:*)",
       "Bash(find:*)",
       "Bash(clickhouse-client:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm uninstall:*)"
     ]
   },
   "enableAllProjectMcpServers": false
