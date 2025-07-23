@@ -11,29 +11,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useCreateMonitor } from "@/api/uptime/monitors";
-import { useUserOrganizations } from "@/api/admin/organizations";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { createMonitorSchema, CreateMonitorFormData } from "./monitorSchemas";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { authClient } from "../../lib/auth";
 
 interface CreateMonitorDialogProps {
   open: boolean;
@@ -54,14 +40,14 @@ const INTERVAL_OPTIONS = [
 const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"] as const;
 
 export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogProps) {
-  const { data: organizations = [] } = useUserOrganizations();
+  const { data: activeOrganization, isPending } = authClient.useActiveOrganization();
   const createMonitor = useCreateMonitor();
   const [showAdvanced, setShowAdvanced] = useState(false);
-  
+
   const form = useForm({
     resolver: zodResolver(createMonitorSchema),
     defaultValues: {
-      organizationId: "",
+      organizationId: activeOrganization?.id || "",
       name: "",
       monitorType: "http" as const,
       intervalSeconds: 300,
@@ -77,7 +63,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
       regions: ["local"],
     },
   });
-  
+
   const monitorType = form.watch("monitorType");
 
   const onSubmit = async (data: any) => {
@@ -92,13 +78,13 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
     }
   };
 
-  // Set default organization if only one exists
+  // Set organization ID when active organization changes
   useEffect(() => {
-    if (organizations.length === 1 && !form.getValues("organizationId")) {
-      form.setValue("organizationId", organizations[0].id);
+    if (activeOrganization?.id) {
+      form.setValue("organizationId", activeOrganization.id);
     }
-  }, [organizations, form]);
-  
+  }, [activeOrganization, form]);
+
   // Reset form when dialog closes
   useEffect(() => {
     if (!open) {
@@ -106,7 +92,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
       setShowAdvanced(false);
     }
   }, [open, form]);
-  
+
   // Update form when monitor type changes
   useEffect(() => {
     if (monitorType === "tcp") {
@@ -141,34 +127,6 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              {/* Organization Selection */}
-              {organizations.length > 1 && (
-                <FormField
-                  control={form.control}
-                  name="organizationId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Organization</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select organization" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {organizations.map(org => (
-                            <SelectItem key={org.id} value={org.id}>
-                              {org.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
               {/* Monitor Name */}
               <FormField
                 control={form.control}
@@ -217,11 +175,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                       <FormItem>
                         <FormLabel>URL</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="url" 
-                            placeholder="https://api.example.com/health" 
-                            {...field} 
-                          />
+                          <Input type="url" placeholder="https://api.example.com/health" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -242,7 +196,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                              {HTTP_METHODS.map(method => (
+                              {HTTP_METHODS.map((method) => (
                                 <SelectItem key={method} value={method}>
                                   {method}
                                 </SelectItem>
@@ -261,10 +215,10 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                         <FormItem>
                           <FormLabel>Timeout (ms)</FormLabel>
                           <FormControl>
-                            <Input 
-                              type="number" 
-                              {...field} 
-                              onChange={e => field.onChange(parseInt(e.target.value))}
+                            <Input
+                              type="number"
+                              {...field}
+                              onChange={(e) => field.onChange(parseInt(e.target.value))}
                             />
                           </FormControl>
                           <FormMessage />
@@ -299,11 +253,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                       <FormItem>
                         <FormLabel>Port</FormLabel>
                         <FormControl>
-                          <Input 
-                            type="number" 
-                            {...field} 
-                            onChange={e => field.onChange(parseInt(e.target.value))}
-                          />
+                          <Input type="number" {...field} onChange={(e) => field.onChange(parseInt(e.target.value))} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -319,8 +269,8 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Check Interval</FormLabel>
-                    <Select 
-                      onValueChange={(value) => field.onChange(parseInt(value))} 
+                    <Select
+                      onValueChange={(value) => field.onChange(parseInt(value))}
                       defaultValue={field.value.toString()}
                     >
                       <FormControl>
@@ -329,7 +279,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {INTERVAL_OPTIONS.map(option => (
+                        {INTERVAL_OPTIONS.map((option) => (
                           <SelectItem key={option.value} value={option.value.toString()}>
                             {option.label}
                           </SelectItem>
@@ -349,15 +299,10 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                     <div className="space-y-0.5">
                       <FormLabel>Enable Monitor</FormLabel>
-                      <FormDescription>
-                        Start monitoring immediately after creation
-                      </FormDescription>
+                      <FormDescription>Start monitoring immediately after creation</FormDescription>
                     </div>
                     <FormControl>
-                      <Switch
-                        checked={field.value}
-                        onCheckedChange={field.onChange}
-                      />
+                      <Switch checked={field.value} onCheckedChange={field.onChange} />
                     </FormControl>
                   </FormItem>
                 )}
@@ -386,9 +331,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                             <FormControl>
                               <Input placeholder="Custom User Agent" {...field} />
                             </FormControl>
-                            <FormDescription>
-                              Override the default user agent string
-                            </FormDescription>
+                            <FormDescription>Override the default user agent string</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -415,9 +358,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                                 }}
                               />
                             </FormControl>
-                            <FormDescription>
-                              Additional headers to send with requests
-                            </FormDescription>
+                            <FormDescription>Additional headers to send with requests</FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
@@ -430,15 +371,10 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
                           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3">
                             <div className="space-y-0.5">
                               <FormLabel>Follow Redirects</FormLabel>
-                              <FormDescription>
-                                Automatically follow HTTP redirects
-                              </FormDescription>
+                              <FormDescription>Automatically follow HTTP redirects</FormDescription>
                             </div>
                             <FormControl>
-                              <Switch
-                                checked={field.value}
-                                onCheckedChange={field.onChange}
-                              />
+                              <Switch checked={field.value} onCheckedChange={field.onChange} />
                             </FormControl>
                           </FormItem>
                         )}
@@ -481,7 +417,7 @@ export function CreateMonitorDialog({ open, onOpenChange }: CreateMonitorDialogP
               >
                 Cancel
               </Button>
-              <Button type="submit" disabled={createMonitor.isPending}>
+              <Button type="submit" disabled={createMonitor.isPending || isPending || !activeOrganization}>
                 {createMonitor.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Create Monitor
               </Button>
