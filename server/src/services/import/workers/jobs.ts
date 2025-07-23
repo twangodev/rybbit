@@ -11,7 +11,8 @@ interface ImportJob {
 }
 
 export interface CsvParseJob extends ImportJob {
-  tempFilePath: string;
+  storageLocation: string; // Either local file path or R2 key
+  isR2Storage: boolean;
   organization: string;
 }
 

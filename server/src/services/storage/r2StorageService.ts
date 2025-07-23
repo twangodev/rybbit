@@ -143,6 +143,96 @@ export class R2StorageService {
       // Non-critical error, log but don't throw
     }
   }
+
+  /**
+   * Store an import CSV file in R2
+   * Used for temporary storage during import processing
+   */
+  async storeImportFile(key: string, fileBuffer: Buffer): Promise<void> {
+    if (!this.enabled || !this.client) {
+      throw new Error("R2 storage is not enabled");
+    }
+
+    try {
+      await this.client.send(
+        new PutObjectCommand({
+          Bucket: this.bucketName,
+          Key: key,
+          Body: fileBuffer,
+          ContentType: "text/csv",
+          Metadata: {
+            type: "import-file",
+            uploadTime: Date.now().toString(),
+          },
+        }),
+      );
+
+      console.log(`[R2Storage] Successfully stored import file: ${key}`);
+    } catch (error) {
+      console.error("[R2Storage] Failed to store import file:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Retrieve an import CSV file from R2
+   * Returns the file buffer
+   */
+  async getImportFile(key: string): Promise<Buffer> {
+    if (!this.enabled || !this.client) {
+      throw new Error("R2 storage is not enabled");
+    }
+
+    try {
+      const response = await this.client.send(
+        new GetObjectCommand({
+          Bucket: this.bucketName,
+          Key: key,
+        }),
+      );
+
+      if (!response.Body) {
+        throw new Error("Empty response body");
+      }
+
+      // Convert stream to buffer
+      const chunks: Uint8Array[] = [];
+      const stream = response.Body as Readable;
+
+      for await (const chunk of stream) {
+        chunks.push(chunk);
+      }
+
+      const buffer = Buffer.concat(chunks);
+      console.log(`[R2Storage] Successfully retrieved import file: ${key}`);
+      return buffer;
+    } catch (error) {
+      console.error("[R2Storage] Failed to retrieve import file:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Delete an import file from R2 (for cleanup after processing)
+   */
+  async deleteImportFile(key: string): Promise<void> {
+    if (!this.enabled || !this.client) {
+      return;
+    }
+
+    try {
+      await this.client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucketName,
+          Key: key,
+        }),
+      );
+      console.log(`[R2Storage] Successfully deleted import file: ${key}`);
+    } catch (error) {
+      console.error("[R2Storage] Failed to delete import file:", error);
+      // Non-critical error, log but don't throw
+    }
+  }
 }
 
 // Singleton instance

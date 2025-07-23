@@ -9,6 +9,8 @@ import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
 import { CSV_PARSE_QUEUE } from "../../services/import/workers/jobs.js";
 import { ImportStatusManager } from "../../services/import/importStatusManager.js";
 import { ImportLimiter } from "../../services/import/importLimiter.js";
+import { r2Storage } from "../../services/storage/r2StorageService.js";
+import { IS_CLOUD } from "../../lib/const.js";
 
 const importDataRequestSchema = z.object({
   params: z.object({
@@ -73,10 +75,7 @@ export async function importSiteData(
     }
 
     const organization = concurrentImportLimitResult.organizationId;
-    const importDir = "/tmp/imports"; // TODO: ./tmp/imports?
     const importId = crypto.randomUUID();
-    const savedFileName = `${importId}.csv`;
-    const tempFilePath = path.join(importDir, savedFileName);
 
     await ImportStatusManager.createImportStatus({
       importId,
@@ -88,18 +87,43 @@ export async function importSiteData(
       fileSize: fileData.file.readableLength || 0,
     });
 
+    let storageLocation: string;
+
     try {
-      await fs.promises.mkdir(importDir, { recursive: true });
-      await pipeline(fileData.file, fs.createWriteStream(tempFilePath));
+      if (IS_CLOUD && r2Storage.isEnabled()) {
+        const r2Key = `imports/${importId}/${fileData.filename}`;
+
+        const chunks: Buffer[] = [];
+        for await (const chunk of fileData.file) {
+          chunks.push(chunk);
+        }
+        const fileBuffer = Buffer.concat(chunks);
+
+        await r2Storage.storeImportFile(r2Key, fileBuffer);
+        storageLocation = r2Key;
+
+        console.log(`[Import] File stored in R2: ${r2Key}`);
+      } else {
+        const importDir = "/tmp/imports";
+        const savedFileName = `${importId}.csv`;
+        const tempFilePath = path.join(importDir, savedFileName);
+
+        await fs.promises.mkdir(importDir, { recursive: true });
+        await pipeline(fileData.file, fs.createWriteStream(tempFilePath));
+        storageLocation = tempFilePath;
+
+        console.log(`[Import] File stored locally: ${tempFilePath}`);
+      }
     } catch (fileError) {
       await ImportStatusManager.updateStatus(importId, "failed", "Failed to save uploaded file");
-      console.error("Failed to save uploaded file to disk:", fileError);
+      console.error("Failed to save uploaded file:", fileError);
       return reply.status(500).send({ error: "Could not process file upload." });
     }
 
     try {
       await boss.send(CSV_PARSE_QUEUE, {
-        tempFilePath,
+        storageLocation,
+        isR2Storage: IS_CLOUD && r2Storage.isEnabled(),
         organization,
         site,
         importId,
