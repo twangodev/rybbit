@@ -142,24 +142,9 @@ export const getMonitorsQuerySchema = z.object({
 });
 
 export const getMonitorEventsQuerySchema = z.object({
-  startTime: z
-    .string()
-    .refine(
-      (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
-      "Invalid date or datetime format",
-    )
-    .optional(),
-  endTime: z
-    .string()
-    .refine(
-      (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
-      "Invalid date or datetime format",
-    )
-    .optional(),
-  timezone: z.string().optional(),
   status: z.enum(["success", "failure", "timeout"]).optional(),
   region: z.string().optional(),
-  limit: z.string().transform(Number).pipe(z.number().int().positive().max(1000)).default("100"),
+  limit: z.string().transform(Number).pipe(z.number().int().positive().max(100)).default("20"),
   offset: z.string().transform(Number).pipe(z.number().int().nonnegative()).default("0"),
 });
 

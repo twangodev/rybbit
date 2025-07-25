@@ -63,8 +63,6 @@ export default function MonitorDetailPage() {
   });
   const { data: eventsData, isLoading: isLoadingEvents } = useMonitorEvents(monitorId, {
     limit: 100,
-    startTime: DateTime.now().minus({ days: 7 }).toISODate(),
-    endTime: DateTime.now().toISODate(),
   });
   const { data: uptimeData, isLoading: isLoadingUptime } = useMonitorUptime(monitorId);
 

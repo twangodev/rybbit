@@ -1,9 +1,7 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { authedFetch } from "../utils";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { BACKEND_URL } from "../../lib/const";
-import { DateTime } from "luxon";
-import { timeZone } from "../../lib/dateTimeUtils";
+import { authedFetch } from "../utils";
 
 export interface UptimeMonitor {
   id: number;
@@ -185,17 +183,13 @@ async function getMonitorStats(
 async function getMonitorEvents(
   monitorId: number,
   params?: {
-    startTime?: string;
-    endTime?: string;
     status?: "success" | "failure" | "timeout";
     region?: string;
     limit?: number;
     offset?: number;
   }
 ) {
-  const queryParams = new URLSearchParams({ timezone: timeZone });
-  if (params?.startTime) queryParams.append("startTime", params.startTime);
-  if (params?.endTime) queryParams.append("endTime", params.endTime);
+  const queryParams = new URLSearchParams();
   if (params?.status) queryParams.append("status", params.status);
   if (params?.region) queryParams.append("region", params.region);
   if (params?.limit) queryParams.append("limit", params.limit.toString());
@@ -262,25 +256,20 @@ export function useMonitorUptime(monitorId: number | undefined) {
 
 // Hook to fetch events for all monitors (used in the monitors table)
 export function useAllMonitorEvents(monitors: UptimeMonitor[]) {
-  const sevenDaysAgo = DateTime.now().minus({ days: 7 }).toISODate();
-
   return useQuery({
-    queryKey: ["uptime-all-monitor-events", monitors.map((m) => m.id), sevenDaysAgo],
+    queryKey: ["uptime-all-monitor-events", monitors.map((m) => m.id)],
     queryFn: async () => {
       const eventsMap: Record<number, MonitorEvent[]> = {};
 
       // Fetch events for all monitors in parallel
       const promises = monitors.map(async (monitor) => {
         try {
-          const response = await fetch(
-            `${BACKEND_URL}/uptime/monitors/${monitor.id}/events?startTime=${sevenDaysAgo}&limit=1000`,
-            {
-              credentials: "include",
-              headers: {
-                "Content-Type": "application/json",
-              },
-            }
-          );
+          const response = await fetch(`${BACKEND_URL}/uptime/monitors/${monitor.id}/events?limit=1000`, {
+            credentials: "include",
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
 
           if (response.ok) {
             const data = await response.json();

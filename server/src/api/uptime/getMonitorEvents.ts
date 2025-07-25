@@ -7,16 +7,6 @@ import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils.js";
 import { getMonitorEventsQuerySchema, type GetMonitorEventsQuery } from "./schemas.js";
 
-// Convert ISO date/datetime to ClickHouse format
-function toClickHouseDateTime(dateString: string): string {
-  // If it's just a date (YYYY-MM-DD), add time as 00:00:00
-  if (dateString.length === 10) {
-    return `${dateString} 00:00:00`;
-  }
-  // Otherwise, convert ISO datetime to ClickHouse format (YYYY-MM-DD HH:MM:SS)
-  return dateString.replace("T", " ").replace(/\.\d{3}Z$/, "");
-}
-
 interface GetMonitorEventsRequest {
   Params: {
     monitorId: string;
@@ -36,7 +26,7 @@ export async function getMonitorEvents(request: FastifyRequest<GetMonitorEventsR
   try {
     // Validate query parameters with Zod
     const query = getMonitorEventsQuerySchema.parse(request.query);
-    const { startTime, endTime, status, region, limit, offset } = query;
+    const { status, region, limit, offset } = query;
     // First check if monitor exists and user has access
     const monitor = await db.query.uptimeMonitors.findFirst({
       where: eq(uptimeMonitors.id, Number(monitorId)),
@@ -85,16 +75,6 @@ export async function getMonitorEvents(request: FastifyRequest<GetMonitorEventsR
 
     const queryParams: any = { monitorId: Number(monitorId) };
 
-    if (startTime) {
-      queryStr += ` AND timestamp >= {startTime: DateTime}`;
-      queryParams.startTime = toClickHouseDateTime(startTime);
-    }
-
-    if (endTime) {
-      queryStr += ` AND timestamp <= {endTime: DateTime}`;
-      queryParams.endTime = toClickHouseDateTime(endTime);
-    }
-
     if (status) {
       queryStr += ` AND status = {status: String}`;
       queryParams.status = status;
@@ -126,16 +106,6 @@ export async function getMonitorEvents(request: FastifyRequest<GetMonitorEventsR
     `;
 
     const countParams: any = { monitorId: Number(monitorId) };
-
-    if (startTime) {
-      countQuery += ` AND timestamp >= {startTime: DateTime}`;
-      countParams.startTime = startTime;
-    }
-
-    if (endTime) {
-      countQuery += ` AND timestamp <= {endTime: DateTime}`;
-      countParams.endTime = endTime;
-    }
 
     if (status) {
       countQuery += ` AND status = {status: String}`;
