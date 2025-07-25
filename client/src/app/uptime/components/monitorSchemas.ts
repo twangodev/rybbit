@@ -79,8 +79,31 @@ export const updateMonitorSchema = z.object({
   name: z.string().min(1).max(256).optional(),
   intervalSeconds: z.number().int().min(1).max(86400).optional(),
   enabled: z.boolean().optional(),
-  httpConfig: httpConfigSchema.partial().optional(),
-  tcpConfig: tcpConfigSchema.partial().optional(),
+  httpConfig: z.object({
+    url: z.string().url("Please enter a valid URL").optional(),
+    method: httpMethodSchema.optional(),
+    headers: z.record(z.string()).optional(),
+    body: z.string().optional(),
+    auth: z.object({
+      type: authTypeSchema,
+      credentials: z.object({
+        username: z.string().optional(),
+        password: z.string().optional(),
+        token: z.string().optional(),
+        headerName: z.string().optional(),
+        headerValue: z.string().optional(),
+      }).optional(),
+    }).optional(),
+    followRedirects: z.boolean().optional(),
+    timeoutMs: z.number().int().min(1000).max(300000).optional(),
+    ipVersion: ipVersionSchema.optional(),
+    userAgent: z.string().max(256).optional(),
+  }).optional(),
+  tcpConfig: z.object({
+    host: z.string().min(1, "Host is required").optional(),
+    port: z.number().int().min(1, "Invalid port").max(65535, "Port must be between 1 and 65535").optional(),
+    timeoutMs: z.number().int().min(1000).max(300000).optional(),
+  }).optional(),
   validationRules: z.array(z.any()).optional(),
   regions: z.array(z.string()).optional(),
 });

@@ -27,7 +27,7 @@ import {
   useMonitorUptime,
 } from "../../../../api/uptime/monitors";
 import { StandardPage } from "../../../../components/StandardPage";
-import { MonitorDialog } from "../../components/MonitorDialog";
+import { MonitorDialog } from "../../components/dialog";
 import { MonitorResponseTimeChart } from "../../components/MonitorResponseTimeChart";
 import { StatusOrb } from "../../components/StatusOrb";
 import { TIME_RANGES, useUptimeStore } from "../../components/uptimeStore";

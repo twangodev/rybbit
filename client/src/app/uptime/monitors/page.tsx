@@ -6,7 +6,7 @@ import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAllMonitorEvents, useMonitors } from "../../../api/uptime/monitors";
-import { MonitorDialog } from "../components/MonitorDialog";
+import { MonitorDialog } from "../components/dialog";
 import { MonitorsTable } from "../components/MonitorsTable";
 import { Scaffolding } from "../components/Scaffolding";
 
