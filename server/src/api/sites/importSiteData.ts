@@ -93,18 +93,12 @@ export async function importSiteData(
       if (IS_CLOUD && r2Storage.isEnabled()) {
         const r2Key = `imports/${importId}/${fileData.filename}`;
 
-        const chunks: Buffer[] = [];
-        for await (const chunk of fileData.file) {
-          chunks.push(chunk);
-        }
-        const fileBuffer = Buffer.concat(chunks);
-
-        await r2Storage.storeImportFile(r2Key, fileBuffer);
+        await r2Storage.storeImportFile(r2Key, fileData.file);
         storageLocation = r2Key;
 
-        console.log(`[Import] File stored in R2: ${r2Key}`);
+        console.log(`[Import] File streamed to R2: ${r2Key}`);
       } else {
-        const importDir = "/tmp/imports";
+        const importDir = "./tmp/imports";
         const savedFileName = `${importId}.csv`;
         const tempFilePath = path.join(importDir, savedFileName);
 
