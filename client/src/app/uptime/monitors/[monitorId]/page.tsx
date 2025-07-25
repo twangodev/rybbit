@@ -27,7 +27,7 @@ import {
   useMonitorUptime,
 } from "../../../../api/uptime/monitors";
 import { StandardPage } from "../../../../components/StandardPage";
-import { EditMonitorDialog } from "../../components/EditMonitorDialog";
+import { MonitorDialog } from "../../components/MonitorDialog";
 import { MonitorResponseTimeChart } from "../../components/MonitorResponseTimeChart";
 import { StatusOrb } from "../../components/StatusOrb";
 import { TIME_RANGES, useUptimeStore } from "../../components/uptimeStore";
@@ -274,7 +274,7 @@ export default function MonitorDetailPage() {
       </Card>
 
       {/* Edit Dialog */}
-      {monitor && <EditMonitorDialog monitor={monitor} open={showEditDialog} onOpenChange={setShowEditDialog} />}
+      {monitor && <MonitorDialog monitor={monitor} open={showEditDialog} onOpenChange={setShowEditDialog} />}
 
       {/* Delete Confirmation */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

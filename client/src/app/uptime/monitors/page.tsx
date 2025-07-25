@@ -6,7 +6,7 @@ import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { useAllMonitorEvents, useMonitors } from "../../../api/uptime/monitors";
-import { CreateMonitorDialog } from "../components/CreateMonitorDialog";
+import { MonitorDialog } from "../components/MonitorDialog";
 import { MonitorsTable } from "../components/MonitorsTable";
 import { Scaffolding } from "../components/Scaffolding";
 
@@ -54,7 +54,7 @@ export default function UptimePage() {
         onMonitorClick={handleMonitorClick}
       />
 
-      <CreateMonitorDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+      <MonitorDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
     </Scaffolding>
   );
 }
