@@ -1,38 +1,25 @@
 "use client";
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
-import { ArrowLeft, Edit2, RefreshCw, Trash2 } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { DateTime } from "luxon";
 import { useParams, useRouter } from "next/navigation";
-import { useState } from "react";
-import { toast } from "sonner";
 import {
   UptimeMonitor,
-  useDeleteMonitor,
   useMonitor,
   useMonitorEvents,
   useMonitorStats,
   useMonitorUptime,
 } from "../../../../api/uptime/monitors";
-import { MonitorDialog } from "../../components/dialog";
-import { MonitorResponseTimeChart } from "../../components/MonitorResponseTimeChart";
-import { Scaffolding } from "../../components/Scaffolding";
-import { StatusOrb } from "../../components/StatusOrb";
-import { TIME_RANGES, useUptimeStore } from "../../components/uptimeStore";
-import { getHoursFromTimeRange } from "../../components/utils";
+import { MonitorActions } from "../components/MonitorActions";
+import { MonitorResponseTimeChart } from "../components/MonitorResponseTimeChart";
+import { Scaffolding } from "../components/Scaffolding";
+import { StatusOrb } from "../components/StatusOrb";
+import { TIME_RANGES, useUptimeStore } from "../components/uptimeStore";
+import { getHoursFromTimeRange } from "../components/utils";
 
 interface StatCardProps {
   label: string;
@@ -113,21 +100,6 @@ export default function MonitorDetailPage() {
   });
   const { data: uptimeData, isLoading: isLoadingUptime } = useMonitorUptime(monitorId);
 
-  const deleteMonitor = useDeleteMonitor();
-
-  const [showEditDialog, setShowEditDialog] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-
-  const handleDelete = async () => {
-    try {
-      await deleteMonitor.mutateAsync(monitorId);
-      toast.success("Monitor deleted successfully");
-      router.push("/uptime");
-    } catch (error: any) {
-      toast.error(error.response?.data?.error || "Failed to delete monitor");
-    }
-  };
-
   const formatResponseTime = (value?: number) => {
     if (!value) return "-";
     return `${Math.round(value)}ms`;
@@ -182,31 +154,7 @@ export default function MonitorDetailPage() {
       </Button>
       <div className="flex items-start justify-between">
         <MonitorHeader monitor={monitor} isLoadingMonitor={isLoadingMonitor} />
-
-        <div className="flex items-center gap-2">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => window.location.reload()}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className="h-4 w-4" />
-            Refresh
-          </Button>
-          <Button variant="ghost" size="sm" onClick={() => setShowEditDialog(true)} className="flex items-center gap-2">
-            <Edit2 className="h-4 w-4" />
-            Edit
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowDeleteDialog(true)}
-            className="flex items-center gap-2 text-red-500 hover:text-red-600"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete
-          </Button>
-        </div>
+        <MonitorActions monitor={monitor} />
       </div>
       <div className="flex items-center gap-1">
         {TIME_RANGES.map((range) => (
@@ -279,32 +227,6 @@ export default function MonitorDetailPage() {
           )}
         </CardContent>
       </Card>
-
-      {/* Edit Dialog */}
-      {monitor && <MonitorDialog monitor={monitor} open={showEditDialog} onOpenChange={setShowEditDialog} />}
-
-      {/* Delete Confirmation */}
-      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This will permanently delete the monitor "
-              {monitor?.name ||
-                (monitor?.monitorType === "http"
-                  ? monitor?.httpConfig?.url
-                  : `${monitor?.tcpConfig?.host}:${monitor?.tcpConfig?.port}`)}
-              " and all its historical data. This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete Monitor
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </Scaffolding>
   );
 }

@@ -13,12 +13,9 @@ import { Button } from "@/components/ui/button";
 import { useCreateMonitor, useUpdateMonitor, UptimeMonitor } from "@/api/uptime/monitors";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
-import {
-  createMonitorSchema,
-  updateMonitorSchema,
-} from "../monitorSchemas";
+import { createMonitorSchema, updateMonitorSchema } from "../monitorSchemas";
 import { Form } from "@/components/ui/form";
-import { authClient } from "../../../../lib/auth";
+import { authClient } from "../../../../../lib/auth";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/basic-tabs";
 import { GeneralTab } from "./GeneralTab";
 import { AdvancedTab } from "./AdvancedTab";
@@ -88,12 +85,8 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
   const monitorType = isEdit ? monitor.monitorType : form.watch("monitorType");
 
   const onSubmit = async (data: any) => {
-    console.log("Form submitted with data:", data);
-    console.log("Is edit mode:", isEdit);
-    
     try {
       if (isEdit) {
-        console.log("Updating monitor with ID:", monitor.id);
         await updateMonitor.mutateAsync({
           monitorId: monitor.id,
           data,
@@ -185,9 +178,11 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit, (errors) => {
-            console.log("Form validation errors:", errors);
-          })}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit, (errors) => {
+              console.log("Form validation errors:", errors);
+            })}
+          >
             <DialogHeader>
               <DialogTitle>{isEdit ? "Edit" : "Create New"} Monitor</DialogTitle>
               <DialogDescription>
@@ -206,19 +201,11 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
               </TabsList>
 
               <TabsContent value="general" className="space-y-4 mt-4">
-                <GeneralTab 
-                  form={form} 
-                  monitor={monitor} 
-                  isEdit={isEdit} 
-                  monitorType={monitorType} 
-                />
+                <GeneralTab form={form} monitor={monitor} isEdit={isEdit} monitorType={monitorType} />
               </TabsContent>
 
               <TabsContent value="advanced" className="space-y-4 mt-4">
-                <AdvancedTab 
-                  form={form} 
-                  monitorType={monitorType} 
-                />
+                <AdvancedTab form={form} monitorType={monitorType} />
               </TabsContent>
 
               <TabsContent value="regions" className="space-y-4 mt-4">

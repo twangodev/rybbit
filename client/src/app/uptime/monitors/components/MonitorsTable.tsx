@@ -17,9 +17,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Radio, ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { StatusOrb } from "./StatusOrb";
 import { UptimeBar } from "./UptimeBar";
-import { Input } from "../../../components/ui/input";
-import { Button } from "../../../components/ui/button";
-import { Pagination } from "../../../components/pagination";
+import { Input } from "../../../../components/ui/input";
+import { Button } from "../../../../components/ui/button";
+import { Pagination } from "../../../../components/pagination";
 import { cn } from "@/lib/utils";
 import { DateTime } from "luxon";
 
@@ -124,23 +124,21 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
       columnHelper.accessor("name", {
         header: ({ column }) => <SortHeader column={column}>Monitor</SortHeader>,
         cell: ({ row }) => {
-          const displayName = row.original.name || (
-            row.original.monitorType === "http"
+          const displayName =
+            row.original.name ||
+            (row.original.monitorType === "http"
+              ? row.original.httpConfig?.url
+              : `${row.original.tcpConfig?.host}:${row.original.tcpConfig?.port}`);
+          const subtext = row.original.name
+            ? row.original.monitorType === "http"
               ? row.original.httpConfig?.url
               : `${row.original.tcpConfig?.host}:${row.original.tcpConfig?.port}`
-          );
-          const subtext = row.original.name ? (
-            row.original.monitorType === "http"
-              ? row.original.httpConfig?.url
-              : `${row.original.tcpConfig?.host}:${row.original.tcpConfig?.port}`
-          ) : null;
-          
+            : null;
+
           return (
             <div>
               <div className="font-medium">{displayName}</div>
-              {subtext && (
-                <div className="text-xs text-neutral-500">{subtext}</div>
-              )}
+              {subtext && <div className="text-xs text-neutral-500">{subtext}</div>}
             </div>
           );
         },

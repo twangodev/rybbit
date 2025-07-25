@@ -30,7 +30,7 @@ export function UptimeBar({ monitorId, className }: UptimeBarProps) {
   }
   // Process bucket data
   const days = data.buckets.map((bucket) => {
-    const date = DateTime.fromISO(bucket.bucket_time);
+    const date = DateTime.fromSQL(bucket.bucket_time).toLocal();
     return {
       date: bucket.bucket_formatted,
       dateFormatted: date.toFormat("MMM dd"),

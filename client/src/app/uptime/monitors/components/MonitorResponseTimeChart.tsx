@@ -13,11 +13,6 @@ import { UptimeBucketSelection } from "./UptimeBucketSelection";
 import { useUptimeStore } from "./uptimeStore";
 import { getHoursFromTimeRange } from "./utils";
 
-interface MonitorResponseTimeChartProps {
-  monitorId: number;
-  monitorType: "http" | "tcp";
-}
-
 // HTTP timing metrics with labels for stacked view - gradient from green-turquoise to blue
 const HTTP_METRICS = [
   { key: "dns_time_ms", label: "DNS", color: "hsl(160, 70%, 50%)" }, // Green

@@ -5,9 +5,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { MonitorDialog } from "../components/dialog";
-import { MonitorsTable } from "../components/MonitorsTable";
-import { Scaffolding } from "../components/Scaffolding";
+import { MonitorDialog } from "./components/dialog";
+import { MonitorsTable } from "./components/MonitorsTable";
+import { Scaffolding } from "./components/Scaffolding";
 
 export default function UptimePage() {
   const queryClient = useQueryClient();

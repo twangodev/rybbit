@@ -1,4 +1,4 @@
-import { Scaffolding } from "../components/Scaffolding";
+import { Scaffolding } from "../monitors/components/Scaffolding";
 
 export default function IntegrationsPage() {
   return (

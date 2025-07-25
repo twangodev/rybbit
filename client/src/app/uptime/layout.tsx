@@ -1,5 +1,5 @@
 import { AppSidebar } from "../../components/AppSidebar";
-import { Sidebar } from "./components/Sidebar";
+import { Sidebar } from "./monitors/components/Sidebar";
 
 export default function UptimeLayout({ children }: { children: React.ReactNode }) {
   return (
