@@ -356,29 +356,45 @@ const start = async () => {
 start();
 
 // Graceful shutdown
-process.on('SIGTERM', async () => {
-  console.log('SIGTERM received, shutting down gracefully...');
-  try {
-    await uptimeService.shutdown();
-    await server.close();
-    process.exit(0);
-  } catch (error) {
-    console.error('Error during shutdown:', error);
-    process.exit(1);
-  }
-});
+let isShuttingDown = false;
 
-process.on('SIGINT', async () => {
-  console.log('SIGINT received, shutting down gracefully...');
+const shutdown = async (signal: string) => {
+  if (isShuttingDown) {
+    console.log(`${signal} received during shutdown, forcing exit...`);
+    process.exit(1);
+  }
+  
+  isShuttingDown = true;
+  console.log(`${signal} received, shutting down gracefully...`);
+  
+  // Set a timeout to force exit if shutdown takes too long
+  const forceExitTimeout = setTimeout(() => {
+    console.error('Shutdown timeout exceeded, forcing exit...');
+    process.exit(1);
+  }, 10000); // 10 second timeout
+  
   try {
-    await uptimeService.shutdown();
+    // Stop accepting new connections
     await server.close();
+    console.log('Server closed');
+    
+    // Shutdown uptime service
+    await uptimeService.shutdown();
+    console.log('Uptime service shut down');
+    
+    // Clear the timeout since we're done
+    clearTimeout(forceExitTimeout);
+    
     process.exit(0);
   } catch (error) {
     console.error('Error during shutdown:', error);
+    clearTimeout(forceExitTimeout);
     process.exit(1);
   }
-});
+};
+
+process.on('SIGTERM', () => shutdown('SIGTERM'));
+process.on('SIGINT', () => shutdown('SIGINT'));
 
 declare module "fastify" {
   interface FastifyRequest {

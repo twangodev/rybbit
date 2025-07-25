@@ -272,8 +272,20 @@ export class MonitorExecutorBullMQ {
     this.isShuttingDown = true;
 
     if (this.worker) {
-      await this.worker.close();
-      console.log("BullMQ monitor executor shut down successfully");
+      try {
+        // Close the worker with a timeout
+        await Promise.race([
+          this.worker.close(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Worker close timeout')), 5000)
+          )
+        ]);
+        console.log("BullMQ monitor executor shut down successfully");
+      } catch (error) {
+        console.error("Error closing worker:", error);
+        // Force close if needed
+        this.worker = null;
+      }
     }
   }
 }

@@ -25,23 +25,21 @@ const TIME_RANGES = [
   { value: "all", label: "All Time" },
 ] as const;
 
-type TimeRange = typeof TIME_RANGES[number]["value"];
+type TimeRange = (typeof TIME_RANGES)[number]["value"];
 
-// HTTP timing metrics with labels
+// HTTP timing metrics with labels for stacked view
 const HTTP_METRICS = [
-  { key: "dns_time_ms", label: "DNS", color: "hsl(200, 70%, 50%)" },
-  { key: "tcp_time_ms", label: "TCP", color: "hsl(220, 70%, 50%)" },
-  { key: "tls_time_ms", label: "TLS", color: "hsl(140, 70%, 50%)" },
-  { key: "ttfb_ms", label: "TTFB", color: "hsl(30, 70%, 50%)" },
-  { key: "transfer_time_ms", label: "Transfer", color: "hsl(0, 70%, 50%)" },
-  { key: "response_time_ms", label: "Total", color: "hsl(260, 70%, 50%)" },
+  { key: "dns_time_ms", label: "DNS", color: "hsl(280, 70%, 60%)" },
+  { key: "tcp_time_ms", label: "Connection", color: "hsl(220, 70%, 60%)" },
+  { key: "tls_time_ms", label: "TLS Handshake", color: "hsl(160, 70%, 60%)" },
+  { key: "transfer_time_ms", label: "Data Transfer", color: "hsl(40, 70%, 60%)" },
 ] as const;
 
 export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResponseTimeChartProps) {
   const [timeRange, setTimeRange] = useState<TimeRange>("24h");
   const [bucket, setBucket] = useState<TimeBucket>("hour");
   const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
-    new Set(monitorType === "http" ? ["response_time_ms"] : ["response_time_ms"])
+    new Set(monitorType === "http" ? HTTP_METRICS.map(m => m.key) : ["response_time_ms"])
   );
 
   // Calculate start time based on selected range
@@ -69,6 +67,8 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
     bucket,
   });
 
+  console.info(statsData);
+
   const toggleMetric = (metricKey: string) => {
     setVisibleMetrics((prev) => {
       const newSet = new Set(prev);
@@ -82,61 +82,69 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
   };
 
   // Process data for the chart
-  const processedData = statsData?.distribution?.map((item: any) => {
-    const timestamp = DateTime.fromSQL(item.hour).toUTC();
-    
-    if (timestamp > DateTime.now()) {
-      return null;
-    }
+  const processedData =
+    statsData?.distribution
+      ?.map((item: any) => {
+        const timestamp = DateTime.fromSQL(item.hour).toUTC();
 
-    const dataPoint: any = {
-      time: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
-      response_time_ms: item.avg_response_time,
-    };
+        if (timestamp > DateTime.now()) {
+          return null;
+        }
 
-    // For HTTP monitors, include additional timing data
-    if (monitorType === "http") {
-      dataPoint.dns_time_ms = item.avg_dns_time || 0;
-      dataPoint.tcp_time_ms = item.avg_tcp_time || 0;
-      dataPoint.tls_time_ms = item.avg_tls_time || 0;
-      dataPoint.ttfb_ms = item.avg_ttfb || 0;
-      dataPoint.transfer_time_ms = item.avg_transfer_time || 0;
-    }
+        const dataPoint: any = {
+          time: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
+          response_time_ms: item.avg_response_time,
+        };
 
-    return dataPoint;
-  }).filter((e: any) => e !== null) ?? [];
+        // For HTTP monitors, include additional timing data
+        if (monitorType === "http") {
+          dataPoint.dns_time_ms = item.avg_dns_time || 0;
+          dataPoint.tcp_time_ms = item.avg_tcp_time || 0;
+          dataPoint.tls_time_ms = item.avg_tls_time || 0;
+          dataPoint.ttfb_ms = item.avg_ttfb || 0;
+          dataPoint.transfer_time_ms = item.avg_transfer_time || 0;
+        }
+
+        return dataPoint;
+      })
+      .filter((e: any) => e !== null) ?? [];
 
   // Create data series based on monitor type
   const createDataSeries = () => {
     if (monitorType === "tcp") {
-      return [{
-        id: "Response Time",
-        color: "hsl(260, 70%, 50%)",
-        data: processedData.map((item: any) => ({
-          x: item.time,
-          y: item.response_time_ms,
-        })).filter((point: any) => point.y !== null && point.y > 0),
-      }];
+      return [
+        {
+          id: "Response Time",
+          color: "hsl(260, 70%, 50%)",
+          data: processedData
+            .map((item: any) => ({
+              x: item.time,
+              y: item.response_time_ms,
+            }))
+            .filter((point: any) => point.y !== null && point.y > 0),
+        },
+      ];
     }
 
-    // For HTTP, show individual timing metrics
-    return HTTP_METRICS
-      .filter(metric => visibleMetrics.has(metric.key))
-      .map(metric => ({
-        id: metric.label,
-        color: metric.color,
-        data: processedData.map((item: any) => ({
+    // For HTTP, show stacked timing metrics
+    // Order matters for stacking - DNS first, then connection, TLS, and finally transfer
+    return HTTP_METRICS.filter((metric) => visibleMetrics.has(metric.key)).map((metric) => ({
+      id: metric.label,
+      color: metric.color,
+      data: processedData
+        .map((item: any) => ({
           x: item.time,
-          y: item[metric.key],
-        })).filter((point: any) => point.y !== null && point.y > 0),
-      }));
+          y: item[metric.key] || 0,
+        }))
+        .filter((point: any) => point.y !== null),
+    }));
   };
 
   const data = createDataSeries();
 
   const formatXAxisValue = (value: any) => {
     const dt = DateTime.fromJSDate(value).setLocale(userLocale);
-    
+
     // Format based on bucket size
     switch (bucket) {
       case "minute":
@@ -171,7 +179,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
           <h3 className="text-base font-medium">
             {monitorType === "http" ? "HTTP Timing Breakdown" : "Response Time"}
           </h3>
-          
+
           <div className="flex items-center gap-4">
             {/* Metric toggles for HTTP monitors */}
             {monitorType === "http" && (
@@ -202,14 +210,10 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
                 })}
               </div>
             )}
-            
+
             {/* Time range and bucket selectors */}
             <div className="flex items-center gap-2">
-              <UptimeBucketSelection
-                timeRange={timeRange}
-                bucket={bucket}
-                onBucketChange={setBucket}
-              />
+              <UptimeBucketSelection timeRange={timeRange} bucket={bucket} onBucketChange={setBucket} />
               <div className="flex items-center gap-1">
                 {TIME_RANGES.map((range) => (
                   <Button
@@ -229,7 +233,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
 
         {isLoading ? (
           <Skeleton className="w-full h-[300px] rounded-md" />
-        ) : data.length === 0 || data.every(series => series.data.length === 0) ? (
+        ) : data.length === 0 || data.every((series) => series.data.length === 0) ? (
           <div className="h-[300px] w-full flex items-center justify-center">
             <div className="text-center text-neutral-500">
               <p className="text-lg font-medium">No data available</p>
@@ -251,7 +255,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
               yScale={{
                 type: "linear",
                 min: 0,
-                stacked: false,
+                stacked: monitorType === "http",
                 reverse: false,
               }}
               enableGridX={false}
@@ -279,35 +283,34 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
               useMesh={true}
               animate={false}
               enableSlices="x"
-              enableArea={false}
+              enableArea={monitorType === "http"}
               sliceTooltip={({ slice }: any) => {
-                const currentTime = DateTime.fromJSDate(
-                  new Date(slice.points[0].data.x)
-                );
+                const currentTime = DateTime.fromJSDate(new Date(slice.points[0].data.x));
+                
+                // For stacked HTTP charts, show cumulative total
+                const total = monitorType === "http" 
+                  ? slice.points.reduce((sum: number, point: any) => sum + Number(point.data.yFormatted), 0)
+                  : 0;
 
                 return (
-                  <div className="text-sm bg-neutral-850 p-3 rounded-md min-w-[150px] border border-neutral-750">
+                  <div className="text-sm bg-neutral-850 p-3 rounded-md min-w-[180px] border border-neutral-750">
                     {formatChartDateTime(currentTime, bucket)}
-                    <div className="space-y-2 mt-2">
+                    <div className="space-y-1.5 mt-2">
                       {slice.points.map((point: any) => (
-                        <div
-                          key={point.seriesId}
-                          className="flex justify-between items-center"
-                        >
+                        <div key={point.seriesId} className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <div
-                              className="w-3 h-3 rounded-full"
-                              style={{ backgroundColor: point.seriesColor }}
-                            />
-                            <span className="text-neutral-200 font-medium">
-                              {point.seriesId}
-                            </span>
+                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: point.seriesColor }} />
+                            <span className="text-neutral-200 font-medium">{point.seriesId}</span>
                           </div>
-                          <span className="text-white">
-                            {formatTooltipValue(Number(point.data.yFormatted))}
-                          </span>
+                          <span className="text-white font-mono text-xs">{formatTooltipValue(Number(point.data.yFormatted))}</span>
                         </div>
                       ))}
+                      {monitorType === "http" && (
+                        <div className="flex justify-between items-center pt-1.5 border-t border-neutral-700">
+                          <span className="text-neutral-200 font-medium">Total</span>
+                          <span className="text-white font-mono text-xs">{formatTooltipValue(total)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );

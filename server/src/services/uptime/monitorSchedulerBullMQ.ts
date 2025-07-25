@@ -193,11 +193,21 @@ export class MonitorSchedulerBullMQ {
     this.isShuttingDown = true;
     
     try {
-      // Close queue events first
-      await this.queueEvents.close();
-      
-      // Then close the queue
-      await this.queue.close();
+      // Close queue events and queue with timeouts
+      await Promise.all([
+        Promise.race([
+          this.queueEvents.close(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Queue events close timeout')), 3000)
+          )
+        ]).catch(err => console.error('Queue events close error:', err)),
+        Promise.race([
+          this.queue.close(),
+          new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('Queue close timeout')), 3000)
+          )
+        ]).catch(err => console.error('Queue close error:', err))
+      ]);
       
       console.log('BullMQ monitor scheduler shut down successfully');
     } catch (error) {
