@@ -1,24 +1,5 @@
 "use client";
 
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
-import { StandardPage } from "../../../components/StandardPage";
-import { Button } from "@/components/ui/button";
-import {
-  useMonitor,
-  useMonitorStats,
-  useMonitorEvents,
-  useDeleteMonitor,
-  useMonitorUptime,
-} from "../../../api/uptime/monitors";
-import { StatusOrb } from "../components/StatusOrb";
-import { UptimeBar } from "../components/UptimeBar";
-import { EditMonitorDialog } from "../components/EditMonitorDialog";
-import { MonitorResponseTimeChart } from "../components/MonitorResponseTimeChart";
-import { ArrowLeft, Edit2, Trash2, RefreshCw, Globe, Network, Clock, Activity } from "lucide-react";
-import { DateTime } from "luxon";
-import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,10 +10,28 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TIME_RANGES, useUptimeStore } from "../components/uptimeStore";
-import { getHoursFromTimeRange } from "../components/utils";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { ArrowLeft, Edit2, RefreshCw, Trash2 } from "lucide-react";
+import { DateTime } from "luxon";
+import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { toast } from "sonner";
+import {
+  useDeleteMonitor,
+  useMonitor,
+  useMonitorEvents,
+  useMonitorStats,
+  useMonitorUptime,
+} from "../../../../api/uptime/monitors";
+import { StandardPage } from "../../../../components/StandardPage";
+import { EditMonitorDialog } from "../../components/EditMonitorDialog";
+import { MonitorResponseTimeChart } from "../../components/MonitorResponseTimeChart";
+import { StatusOrb } from "../../components/StatusOrb";
+import { TIME_RANGES, useUptimeStore } from "../../components/uptimeStore";
+import { getHoursFromTimeRange } from "../../components/utils";
 
 interface StatCardProps {
   label: string;
@@ -134,10 +133,15 @@ export default function MonitorDetailPage() {
   const events = eventsData?.events || [];
 
   return (
-    <StandardPage>
-      <div className="space-y-4">
+    <main className="flex flex-col items-center p-4 w-full h-screen overflow-y-auto">
+      <div className="w-full max-w-6xl space-y-4">
         {/* Header */}
-        <Button variant="ghost" size="sm" onClick={() => router.push("/uptime")} className="flex items-center gap-2">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push("/uptime/monitors")}
+          className="flex items-center gap-2"
+        >
           <ArrowLeft className="h-4 w-4" />
           Back
         </Button>
@@ -296,6 +300,6 @@ export default function MonitorDetailPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </StandardPage>
+    </main>
   );
 }

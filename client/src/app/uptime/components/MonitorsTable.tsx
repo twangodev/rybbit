@@ -12,7 +12,6 @@ interface MonitorsTableProps {
   onMonitorClick?: (monitor: UptimeMonitor) => void;
 }
 
-
 export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorClick }: MonitorsTableProps) {
   return (
     <div className="rounded-md border border-neutral-800">
@@ -28,7 +27,6 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
             <TableHead className="w-28">Last Ping</TableHead>
             <TableHead className="w-20 text-right whitespace-nowrap">Uptime %</TableHead>
             <TableHead className="w-32 text-right">Total Uptime</TableHead>
-            <TableHead className="w-20 text-right">P90</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -58,9 +56,6 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
                 </TableCell>
                 <TableCell>
                   <Skeleton className="h-4 w-24 ml-auto" />
-                </TableCell>
-                <TableCell>
-                  <Skeleton className="h-4 w-12 ml-auto" />
                 </TableCell>
               </TableRow>
             ))

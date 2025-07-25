@@ -49,7 +49,7 @@ const formatUptime = (seconds: number): string => {
   const days = Math.floor(seconds / 86400);
   const hours = Math.floor((seconds % 86400) / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  
+
   if (days > 0) {
     return `${days}d ${hours}h`;
   }
@@ -63,29 +63,8 @@ export function MonitorTableRow({ monitor, events, onClick }: MonitorTableRowPro
   const stats = monitor.status;
   const { data: uptimeData, isLoading: isLoadingUptime } = useMonitorUptime(monitor.id);
 
-  // Calculate P90 from events
-  let p90 = "-";
-  if (events.length > 0) {
-    const responseTimes = events
-      .filter((e) => e.status === "success" && e.response_time_ms)
-      .map((e) => e.response_time_ms)
-      .sort((a, b) => a - b);
-
-    if (responseTimes.length > 0) {
-      const getPercentile = (arr: number[], p: number) => {
-        const index = Math.ceil((p / 100) * arr.length) - 1;
-        return arr[index];
-      };
-
-      p90 = formatResponseTime(getPercentile(responseTimes, 90));
-    }
-  }
-
   return (
-    <TableRow
-      className="cursor-pointer hover:bg-neutral-900/50"
-      onClick={onClick}
-    >
+    <TableRow className="cursor-pointer hover:bg-neutral-900/50" onClick={onClick}>
       <TableCell className="text-center">
         <StatusOrb status={stats?.currentStatus || "unknown"} />
       </TableCell>
@@ -101,9 +80,7 @@ export function MonitorTableRow({ monitor, events, onClick }: MonitorTableRowPro
         <span
           className={cn(
             "inline-flex items-center px-2 py-1 text-xs font-medium rounded-full",
-            monitor.monitorType === "http"
-              ? "bg-blue-500/20 text-blue-400"
-              : "bg-purple-500/20 text-purple-400"
+            monitor.monitorType === "http" ? "bg-blue-500/20 text-blue-400" : "bg-purple-500/20 text-purple-400"
           )}
         >
           {monitor.monitorType.toUpperCase()}
@@ -117,11 +94,12 @@ export function MonitorTableRow({ monitor, events, onClick }: MonitorTableRowPro
       <TableCell className="text-right">
         {isLoadingUptime ? (
           <Skeleton className="h-4 w-16 inline-block" />
+        ) : uptimeData ? (
+          formatUptime(uptimeData.currentUptimeSeconds)
         ) : (
-          uptimeData ? formatUptime(uptimeData.currentUptimeSeconds) : "-"
+          "-"
         )}
       </TableCell>
-      <TableCell className="text-right font-mono text-sm">{p90}</TableCell>
     </TableRow>
   );
 }

@@ -75,7 +75,11 @@ export function AppSidebar() {
           icon={<BarChart className="w-5 h-5" />}
           active={pathname === "/" || !isNaN(Number(pathname.split("/")[1]))}
         />
-        <SidebarLink href="/uptime" icon={<SquareActivity className="w-5 h-5" />} active={pathname === "/uptime"} />
+        <SidebarLink
+          href="/uptime/monitors"
+          icon={<SquareActivity className="w-5 h-5" />}
+          active={pathname.startsWith("/uptime")}
+        />
       </div>
       <div>
         <SettingsMenu />
