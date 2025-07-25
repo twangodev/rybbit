@@ -2,6 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { isbot } from "isbot";
 import { z, ZodError } from "zod";
 import { createServiceLogger } from "../../lib/logger/logger.js";
+import { isIPExcluded } from "../../lib/ipUtils.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { sessionsService } from "../sessions/sessionsService.js";
 import { checkApiKeyRateLimit, validateApiKey, validateOrigin } from "../shared/requestValidation.js";
@@ -172,7 +173,10 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
 
     // If API key validation failed with an error, reject the request
     if (apiKeyValidation.error) {
-      logger.warn({ siteId: validatedPayload.site_id, error: apiKeyValidation.error }, "Request rejected - API key validation failed");
+      logger.warn(
+        { siteId: validatedPayload.site_id, error: apiKeyValidation.error },
+        "Request rejected - API key validation failed",
+      );
       return reply.status(403).send({
         success: false,
         error: apiKeyValidation.error,
@@ -184,7 +188,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       if (!checkApiKeyRateLimit(validatedPayload.api_key)) {
         logger.warn(
           { apiKey: validatedPayload.api_key, siteId: validatedPayload.site_id },
-          "Rate limit exceeded for API key"
+          "Rate limit exceeded for API key",
         );
         return reply.status(429).send({
           success: false,
@@ -198,7 +202,10 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       const originValidation = await validateOrigin(validatedPayload.site_id, request.headers.origin as string);
 
       if (!originValidation.success) {
-        logger.warn({ siteId: validatedPayload.site_id, error: originValidation.error }, "Request rejected - origin validation failed");
+        logger.warn(
+          { siteId: validatedPayload.site_id, error: originValidation.error },
+          "Request rejected - origin validation failed",
+        );
         return reply.status(403).send({
           success: false,
           error: originValidation.error,
@@ -215,10 +222,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       // Use custom user agent if provided, otherwise fall back to header
       const userAgent = validatedPayload.user_agent || (request.headers["user-agent"] as string);
       if (userAgent && isbot(userAgent)) {
-        logger.info(
-          { siteId: validatedPayload.site_id, userAgent },
-          "Bot request filtered"
-        );
+        logger.info({ siteId: validatedPayload.site_id, userAgent }, "Bot request filtered");
         return reply.status(200).send({
           success: true,
           message: "Event not tracked - bot detected",
@@ -230,6 +234,19 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     if (usageService.isSiteOverLimit(Number(validatedPayload.site_id))) {
       logger.info({ siteId: validatedPayload.site_id }, "Skipping event - site over monthly limit");
       return reply.status(200).send("Site over monthly limit, event not tracked");
+    }
+
+    // Check if the IP should be excluded from tracking
+    // Use custom IP if provided in payload, otherwise get from request
+    const requestIP = validatedPayload.ip_address || request.ip || "";
+    const excludedIPs = siteConfig.getExcludedIPs(validatedPayload.site_id);
+
+    if (isIPExcluded(requestIP, excludedIPs)) {
+      console.log(`[Tracking] IP ${requestIP} excluded from tracking for site ${validatedPayload.site_id}`);
+      return reply.status(200).send({
+        success: true,
+        message: "Event not tracked - IP excluded",
+      });
     }
 
     // Create base payload for the event using validated data
