@@ -5,7 +5,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useAllMonitorEvents, useMonitors } from "../../../api/uptime/monitors";
+import { useMonitors } from "../../../api/uptime/monitors";
 import { MonitorDialog } from "../components/dialog";
 import { MonitorsTable } from "../components/MonitorsTable";
 import { Scaffolding } from "../components/Scaffolding";
@@ -16,12 +16,9 @@ export default function UptimePage() {
   const { data: monitors = [], isLoading: isLoadingMonitors } = useMonitors();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  // Fetch events for all monitors using React Query
-  const { data: monitorEvents = {}, isLoading: isLoadingEvents } = useAllMonitorEvents(monitors);
-
   const handleRefresh = () => {
     queryClient.invalidateQueries({ queryKey: ["uptime-monitors"] });
-    queryClient.invalidateQueries({ queryKey: ["uptime-all-monitor-events"] });
+    queryClient.invalidateQueries({ queryKey: ["uptime-monitor-buckets"] });
   };
 
   const handleMonitorClick = (monitor: any) => {
@@ -49,8 +46,7 @@ export default function UptimePage() {
 
       <MonitorsTable
         monitors={monitors}
-        monitorEvents={monitorEvents}
-        isLoading={isLoadingMonitors || isLoadingEvents}
+        isLoading={isLoadingMonitors}
         onMonitorClick={handleMonitorClick}
       />
 

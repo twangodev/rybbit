@@ -1,18 +1,17 @@
 import React from "react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { UptimeMonitor, MonitorEvent } from "@/api/uptime/monitors";
+import { UptimeMonitor } from "@/api/uptime/monitors";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Radio } from "lucide-react";
 import { MonitorTableRow } from "./MonitorTableRow";
 
 interface MonitorsTableProps {
   monitors: UptimeMonitor[];
-  monitorEvents: Record<number, MonitorEvent[]>;
   isLoading?: boolean;
   onMonitorClick?: (monitor: UptimeMonitor) => void;
 }
 
-export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorClick }: MonitorsTableProps) {
+export function MonitorsTable({ monitors, isLoading, onMonitorClick }: MonitorsTableProps) {
   return (
     <div className="rounded-md border border-neutral-800">
       <Table>
@@ -66,17 +65,13 @@ export function MonitorsTable({ monitors, monitorEvents, isLoading, onMonitorCli
               </TableCell>
             </TableRow>
           ) : (
-            monitors.map((monitor) => {
-              const events = monitorEvents[monitor.id] || [];
-              return (
-                <MonitorTableRow
-                  key={monitor.id}
-                  monitor={monitor}
-                  events={events}
-                  onClick={() => onMonitorClick?.(monitor)}
-                />
-              );
-            })
+            monitors.map((monitor) => (
+              <MonitorTableRow
+                key={monitor.id}
+                monitor={monitor}
+                onClick={() => onMonitorClick?.(monitor)}
+              />
+            ))
           )}
         </TableBody>
       </Table>

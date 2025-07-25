@@ -3,13 +3,12 @@ import { DateTime } from "luxon";
 import { TableCell, TableRow } from "@/components/ui/table";
 import { StatusOrb } from "./StatusOrb";
 import { UptimeBar } from "./UptimeBar";
-import { UptimeMonitor, MonitorEvent, useMonitorUptime } from "@/api/uptime/monitors";
+import { UptimeMonitor, useMonitorUptime } from "@/api/uptime/monitors";
 import { cn } from "@/lib/utils";
 import { Skeleton } from "@/components/ui/skeleton";
 
 interface MonitorTableRowProps {
   monitor: UptimeMonitor;
-  events: MonitorEvent[];
   onClick?: () => void;
 }
 
@@ -59,7 +58,7 @@ const formatUptime = (seconds: number): string => {
   return `${minutes}m`;
 };
 
-export function MonitorTableRow({ monitor, events, onClick }: MonitorTableRowProps) {
+export function MonitorTableRow({ monitor, onClick }: MonitorTableRowProps) {
   const stats = monitor.status;
   const { data: uptimeData, isLoading: isLoadingUptime } = useMonitorUptime(monitor.id);
 
@@ -87,7 +86,7 @@ export function MonitorTableRow({ monitor, events, onClick }: MonitorTableRowPro
         </span>
       </TableCell>
       <TableCell>
-        <UptimeBar monitorId={monitor.id} events={events} />
+        <UptimeBar monitorId={monitor.id} />
       </TableCell>
       <TableCell>{formatLastPing(stats?.lastCheckedAt)}</TableCell>
       <TableCell className="text-right">{formatPercentage(stats?.uptimePercentage7d)}</TableCell>

@@ -214,6 +214,38 @@ async function getMonitorUptime(monitorId: number) {
   return authedFetch<MonitorUptime>(`/uptime/monitors/${monitorId}/uptime`);
 }
 
+async function getMonitorUptimeBuckets(
+  monitorId: number,
+  params?: {
+    bucket?: "hour" | "day" | "week";
+    days?: number;
+  }
+) {
+  const queryParams = new URLSearchParams();
+  if (params?.bucket) queryParams.append("bucket", params.bucket);
+  if (params?.days) queryParams.append("days", params.days.toString());
+
+  const queryString = queryParams.toString();
+  const url = queryString
+    ? `/uptime/monitors/${monitorId}/buckets?${queryString}`
+    : `/uptime/monitors/${monitorId}/buckets`;
+
+  return authedFetch<{
+    buckets: Array<{
+      bucket_time: string;
+      bucket_formatted: string;
+      total_checks: number;
+      successful_checks: number;
+      failed_checks: number;
+      timeout_checks: number;
+      uptime_percentage: number;
+    }>;
+    bucket: string;
+    days: number;
+    monitorId: number;
+  }>(url);
+}
+
 // Hooks
 export function useMonitors(params?: Parameters<typeof getMonitors>[0]) {
   return useQuery({
@@ -250,6 +282,17 @@ export function useMonitorUptime(monitorId: number | undefined) {
   return useQuery({
     queryKey: ["uptime-monitor-uptime", monitorId],
     queryFn: () => (monitorId ? getMonitorUptime(monitorId) : Promise.reject("No monitor ID")),
+    enabled: !!monitorId,
+  });
+}
+
+export function useMonitorUptimeBuckets(
+  monitorId: number | undefined,
+  params?: Parameters<typeof getMonitorUptimeBuckets>[1]
+) {
+  return useQuery({
+    queryKey: ["uptime-monitor-buckets", monitorId, params],
+    queryFn: () => (monitorId ? getMonitorUptimeBuckets(monitorId, params) : Promise.reject("No monitor ID")),
     enabled: !!monitorId,
   });
 }
