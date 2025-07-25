@@ -269,7 +269,7 @@ export const uptimeMonitors = pgTable(
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id),
-    name: text("name").notNull(),
+    name: text("name"), // Made optional
     monitorType: text("monitor_type").notNull(), // 'http', 'tcp'
 
     // Common settings

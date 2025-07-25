@@ -13,28 +13,46 @@ interface AdvancedTabProps {
 }
 
 export function AdvancedTab({ form, monitorType }: AdvancedTabProps) {
-  if (monitorType === "tcp") {
-    return (
-      <div className="text-neutral-500 text-sm">No advanced options available for TCP monitors.</div>
-    );
-  }
-
   return (
     <div className="space-y-4">
+      {/* Monitor Name (Optional) */}
       <FormField
         control={form.control}
-        name="httpConfig.userAgent"
+        name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>User Agent</FormLabel>
+            <FormLabel>Monitor Name (Optional)</FormLabel>
             <FormControl>
-              <Input placeholder="Custom User Agent" {...field} value={field.value || ""} />
+              <Input placeholder="My API Endpoint" {...field} value={field.value || ""} />
             </FormControl>
-            <FormDescription>Override the default user agent string</FormDescription>
+            <FormDescription>
+              A friendly name for this monitor. If not specified, the URL or host will be used.
+            </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
+
+      {monitorType === "tcp" ? (
+        <div className="text-sm text-neutral-500 mt-4">
+          No additional advanced options available for TCP monitors.
+        </div>
+      ) : (
+        <>
+          <FormField
+            control={form.control}
+            name="httpConfig.userAgent"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>User Agent</FormLabel>
+                <FormControl>
+                  <Input placeholder="Custom User Agent" {...field} value={field.value || ""} />
+                </FormControl>
+                <FormDescription>Override the default user agent string</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
       <FormField
         control={form.control}
@@ -149,28 +167,30 @@ export function AdvancedTab({ form, monitorType }: AdvancedTabProps) {
         )}
       />
 
-      <FormField
-        control={form.control}
-        name="httpConfig.ipVersion"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>IP Version</FormLabel>
-            <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="any">Any</SelectItem>
-                <SelectItem value="ipv4">IPv4 Only</SelectItem>
-                <SelectItem value="ipv6">IPv6 Only</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+          <FormField
+            control={form.control}
+            name="httpConfig.ipVersion"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>IP Version</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="any">Any</SelectItem>
+                    <SelectItem value="ipv4">IPv4 Only</SelectItem>
+                    <SelectItem value="ipv6">IPv6 Only</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </>
+      )}
     </div>
   );
 }

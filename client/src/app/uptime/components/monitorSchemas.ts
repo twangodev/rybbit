@@ -51,7 +51,7 @@ const tcpConfigSchema = z.object({
 // Create monitor schema
 export const createMonitorSchema = z.object({
   organizationId: z.string().min(1, "Organization is required"),
-  name: z.string().min(1, "Monitor name is required").max(256),
+  name: z.string().max(256).optional(), // Made optional
   monitorType: z.enum(["http", "tcp"]),
   intervalSeconds: z.number().int().min(1).max(86400),
   enabled: z.boolean(),
@@ -76,7 +76,7 @@ export const createMonitorSchema = z.object({
 
 // Update monitor schema (all fields optional except what's being updated)
 export const updateMonitorSchema = z.object({
-  name: z.string().min(1).max(256).optional(),
+  name: z.string().max(256).optional(), // Allow empty string for removing name
   intervalSeconds: z.number().int().min(1).max(86400).optional(),
   enabled: z.boolean().optional(),
   httpConfig: z.object({

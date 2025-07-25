@@ -94,7 +94,7 @@ const validationRuleSchema = z.discriminatedUnion("type", [
 export const createMonitorSchema = z
   .object({
     organizationId: z.string().min(1, "Organization ID is required"),
-    name: z.string().min(1, "Name is required").max(256),
+    name: z.string().max(256).optional(), // Made optional
     monitorType: z.enum(["http", "tcp"]),
     intervalSeconds: z.number().int().min(60).max(86400, "Interval must be between 60 and 86400 seconds"),
     enabled: z.boolean().default(true),
@@ -120,7 +120,7 @@ export const createMonitorSchema = z
 
 // Update monitor schema (similar to create but with optional fields)
 export const updateMonitorSchema = z.object({
-  name: z.string().min(1).max(256).optional(),
+  name: z.string().max(256).optional(), // Allow empty string to remove name
   intervalSeconds: z.number().int().min(60).max(86400).optional(),
   enabled: z.boolean().optional(),
   httpConfig: httpConfigSchema.optional(),

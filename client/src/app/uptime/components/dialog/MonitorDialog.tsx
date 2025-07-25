@@ -69,7 +69,7 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
         }
       : {
           organizationId: activeOrganization?.id || "",
-          name: "",
+          name: "", // Optional - will be empty by default
           monitorType: "http" as const,
           intervalSeconds: 300,
           enabled: true,

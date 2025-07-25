@@ -148,7 +148,13 @@ export default function MonitorDetailPage() {
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
           <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">{monitor.name}</h1>
+            <h1 className="text-2xl font-semibold">
+              {monitor.name || (
+                monitor.monitorType === "http"
+                  ? monitor.httpConfig?.url
+                  : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`
+              )}
+            </h1>
             <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
           </div>
           <p className="text-sm text-neutral-300 mt-1 flex items-center gap-2">
@@ -282,8 +288,13 @@ export default function MonitorDetailPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the monitor "{monitor.name}" and all its historical data. This action cannot
-              be undone.
+              This will permanently delete the monitor "
+              {monitor.name || (
+                monitor.monitorType === "http"
+                  ? monitor.httpConfig?.url
+                  : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`
+              )}
+              " and all its historical data. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

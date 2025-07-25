@@ -31,17 +31,17 @@ interface MonitorsTableProps {
 const fuzzyFilter: FilterFn<UptimeMonitor> = (row, columnId, value, addMeta) => {
   const search = value.toLowerCase();
   const monitor = row.original;
-  
-  // Search in name
-  if (monitor.name.toLowerCase().includes(search)) return true;
-  
+
+  // Search in name (if it exists)
+  if (monitor.name && monitor.name.toLowerCase().includes(search)) return true;
+
   // Search in URL/host
   if (monitor.monitorType === "http" && monitor.httpConfig?.url?.toLowerCase().includes(search)) return true;
   if (monitor.monitorType === "tcp" && monitor.tcpConfig?.host?.toLowerCase().includes(search)) return true;
-  
+
   // Search in type
   if (monitor.monitorType.toLowerCase().includes(search)) return true;
-  
+
   return false;
 };
 
@@ -122,17 +122,28 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
         size: 48,
       }),
       columnHelper.accessor("name", {
-        header: ({ column }) => <SortHeader column={column}>Name</SortHeader>,
-        cell: ({ row }) => (
-          <div>
-            <div className="font-medium">{row.original.name}</div>
-            <div className="text-xs text-neutral-500">
-              {row.original.monitorType === "http"
-                ? row.original.httpConfig?.url
-                : `${row.original.tcpConfig?.host}:${row.original.tcpConfig?.port}`}
+        header: ({ column }) => <SortHeader column={column}>Monitor</SortHeader>,
+        cell: ({ row }) => {
+          const displayName = row.original.name || (
+            row.original.monitorType === "http"
+              ? row.original.httpConfig?.url
+              : `${row.original.tcpConfig?.host}:${row.original.tcpConfig?.port}`
+          );
+          const subtext = row.original.name ? (
+            row.original.monitorType === "http"
+              ? row.original.httpConfig?.url
+              : `${row.original.tcpConfig?.host}:${row.original.tcpConfig?.port}`
+          ) : null;
+          
+          return (
+            <div>
+              <div className="font-medium">{displayName}</div>
+              {subtext && (
+                <div className="text-xs text-neutral-500">{subtext}</div>
+              )}
             </div>
-          </div>
-        ),
+          );
+        },
       }),
       columnHelper.accessor("monitorType", {
         header: ({ column }) => <SortHeader column={column}>Type</SortHeader>,
@@ -198,11 +209,11 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
 
   return (
     <div className="space-y-4">
-      <Input 
-        placeholder="Search monitors by name, URL, or type..." 
+      <Input
+        placeholder="Search monitors by name, URL, or type..."
         value={globalFilter}
         onChange={(e) => setGlobalFilter(e.target.value)}
-        className="max-w-sm"
+        className="max-w-sm bg-neutral-900"
       />
       <div className="rounded-md border border-neutral-800">
         <Table>
@@ -216,9 +227,7 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
                       width: header.getSize() === 150 ? undefined : header.getSize(),
                     }}
                   >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(header.column.columnDef.header, header.getContext())}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -265,9 +274,7 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
                   onClick={() => onMonitorClick?.(row.original)}
                 >
                   {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                    </TableCell>
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))
@@ -275,13 +282,13 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
           </TableBody>
         </Table>
       </div>
-      
+
       {/* Pagination */}
       {!isLoading && monitors.length > 0 && (
         <Pagination
           table={table}
           data={{
-            items: table.getFilteredRowModel().rows.map(row => row.original),
+            items: table.getFilteredRowModel().rows.map((row) => row.original),
             total: table.getFilteredRowModel().rows.length,
           }}
           pagination={pagination}

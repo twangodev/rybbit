@@ -29,21 +29,6 @@ const HTTP_METHODS = ["GET", "POST", "PUT", "DELETE", "HEAD", "OPTIONS", "PATCH"
 export function GeneralTab({ form, monitor, isEdit, monitorType }: GeneralTabProps) {
   return (
     <div className="space-y-4">
-      {/* Monitor Name */}
-      <FormField
-        control={form.control}
-        name="name"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Monitor Name</FormLabel>
-            <FormControl>
-              <Input placeholder="My API Endpoint" {...field} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       {/* Monitor Type */}
       {!isEdit ? (
         <FormField
