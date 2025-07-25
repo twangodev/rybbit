@@ -1,4 +1,5 @@
 import { S3Client, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
 import { Readable } from "stream";
 import { gunzipSync } from "zlib";
 import { compress as zstdCompress, decompress as zstdDecompress } from "@mongodb-js/zstd";
@@ -145,28 +146,32 @@ export class R2StorageService {
   }
 
   /**
-   * Store an import CSV file in R2
-   * Used for temporary storage during import processing
+   * Store an import CSV file in R2 using streaming upload
    */
-  async storeImportFile(key: string, fileBuffer: Buffer): Promise<void> {
+  async storeImportFile(key: string, fileStream: Readable): Promise<void> {
     if (!this.enabled || !this.client) {
       throw new Error("R2 storage is not enabled");
     }
 
     try {
-      await this.client.send(
-        new PutObjectCommand({
+      const upload = new Upload({
+        client: this.client,
+        params: {
           Bucket: this.bucketName,
           Key: key,
-          Body: fileBuffer,
+          Body: fileStream,
           ContentType: "text/csv",
           Metadata: {
             type: "import-file",
             uploadTime: Date.now().toString(),
           },
-        }),
-      );
+        },
+        queueSize: 4,
+        partSize: 64 * 1024 * 1024,
+        leavePartsOnError: false,
+      });
 
+      await upload.done();
       console.log(`[R2Storage] Successfully stored import file: ${key}`);
     } catch (error) {
       console.error("[R2Storage] Failed to store import file:", error);
@@ -175,10 +180,9 @@ export class R2StorageService {
   }
 
   /**
-   * Retrieve an import CSV file from R2
-   * Returns the file buffer
+   * Retrieve an import CSV file from R2 as a stream
    */
-  async getImportFile(key: string): Promise<Buffer> {
+  async getImportFileStream(key: string): Promise<Readable> {
     if (!this.enabled || !this.client) {
       throw new Error("R2 storage is not enabled");
     }
@@ -195,19 +199,10 @@ export class R2StorageService {
         throw new Error("Empty response body");
       }
 
-      // Convert stream to buffer
-      const chunks: Uint8Array[] = [];
-      const stream = response.Body as Readable;
-
-      for await (const chunk of stream) {
-        chunks.push(chunk);
-      }
-
-      const buffer = Buffer.concat(chunks);
-      console.log(`[R2Storage] Successfully retrieved import file: ${key}`);
-      return buffer;
+      console.log(`[R2Storage] Successfully retrieved import file stream: ${key}`);
+      return response.Body as Readable;
     } catch (error) {
-      console.error("[R2Storage] Failed to retrieve import file:", error);
+      console.error("[R2Storage] Failed to retrieve import file stream:", error);
       throw error;
     }
   }
