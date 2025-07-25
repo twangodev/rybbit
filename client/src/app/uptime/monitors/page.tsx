@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useMonitors } from "../../../api/uptime/monitors";
 import { MonitorDialog } from "../components/dialog";
 import { MonitorsTable } from "../components/MonitorsTable";
 import { Scaffolding } from "../components/Scaffolding";
@@ -13,7 +12,6 @@ import { Scaffolding } from "../components/Scaffolding";
 export default function UptimePage() {
   const queryClient = useQueryClient();
   const router = useRouter();
-  const { data: monitors = [], isLoading: isLoadingMonitors } = useMonitors();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
 
   const handleRefresh = () => {
@@ -44,11 +42,7 @@ export default function UptimePage() {
         </div>
       </div>
 
-      <MonitorsTable
-        monitors={monitors}
-        isLoading={isLoadingMonitors}
-        onMonitorClick={handleMonitorClick}
-      />
+      <MonitorsTable onMonitorClick={handleMonitorClick} />
 
       <MonitorDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
     </Scaffolding>
