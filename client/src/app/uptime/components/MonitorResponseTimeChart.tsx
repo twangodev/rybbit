@@ -18,12 +18,12 @@ interface MonitorResponseTimeChartProps {
   monitorType: "http" | "tcp";
 }
 
-// HTTP timing metrics with labels for stacked view
+// HTTP timing metrics with labels for stacked view - gradient from green-turquoise to blue
 const HTTP_METRICS = [
-  { key: "dns_time_ms", label: "DNS", color: "hsl(280, 70%, 60%)" },
-  { key: "tcp_time_ms", label: "Connection", color: "hsl(220, 70%, 60%)" },
-  { key: "tls_time_ms", label: "TLS Handshake", color: "hsl(160, 70%, 60%)" },
-  { key: "transfer_time_ms", label: "Data Transfer", color: "hsl(40, 70%, 60%)" },
+  { key: "dns_time_ms", label: "DNS", color: "hsl(160, 70%, 50%)" }, // Green
+  { key: "tcp_time_ms", label: "Connection", color: "hsl(180, 70%, 45%)" }, // Turquoise
+  { key: "tls_time_ms", label: "TLS Handshake", color: "hsl(200, 70%, 45%)" }, // Light Blue
+  { key: "transfer_time_ms", label: "Data Transfer", color: "hsl(220, 70%, 50%)" }, // Blue
 ] as const;
 
 const formatTooltipValue = (value: number) => {
@@ -86,7 +86,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
       return [
         {
           id: "Response Time",
-          color: "hsl(260, 70%, 50%)",
+          color: "hsl(180, 70%, 45%)",
           data: processedData
             .map((item: any) => ({
               x: item.time,
@@ -113,29 +113,29 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
 
   const data = createDataSeries();
 
-  // Define gradients for stacked areas with lower opacity
+  // Define gradients for stacked areas with lower opacity - gradient from green-turquoise to blue
   const defs =
     monitorType === "http"
       ? [
           {
             id: "gradientDNS",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(280, 70%, 60%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: "hsl(160, 70%, 50%)", opacity: 0.1 }],
           },
           {
             id: "gradientConnection",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(220, 70%, 60%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: "hsl(180, 70%, 45%)", opacity: 0.1 }],
           },
           {
             id: "gradientTLS",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(160, 70%, 60%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: "hsl(200, 70%, 45%)", opacity: 0.1 }],
           },
           {
             id: "gradientTransfer",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(40, 70%, 60%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: "hsl(220, 70%, 50%)", opacity: 0.1 }],
           },
         ]
       : [];
@@ -221,7 +221,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
         </div>
 
         {isLoading ? (
-          <Skeleton className="w-full h-[300px] rounded-md" />
+          <Skeleton className="w-full h-[400px] rounded-md" />
         ) : data.length === 0 || data.every((series) => series.data.length === 0) ? (
           <div className="h-[300px] w-full flex items-center justify-center">
             <div className="text-center text-neutral-500">
@@ -230,10 +230,10 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
             </div>
           </div>
         ) : (
-          <div className="h-[300px] w-full">
+          <div className="h-[400px] w-full">
             <ResponsiveLine
               data={data}
-              theme={nivoTheme}
+              theme={{ ...nivoTheme }}
               margin={{ top: 10, right: 20, bottom: 25, left: 50 }}
               defs={defs}
               fill={fill}
@@ -270,6 +270,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
                 format: (value) => `${value}ms`,
               }}
               colors={(d) => d.color}
+              lineWidth={1}
               enablePoints={false}
               useMesh={true}
               animate={false}
