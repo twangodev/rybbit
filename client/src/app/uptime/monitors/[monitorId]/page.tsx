@@ -237,7 +237,7 @@ export default function MonitorDetailPage() {
       </div>
 
       {/* Response Time Chart */}
-      {monitor && <MonitorResponseTimeChart monitorId={monitor.id} monitorType={monitor.monitorType} />}
+      <MonitorResponseTimeChart monitor={monitor} isLoading={isLoadingMonitor} />
 
       {/* Recent Events */}
       <Card>

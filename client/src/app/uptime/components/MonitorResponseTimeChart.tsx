@@ -1,6 +1,6 @@
 "use client";
 
-import { useMonitorStats } from "@/api/uptime/monitors";
+import { UptimeMonitor, useMonitorStats } from "@/api/uptime/monitors";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatChartDateTime, hour12, userLocale } from "@/lib/dateTimeUtils";
@@ -8,7 +8,7 @@ import { nivoTheme } from "@/lib/nivo";
 import { cn } from "@/lib/utils";
 import { ResponsiveLine } from "@nivo/line";
 import { DateTime } from "luxon";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UptimeBucketSelection } from "./UptimeBucketSelection";
 import { useUptimeStore } from "./uptimeStore";
 import { getHoursFromTimeRange } from "./utils";
@@ -30,19 +30,32 @@ const formatTooltipValue = (value: number) => {
   return `${Math.round(value)}ms`;
 };
 
-export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResponseTimeChartProps) {
+export function MonitorResponseTimeChart({
+  monitor,
+  isLoading: isLoadingMonitor,
+}: {
+  monitor?: UptimeMonitor;
+  isLoading: boolean;
+}) {
+  const monitorType = monitor?.monitorType;
+  const monitorId = monitor?.id;
+
   const { timeRange, bucket, setBucket } = useUptimeStore();
 
-  const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
-    new Set(monitorType === "http" ? HTTP_METRICS.map((m) => m.key) : ["response_time_ms"])
-  );
+  const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    if (monitorType === "http") {
+      setVisibleMetrics(new Set(HTTP_METRICS.map((m) => m.key)));
+    } else {
+      setVisibleMetrics(new Set(["response_time_ms"]));
+    }
+  }, [monitorType]);
 
   const { data: statsData, isLoading } = useMonitorStats(monitorId, {
     hours: getHoursFromTimeRange(timeRange),
     bucket,
   });
-
-  console.info(statsData);
 
   const toggleMetric = (metricKey: string) => {
     setVisibleMetrics((prev) => {
@@ -220,10 +233,10 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
           </div>
         </div>
 
-        {isLoading ? (
+        {isLoadingMonitor || isLoading ? (
           <Skeleton className="w-full h-[400px] rounded-md" />
         ) : data.length === 0 || data.every((series) => series.data.length === 0) ? (
-          <div className="h-[300px] w-full flex items-center justify-center">
+          <div className="h-[400px] w-full flex items-center justify-center">
             <div className="text-center text-neutral-500">
               <p className="text-lg font-medium">No data available</p>
               <p className="text-sm">Try adjusting your time range</p>
