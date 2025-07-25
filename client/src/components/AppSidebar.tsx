@@ -47,9 +47,7 @@ const SettingsMenu = () => {
             )}
           </DropdownMenuContent>
         </DropdownMenu>
-      ) : isPending ? (
-        <Skeleton className="w-20 h-4 mr-2" />
-      ) : (
+      ) : isPending ? null : (
         <SidebarLink
           href={
             typeof window !== "undefined" && globalThis.location.hostname === "demo.rybbit.io"
@@ -70,7 +68,7 @@ export function AppSidebar() {
     <div className="flex flex-col items-center justify-between h-screen p-2 py-4 bg-neutral-900 border-r border-neutral-750 gap-3">
       <div className="flex flex-col items-center gap-2">
         <Link href="/">
-          <Image src="/rybbit.svg" alt="Rybbit" width={24} height={24} className="mb-5" />
+          <Image src="/rybbit.svg" alt="Rybbit" width={24} height={18} className="mb-5" />
         </Link>
         <SidebarLink
           href="/"

@@ -14,7 +14,7 @@ function toClickHouseDateTime(dateString: string): string {
     return `${dateString} 00:00:00`;
   }
   // Otherwise, convert ISO datetime to ClickHouse format (YYYY-MM-DD HH:MM:SS)
-  return dateString.replace('T', ' ').replace(/\.\d{3}Z$/, '');
+  return dateString.replace("T", " ").replace(/\.\d{3}Z$/, "");
 }
 
 interface GetMonitorEventsRequest {
@@ -24,10 +24,7 @@ interface GetMonitorEventsRequest {
   Querystring: GetMonitorEventsQuery;
 }
 
-export async function getMonitorEvents(
-  request: FastifyRequest<GetMonitorEventsRequest>,
-  reply: FastifyReply
-) {
+export async function getMonitorEvents(request: FastifyRequest<GetMonitorEventsRequest>, reply: FastifyReply) {
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
@@ -51,10 +48,7 @@ export async function getMonitorEvents(
 
     // Check if user has access to the monitor's organization
     const userHasAccess = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, userId),
-        eq(member.organizationId, monitor.organizationId)
-      ),
+      where: and(eq(member.userId, userId), eq(member.organizationId, monitor.organizationId)),
     });
 
     if (!userHasAccess) {
@@ -173,9 +167,9 @@ export async function getMonitorEvents(
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       const zodError = error as any;
-      return reply.status(400).send({ 
+      return reply.status(400).send({
         error: "Validation error",
-        details: zodError.errors 
+        details: zodError.errors,
       });
     }
     console.error("Error retrieving monitor events:", error);

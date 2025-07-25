@@ -72,6 +72,8 @@ export interface MonitorStats {
       min: number;
       max: number;
       p50: number;
+      p75: number;
+      p90: number;
       p95: number;
       p99: number;
     };
@@ -131,9 +133,9 @@ export interface MonitorEvent {
   error_type?: string;
 }
 
-async function getMonitors(params?: { 
-  organizationId?: string; 
-  enabled?: boolean; 
+async function getMonitors(params?: {
+  organizationId?: string;
+  enabled?: boolean;
   monitorType?: "http" | "tcp";
   limit?: number;
   offset?: number;
@@ -144,10 +146,10 @@ async function getMonitors(params?: {
   if (params?.monitorType) queryParams.append("monitorType", params.monitorType);
   if (params?.limit) queryParams.append("limit", params.limit.toString());
   if (params?.offset) queryParams.append("offset", params.offset.toString());
-  
+
   const queryString = queryParams.toString();
   const url = queryString ? `/uptime/monitors?${queryString}` : "/uptime/monitors";
-  
+
   return authedFetch<UptimeMonitor[]>(url);
 }
 
@@ -155,34 +157,42 @@ async function getMonitor(monitorId: number) {
   return authedFetch<UptimeMonitor>(`/uptime/monitors/${monitorId}`);
 }
 
-async function getMonitorStats(monitorId: number, params?: {
-  startTime?: string;
-  endTime?: string;
-  region?: string;
-  hours?: number;
-  bucket?: "minute" | "five_minutes" | "ten_minutes" | "fifteen_minutes" | "hour" | "day" | "week" | "month" | "year";
-}) {
+async function getMonitorStats(
+  monitorId: number,
+  params?: {
+    startTime?: string;
+    endTime?: string;
+    region?: string;
+    hours?: number;
+    bucket?: "minute" | "five_minutes" | "ten_minutes" | "fifteen_minutes" | "hour" | "day" | "week" | "month" | "year";
+  }
+) {
   const queryParams = new URLSearchParams();
   if (params?.startTime) queryParams.append("startTime", params.startTime);
   if (params?.endTime) queryParams.append("endTime", params.endTime);
   if (params?.region) queryParams.append("region", params.region);
   if (params?.hours) queryParams.append("hours", params.hours.toString());
   if (params?.bucket) queryParams.append("bucket", params.bucket);
-  
+
   const queryString = queryParams.toString();
-  const url = queryString ? `/uptime/monitors/${monitorId}/stats?${queryString}` : `/uptime/monitors/${monitorId}/stats`;
-  
+  const url = queryString
+    ? `/uptime/monitors/${monitorId}/stats?${queryString}`
+    : `/uptime/monitors/${monitorId}/stats`;
+
   return authedFetch<MonitorStats>(url);
 }
 
-async function getMonitorEvents(monitorId: number, params?: {
-  startTime?: string;
-  endTime?: string;
-  status?: "success" | "failure" | "timeout";
-  region?: string;
-  limit?: number;
-  offset?: number;
-}) {
+async function getMonitorEvents(
+  monitorId: number,
+  params?: {
+    startTime?: string;
+    endTime?: string;
+    status?: "success" | "failure" | "timeout";
+    region?: string;
+    limit?: number;
+    offset?: number;
+  }
+) {
   const queryParams = new URLSearchParams();
   if (params?.startTime) queryParams.append("startTime", params.startTime);
   if (params?.endTime) queryParams.append("endTime", params.endTime);
@@ -190,10 +200,12 @@ async function getMonitorEvents(monitorId: number, params?: {
   if (params?.region) queryParams.append("region", params.region);
   if (params?.limit) queryParams.append("limit", params.limit.toString());
   if (params?.offset) queryParams.append("offset", params.offset.toString());
-  
+
   const queryString = queryParams.toString();
-  const url = queryString ? `/uptime/monitors/${monitorId}/events?${queryString}` : `/uptime/monitors/${monitorId}/events`;
-  
+  const url = queryString
+    ? `/uptime/monitors/${monitorId}/events?${queryString}`
+    : `/uptime/monitors/${monitorId}/events`;
+
   return authedFetch<{
     events: MonitorEvent[];
     pagination: {
@@ -219,7 +231,7 @@ export function useMonitors(params?: Parameters<typeof getMonitors>[0]) {
 export function useMonitor(monitorId: number | undefined) {
   return useQuery({
     queryKey: ["uptime-monitor", monitorId],
-    queryFn: () => monitorId ? getMonitor(monitorId) : Promise.reject("No monitor ID"),
+    queryFn: () => (monitorId ? getMonitor(monitorId) : Promise.reject("No monitor ID")),
     enabled: !!monitorId,
   });
 }
@@ -227,7 +239,7 @@ export function useMonitor(monitorId: number | undefined) {
 export function useMonitorStats(monitorId: number | undefined, params?: Parameters<typeof getMonitorStats>[1]) {
   return useQuery({
     queryKey: ["uptime-monitor-stats", monitorId, params],
-    queryFn: () => monitorId ? getMonitorStats(monitorId, params) : Promise.reject("No monitor ID"),
+    queryFn: () => (monitorId ? getMonitorStats(monitorId, params) : Promise.reject("No monitor ID")),
     enabled: !!monitorId,
   });
 }
@@ -235,7 +247,7 @@ export function useMonitorStats(monitorId: number | undefined, params?: Paramete
 export function useMonitorEvents(monitorId: number | undefined, params?: Parameters<typeof getMonitorEvents>[1]) {
   return useQuery({
     queryKey: ["uptime-monitor-events", monitorId, params],
-    queryFn: () => monitorId ? getMonitorEvents(monitorId, params) : Promise.reject("No monitor ID"),
+    queryFn: () => (monitorId ? getMonitorEvents(monitorId, params) : Promise.reject("No monitor ID")),
     enabled: !!monitorId,
   });
 }
@@ -243,7 +255,7 @@ export function useMonitorEvents(monitorId: number | undefined, params?: Paramet
 export function useMonitorUptime(monitorId: number | undefined) {
   return useQuery({
     queryKey: ["uptime-monitor-uptime", monitorId],
-    queryFn: () => monitorId ? getMonitorUptime(monitorId) : Promise.reject("No monitor ID"),
+    queryFn: () => (monitorId ? getMonitorUptime(monitorId) : Promise.reject("No monitor ID")),
     enabled: !!monitorId,
   });
 }
@@ -251,25 +263,25 @@ export function useMonitorUptime(monitorId: number | undefined) {
 // Hook to fetch events for all monitors (used in the monitors table)
 export function useAllMonitorEvents(monitors: UptimeMonitor[]) {
   const sevenDaysAgo = DateTime.now().minus({ days: 7 }).toISODate();
-  
+
   return useQuery({
-    queryKey: ["uptime-all-monitor-events", monitors.map(m => m.id), sevenDaysAgo],
+    queryKey: ["uptime-all-monitor-events", monitors.map((m) => m.id), sevenDaysAgo],
     queryFn: async () => {
       const eventsMap: Record<number, MonitorEvent[]> = {};
-      
+
       // Fetch events for all monitors in parallel
       const promises = monitors.map(async (monitor) => {
         try {
           const response = await fetch(
             `${BACKEND_URL}/uptime/monitors/${monitor.id}/events?startTime=${sevenDaysAgo}&limit=1000`,
             {
-              credentials: 'include',
+              credentials: "include",
               headers: {
-                'Content-Type': 'application/json',
+                "Content-Type": "application/json",
               },
             }
           );
-          
+
           if (response.ok) {
             const data = await response.json();
             eventsMap[monitor.id] = data.events || [];
@@ -279,7 +291,7 @@ export function useAllMonitorEvents(monitors: UptimeMonitor[]) {
           eventsMap[monitor.id] = [];
         }
       });
-      
+
       await Promise.all(promises);
       return eventsMap;
     },
@@ -335,7 +347,7 @@ async function deleteMonitor(monitorId: number) {
 
 export function useCreateMonitor() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: createMonitor,
     onSuccess: () => {
@@ -346,9 +358,9 @@ export function useCreateMonitor() {
 
 export function useUpdateMonitor() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
-    mutationFn: ({ monitorId, data }: { monitorId: number; data: UpdateMonitorInput }) => 
+    mutationFn: ({ monitorId, data }: { monitorId: number; data: UpdateMonitorInput }) =>
       updateMonitor(monitorId, data),
     onSuccess: (_, variables) => {
       queryClient.invalidateQueries({ queryKey: ["uptime-monitors"] });
@@ -359,7 +371,7 @@ export function useUpdateMonitor() {
 
 export function useDeleteMonitor() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: deleteMonitor,
     onSuccess: () => {

@@ -81,6 +81,8 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
         min(response_time_ms) as min_response_time,
         max(response_time_ms) as max_response_time,
         quantile(0.5)(response_time_ms) as p50_response_time,
+        quantile(0.75)(response_time_ms) as p75_response_time,
+        quantile(0.90)(response_time_ms) as p90_response_time,
         quantile(0.95)(response_time_ms) as p95_response_time,
         quantile(0.99)(response_time_ms) as p99_response_time,
         100 * countIf(status = 'success') / count() as uptime_percentage
@@ -116,6 +118,8 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
       min_response_time: number;
       max_response_time: number;
       p50_response_time: number;
+      p75_response_time: number;
+      p90_response_time: number;
       p95_response_time: number;
       p99_response_time: number;
       uptime_percentage: number;
@@ -129,6 +133,8 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
       min_response_time: 0,
       max_response_time: 0,
       p50_response_time: 0,
+      p75_response_time: 0,
+      p90_response_time: 0,
       p95_response_time: 0,
       p99_response_time: 0,
       uptime_percentage: 0,
@@ -214,6 +220,8 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
           min: Number(stats.min_response_time),
           max: Number(stats.max_response_time),
           p50: Number(stats.p50_response_time),
+          p75: Number(stats.p75_response_time),
+          p90: Number(stats.p90_response_time),
           p95: Number(stats.p95_response_time),
           p99: Number(stats.p99_response_time),
         },
