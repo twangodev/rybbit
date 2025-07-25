@@ -1,31 +1,22 @@
 "use client";
 
-import React, { useState } from "react";
+import { useMonitorStats } from "@/api/uptime/monitors";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ResponsiveLine } from "@nivo/line";
-import { DateTime } from "luxon";
-import { useMonitorStats } from "@/api/uptime/monitors";
+import { formatChartDateTime, hour12, userLocale } from "@/lib/dateTimeUtils";
 import { nivoTheme } from "@/lib/nivo";
 import { cn } from "@/lib/utils";
-import { formatChartDateTime, hour12, userLocale } from "@/lib/dateTimeUtils";
-import { Button } from "@/components/ui/button";
-import { UptimeBucketSelection, type TimeBucket } from "./UptimeBucketSelection";
+import { ResponsiveLine } from "@nivo/line";
+import { DateTime } from "luxon";
+import { useState } from "react";
+import { UptimeBucketSelection } from "./UptimeBucketSelection";
+import { TIME_RANGES, useUptimeStore } from "./uptimeStore";
 
 interface MonitorResponseTimeChartProps {
   monitorId: number;
   monitorType: "http" | "tcp";
 }
-
-const TIME_RANGES = [
-  { value: "24h", label: "24H" },
-  { value: "3d", label: "3D" },
-  { value: "7d", label: "7D" },
-  { value: "30d", label: "30D" },
-  { value: "all", label: "All Time" },
-] as const;
-
-type TimeRange = (typeof TIME_RANGES)[number]["value"];
 
 // HTTP timing metrics with labels for stacked view
 const HTTP_METRICS = [
@@ -35,11 +26,15 @@ const HTTP_METRICS = [
   { key: "transfer_time_ms", label: "Data Transfer", color: "hsl(40, 70%, 60%)" },
 ] as const;
 
+const formatTooltipValue = (value: number) => {
+  return `${Math.round(value)}ms`;
+};
+
 export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResponseTimeChartProps) {
-  const [timeRange, setTimeRange] = useState<TimeRange>("24h");
-  const [bucket, setBucket] = useState<TimeBucket>("hour");
+  const { timeRange, setTimeRange, bucket, setBucket } = useUptimeStore();
+
   const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
-    new Set(monitorType === "http" ? HTTP_METRICS.map(m => m.key) : ["response_time_ms"])
+    new Set(monitorType === "http" ? HTTP_METRICS.map((m) => m.key) : ["response_time_ms"])
   );
 
   // Calculate start time based on selected range
@@ -66,8 +61,6 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
     interval: timeRange === "24h" ? "1h" : timeRange === "3d" ? "6h" : "24h",
     bucket,
   });
-
-  console.info(statsData);
 
   const toggleMetric = (metricKey: string) => {
     setVisibleMetrics((prev) => {
@@ -168,17 +161,11 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
     }
   };
 
-  const formatTooltipValue = (value: number) => {
-    return `${Math.round(value)}ms`;
-  };
-
   return (
     <Card>
       <CardContent className="p-4">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-medium">
-            {monitorType === "http" ? "HTTP Timing Breakdown" : "Response Time"}
-          </h3>
+          <h3 className="text-base font-medium">Response Time</h3>
 
           <div className="flex items-center gap-4">
             {/* Metric toggles for HTTP monitors */}
@@ -286,29 +273,30 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
               enableArea={monitorType === "http"}
               sliceTooltip={({ slice }: any) => {
                 const currentTime = DateTime.fromJSDate(new Date(slice.points[0].data.x));
-                
+
                 // For stacked HTTP charts, show cumulative total
-                const total = monitorType === "http" 
-                  ? slice.points.reduce((sum: number, point: any) => sum + Number(point.data.yFormatted), 0)
-                  : 0;
+                const total =
+                  monitorType === "http"
+                    ? slice.points.reduce((sum: number, point: any) => sum + Number(point.data.yFormatted), 0)
+                    : 0;
 
                 return (
-                  <div className="text-sm bg-neutral-850 p-3 rounded-md min-w-[180px] border border-neutral-750">
+                  <div className="text-sm bg-neutral-850 p-3 rounded-md min-w-[200px] border border-neutral-750 text-neutral-200">
                     {formatChartDateTime(currentTime, bucket)}
-                    <div className="space-y-1.5 mt-2">
+                    <div className="space-y-1.5 mt-2 text-xs">
                       {slice.points.map((point: any) => (
                         <div key={point.seriesId} className="flex justify-between items-center">
                           <div className="flex items-center gap-2">
-                            <div className="w-3 h-3 rounded-full" style={{ backgroundColor: point.seriesColor }} />
-                            <span className="text-neutral-200 font-medium">{point.seriesId}</span>
+                            <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: point.seriesColor }} />
+                            <span className="text-neutral-300">{point.seriesId}</span>
                           </div>
-                          <span className="text-white font-mono text-xs">{formatTooltipValue(Number(point.data.yFormatted))}</span>
+                          <span className="text-neutral-200">{formatTooltipValue(Number(point.data.yFormatted))}</span>
                         </div>
                       ))}
                       {monitorType === "http" && (
                         <div className="flex justify-between items-center pt-1.5 border-t border-neutral-700">
-                          <span className="text-neutral-200 font-medium">Total</span>
-                          <span className="text-white font-mono text-xs">{formatTooltipValue(total)}</span>
+                          <span className="text-neutral-300">Total</span>
+                          <span className="text-white font-medium">{formatTooltipValue(total)}</span>
                         </div>
                       )}
                     </div>
