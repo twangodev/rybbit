@@ -135,7 +135,7 @@ export const initializeClickhouse = async () => {
       CREATE TABLE IF NOT EXISTS monitor_events (
         monitor_id UInt32,
         organization_id String,
-        timestamp DateTime64(3),
+        timestamp DateTime,
         
         -- Monitor metadata
         monitor_type LowCardinality(String), -- 'http', 'tcp'

@@ -26,7 +26,8 @@
       "Bash(pkill:*)",
       "Bash(psql:*)",
       "Bash(source .env)",
-      "Bash(POSTGRES_PASSWORD=carbink node src/test-pgboss.js)"
+      "Bash(POSTGRES_PASSWORD=carbink node src/test-pgboss.js)",
+      "Bash(tsc)"
     ]
   },
   "enableAllProjectMcpServers": false

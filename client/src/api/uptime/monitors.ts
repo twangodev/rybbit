@@ -3,6 +3,7 @@ import { authedFetch } from "../utils";
 import axios from "axios";
 import { BACKEND_URL } from "../../lib/const";
 import { DateTime } from "luxon";
+import { timeZone } from "../../lib/dateTimeUtils";
 
 export interface UptimeMonitor {
   id: number;
@@ -168,8 +169,7 @@ async function getMonitorStats(
   }
 ) {
   const queryParams = new URLSearchParams();
-  if (params?.startTime) queryParams.append("startTime", params.startTime);
-  if (params?.endTime) queryParams.append("endTime", params.endTime);
+
   if (params?.region) queryParams.append("region", params.region);
   if (params?.hours) queryParams.append("hours", params.hours.toString());
   if (params?.bucket) queryParams.append("bucket", params.bucket);
@@ -193,7 +193,7 @@ async function getMonitorEvents(
     offset?: number;
   }
 ) {
-  const queryParams = new URLSearchParams();
+  const queryParams = new URLSearchParams({ timezone: timeZone });
   if (params?.startTime) queryParams.append("startTime", params.startTime);
   if (params?.endTime) queryParams.append("endTime", params.endTime);
   if (params?.status) queryParams.append("status", params.status);

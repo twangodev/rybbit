@@ -187,7 +187,7 @@ export class MonitorExecutorBullMQ {
     const event: MonitorEvent = {
       monitor_id: monitor.id,
       organization_id: monitor.organizationId,
-      timestamp: DateTime.now().toFormat("yyyy-MM-dd HH:mm:ss"),
+      timestamp: DateTime.now().toUTC().toFormat("yyyy-MM-dd HH:mm:ss"),
       monitor_type: monitor.monitorType,
       monitor_url: monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`,
       monitor_name: monitor.name,

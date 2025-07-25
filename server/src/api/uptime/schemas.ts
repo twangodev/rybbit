@@ -91,30 +91,32 @@ const validationRuleSchema = z.discriminatedUnion("type", [
 ]);
 
 // Create monitor schema
-export const createMonitorSchema = z.object({
-  organizationId: z.string().min(1, "Organization ID is required"),
-  name: z.string().min(1, "Name is required").max(256),
-  monitorType: z.enum(["http", "tcp"]),
-  intervalSeconds: z.number().int().min(60).max(86400, "Interval must be between 60 and 86400 seconds"),
-  enabled: z.boolean().default(true),
-  httpConfig: httpConfigSchema.optional(),
-  tcpConfig: tcpConfigSchema.optional(),
-  validationRules: z.array(validationRuleSchema).default([]),
-  regions: z.array(z.string()).default(["local"]),
-}).refine(
-  (data) => {
-    if (data.monitorType === "http") {
-      return data.httpConfig !== undefined;
-    }
-    if (data.monitorType === "tcp") {
-      return data.tcpConfig !== undefined;
-    }
-    return false;
-  },
-  {
-    message: "Monitor type specific configuration is required",
-  }
-);
+export const createMonitorSchema = z
+  .object({
+    organizationId: z.string().min(1, "Organization ID is required"),
+    name: z.string().min(1, "Name is required").max(256),
+    monitorType: z.enum(["http", "tcp"]),
+    intervalSeconds: z.number().int().min(60).max(86400, "Interval must be between 60 and 86400 seconds"),
+    enabled: z.boolean().default(true),
+    httpConfig: httpConfigSchema.optional(),
+    tcpConfig: tcpConfigSchema.optional(),
+    validationRules: z.array(validationRuleSchema).default([]),
+    regions: z.array(z.string()).default(["local"]),
+  })
+  .refine(
+    (data) => {
+      if (data.monitorType === "http") {
+        return data.httpConfig !== undefined;
+      }
+      if (data.monitorType === "tcp") {
+        return data.tcpConfig !== undefined;
+      }
+      return false;
+    },
+    {
+      message: "Monitor type specific configuration is required",
+    },
+  );
 
 // Update monitor schema (similar to create but with optional fields)
 export const updateMonitorSchema = z.object({
@@ -130,21 +132,31 @@ export const updateMonitorSchema = z.object({
 // Query params schemas
 export const getMonitorsQuerySchema = z.object({
   organizationId: z.string().optional(),
-  enabled: z.enum(["true", "false"]).transform(val => val === "true").optional(),
+  enabled: z
+    .enum(["true", "false"])
+    .transform((val) => val === "true")
+    .optional(),
   monitorType: z.enum(["http", "tcp"]).optional(),
   limit: z.string().transform(Number).pipe(z.number().int().positive().max(100)).default("50"),
   offset: z.string().transform(Number).pipe(z.number().int().nonnegative()).default("0"),
 });
 
 export const getMonitorEventsQuerySchema = z.object({
-  startTime: z.string().refine(
-    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
-    "Invalid date or datetime format"
-  ).optional(),
-  endTime: z.string().refine(
-    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
-    "Invalid date or datetime format"
-  ).optional(),
+  startTime: z
+    .string()
+    .refine(
+      (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
+      "Invalid date or datetime format",
+    )
+    .optional(),
+  endTime: z
+    .string()
+    .refine(
+      (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
+      "Invalid date or datetime format",
+    )
+    .optional(),
+  timezone: z.string().optional(),
   status: z.enum(["success", "failure", "timeout"]).optional(),
   region: z.string().optional(),
   limit: z.string().transform(Number).pipe(z.number().int().positive().max(1000)).default("100"),
@@ -152,17 +164,11 @@ export const getMonitorEventsQuerySchema = z.object({
 });
 
 export const getMonitorStatsQuerySchema = z.object({
-  startTime: z.string().refine(
-    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
-    "Invalid date or datetime format"
-  ).optional(),
-  endTime: z.string().refine(
-    (val) => /^\d{4}-\d{2}-\d{2}($|T\d{2}:\d{2}:\d{2}(\.\d{3})?Z?$)/.test(val),
-    "Invalid date or datetime format"
-  ).optional(),
-  region: z.string().optional(),
   hours: z.string().transform(Number).pipe(z.number().int().positive().max(8760)).optional(), // Max 1 year in hours
-  bucket: z.enum(["minute", "five_minutes", "ten_minutes", "fifteen_minutes", "hour", "day", "week", "month", "year"]).optional(),
+  region: z.string().optional(),
+  bucket: z
+    .enum(["minute", "five_minutes", "ten_minutes", "fifteen_minutes", "hour", "day", "week", "month", "year"])
+    .optional(),
 });
 
 // Type exports

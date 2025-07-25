@@ -2,6 +2,12 @@ import { TimeRange } from "./uptimeStore";
 
 export const getHoursFromTimeRange = (timeRange: TimeRange) => {
   switch (timeRange) {
+    case "1h":
+      return 1;
+    case "6h":
+      return 6;
+    case "12h":
+      return 12;
     case "24h":
       return 24;
     case "3d":

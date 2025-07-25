@@ -1,21 +1,12 @@
 import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
-import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
+import { db } from "../../db/postgres/postgres.js";
+import { member, uptimeMonitors } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults, TimeBucketToFn } from "../analytics/utils.js";
 import { getMonitorStatsQuerySchema, type GetMonitorStatsQuery } from "./schemas.js";
-
-// Convert ISO date/datetime to ClickHouse format
-function toClickHouseDateTime(dateString: string): string {
-  // If it's just a date (YYYY-MM-DD), add time as 00:00:00
-  if (dateString.length === 10) {
-    return `${dateString} 00:00:00`;
-  }
-  // Otherwise, convert ISO datetime to ClickHouse format (YYYY-MM-DD HH:MM:SS)
-  return dateString.replace("T", " ").replace(/\.\d{3}Z$/, "");
-}
+import { DateTime } from "luxon";
 
 interface GetMonitorStatsRequest {
   Params: {
@@ -36,7 +27,7 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
   try {
     // Validate query parameters with Zod
     const query = getMonitorStatsQuerySchema.parse(request.query);
-    const { startTime, endTime, region, hours } = query;
+    const { region, hours } = query;
     // First check if monitor exists and user has access
     const monitor = await db.query.uptimeMonitors.findFirst({
       where: eq(uptimeMonitors.id, Number(monitorId)),
@@ -53,21 +44,6 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
 
     if (!userHasAccess) {
       return reply.status(403).send({ error: "Access denied" });
-    }
-
-    // Calculate date range based on hours or provided times
-    let calculatedStartTime: string;
-    let calculatedEndTime: string = endTime || new Date().toISOString();
-
-    if (startTime) {
-      calculatedStartTime = startTime;
-    } else if (hours) {
-      const now = new Date();
-      calculatedStartTime = new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
-    } else {
-      // Default to 24 hours if no startTime or hours provided
-      const now = new Date();
-      calculatedStartTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     }
 
     // Get aggregated stats from ClickHouse
@@ -88,14 +64,12 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
         100 * countIf(status = 'success') / count() as uptime_percentage
       FROM monitor_events
       WHERE monitor_id = {monitorId: UInt32}
-        AND timestamp >= {startTime: DateTime}
-        AND timestamp <= {endTime: DateTime}
+        AND timestamp >= now() - INTERVAL {hours: UInt32} HOUR
     `;
 
     const queryParams: any = {
       monitorId: Number(monitorId),
-      startTime: toClickHouseDateTime(calculatedStartTime),
-      endTime: toClickHouseDateTime(calculatedEndTime),
+      hours: hours || 24,
     };
 
     if (region) {
@@ -141,7 +115,10 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
     };
 
     // Determine time bucket based on time range and interval
-    const timeDiff = new Date(calculatedEndTime).getTime() - new Date(calculatedStartTime).getTime();
+    const timeDiff =
+      DateTime.now()
+        .minus({ hours: hours || 24 })
+        .toMillis() / 1000;
     const days = timeDiff / (1000 * 60 * 60 * 24);
 
     let bucket = query.bucket || "hour"; // Default to hour if not specified
@@ -177,8 +154,7 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
         countIf(status = 'success') as success_count
       FROM monitor_events
       WHERE monitor_id = {monitorId: UInt32}
-        AND timestamp >= {startTime: DateTime}
-        AND timestamp <= {endTime: DateTime}
+        AND timestamp >= now() - INTERVAL {hours: UInt32} HOUR
     `;
 
     if (region) {
@@ -206,8 +182,6 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
 
     return reply.status(200).send({
       hours: hours || 24, // Return the hours used
-      startTime: calculatedStartTime,
-      endTime: calculatedEndTime,
       region,
       stats: {
         totalChecks: Number(stats.total_checks),

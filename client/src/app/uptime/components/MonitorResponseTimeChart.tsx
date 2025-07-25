@@ -31,7 +31,7 @@ const formatTooltipValue = (value: number) => {
 };
 
 export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResponseTimeChartProps) {
-  const { timeRange, setTimeRange, bucket, setBucket } = useUptimeStore();
+  const { timeRange, bucket, setBucket } = useUptimeStore();
 
   const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(
     new Set(monitorType === "http" ? HTTP_METRICS.map((m) => m.key) : ["response_time_ms"])
@@ -41,6 +41,8 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
     hours: getHoursFromTimeRange(timeRange),
     bucket,
   });
+
+  console.info(statsData);
 
   const toggleMetric = (metricKey: string) => {
     setVisibleMetrics((prev) => {
@@ -58,11 +60,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
   const processedData =
     statsData?.distribution
       ?.map((item: any) => {
-        const timestamp = DateTime.fromSQL(item.hour).toUTC();
-
-        if (timestamp > DateTime.now()) {
-          return null;
-        }
+        const timestamp = DateTime.fromSQL(item.hour).toLocal();
 
         const dataPoint: any = {
           time: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),

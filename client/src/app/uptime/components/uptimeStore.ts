@@ -2,6 +2,9 @@ import { create } from "zustand";
 import { TimeBucket } from "./UptimeBucketSelection";
 
 export const TIME_RANGES = [
+  { value: "1h", label: "1H" },
+  { value: "6h", label: "6H" },
+  { value: "12h", label: "12H" },
   { value: "24h", label: "24H" },
   { value: "3d", label: "3D" },
   { value: "7d", label: "7D" },

@@ -1,15 +1,9 @@
 "use client";
 
 import React from "react";
-import {
-  SelectItem,
-  Select,
-  SelectContent,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { SelectItem, Select, SelectContent, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-export type TimeBucket = 
+export type TimeBucket =
   | "minute"
   | "five_minutes"
   | "ten_minutes"
@@ -28,6 +22,12 @@ interface UptimeBucketSelectionProps {
 
 const getBucketOptions = (timeRange: string): TimeBucket[] => {
   switch (timeRange) {
+    case "1h":
+      return ["minute", "five_minutes", "fifteen_minutes", "hour"];
+    case "6h":
+      return ["minute", "five_minutes", "fifteen_minutes", "hour"];
+    case "12h":
+      return ["minute", "five_minutes", "fifteen_minutes", "hour"];
     case "24h":
       return ["minute", "five_minutes", "fifteen_minutes", "hour"];
     case "3d":
@@ -57,7 +57,7 @@ const bucketLabels: Record<TimeBucket, string> = {
 
 export function UptimeBucketSelection({ timeRange, bucket, onBucketChange }: UptimeBucketSelectionProps) {
   const availableBuckets = getBucketOptions(timeRange);
-  
+
   // If current bucket is not available for the time range, select the first available one
   React.useEffect(() => {
     if (!availableBuckets.includes(bucket)) {
