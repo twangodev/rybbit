@@ -1,4 +1,4 @@
-import { Edit2, RefreshCw, Trash2 } from "lucide-react";
+import { Edit2, RefreshCw, Trash2, Power, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { Button } from "../../../../components/ui/button";
 import {
@@ -11,17 +11,43 @@ import {
   AlertDialogContent,
   AlertDialogHeader,
 } from "../../../../components/ui/alert-dialog";
-import { UptimeMonitor, useDeleteMonitor } from "../../../../api/uptime/monitors";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "../../../../components/ui/dropdown-menu";
+import { UptimeMonitor, useDeleteMonitor, useUpdateMonitor } from "../../../../api/uptime/monitors";
 import { MonitorDialog } from "./dialog";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { cn } from "../../../../lib/utils";
 
 export function MonitorActions({ monitor }: { monitor?: UptimeMonitor }) {
   const router = useRouter();
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [isToggling, setIsToggling] = useState(false);
 
   const deleteMonitor = useDeleteMonitor();
+  const updateMonitor = useUpdateMonitor();
+
+  const handleToggle = async () => {
+    if (!monitor) return;
+
+    setIsToggling(true);
+    try {
+      await updateMonitor.mutateAsync({
+        monitorId: monitor.id,
+        data: { enabled: !monitor.enabled },
+      });
+      toast.success(`Monitor ${monitor.enabled ? "disabled" : "enabled"} successfully`);
+    } catch (error: any) {
+      toast.error(error.response?.data?.error || "Failed to update monitor");
+    } finally {
+      setIsToggling(false);
+    }
+  };
 
   const handleDelete = async () => {
     try {
@@ -36,23 +62,45 @@ export function MonitorActions({ monitor }: { monitor?: UptimeMonitor }) {
   return (
     <>
       <div className="flex items-center gap-2">
-        <Button variant="ghost" size="sm" onClick={() => window.location.reload()} className="flex items-center gap-2">
+        {monitor && (
+          <Button
+            size="sm"
+            onClick={handleToggle}
+            disabled={isToggling || !monitor}
+            className={cn(
+              "flex items-center gap-2",
+              monitor?.enabled
+                ? "dark:text-green-500 hover:dark:text-green-600"
+                : "text-neutral-500 hover:text-neutral-400"
+            )}
+          >
+            <Power className="h-4 w-4" />
+            {monitor?.enabled ? "On" : "Off"}
+          </Button>
+        )}
+        <Button size="sm" onClick={() => window.location.reload()} className="flex items-center gap-2">
           <RefreshCw className="h-4 w-4" />
           Refresh
         </Button>
-        <Button variant="ghost" size="sm" onClick={() => setShowEditDialog(true)} className="flex items-center gap-2">
+        <Button size="sm" onClick={() => setShowEditDialog(true)} className="flex items-center gap-2">
           <Edit2 className="h-4 w-4" />
           Edit
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => setShowDeleteDialog(true)}
-          className="flex items-center gap-2 text-red-500 hover:text-red-600"
-        >
-          <Trash2 className="h-4 w-4" />
-          Delete
-        </Button>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+              <MoreVertical className="h-4 w-4" />
+              <span className="sr-only">Open menu</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => setShowDeleteDialog(true)} className="text-red-500 focus:text-red-600">
+              <Trash2 className="mr-2 h-4 w-4" />
+              Delete Monitor
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       {monitor && <MonitorDialog monitor={monitor} open={showEditDialog} onOpenChange={setShowEditDialog} />}
 
@@ -72,7 +120,7 @@ export function MonitorActions({ monitor }: { monitor?: UptimeMonitor }) {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} variant="destructive">
+            <AlertDialogAction onClick={handleDelete} variant={"destructive"}>
               Delete Monitor
             </AlertDialogAction>
           </AlertDialogFooter>
