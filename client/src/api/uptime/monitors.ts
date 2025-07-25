@@ -89,6 +89,24 @@ export interface MonitorStats {
   }>;
 }
 
+export interface MonitorUptime {
+  monitorId: number;
+  totalUptimeSeconds: number;
+  currentUptimeSeconds: number;
+  totalMonitoringSeconds: number;
+  lastDowntime: {
+    timestamp: string;
+    error?: string;
+    errorType?: string;
+    status: string;
+  } | null;
+  monitoringSince: string | null;
+  lastCheck: string | null;
+  uptimePercentage: number;
+  totalChecks: number;
+  failedChecks: number;
+}
+
 export interface MonitorEvent {
   monitor_id: number;
   organization_id: string;
@@ -186,6 +204,10 @@ async function getMonitorEvents(monitorId: number, params?: {
   }>(url);
 }
 
+async function getMonitorUptime(monitorId: number) {
+  return authedFetch<MonitorUptime>(`/uptime/monitors/${monitorId}/uptime`);
+}
+
 // Hooks
 export function useMonitors(params?: Parameters<typeof getMonitors>[0]) {
   return useQuery({
@@ -214,6 +236,14 @@ export function useMonitorEvents(monitorId: number | undefined, params?: Paramet
   return useQuery({
     queryKey: ["uptime-monitor-events", monitorId, params],
     queryFn: () => monitorId ? getMonitorEvents(monitorId, params) : Promise.reject("No monitor ID"),
+    enabled: !!monitorId,
+  });
+}
+
+export function useMonitorUptime(monitorId: number | undefined) {
+  return useQuery({
+    queryKey: ["uptime-monitor-uptime", monitorId],
+    queryFn: () => monitorId ? getMonitorUptime(monitorId) : Promise.reject("No monitor ID"),
     enabled: !!monitorId,
   });
 }

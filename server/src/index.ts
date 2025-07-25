@@ -70,6 +70,7 @@ import { deleteMonitor } from "./api/uptime/deleteMonitor.js";
 import { getMonitorEvents } from "./api/uptime/getMonitorEvents.js";
 import { getMonitorStats } from "./api/uptime/getMonitorStats.js";
 import { getMonitorStatus } from "./api/uptime/getMonitorStatus.js";
+import { getMonitorUptime } from "./api/uptime/getMonitorUptime.js";
 import { initializeClickhouse } from "./db/clickhouse/clickhouse.js";
 import { initPostgres } from "./db/postgres/initPostgres.js";
 import { loadAllowedDomains } from "./lib/allowedDomains.js";
@@ -309,6 +310,7 @@ server.delete("/api/uptime/monitors/:monitorId", deleteMonitor);
 server.get("/api/uptime/monitors/:monitorId/events", getMonitorEvents);
 server.get("/api/uptime/monitors/:monitorId/stats", getMonitorStats);
 server.get("/api/uptime/monitors/:monitorId/status", getMonitorStatus);
+server.get("/api/uptime/monitors/:monitorId/uptime", getMonitorUptime);
 
 // STRIPE & ADMIN
 

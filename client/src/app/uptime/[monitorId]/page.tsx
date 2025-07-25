@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { StandardPage } from "../../../components/StandardPage";
 import { Button } from "@/components/ui/button";
-import { useMonitor, useMonitorStats, useMonitorEvents, useDeleteMonitor } from "../../../api/uptime/monitors";
+import { useMonitor, useMonitorStats, useMonitorEvents, useDeleteMonitor, useMonitorUptime } from "../../../api/uptime/monitors";
 import { StatusOrb } from "../components/StatusOrb";
 import { UptimeBar } from "../components/UptimeBar";
 import { EditMonitorDialog } from "../components/EditMonitorDialog";
@@ -28,6 +28,27 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TIME_RANGES, useUptimeStore } from "../components/uptimeStore";
 import { getHoursFromTimeRange } from "../components/utils";
 
+interface StatCardProps {
+  label: string;
+  value: string;
+  isLoading?: boolean;
+}
+
+function StatCard({ label, value, isLoading }: StatCardProps) {
+  return (
+    <div className="bg-neutral-900 rounded-lg border border-neutral-850">
+      <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">{label}</div>
+      <div className="p-3 py-2">
+        {isLoading ? (
+          <Skeleton className="h-8 w-24" />
+        ) : (
+          <p className="text-xl font-semibold">{value}</p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function MonitorDetailPage() {
   const params = useParams();
   const router = useRouter();
@@ -42,6 +63,7 @@ export default function MonitorDetailPage() {
     limit: 100,
     startTime: DateTime.now().minus({ days: 7 }).toISODate(),
   });
+  const { data: uptimeData, isLoading: isLoadingUptime } = useMonitorUptime(monitorId);
 
   const deleteMonitor = useDeleteMonitor();
 
@@ -66,6 +88,21 @@ export default function MonitorDetailPage() {
   const formatPercentage = (value?: number) => {
     if (!value) return "-";
     return `${value.toFixed(1)}%`;
+  };
+
+  const formatUptime = (seconds?: number) => {
+    if (!seconds) return "-";
+    const days = Math.floor(seconds / 86400);
+    const hours = Math.floor((seconds % 86400) / 3600);
+    const minutes = Math.floor((seconds % 3600) / 60);
+    
+    if (days > 0) {
+      return `${days}d ${hours}h`;
+    }
+    if (hours > 0) {
+      return `${hours}h ${minutes}m`;
+    }
+    return `${minutes}m`;
   };
 
   if (isLoadingMonitor) {
@@ -179,47 +216,32 @@ export default function MonitorDetailPage() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
-            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">Uptime</div>
-            <div className="p-3 py-2">
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <p className="text-xl font-semibold">{formatPercentage(stats?.stats.uptimePercentage)}</p>
-              )}
-            </div>
-          </div>
-          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
-            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">P50</div>
-            <div className="p-3 py-2">
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <p className="text-xl font-semibold">{formatResponseTime(stats?.stats.responseTime.p50)}</p>
-              )}
-            </div>
-          </div>
-          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
-            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">P95</div>
-            <div className="p-3 py-2">
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <p className="text-xl font-semibold">{formatResponseTime(stats?.stats.responseTime.p95)}</p>
-              )}
-            </div>
-          </div>
-          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
-            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">P99</div>
-            <div className="p-3 py-2">
-              {isLoadingStats ? (
-                <Skeleton className="h-8 w-24" />
-              ) : (
-                <p className="text-xl font-semibold">{formatResponseTime(stats?.stats.responseTime.p99)}</p>
-              )}
-            </div>
-          </div>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+          <StatCard
+            label="Uptime"
+            value={formatPercentage(stats?.stats.uptimePercentage)}
+            isLoading={isLoadingStats}
+          />
+          <StatCard
+            label="Current Uptime"
+            value={formatUptime(uptimeData?.currentUptimeSeconds)}
+            isLoading={isLoadingUptime}
+          />
+          <StatCard
+            label="P50"
+            value={formatResponseTime(stats?.stats.responseTime.p50)}
+            isLoading={isLoadingStats}
+          />
+          <StatCard
+            label="P95"
+            value={formatResponseTime(stats?.stats.responseTime.p95)}
+            isLoading={isLoadingStats}
+          />
+          <StatCard
+            label="P99"
+            value={formatResponseTime(stats?.stats.responseTime.p99)}
+            isLoading={isLoadingStats}
+          />
         </div>
 
         {/* Response Time Chart */}
