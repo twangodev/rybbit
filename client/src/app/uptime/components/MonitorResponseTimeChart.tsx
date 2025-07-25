@@ -134,6 +134,49 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
   };
 
   const data = createDataSeries();
+  
+  // Define gradients for stacked areas with lower opacity
+  const defs = monitorType === "http" ? [
+    {
+      id: "gradientDNS",
+      type: "linearGradient" as const,
+      colors: [
+        { offset: 0, color: "hsl(280, 70%, 60%)", opacity: 0.3 },
+        { offset: 100, color: "hsl(280, 70%, 60%)", opacity: 0.05 },
+      ],
+    },
+    {
+      id: "gradientConnection",
+      type: "linearGradient" as const,
+      colors: [
+        { offset: 0, color: "hsl(220, 70%, 60%)", opacity: 0.3 },
+        { offset: 100, color: "hsl(220, 70%, 60%)", opacity: 0.05 },
+      ],
+    },
+    {
+      id: "gradientTLS",
+      type: "linearGradient" as const,
+      colors: [
+        { offset: 0, color: "hsl(160, 70%, 60%)", opacity: 0.3 },
+        { offset: 100, color: "hsl(160, 70%, 60%)", opacity: 0.05 },
+      ],
+    },
+    {
+      id: "gradientTransfer",
+      type: "linearGradient" as const,
+      colors: [
+        { offset: 0, color: "hsl(40, 70%, 60%)", opacity: 0.3 },
+        { offset: 100, color: "hsl(40, 70%, 60%)", opacity: 0.05 },
+      ],
+    },
+  ] : [];
+  
+  const fill = monitorType === "http" ? [
+    { match: { id: "DNS" }, id: "gradientDNS" },
+    { match: { id: "Connection" }, id: "gradientConnection" },
+    { match: { id: "TLS Handshake" }, id: "gradientTLS" },
+    { match: { id: "Data Transfer" }, id: "gradientTransfer" },
+  ] : [];
 
   const formatXAxisValue = (value: any) => {
     const dt = DateTime.fromJSDate(value).setLocale(userLocale);
@@ -233,6 +276,8 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
               data={data}
               theme={nivoTheme}
               margin={{ top: 10, right: 20, bottom: 25, left: 50 }}
+              defs={defs}
+              fill={fill}
               xScale={{
                 type: "time",
                 format: "%Y-%m-%d %H:%M:%S",
@@ -271,6 +316,7 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
               animate={false}
               enableSlices="x"
               enableArea={monitorType === "http"}
+              areaOpacity={0.7}
               sliceTooltip={({ slice }: any) => {
                 const currentTime = DateTime.fromJSDate(new Date(slice.points[0].data.x));
 

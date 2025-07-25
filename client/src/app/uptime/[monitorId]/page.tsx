@@ -4,26 +4,12 @@ import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { StandardPage } from "../../../components/StandardPage";
 import { Button } from "@/components/ui/button";
-import { 
-  useMonitor, 
-  useMonitorStats, 
-  useMonitorEvents,
-  useDeleteMonitor 
-} from "../../../api/uptime/monitors";
-import { StatusOrb } from "../../../components/uptime/StatusOrb";
-import { UptimeBar } from "../../../components/uptime/UptimeBar";
-import { EditMonitorDialog } from "../../../components/uptime/EditMonitorDialog";
-import { MonitorResponseTimeChart } from "../../../components/uptime/MonitorResponseTimeChart";
-import { 
-  ArrowLeft, 
-  Edit2, 
-  Trash2, 
-  RefreshCw, 
-  Globe, 
-  Network,
-  Clock,
-  Activity
-} from "lucide-react";
+import { useMonitor, useMonitorStats, useMonitorEvents, useDeleteMonitor } from "../../../api/uptime/monitors";
+import { StatusOrb } from "../components/StatusOrb";
+import { UptimeBar } from "../components/UptimeBar";
+import { EditMonitorDialog } from "../components/EditMonitorDialog";
+import { MonitorResponseTimeChart } from "../components/MonitorResponseTimeChart";
+import { ArrowLeft, Edit2, Trash2, RefreshCw, Globe, Network, Clock, Activity } from "lucide-react";
 import { DateTime } from "luxon";
 import { toast } from "sonner";
 import {
@@ -43,19 +29,19 @@ export default function MonitorDetailPage() {
   const params = useParams();
   const router = useRouter();
   const monitorId = parseInt(params.monitorId as string);
-  
+
   const { data: monitor, isLoading: isLoadingMonitor } = useMonitor(monitorId);
   const { data: stats, isLoading: isLoadingStats } = useMonitorStats(monitorId, { interval: "24h" });
-  const { data: eventsData, isLoading: isLoadingEvents } = useMonitorEvents(monitorId, { 
+  const { data: eventsData, isLoading: isLoadingEvents } = useMonitorEvents(monitorId, {
     limit: 100,
-    startTime: DateTime.now().minus({ days: 7 }).toISODate()
+    startTime: DateTime.now().minus({ days: 7 }).toISODate(),
   });
-  
+
   const deleteMonitor = useDeleteMonitor();
-  
+
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  
+
   const handleDelete = async () => {
     try {
       await deleteMonitor.mutateAsync(monitorId);
@@ -65,17 +51,17 @@ export default function MonitorDetailPage() {
       toast.error(error.response?.data?.error || "Failed to delete monitor");
     }
   };
-  
+
   const formatResponseTime = (value?: number) => {
     if (!value) return "-";
     return `${Math.round(value)}ms`;
   };
-  
+
   const formatPercentage = (value?: number) => {
     if (!value) return "-";
     return `${value.toFixed(1)}%`;
   };
-  
+
   if (isLoadingMonitor) {
     return (
       <StandardPage>
@@ -87,7 +73,7 @@ export default function MonitorDetailPage() {
       </StandardPage>
     );
   }
-  
+
   if (!monitor) {
     return (
       <StandardPage>
@@ -100,9 +86,9 @@ export default function MonitorDetailPage() {
       </StandardPage>
     );
   }
-  
+
   const events = eventsData?.events || [];
-  
+
   return (
     <StandardPage>
       <div className="space-y-6">
@@ -124,13 +110,13 @@ export default function MonitorDetailPage() {
                 <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
               </div>
               <p className="text-sm text-neutral-500 mt-1">
-                {monitor.monitorType === "http" 
-                  ? monitor.httpConfig?.url 
+                {monitor.monitorType === "http"
+                  ? monitor.httpConfig?.url
                   : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`}
               </p>
             </div>
           </div>
-          
+
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
@@ -161,21 +147,17 @@ export default function MonitorDetailPage() {
             </Button>
           </div>
         </div>
-        
+
         {/* 7-Day Uptime Bar */}
         <Card>
           <CardHeader>
             <CardTitle className="text-base">7-Day Uptime</CardTitle>
           </CardHeader>
           <CardContent>
-            <UptimeBar 
-              monitorId={monitor.id} 
-              events={events}
-              className="h-12"
-            />
+            <UptimeBar monitorId={monitor.id} events={events} className="h-12" />
           </CardContent>
         </Card>
-        
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <Card>
@@ -186,12 +168,10 @@ export default function MonitorDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-semibold">
-                {formatPercentage(stats?.stats.uptimePercentage)}
-              </p>
+              <p className="text-2xl font-semibold">{formatPercentage(stats?.stats.uptimePercentage)}</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-neutral-500 flex items-center gap-2">
@@ -200,30 +180,22 @@ export default function MonitorDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-semibold">
-                {formatResponseTime(stats?.stats.responseTime.avg)}
-              </p>
+              <p className="text-2xl font-semibold">{formatResponseTime(stats?.stats.responseTime.avg)}</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-neutral-500 flex items-center gap-2">
-                {monitor.monitorType === "http" ? (
-                  <Globe className="h-4 w-4" />
-                ) : (
-                  <Network className="h-4 w-4" />
-                )}
+                {monitor.monitorType === "http" ? <Globe className="h-4 w-4" /> : <Network className="h-4 w-4" />}
                 Monitor Type
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <p className="text-2xl font-semibold uppercase">
-                {monitor.monitorType}
-              </p>
+              <p className="text-2xl font-semibold uppercase">{monitor.monitorType}</p>
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-neutral-500 flex items-center gap-2">
@@ -233,21 +205,17 @@ export default function MonitorDetailPage() {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-semibold">
-                {monitor.intervalSeconds < 60 
+                {monitor.intervalSeconds < 60
                   ? `${monitor.intervalSeconds}s`
-                  : `${Math.floor(monitor.intervalSeconds / 60)}m`
-                }
+                  : `${Math.floor(monitor.intervalSeconds / 60)}m`}
               </p>
             </CardContent>
           </Card>
         </div>
-        
+
         {/* Response Time Chart */}
-        <MonitorResponseTimeChart 
-          monitorId={monitor.id}
-          monitorType={monitor.monitorType}
-        />
-        
+        <MonitorResponseTimeChart monitorId={monitor.id} monitorType={monitor.monitorType} />
+
         {/* Response Time Stats */}
         {stats && (
           <Card>
@@ -258,39 +226,29 @@ export default function MonitorDetailPage() {
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
                 <div>
                   <p className="text-sm text-neutral-500">Min</p>
-                  <p className="text-lg font-medium">
-                    {formatResponseTime(stats.stats.responseTime.min)}
-                  </p>
+                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.min)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-neutral-500">P50</p>
-                  <p className="text-lg font-medium">
-                    {formatResponseTime(stats.stats.responseTime.p50)}
-                  </p>
+                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.p50)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-neutral-500">P95</p>
-                  <p className="text-lg font-medium">
-                    {formatResponseTime(stats.stats.responseTime.p95)}
-                  </p>
+                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.p95)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-neutral-500">P99</p>
-                  <p className="text-lg font-medium">
-                    {formatResponseTime(stats.stats.responseTime.p99)}
-                  </p>
+                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.p99)}</p>
                 </div>
                 <div>
                   <p className="text-sm text-neutral-500">Max</p>
-                  <p className="text-lg font-medium">
-                    {formatResponseTime(stats.stats.responseTime.max)}
-                  </p>
+                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.max)}</p>
                 </div>
               </div>
             </CardContent>
           </Card>
         )}
-        
+
         {/* Recent Events */}
         <Card>
           <CardHeader>
@@ -313,29 +271,17 @@ export default function MonitorDetailPage() {
                     className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0"
                   >
                     <div className="flex items-center gap-3">
-                      <StatusOrb 
-                        status={event.status === "success" ? "up" : "down"} 
-                        size="sm"
-                        animated={false}
-                      />
+                      <StatusOrb status={event.status === "success" ? "up" : "down"} size="sm" animated={false} />
                       <div>
-                        <p className="text-sm">
-                          {event.status === "success" ? "Check passed" : "Check failed"}
-                        </p>
+                        <p className="text-sm">{event.status === "success" ? "Check passed" : "Check failed"}</p>
                         <p className="text-xs text-neutral-500">
                           {DateTime.fromSQL(event.timestamp, { zone: "utc" }).toRelative()}
                         </p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-mono">
-                        {formatResponseTime(event.response_time_ms)}
-                      </p>
-                      {event.status_code && (
-                        <p className="text-xs text-neutral-500">
-                          {event.status_code}
-                        </p>
-                      )}
+                      <p className="text-sm font-mono">{formatResponseTime(event.response_time_ms)}</p>
+                      {event.status_code && <p className="text-xs text-neutral-500">{event.status_code}</p>}
                     </div>
                   </div>
                 ))}
@@ -343,32 +289,23 @@ export default function MonitorDetailPage() {
             )}
           </CardContent>
         </Card>
-        
+
         {/* Edit Dialog */}
-        {monitor && (
-          <EditMonitorDialog
-            monitor={monitor}
-            open={showEditDialog}
-            onOpenChange={setShowEditDialog}
-          />
-        )}
-        
+        {monitor && <EditMonitorDialog monitor={monitor} open={showEditDialog} onOpenChange={setShowEditDialog} />}
+
         {/* Delete Confirmation */}
         <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>Are you sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This will permanently delete the monitor "{monitor.name}" and all its historical data.
-                This action cannot be undone.
+                This will permanently delete the monitor "{monitor.name}" and all its historical data. This action
+                cannot be undone.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-red-600 hover:bg-red-700"
-              >
+              <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
                 Delete Monitor
               </AlertDialogAction>
             </AlertDialogFooter>

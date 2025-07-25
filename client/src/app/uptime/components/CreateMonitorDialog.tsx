@@ -19,7 +19,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { createMonitorSchema, CreateMonitorFormData } from "./monitorSchemas";
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { authClient } from "../../lib/auth";
+import { authClient } from "../../../lib/auth";
 
 interface CreateMonitorDialogProps {
   open: boolean;
