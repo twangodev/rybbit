@@ -33,8 +33,8 @@ export async function registerCsvParseWorker() {
 
       if (isR2Storage) {
         console.log(`[CSV Parser] Reading from R2: ${storageLocation}`);
-        const fileBuffer = await r2Storage.getImportFile(storageLocation);
-        stream = Readable.from(fileBuffer).pipe(parse({
+        const fileStream = await r2Storage.getImportFileStream(storageLocation);
+        stream = fileStream.pipe(parse({
           headers: umamiHeaders,
           renameHeaders: true,
           ignoreEmpty: true,
