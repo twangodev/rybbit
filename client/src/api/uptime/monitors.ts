@@ -55,7 +55,7 @@ export interface UptimeMonitor {
 }
 
 export interface MonitorStats {
-  interval: string;
+  hours: number;
   startTime: string;
   endTime: string;
   region?: string;
@@ -141,14 +141,14 @@ async function getMonitorStats(monitorId: number, params?: {
   startTime?: string;
   endTime?: string;
   region?: string;
-  interval?: "1h" | "6h" | "24h" | "7d" | "30d";
+  hours?: number;
   bucket?: "minute" | "five_minutes" | "ten_minutes" | "fifteen_minutes" | "hour" | "day" | "week" | "month" | "year";
 }) {
   const queryParams = new URLSearchParams();
   if (params?.startTime) queryParams.append("startTime", params.startTime);
   if (params?.endTime) queryParams.append("endTime", params.endTime);
   if (params?.region) queryParams.append("region", params.region);
-  if (params?.interval) queryParams.append("interval", params.interval);
+  if (params?.hours) queryParams.append("hours", params.hours.toString());
   if (params?.bucket) queryParams.append("bucket", params.bucket);
   
   const queryString = queryParams.toString();

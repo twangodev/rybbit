@@ -16,8 +16,8 @@ export function StatusOrb({ status, className, size = "md", animated = true }: S
   };
 
   const statusClasses = {
-    up: "bg-green-500",
-    down: "bg-red-500",
+    up: "bg-green-400",
+    down: "bg-red-400",
     unknown: "bg-gray-400 dark:bg-gray-600",
   };
 

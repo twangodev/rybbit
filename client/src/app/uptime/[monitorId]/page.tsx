@@ -12,6 +12,7 @@ import { MonitorResponseTimeChart } from "../components/MonitorResponseTimeChart
 import { ArrowLeft, Edit2, Trash2, RefreshCw, Globe, Network, Clock, Activity } from "lucide-react";
 import { DateTime } from "luxon";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -24,14 +25,19 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TIME_RANGES, useUptimeStore } from "../components/uptimeStore";
+import { getHoursFromTimeRange } from "../components/utils";
 
 export default function MonitorDetailPage() {
   const params = useParams();
   const router = useRouter();
   const monitorId = parseInt(params.monitorId as string);
 
+  const { timeRange, setTimeRange } = useUptimeStore();
   const { data: monitor, isLoading: isLoadingMonitor } = useMonitor(monitorId);
-  const { data: stats, isLoading: isLoadingStats } = useMonitorStats(monitorId, { interval: "24h" });
+  const { data: stats, isLoading: isLoadingStats } = useMonitorStats(monitorId, {
+    hours: getHoursFromTimeRange(timeRange),
+  });
   const { data: eventsData, isLoading: isLoadingEvents } = useMonitorEvents(monitorId, {
     limit: 100,
     startTime: DateTime.now().minus({ days: 7 }).toISODate(),
@@ -91,35 +97,46 @@ export default function MonitorDetailPage() {
 
   return (
     <StandardPage>
-      <div className="space-y-6">
+      <div className="space-y-4">
         {/* Header */}
+        <Button variant="ghost" size="sm" onClick={() => router.push("/uptime")} className="flex items-center gap-2">
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => router.push("/uptime")}
-              className="flex items-center gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-            <div>
-              <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-semibold">{monitor.name}</h1>
-                <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
-              </div>
-              <p className="text-sm text-neutral-500 mt-1">
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl font-semibold">{monitor.name}</h1>
+              <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
+            </div>
+            <p className="text-sm text-neutral-300 mt-1 flex items-center gap-2">
+              <span
+                className={cn(
+                  "font-medium",
+                  monitor.status?.currentStatus === "up" ? "text-green-400" : "text-red-500/80"
+                )}
+              >
+                {monitor.status?.currentStatus === "up" ? "Up" : "Down"}
+              </span>
+              •
+              <span>
                 {monitor.monitorType === "http"
                   ? monitor.httpConfig?.url
                   : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`}
-              </p>
-            </div>
+              </span>
+              •
+              <span>
+                every{" "}
+                {monitor.intervalSeconds < 60
+                  ? `${monitor.intervalSeconds}s`
+                  : `${Math.floor(monitor.intervalSeconds / 60)}m`}
+              </span>
+            </p>
           </div>
 
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => window.location.reload()}
               className="flex items-center gap-2"
@@ -128,7 +145,7 @@ export default function MonitorDetailPage() {
               Refresh
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setShowEditDialog(true)}
               className="flex items-center gap-2"
@@ -137,7 +154,7 @@ export default function MonitorDetailPage() {
               Edit
             </Button>
             <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
               onClick={() => setShowDeleteDialog(true)}
               className="flex items-center gap-2 text-red-500 hover:text-red-600"
@@ -147,107 +164,66 @@ export default function MonitorDetailPage() {
             </Button>
           </div>
         </div>
-
-        {/* 7-Day Uptime Bar */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">7-Day Uptime</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <UptimeBar monitorId={monitor.id} events={events} className="h-12" />
-          </CardContent>
-        </Card>
+        <div className="flex items-center gap-1">
+          {TIME_RANGES.map((range) => (
+            <Button
+              key={range.value}
+              variant={timeRange === range.value ? "default" : "ghost"}
+              size="sm"
+              onClick={() => setTimeRange(range.value)}
+              className="h-7 px-2 text-xs"
+            >
+              {range.label}
+            </Button>
+          ))}
+        </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-500 flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                Uptime (24h)
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{formatPercentage(stats?.stats.uptimePercentage)}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-500 flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Avg Response Time
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">{formatResponseTime(stats?.stats.responseTime.avg)}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-500 flex items-center gap-2">
-                {monitor.monitorType === "http" ? <Globe className="h-4 w-4" /> : <Network className="h-4 w-4" />}
-                Monitor Type
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold uppercase">{monitor.monitorType}</p>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-neutral-500 flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Check Interval
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-semibold">
-                {monitor.intervalSeconds < 60
-                  ? `${monitor.intervalSeconds}s`
-                  : `${Math.floor(monitor.intervalSeconds / 60)}m`}
-              </p>
-            </CardContent>
-          </Card>
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
+            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">Uptime</div>
+            <div className="p-3 py-2">
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <p className="text-xl font-semibold">{formatPercentage(stats?.stats.uptimePercentage)}</p>
+              )}
+            </div>
+          </div>
+          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
+            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">P50</div>
+            <div className="p-3 py-2">
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <p className="text-xl font-semibold">{formatResponseTime(stats?.stats.responseTime.p50)}</p>
+              )}
+            </div>
+          </div>
+          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
+            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">P95</div>
+            <div className="p-3 py-2">
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <p className="text-xl font-semibold">{formatResponseTime(stats?.stats.responseTime.p95)}</p>
+              )}
+            </div>
+          </div>
+          <div className="bg-neutral-900 rounded-lg border border-neutral-850">
+            <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">P99</div>
+            <div className="p-3 py-2">
+              {isLoadingStats ? (
+                <Skeleton className="h-8 w-24" />
+              ) : (
+                <p className="text-xl font-semibold">{formatResponseTime(stats?.stats.responseTime.p99)}</p>
+              )}
+            </div>
+          </div>
         </div>
 
         {/* Response Time Chart */}
         <MonitorResponseTimeChart monitorId={monitor.id} monitorType={monitor.monitorType} />
-
-        {/* Response Time Stats */}
-        {stats && (
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-base">Response Time Percentiles (24h)</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-                <div>
-                  <p className="text-sm text-neutral-500">Min</p>
-                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.min)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-neutral-500">P50</p>
-                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.p50)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-neutral-500">P95</p>
-                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.p95)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-neutral-500">P99</p>
-                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.p99)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-neutral-500">Max</p>
-                  <p className="text-lg font-medium">{formatResponseTime(stats.stats.responseTime.max)}</p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        )}
 
         {/* Recent Events */}
         <Card>

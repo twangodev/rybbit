@@ -1,7 +1,6 @@
 "use client";
 
 import { useMonitorStats } from "@/api/uptime/monitors";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatChartDateTime, hour12, userLocale } from "@/lib/dateTimeUtils";
@@ -11,7 +10,8 @@ import { ResponsiveLine } from "@nivo/line";
 import { DateTime } from "luxon";
 import { useState } from "react";
 import { UptimeBucketSelection } from "./UptimeBucketSelection";
-import { TIME_RANGES, useUptimeStore } from "./uptimeStore";
+import { useUptimeStore } from "./uptimeStore";
+import { getHoursFromTimeRange } from "./utils";
 
 interface MonitorResponseTimeChartProps {
   monitorId: number;
@@ -37,28 +37,8 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
     new Set(monitorType === "http" ? HTTP_METRICS.map((m) => m.key) : ["response_time_ms"])
   );
 
-  // Calculate start time based on selected range
-  const getStartTime = () => {
-    const now = DateTime.now();
-    switch (timeRange) {
-      case "24h":
-        return now.minus({ hours: 24 }).toISODate();
-      case "3d":
-        return now.minus({ days: 3 }).toISODate();
-      case "7d":
-        return now.minus({ days: 7 }).toISODate();
-      case "30d":
-        return now.minus({ days: 30 }).toISODate();
-      case "all":
-        return undefined; // API will return all data
-      default:
-        return now.minus({ hours: 24 }).toISODate();
-    }
-  };
-
   const { data: statsData, isLoading } = useMonitorStats(monitorId, {
-    startTime: getStartTime(),
-    interval: timeRange === "24h" ? "1h" : timeRange === "3d" ? "6h" : "24h",
+    hours: getHoursFromTimeRange(timeRange),
     bucket,
   });
 
@@ -134,49 +114,43 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
   };
 
   const data = createDataSeries();
-  
+
   // Define gradients for stacked areas with lower opacity
-  const defs = monitorType === "http" ? [
-    {
-      id: "gradientDNS",
-      type: "linearGradient" as const,
-      colors: [
-        { offset: 0, color: "hsl(280, 70%, 60%)", opacity: 0.3 },
-        { offset: 100, color: "hsl(280, 70%, 60%)", opacity: 0.05 },
-      ],
-    },
-    {
-      id: "gradientConnection",
-      type: "linearGradient" as const,
-      colors: [
-        { offset: 0, color: "hsl(220, 70%, 60%)", opacity: 0.3 },
-        { offset: 100, color: "hsl(220, 70%, 60%)", opacity: 0.05 },
-      ],
-    },
-    {
-      id: "gradientTLS",
-      type: "linearGradient" as const,
-      colors: [
-        { offset: 0, color: "hsl(160, 70%, 60%)", opacity: 0.3 },
-        { offset: 100, color: "hsl(160, 70%, 60%)", opacity: 0.05 },
-      ],
-    },
-    {
-      id: "gradientTransfer",
-      type: "linearGradient" as const,
-      colors: [
-        { offset: 0, color: "hsl(40, 70%, 60%)", opacity: 0.3 },
-        { offset: 100, color: "hsl(40, 70%, 60%)", opacity: 0.05 },
-      ],
-    },
-  ] : [];
-  
-  const fill = monitorType === "http" ? [
-    { match: { id: "DNS" }, id: "gradientDNS" },
-    { match: { id: "Connection" }, id: "gradientConnection" },
-    { match: { id: "TLS Handshake" }, id: "gradientTLS" },
-    { match: { id: "Data Transfer" }, id: "gradientTransfer" },
-  ] : [];
+  const defs =
+    monitorType === "http"
+      ? [
+          {
+            id: "gradientDNS",
+            type: "linearGradient" as const,
+            colors: [{ offset: 0, color: "hsl(280, 70%, 60%)", opacity: 0.1 }],
+          },
+          {
+            id: "gradientConnection",
+            type: "linearGradient" as const,
+            colors: [{ offset: 0, color: "hsl(220, 70%, 60%)", opacity: 0.1 }],
+          },
+          {
+            id: "gradientTLS",
+            type: "linearGradient" as const,
+            colors: [{ offset: 0, color: "hsl(160, 70%, 60%)", opacity: 0.1 }],
+          },
+          {
+            id: "gradientTransfer",
+            type: "linearGradient" as const,
+            colors: [{ offset: 0, color: "hsl(40, 70%, 60%)", opacity: 0.1 }],
+          },
+        ]
+      : [];
+
+  const fill =
+    monitorType === "http"
+      ? [
+          { match: { id: "DNS" }, id: "gradientDNS" },
+          { match: { id: "Connection" }, id: "gradientConnection" },
+          { match: { id: "TLS Handshake" }, id: "gradientTLS" },
+          { match: { id: "Data Transfer" }, id: "gradientTransfer" },
+        ]
+      : [];
 
   const formatXAxisValue = (value: any) => {
     const dt = DateTime.fromJSDate(value).setLocale(userLocale);
@@ -244,19 +218,6 @@ export function MonitorResponseTimeChart({ monitorId, monitorType }: MonitorResp
             {/* Time range and bucket selectors */}
             <div className="flex items-center gap-2">
               <UptimeBucketSelection timeRange={timeRange} bucket={bucket} onBucketChange={setBucket} />
-              <div className="flex items-center gap-1">
-                {TIME_RANGES.map((range) => (
-                  <Button
-                    key={range.value}
-                    variant={timeRange === range.value ? "default" : "ghost"}
-                    size="sm"
-                    onClick={() => setTimeRange(range.value)}
-                    className="h-7 px-2 text-xs"
-                  >
-                    {range.label}
-                  </Button>
-                ))}
-              </div>
             </div>
           </div>
         </div>

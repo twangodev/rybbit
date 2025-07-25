@@ -36,7 +36,7 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
   try {
     // Validate query parameters with Zod
     const query = getMonitorStatsQuerySchema.parse(request.query);
-    const { startTime, endTime, region, interval } = query;
+    const { startTime, endTime, region, hours } = query;
     // First check if monitor exists and user has access
     const monitor = await db.query.uptimeMonitors.findFirst({
       where: eq(uptimeMonitors.id, Number(monitorId)),
@@ -55,33 +55,19 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
       return reply.status(403).send({ error: "Access denied" });
     }
 
-    // Calculate date range based on interval or provided times
+    // Calculate date range based on hours or provided times
     let calculatedStartTime: string;
     let calculatedEndTime: string = endTime || new Date().toISOString();
 
     if (startTime) {
       calculatedStartTime = startTime;
-    } else {
+    } else if (hours) {
       const now = new Date();
-      switch (interval) {
-        case "1h":
-          calculatedStartTime = new Date(now.getTime() - 60 * 60 * 1000).toISOString();
-          break;
-        case "6h":
-          calculatedStartTime = new Date(now.getTime() - 6 * 60 * 60 * 1000).toISOString();
-          break;
-        case "24h":
-          calculatedStartTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-          break;
-        case "7d":
-          calculatedStartTime = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000).toISOString();
-          break;
-        case "30d":
-          calculatedStartTime = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000).toISOString();
-          break;
-        default:
-          calculatedStartTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
-      }
+      calculatedStartTime = new Date(now.getTime() - hours * 60 * 60 * 1000).toISOString();
+    } else {
+      // Default to 24 hours if no startTime or hours provided
+      const now = new Date();
+      calculatedStartTime = new Date(now.getTime() - 24 * 60 * 60 * 1000).toISOString();
     }
 
     // Get aggregated stats from ClickHouse
@@ -213,7 +199,7 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
     }));
 
     return reply.status(200).send({
-      interval,
+      hours: hours || 24, // Return the hours used
       startTime: calculatedStartTime,
       endTime: calculatedEndTime,
       region,
