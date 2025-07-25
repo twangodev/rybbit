@@ -269,7 +269,7 @@ export const uptimeMonitors = pgTable(
     organizationId: text("organization_id")
       .notNull()
       .references(() => organization.id),
-    name: text("name"), // Made optional
+    name: text("name"),
     monitorType: text("monitor_type").notNull(), // 'http', 'tcp'
 
     // Common settings
@@ -306,43 +306,40 @@ export const uptimeMonitors = pgTable(
     }>(),
 
     // Validation rules
-    validationRules: jsonb("validation_rules")
-      .notNull()
-      .default([])
-      .$type<
-        Array<
-          | {
-              type: "status_code";
-              operator: "equals" | "not_equals" | "in" | "not_in";
-              value: number | number[];
-            }
-          | {
-              type: "response_time";
-              operator: "less_than" | "greater_than";
-              value: number;
-            }
-          | {
-              type: "response_body_contains" | "response_body_not_contains";
-              value: string;
-              caseSensitive?: boolean;
-            }
-          | {
-              type: "header_exists";
-              header: string;
-            }
-          | {
-              type: "header_value";
-              header: string;
-              operator: "equals" | "contains";
-              value: string;
-            }
-          | {
-              type: "response_size";
-              operator: "less_than" | "greater_than";
-              value: number;
-            }
-        >
-      >(),
+    validationRules: jsonb("validation_rules").notNull().default([]).$type<
+      Array<
+        | {
+            type: "status_code";
+            operator: "equals" | "not_equals" | "in" | "not_in";
+            value: number | number[];
+          }
+        | {
+            type: "response_time";
+            operator: "less_than" | "greater_than";
+            value: number;
+          }
+        | {
+            type: "response_body_contains" | "response_body_not_contains";
+            value: string;
+            caseSensitive?: boolean;
+          }
+        | {
+            type: "header_exists";
+            header: string;
+          }
+        | {
+            type: "header_value";
+            header: string;
+            operator: "equals" | "contains";
+            value: string;
+          }
+        | {
+            type: "response_size";
+            operator: "less_than" | "greater_than";
+            value: number;
+          }
+      >
+    >(),
 
     // Multi-region configuration (for future use)
     regions: jsonb("regions").default(["local"]).$type<string[]>(),
@@ -406,13 +403,11 @@ export const uptimeAlerts = pgTable(
       .references(() => uptimeMonitors.id, { onDelete: "cascade" }),
     alertType: text("alert_type").notNull(), // 'email', 'webhook', 'slack', etc.
     alertConfig: jsonb("alert_config").notNull(), // Type-specific configuration
-    conditions: jsonb("conditions")
-      .notNull()
-      .$type<{
-        consecutiveFailures?: number;
-        responseTimeThresholdMs?: number;
-        uptimePercentageThreshold?: number;
-      }>(),
+    conditions: jsonb("conditions").notNull().$type<{
+      consecutiveFailures?: number;
+      responseTimeThresholdMs?: number;
+      uptimePercentageThreshold?: number;
+    }>(),
     enabled: boolean("enabled").default(true),
     createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
   },

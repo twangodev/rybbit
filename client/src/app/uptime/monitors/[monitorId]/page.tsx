@@ -20,19 +20,19 @@ import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+  UptimeMonitor,
   useDeleteMonitor,
   useMonitor,
   useMonitorEvents,
   useMonitorStats,
   useMonitorUptime,
 } from "../../../../api/uptime/monitors";
-import { StandardPage } from "../../../../components/StandardPage";
 import { MonitorDialog } from "../../components/dialog";
 import { MonitorResponseTimeChart } from "../../components/MonitorResponseTimeChart";
+import { Scaffolding } from "../../components/Scaffolding";
 import { StatusOrb } from "../../components/StatusOrb";
 import { TIME_RANGES, useUptimeStore } from "../../components/uptimeStore";
 import { getHoursFromTimeRange } from "../../components/utils";
-import { Scaffolding } from "../../components/Scaffolding";
 
 interface StatCardProps {
   label: string;
@@ -45,11 +45,58 @@ function StatCard({ label, value, isLoading }: StatCardProps) {
     <div className="bg-neutral-900 rounded-lg border border-neutral-850">
       <div className="p-3 pb-0 text-sm text-neutral-500 flex items-center gap-2 font-normal">{label}</div>
       <div className="p-3 py-2">
-        {isLoading ? <Skeleton className="h-8 w-24" /> : <p className="text-xl font-semibold">{value}</p>}
+        {isLoading ? <Skeleton className="h-7 w-24" /> : <p className="text-xl font-semibold">{value}</p>}
       </div>
     </div>
   );
 }
+
+const getMonitorName = (monitor: UptimeMonitor) => {
+  return (
+    monitor.name ||
+    (monitor.monitorType === "http" ? monitor.httpConfig?.url : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`)
+  );
+};
+
+const MonitorHeader = ({ monitor, isLoadingMonitor }: { monitor?: UptimeMonitor; isLoadingMonitor: boolean }) => {
+  if (isLoadingMonitor) {
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-7 w-64" /> {/* Monitor name */}
+          <Skeleton className="h-4 w-4 rounded-full" /> {/* Status orb */}
+        </div>
+        <div className="flex items-center gap-2 mt-1">
+          <Skeleton className="h-4 w-4" /> {/* Status text */}
+          <span className="text-neutral-500">•</span>
+          <Skeleton className="h-4 w-48" /> {/* URL/host */}
+        </div>
+      </div>
+    );
+  }
+  if (!monitor) return null;
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-3">
+        <h1 className="text-2xl font-semibold">{getMonitorName(monitor)}</h1>
+        <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
+      </div>
+      <p className="text-sm text-neutral-300 mt-1 flex items-center gap-2">
+        <span
+          className={cn("font-medium", monitor.status?.currentStatus === "up" ? "text-green-400" : "text-red-500/80")}
+        >
+          {monitor.status?.currentStatus === "up" ? "Up" : "Down"}
+        </span>
+        •
+        <span>
+          {monitor.monitorType === "http"
+            ? monitor.httpConfig?.url
+            : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`}
+        </span>
+      </p>
+    </div>
+  );
+};
 
 export default function MonitorDetailPage() {
   const params = useParams();
@@ -106,19 +153,7 @@ export default function MonitorDetailPage() {
     return `${minutes}m`;
   };
 
-  if (isLoadingMonitor) {
-    return (
-      <Scaffolding>
-        <div className="space-y-4">
-          <Skeleton className="h-8 w-64" />
-          <Skeleton className="h-32 w-full" />
-          <Skeleton className="h-64 w-full" />
-        </div>
-      </Scaffolding>
-    );
-  }
-
-  if (!monitor) {
+  if (!monitor && !isLoadingMonitor) {
     return (
       <Scaffolding>
         <div className="text-center py-12">
@@ -146,41 +181,7 @@ export default function MonitorDetailPage() {
         Back
       </Button>
       <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-1">
-          <div className="flex items-center gap-3">
-            <h1 className="text-2xl font-semibold">
-              {monitor.name || (
-                monitor.monitorType === "http"
-                  ? monitor.httpConfig?.url
-                  : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`
-              )}
-            </h1>
-            <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
-          </div>
-          <p className="text-sm text-neutral-300 mt-1 flex items-center gap-2">
-            <span
-              className={cn(
-                "font-medium",
-                monitor.status?.currentStatus === "up" ? "text-green-400" : "text-red-500/80"
-              )}
-            >
-              {monitor.status?.currentStatus === "up" ? "Up" : "Down"}
-            </span>
-            •
-            <span>
-              {monitor.monitorType === "http"
-                ? monitor.httpConfig?.url
-                : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`}
-            </span>
-            •
-            <span>
-              every{" "}
-              {monitor.intervalSeconds < 60
-                ? `${monitor.intervalSeconds}s`
-                : `${Math.floor(monitor.intervalSeconds / 60)}m`}
-            </span>
-          </p>
-        </div>
+        <MonitorHeader monitor={monitor} isLoadingMonitor={isLoadingMonitor} />
 
         <div className="flex items-center gap-2">
           <Button
@@ -236,7 +237,7 @@ export default function MonitorDetailPage() {
       </div>
 
       {/* Response Time Chart */}
-      <MonitorResponseTimeChart monitorId={monitor.id} monitorType={monitor.monitorType} />
+      {monitor && <MonitorResponseTimeChart monitorId={monitor.id} monitorType={monitor.monitorType} />}
 
       {/* Recent Events */}
       <Card>
@@ -289,11 +290,10 @@ export default function MonitorDetailPage() {
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete the monitor "
-              {monitor.name || (
-                monitor.monitorType === "http"
-                  ? monitor.httpConfig?.url
-                  : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`
-              )}
+              {monitor?.name ||
+                (monitor?.monitorType === "http"
+                  ? monitor?.httpConfig?.url
+                  : `${monitor?.tcpConfig?.host}:${monitor?.tcpConfig?.port}`)}
               " and all its historical data. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
