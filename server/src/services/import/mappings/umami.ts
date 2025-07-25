@@ -104,7 +104,7 @@ export class UmamiImportMapper {
     edge: "Edge",
   };
 
-  private static readonly browserSchema = z.string().transform((browser) => {
+  private static readonly browserSchema = z.string().max(30).transform((browser) => {
     const key = browser.toLowerCase();
     return UmamiImportMapper.browserMap[key] ?? browser;
   });
@@ -120,7 +120,7 @@ export class UmamiImportMapper {
     "chrome os": "Chrome OS",
   };
 
-  private static readonly osSchema = z.string().transform((os) => {
+  private static readonly osSchema = z.string().max(25).transform((os) => {
     const key = os.toLowerCase();
     return UmamiImportMapper.osMap[key] ?? os;
   });
@@ -132,7 +132,7 @@ export class UmamiImportMapper {
     tablet: "Mobile",
   };
 
-  private static readonly deviceSchema = z.string().transform((device) => {
+  private static readonly deviceSchema = z.string().max(20).transform((device) => {
     const key = device.toLowerCase();
     return UmamiImportMapper.deviceMap[key] ?? device;
   });
