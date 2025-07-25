@@ -8,6 +8,7 @@ import { useState } from "react";
 import { useAllMonitorEvents, useMonitors } from "../../../api/uptime/monitors";
 import { CreateMonitorDialog } from "../components/CreateMonitorDialog";
 import { MonitorsTable } from "../components/MonitorsTable";
+import { Scaffolding } from "../components/Scaffolding";
 
 export default function UptimePage() {
   const queryClient = useQueryClient();
@@ -28,34 +29,32 @@ export default function UptimePage() {
   };
 
   return (
-    <main className="flex flex-col items-center p-4 w-full h-screen overflow-y-auto">
-      <div className="w-full max-w-6xl space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-semibold">Uptime Monitoring</h1>
-            <p className="text-sm text-neutral-500 mt-1">Monitor the availability and performance of your endpoints</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleRefresh} className="flex items-center gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button size="sm" className="flex items-center gap-2" onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4" />
-              Add Monitor
-            </Button>
-          </div>
+    <Scaffolding>
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-semibold">Uptime Monitoring</h1>
+          <p className="text-sm text-neutral-500 mt-1">Monitor the availability and performance of your endpoints</p>
         </div>
-
-        <MonitorsTable
-          monitors={monitors}
-          monitorEvents={monitorEvents}
-          isLoading={isLoadingMonitors || isLoadingEvents}
-          onMonitorClick={handleMonitorClick}
-        />
-
-        <CreateMonitorDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+        <div className="flex items-center gap-2">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button size="sm" className="flex items-center gap-2" onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4" />
+            Add Monitor
+          </Button>
+        </div>
       </div>
-    </main>
+
+      <MonitorsTable
+        monitors={monitors}
+        monitorEvents={monitorEvents}
+        isLoading={isLoadingMonitors || isLoadingEvents}
+        onMonitorClick={handleMonitorClick}
+      />
+
+      <CreateMonitorDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
+    </Scaffolding>
   );
 }

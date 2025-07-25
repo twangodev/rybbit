@@ -32,6 +32,7 @@ import { MonitorResponseTimeChart } from "../../components/MonitorResponseTimeCh
 import { StatusOrb } from "../../components/StatusOrb";
 import { TIME_RANGES, useUptimeStore } from "../../components/uptimeStore";
 import { getHoursFromTimeRange } from "../../components/utils";
+import { Scaffolding } from "../../components/Scaffolding";
 
 interface StatCardProps {
   label: string;
@@ -107,199 +108,192 @@ export default function MonitorDetailPage() {
 
   if (isLoadingMonitor) {
     return (
-      <StandardPage>
+      <Scaffolding>
         <div className="space-y-4">
           <Skeleton className="h-8 w-64" />
           <Skeleton className="h-32 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
-      </StandardPage>
+      </Scaffolding>
     );
   }
 
   if (!monitor) {
     return (
-      <StandardPage>
+      <Scaffolding>
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold mb-2">Monitor not found</h2>
           <Button onClick={() => router.push("/uptime")} variant="outline">
             Back to Monitors
           </Button>
         </div>
-      </StandardPage>
+      </Scaffolding>
     );
   }
 
   const events = eventsData?.events || [];
 
   return (
-    <main className="flex flex-col items-center p-4 w-full h-screen overflow-y-auto">
-      <div className="w-full max-w-6xl space-y-4">
-        {/* Header */}
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => router.push("/uptime/monitors")}
-          className="flex items-center gap-2"
-        >
-          <ArrowLeft className="h-4 w-4" />
-          Back
-        </Button>
-        <div className="flex items-start justify-between">
-          <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-semibold">{monitor.name}</h1>
-              <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
+    <Scaffolding>
+      {/* Header */}
+      <Button
+        variant="ghost"
+        size="sm"
+        onClick={() => router.push("/uptime/monitors")}
+        className="flex items-center gap-2"
+      >
+        <ArrowLeft className="h-4 w-4" />
+        Back
+      </Button>
+      <div className="flex items-start justify-between">
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center gap-3">
+            <h1 className="text-2xl font-semibold">{monitor.name}</h1>
+            <StatusOrb status={monitor.status?.currentStatus || "unknown"} size="lg" />
+          </div>
+          <p className="text-sm text-neutral-300 mt-1 flex items-center gap-2">
+            <span
+              className={cn(
+                "font-medium",
+                monitor.status?.currentStatus === "up" ? "text-green-400" : "text-red-500/80"
+              )}
+            >
+              {monitor.status?.currentStatus === "up" ? "Up" : "Down"}
+            </span>
+            •
+            <span>
+              {monitor.monitorType === "http"
+                ? monitor.httpConfig?.url
+                : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`}
+            </span>
+            •
+            <span>
+              every{" "}
+              {monitor.intervalSeconds < 60
+                ? `${monitor.intervalSeconds}s`
+                : `${Math.floor(monitor.intervalSeconds / 60)}m`}
+            </span>
+          </p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => window.location.reload()}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className="h-4 w-4" />
+            Refresh
+          </Button>
+          <Button variant="ghost" size="sm" onClick={() => setShowEditDialog(true)} className="flex items-center gap-2">
+            <Edit2 className="h-4 w-4" />
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setShowDeleteDialog(true)}
+            className="flex items-center gap-2 text-red-500 hover:text-red-600"
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete
+          </Button>
+        </div>
+      </div>
+      <div className="flex items-center gap-1">
+        {TIME_RANGES.map((range) => (
+          <Button
+            key={range.value}
+            variant={timeRange === range.value ? "default" : "ghost"}
+            size="sm"
+            onClick={() => setTimeRange(range.value)}
+            className="h-7 px-2 text-xs"
+          >
+            {range.label}
+          </Button>
+        ))}
+      </div>
+
+      {/* Stats Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+        <StatCard label="Uptime" value={formatPercentage(stats?.stats.uptimePercentage)} isLoading={isLoadingStats} />
+        <StatCard
+          label="Current Uptime"
+          value={formatUptime(uptimeData?.currentUptimeSeconds)}
+          isLoading={isLoadingUptime}
+        />
+        <StatCard label="P50" value={formatResponseTime(stats?.stats.responseTime.p50)} isLoading={isLoadingStats} />
+        <StatCard label="P90" value={formatResponseTime(stats?.stats.responseTime.p90)} isLoading={isLoadingStats} />
+        <StatCard label="P95" value={formatResponseTime(stats?.stats.responseTime.p95)} isLoading={isLoadingStats} />
+        <StatCard label="P99" value={formatResponseTime(stats?.stats.responseTime.p99)} isLoading={isLoadingStats} />
+      </div>
+
+      {/* Response Time Chart */}
+      <MonitorResponseTimeChart monitorId={monitor.id} monitorType={monitor.monitorType} />
+
+      {/* Recent Events */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Recent Events</CardTitle>
+        </CardHeader>
+        <CardContent>
+          {isLoadingEvents ? (
+            <div className="space-y-2">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Skeleton key={i} className="h-12 w-full" />
+              ))}
             </div>
-            <p className="text-sm text-neutral-300 mt-1 flex items-center gap-2">
-              <span
-                className={cn(
-                  "font-medium",
-                  monitor.status?.currentStatus === "up" ? "text-green-400" : "text-red-500/80"
-                )}
-              >
-                {monitor.status?.currentStatus === "up" ? "Up" : "Down"}
-              </span>
-              •
-              <span>
-                {monitor.monitorType === "http"
-                  ? monitor.httpConfig?.url
-                  : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`}
-              </span>
-              •
-              <span>
-                every{" "}
-                {monitor.intervalSeconds < 60
-                  ? `${monitor.intervalSeconds}s`
-                  : `${Math.floor(monitor.intervalSeconds / 60)}m`}
-              </span>
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => window.location.reload()}
-              className="flex items-center gap-2"
-            >
-              <RefreshCw className="h-4 w-4" />
-              Refresh
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowEditDialog(true)}
-              className="flex items-center gap-2"
-            >
-              <Edit2 className="h-4 w-4" />
-              Edit
-            </Button>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowDeleteDialog(true)}
-              className="flex items-center gap-2 text-red-500 hover:text-red-600"
-            >
-              <Trash2 className="h-4 w-4" />
-              Delete
-            </Button>
-          </div>
-        </div>
-        <div className="flex items-center gap-1">
-          {TIME_RANGES.map((range) => (
-            <Button
-              key={range.value}
-              variant={timeRange === range.value ? "default" : "ghost"}
-              size="sm"
-              onClick={() => setTimeRange(range.value)}
-              className="h-7 px-2 text-xs"
-            >
-              {range.label}
-            </Button>
-          ))}
-        </div>
-
-        {/* Stats Grid */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-          <StatCard label="Uptime" value={formatPercentage(stats?.stats.uptimePercentage)} isLoading={isLoadingStats} />
-          <StatCard
-            label="Current Uptime"
-            value={formatUptime(uptimeData?.currentUptimeSeconds)}
-            isLoading={isLoadingUptime}
-          />
-          <StatCard label="P50" value={formatResponseTime(stats?.stats.responseTime.p50)} isLoading={isLoadingStats} />
-          <StatCard label="P90" value={formatResponseTime(stats?.stats.responseTime.p90)} isLoading={isLoadingStats} />
-          <StatCard label="P95" value={formatResponseTime(stats?.stats.responseTime.p95)} isLoading={isLoadingStats} />
-          <StatCard label="P99" value={formatResponseTime(stats?.stats.responseTime.p99)} isLoading={isLoadingStats} />
-        </div>
-
-        {/* Response Time Chart */}
-        <MonitorResponseTimeChart monitorId={monitor.id} monitorType={monitor.monitorType} />
-
-        {/* Recent Events */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-base">Recent Events</CardTitle>
-          </CardHeader>
-          <CardContent>
-            {isLoadingEvents ? (
-              <div className="space-y-2">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Skeleton key={i} className="h-12 w-full" />
-                ))}
-              </div>
-            ) : events.length === 0 ? (
-              <p className="text-sm text-neutral-500">No events recorded yet</p>
-            ) : (
-              <div className="space-y-2">
-                {events.slice(0, 10).map((event, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0"
-                  >
-                    <div className="flex items-center gap-3">
-                      <StatusOrb status={event.status === "success" ? "up" : "down"} size="sm" animated={false} />
-                      <div>
-                        <p className="text-sm">{event.status === "success" ? "Check passed" : "Check failed"}</p>
-                        <p className="text-xs text-neutral-500">
-                          {DateTime.fromSQL(event.timestamp, { zone: "utc" }).toRelative()}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-mono">{formatResponseTime(event.response_time_ms)}</p>
-                      {event.status_code && <p className="text-xs text-neutral-500">{event.status_code}</p>}
+          ) : events.length === 0 ? (
+            <p className="text-sm text-neutral-500">No events recorded yet</p>
+          ) : (
+            <div className="space-y-2">
+              {events.slice(0, 10).map((event, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0"
+                >
+                  <div className="flex items-center gap-3">
+                    <StatusOrb status={event.status === "success" ? "up" : "down"} size="sm" animated={false} />
+                    <div>
+                      <p className="text-sm">{event.status === "success" ? "Check passed" : "Check failed"}</p>
+                      <p className="text-xs text-neutral-500">
+                        {DateTime.fromSQL(event.timestamp, { zone: "utc" }).toRelative()}
+                      </p>
                     </div>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+                  <div className="text-right">
+                    <p className="text-sm font-mono">{formatResponseTime(event.response_time_ms)}</p>
+                    {event.status_code && <p className="text-xs text-neutral-500">{event.status_code}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        {/* Edit Dialog */}
-        {monitor && <EditMonitorDialog monitor={monitor} open={showEditDialog} onOpenChange={setShowEditDialog} />}
+      {/* Edit Dialog */}
+      {monitor && <EditMonitorDialog monitor={monitor} open={showEditDialog} onOpenChange={setShowEditDialog} />}
 
-        {/* Delete Confirmation */}
-        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete the monitor "{monitor.name}" and all its historical data. This action
-                cannot be undone.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-                Delete Monitor
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </div>
-    </main>
+      {/* Delete Confirmation */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This will permanently delete the monitor "{monitor.name}" and all its historical data. This action cannot
+              be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
+              Delete Monitor
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+    </Scaffolding>
   );
 }
