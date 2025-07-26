@@ -20,6 +20,7 @@ import { Scaffolding } from "../components/Scaffolding";
 import { StatusOrb } from "../components/StatusOrb";
 import { TIME_RANGES, useUptimeStore } from "../components/uptimeStore";
 import { getHoursFromTimeRange } from "../components/utils";
+import { EventsTable } from "./components/EventsTable";
 
 interface StatCardProps {
   label: string;
@@ -186,47 +187,7 @@ export default function MonitorDetailPage() {
 
       {/* Response Time Chart */}
       <MonitorResponseTimeChart monitor={monitor} isLoading={isLoadingMonitor} />
-
-      {/* Recent Events */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">Recent Events</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {isLoadingEvents ? (
-            <div className="space-y-2">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <Skeleton key={i} className="h-12 w-full" />
-              ))}
-            </div>
-          ) : events.length === 0 ? (
-            <p className="text-sm text-neutral-500">No events recorded yet</p>
-          ) : (
-            <div className="space-y-2">
-              {events.slice(0, 10).map((event, index) => (
-                <div
-                  key={index}
-                  className="flex items-center justify-between py-2 border-b border-neutral-800 last:border-0"
-                >
-                  <div className="flex items-center gap-3">
-                    <StatusOrb status={event.status === "success" ? "up" : "down"} size="sm" animated={false} />
-                    <div>
-                      <p className="text-sm">{event.status === "success" ? "Check passed" : "Check failed"}</p>
-                      <p className="text-xs text-neutral-500">
-                        {DateTime.fromSQL(event.timestamp, { zone: "utc" }).toRelative()}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-sm font-mono">{formatResponseTime(event.response_time_ms)}</p>
-                    {event.status_code && <p className="text-xs text-neutral-500">{event.status_code}</p>}
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <EventsTable monitorId={monitorId} />
     </Scaffolding>
   );
 }
