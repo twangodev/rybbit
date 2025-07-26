@@ -10,7 +10,7 @@ export function Sidebar() {
   return (
     <div className="w-56 bg-neutral-900 border-r border-neutral-800 flex flex-col justify-between">
       <div className="flex flex-col p-3">
-        <div className="text-xs text-neutral-400 mt-2 mb-1 mx-3 font-medium">Uptime</div>
+        <div className="text-base text-neutral-100 mt-2 mb-4 mx-1 font-medium">Uptime</div>
         <SidebarLink
           label="Monitors"
           active={pathname.startsWith("/uptime/monitors")}

@@ -100,10 +100,11 @@ export async function performHttpCheck(options: HttpCheckOptions): Promise<HttpC
     timing.ttfbMs = Math.round(performance.now() - requestStart);
 
     // Get response body and size
+    const transferStart = performance.now();
     const bodyBuffer = await response.body.arrayBuffer();
     const bodySizeBytes = bodyBuffer.byteLength;
 
-    timing.transferMs = Math.round(performance.now() - requestStart - timing.ttfbMs);
+    timing.transferMs = Math.round(performance.now() - transferStart);
 
     // Estimate TCP and TLS times (these are approximations)
     timing.tcpMs = Math.round((timing.ttfbMs - timing.dnsMs) * 0.3);

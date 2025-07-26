@@ -17,6 +17,12 @@ export function TimingWaterfall({ event }: TimingWaterfallProps) {
   ].filter((t) => t.time && t.time > 0);
 
   const totalTime = event.response_time_ms || 0;
+  
+  // Calculate the sum of all timing components
+  const sumOfTimings = timings.reduce((sum, t) => sum + (t.time || 0), 0);
+  
+  // If sum exceeds total, we need to normalize
+  const needsNormalization = sumOfTimings > totalTime;
 
   if (timings.length === 0 || totalTime === 0) {
     return null;
@@ -28,20 +34,28 @@ export function TimingWaterfall({ event }: TimingWaterfallProps) {
       <div className="relative h-6 bg-neutral-800 rounded overflow-hidden">
         {(() => {
           let left = 0;
-          return timings.map((timing) => {
-            const width = (timing.time! / totalTime) * 100;
+          return timings.map((timing, index) => {
+            // Use normalized width if sum exceeds total, otherwise use actual proportion
+            const width = needsNormalization 
+              ? (timing.time! / sumOfTimings) * 100
+              : (timing.time! / totalTime) * 100;
+            
+            // Ensure we don't exceed 100%
+            const adjustedWidth = Math.min(width, 100 - left);
+            
             const element = (
               <div
                 key={timing.label}
                 className={cn("absolute h-full", timing.color)}
                 style={{
                   left: `${left}%`,
-                  width: `${width}%`,
+                  width: `${adjustedWidth}%`,
+                  zIndex: timings.length - index, // Ensure proper layering
                 }}
                 title={`${timing.label}: ${timing.time}ms`}
               />
             );
-            left += width;
+            left += adjustedWidth;
             return element;
           });
         })()}
