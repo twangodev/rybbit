@@ -151,7 +151,9 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
         avg(ttfb_ms) as avg_ttfb,
         avg(transfer_time_ms) as avg_transfer_time,
         count() as check_count,
-        countIf(status = 'success') as success_count
+        countIf(status = 'success') as success_count,
+        countIf(status = 'failure') as failure_count,
+        countIf(status = 'timeout') as timeout_count
       FROM monitor_events
       WHERE monitor_id = {monitorId: UInt32}
         AND timestamp >= now() - INTERVAL {hours: UInt32} HOUR

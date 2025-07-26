@@ -68,12 +68,29 @@ export function MonitorResponseTimeChart({
   const processedData =
     statsData?.distribution
       ?.map((item: any) => {
-        const timestamp = DateTime.fromSQL(item.hour).toLocal();
+        if (!item.hour) return null;
+
+        const timestamp = DateTime.fromSQL(item.hour);
+        if (!timestamp.isValid) return null;
+
+        const localTimestamp = timestamp.toLocal();
 
         const dataPoint: any = {
-          time: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
+          time: localTimestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
+          timestamp: localTimestamp.toISO(), // Store ISO timestamp for proper timezone handling
+          jsDate: localTimestamp.toJSDate(), // Store JS Date object for Nivo
           response_time_ms: item.avg_response_time,
+          check_count: item.check_count || 0,
+          success_count: item.success_count || 0,
+          failure_count: item.failure_count || 0,
+          timeout_count: item.timeout_count || 0,
         };
+
+        // Calculate failure percentage
+        dataPoint.failure_percentage =
+          dataPoint.check_count > 0
+            ? ((dataPoint.failure_count + dataPoint.timeout_count) / dataPoint.check_count) * 100
+            : 0;
 
         // For HTTP monitors, include additional timing data
         if (monitorType === "http") {
@@ -86,7 +103,8 @@ export function MonitorResponseTimeChart({
 
         return dataPoint;
       })
-      .filter((e: any) => e !== null) ?? [];
+      .filter((e: any) => e !== null)
+      .reverse() ?? []; // Reverse to get chronological order (oldest first)
 
   // Create data series based on monitor type
   const createDataSeries = () => {
@@ -97,7 +115,7 @@ export function MonitorResponseTimeChart({
           color: "hsl(180, 70%, 45%)",
           data: processedData
             .map((item: any) => ({
-              x: item.time,
+              x: item.jsDate,
               y: item.response_time_ms,
             }))
             .filter((point: any) => point.y !== null && point.y > 0),
@@ -112,7 +130,7 @@ export function MonitorResponseTimeChart({
       color: metric.color,
       data: processedData
         .map((item: any) => ({
-          x: item.time,
+          x: item.jsDate,
           y: item[metric.key] || 0,
         }))
         .filter((point: any) => point.y !== null),
@@ -247,9 +265,8 @@ export function MonitorResponseTimeChart({
               fill={fill}
               xScale={{
                 type: "time",
-                format: "%Y-%m-%d %H:%M:%S",
                 precision: "second",
-                useUTC: true,
+                useUTC: false,
               }}
               yScale={{
                 type: "linear",
@@ -285,8 +302,63 @@ export function MonitorResponseTimeChart({
               enableSlices="x"
               enableArea={monitorType === "http"}
               areaOpacity={0.7}
+              layers={[
+                "grid",
+                "axes",
+                "areas",
+                // Custom layer for failure indicators - render AFTER areas and lines
+                ({ innerHeight, xScale }) => (
+                  <>
+                    {processedData.map((point: any, index: number) => {
+                      if (point.failure_percentage === 0) return null;
+
+                      // Use the jsDate for proper timezone handling
+                      const x = xScale(point.jsDate);
+
+                      // Calculate width based on next point or use a default
+                      let width = 20; // Default width
+                      if (index < processedData.length - 1) {
+                        const nextPoint = processedData[index + 1];
+                        width = Math.abs(xScale(nextPoint.jsDate) - x);
+                      } else if (index > 0) {
+                        // For the last point, use the width from the previous interval
+                        const prevPoint = processedData[index - 1];
+                        width = Math.abs(x - xScale(prevPoint.jsDate));
+                      }
+
+                      // Determine color based on failure percentage
+                      let color = "hsla(48, 95%, 53%, 0.5)"; // Yellow for < 50%
+                      if (point.failure_percentage >= 50) {
+                        color = `hsla(0, 84%, 60%, 0.6)`; // Red for >= 50%
+                      }
+
+                      return (
+                        <rect
+                          key={`failure-${index}`}
+                          x={x}
+                          y={0}
+                          width={Math.max(1, Math.abs(width))}
+                          height={innerHeight}
+                          fill={color}
+                        />
+                      );
+                    })}
+                  </>
+                ),
+                "crosshair",
+                "lines",
+                "slices",
+                "points",
+                "mesh",
+                "legends",
+              ]}
               sliceTooltip={({ slice }: any) => {
                 const currentTime = DateTime.fromJSDate(new Date(slice.points[0].data.x));
+
+                // Find the corresponding data point to get failure info
+                const dataPoint = processedData.find(
+                  (p: any) => DateTime.fromISO(p.timestamp).toMillis() === currentTime.toMillis()
+                );
 
                 // For stacked HTTP charts, show cumulative total
                 const total =
@@ -297,6 +369,22 @@ export function MonitorResponseTimeChart({
                 return (
                   <div className="text-sm bg-neutral-850 p-3 rounded-md min-w-[200px] border border-neutral-750 text-neutral-200">
                     {formatChartDateTime(currentTime, bucket)}
+
+                    {/* Show failure status if any failures */}
+                    {dataPoint && dataPoint.failure_percentage > 0 && (
+                      <div
+                        className={cn(
+                          "text-xs px-2 py-1 rounded mt-2 mb-2",
+                          dataPoint.failure_percentage >= 50
+                            ? "bg-red-500/20 text-red-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                        )}
+                      >
+                        {dataPoint.failure_count + dataPoint.timeout_count} of {dataPoint.check_count} checks failed (
+                        {dataPoint.failure_percentage.toFixed(1)}%)
+                      </div>
+                    )}
+
                     <div className="space-y-1.5 mt-2 text-xs">
                       {slice.points.map((point: any) => (
                         <div key={point.seriesId} className="flex justify-between items-center">
