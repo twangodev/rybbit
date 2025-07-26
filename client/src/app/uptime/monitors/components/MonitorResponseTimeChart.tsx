@@ -203,8 +203,8 @@ export function MonitorResponseTimeChart({
   };
 
   return (
-    <Card>
-      <CardContent className="p-4">
+    <Card className="overflow-visible">
+      <CardContent className="p-4 overflow-visible">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-base font-medium">Response Time</h3>
 
@@ -256,7 +256,7 @@ export function MonitorResponseTimeChart({
             </div>
           </div>
         ) : (
-          <div className="h-[400px] w-full">
+          <div className="h-[400px] w-full relative" style={{ overflow: 'visible', zIndex: 10 }}>
             <ResponsiveLine
               data={data}
               theme={{ ...nivoTheme }}
@@ -327,9 +327,9 @@ export function MonitorResponseTimeChart({
                       }
 
                       // Determine color based on failure percentage
-                      let color = "hsla(48, 95%, 53%, 0.5)"; // Yellow for < 50%
+                      let color = "hsla(48, 95%, 53%, 0.4)"; // Yellow for < 50%
                       if (point.failure_percentage >= 50) {
-                        color = `hsla(0, 84%, 60%, 0.6)`; // Red for >= 50%
+                        color = `hsla(0, 84%, 60%, 0.4)`; // Red for >= 50%
                       }
 
                       return (
