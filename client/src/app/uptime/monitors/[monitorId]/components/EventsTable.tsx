@@ -18,62 +18,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from ".
 import { DateTime } from "luxon";
 import { Badge } from "../../../../../components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
-import { cn } from "../../../../../lib/utils";
+import { EventDetailsRow } from "./EventDetailsRow";
 
 const columnHelper = createColumnHelper<MonitorEvent>();
-
-// Component for timing waterfall visualization
-function TimingWaterfall({ event }: { event: MonitorEvent }) {
-  const timings = [
-    { label: "DNS", time: event.dns_time_ms, color: "bg-purple-500" },
-    { label: "TCP", time: event.tcp_time_ms, color: "bg-blue-500" },
-    { label: "TLS", time: event.tls_time_ms, color: "bg-cyan-500" },
-    { label: "TTFB", time: event.ttfb_ms, color: "bg-green-500" },
-    { label: "Transfer", time: event.transfer_time_ms, color: "bg-yellow-500" },
-  ].filter((t) => t.time && t.time > 0);
-
-  const totalTime = event.response_time_ms || 0;
-
-  if (timings.length === 0 || totalTime === 0) {
-    return null;
-  }
-
-  return (
-    <div className="w-full">
-      <div className="text-sm font-medium mb-2">Timings</div>
-      <div className="relative h-6 bg-neutral-800 rounded overflow-hidden">
-        {(() => {
-          let left = 0;
-          return timings.map((timing) => {
-            const width = (timing.time! / totalTime) * 100;
-            const element = (
-              <div
-                key={timing.label}
-                className={cn("absolute h-full", timing.color)}
-                style={{
-                  left: `${left}%`,
-                  width: `${width}%`,
-                }}
-                title={`${timing.label}: ${timing.time}ms`}
-              />
-            );
-            left += width;
-            return element;
-          });
-        })()}
-      </div>
-      <div className="flex flex-wrap gap-2 mt-2">
-        {timings.map((timing) => (
-          <div key={timing.label} className="flex items-center gap-1 text-xs">
-            <div className={cn("w-3 h-3 rounded", timing.color)} />
-            <span className="text-neutral-400">{timing.label}:</span>
-            <span className="font-mono">{timing.time}ms</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
 
 export function EventsTable({ monitorId }: { monitorId: number }) {
   const [sorting, setSorting] = useState<SortingState>([]);
@@ -119,8 +66,8 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
           const timestamp = DateTime.fromSQL(row.original.timestamp, { zone: "utc" });
           return (
             <div className="text-sm">
-              <div className="font-medium">{timestamp.toLocal().toRelative()}</div>
-              <div className="text-xs text-neutral-500">{timestamp.toLocal().toFormat("MMM dd, HH:mm:ss")}</div>
+              {/* <div className="font-medium">{timestamp.toLocal().toRelative()}</div> */}
+              <div className="">{timestamp.toLocal().toFormat("MMM dd, HH:mm:ss")}</div>
             </div>
           );
         },
@@ -206,26 +153,27 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
               {isLoadingEvents ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={`skeleton-${i}`}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-4 rounded-full mx-auto" />
-                    </TableCell>
-                    <TableCell>
-                      <div className="space-y-1">
-                        <Skeleton className="h-4 w-32" />
-                        <Skeleton className="h-3 w-48" />
+                    {/* Status dot */}
+                    <TableCell className="w-10">
+                      <div className="flex justify-center">
+                        <Skeleton className="h-2 w-2 rounded-full" />
                       </div>
                     </TableCell>
+                    {/* Time */}
+                    <TableCell>
+                      <Skeleton className="h-4 w-32" />
+                    </TableCell>
+                    {/* Status Code */}
                     <TableCell>
                       <Skeleton className="h-6 w-12" />
                     </TableCell>
+                    {/* Latency */}
                     <TableCell>
-                      <Skeleton className="h-4 w-full" />
+                      <Skeleton className="h-4 w-16" />
                     </TableCell>
+                    {/* Region */}
                     <TableCell>
-                      <Skeleton className="h-4 w-20" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-12 ml-auto" />
+                      <Skeleton className="h-4 w-12" />
                     </TableCell>
                   </TableRow>
                 ))
@@ -247,84 +195,7 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
                     {expandedRows.has(row.id) && (
                       <TableRow>
                         <TableCell colSpan={columns.length} className="p-0">
-                          <div className="bg-neutral-900 border-t border-neutral-800 p-6">
-                            <div className="space-y-6">
-                              {/* Timing Waterfall */}
-                              {row.original.monitor_type === "http" && (
-                                <div className="mb-6">
-                                  <TimingWaterfall event={row.original} />
-                                </div>
-                              )}
-
-                              {/* Error Message */}
-                              {row.original.error_message && (
-                                <div>
-                                  <h4 className="text-sm font-medium text-red-500 mb-2">Error Message</h4>
-                                  <div className="text-sm text-neutral-400 bg-neutral-900 p-3 rounded whitespace-pre-wrap font-mono">
-                                    {row.original.error_message}
-                                  </div>
-                                </div>
-                              )}
-
-                              {/* Headers Table */}
-                              {row.original.response_headers &&
-                                Object.keys(row.original.response_headers).length > 0 && (
-                                  <div>
-                                    <h4 className="text-sm font-medium mb-2">Response Headers</h4>
-                                    <div className="border border-neutral-800 rounded overflow-hidden">
-                                      <table className="w-full text-sm">
-                                        <tbody>
-                                          {Object.entries(row.original.response_headers).map(([key, value], index) => (
-                                            <tr
-                                              key={key}
-                                              className={cn(
-                                                "border-b border-neutral-800",
-                                                index === Object.keys(row.original.response_headers!).length - 1 &&
-                                                  "border-b-0"
-                                              )}
-                                            >
-                                              <td className="px-4 py-2 text-neutral-500 font-mono w-1/3 bg-neutral-900/50">
-                                                {key}
-                                              </td>
-                                              <td className="px-4 py-2 text-neutral-300 font-mono break-all">
-                                                {value}
-                                              </td>
-                                            </tr>
-                                          ))}
-                                        </tbody>
-                                      </table>
-                                    </div>
-                                  </div>
-                                )}
-
-                              {/* Additional Info */}
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                                <div>
-                                  <span className="text-neutral-500">Status:</span>
-                                  <span
-                                    className={cn(
-                                      "ml-2 font-medium",
-                                      row.original.status === "success" ? "text-green-500" : "text-red-500"
-                                    )}
-                                  >
-                                    {row.original.status}
-                                  </span>
-                                </div>
-                                <div>
-                                  <span className="text-neutral-500">Status Code:</span>
-                                  <span className="ml-2 font-mono">{row.original.status_code || "-"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-neutral-500">Region:</span>
-                                  <span className="ml-2">{row.original.region || "-"}</span>
-                                </div>
-                                <div>
-                                  <span className="text-neutral-500">Total Time:</span>
-                                  <span className="ml-2 font-mono">{row.original.response_time_ms}ms</span>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                          <EventDetailsRow event={row.original} />
                         </TableCell>
                       </TableRow>
                     )}
