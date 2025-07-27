@@ -36,7 +36,8 @@ export interface UptimeMonitor {
     timeoutMs?: number;
   };
   validationRules: Array<any>;
-  regions: string[];
+  monitoringType: "local" | "global";
+  selectedRegions: string[];
   createdAt: string;
   updatedAt: string;
   createdBy: string;

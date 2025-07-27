@@ -62,7 +62,8 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
               }
             : undefined,
           validationRules: monitor.validationRules || [],
-          regions: monitor.regions || ["local"],
+          monitoringType: monitor.monitoringType || "local",
+          selectedRegions: monitor.selectedRegions || ["local"],
         }
       : {
           organizationId: activeOrganization?.id || "",
@@ -78,7 +79,8 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
             ipVersion: "any" as const,
           },
           validationRules: [],
-          regions: ["local"],
+          monitoringType: "local",
+          selectedRegions: ["local"],
         },
   });
 
@@ -141,7 +143,8 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
             }
           : undefined,
         validationRules: monitor.validationRules || [],
-        regions: monitor.regions || ["local"],
+        monitoringType: monitor.monitoringType || "local",
+        selectedRegions: monitor.selectedRegions || ["local"],
       });
     }
   }, [monitor, open, form, isEdit]);

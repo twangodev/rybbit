@@ -101,7 +101,8 @@ export const createMonitorSchema = z
     httpConfig: httpConfigSchema.optional(),
     tcpConfig: tcpConfigSchema.optional(),
     validationRules: z.array(validationRuleSchema).default([]),
-    regions: z.array(z.string()).default(["local"]),
+    monitoringType: z.enum(["local", "global"]).default("local"),
+    selectedRegions: z.array(z.string()).default(["local"]),
   })
   .refine(
     (data) => {
@@ -126,7 +127,8 @@ export const updateMonitorSchema = z.object({
   httpConfig: httpConfigSchema.optional(),
   tcpConfig: tcpConfigSchema.optional(),
   validationRules: z.array(validationRuleSchema).optional(),
-  regions: z.array(z.string()).optional(),
+  monitoringType: z.enum(["local", "global"]).optional(),
+  selectedRegions: z.array(z.string()).optional(),
 });
 
 // Query params schemas

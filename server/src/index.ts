@@ -72,6 +72,7 @@ import { getMonitorStats } from "./api/uptime/getMonitorStats.js";
 import { getMonitorUptimeBuckets } from "./api/uptime/getMonitorUptimeBuckets.js";
 import { getMonitorStatus } from "./api/uptime/getMonitorStatus.js";
 import { getMonitorUptime } from "./api/uptime/getMonitorUptime.js";
+import { getRegions } from "./api/uptime/getRegions.js";
 import { initializeClickhouse } from "./db/clickhouse/clickhouse.js";
 import { initPostgres } from "./db/postgres/initPostgres.js";
 import { loadAllowedDomains } from "./lib/allowedDomains.js";
@@ -313,6 +314,7 @@ server.get("/api/uptime/monitors/:monitorId/stats", getMonitorStats);
 server.get("/api/uptime/monitors/:monitorId/status", getMonitorStatus);
 server.get("/api/uptime/monitors/:monitorId/uptime", getMonitorUptime);
 server.get("/api/uptime/monitors/:monitorId/buckets", getMonitorUptimeBuckets);
+server.get("/api/uptime/regions", getRegions);
 
 // STRIPE & ADMIN
 

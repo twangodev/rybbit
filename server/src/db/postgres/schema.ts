@@ -341,8 +341,9 @@ export const uptimeMonitors = pgTable(
       >
     >(),
 
-    // Multi-region configuration (for future use)
-    regions: jsonb("regions").default(["local"]).$type<string[]>(),
+    // Multi-region configuration
+    monitoringType: text("monitoring_type").default("local"), // 'local' or 'global'
+    selectedRegions: jsonb("selected_regions").default(["local"]).$type<string[]>(),
 
     // Metadata
     createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
@@ -448,3 +449,13 @@ export const uptimeAlertHistory = pgTable(
     }),
   ],
 );
+
+// Agent regions for VPS-based monitoring
+export const agentRegions = pgTable("agent_regions", {
+  code: text("code").primaryKey().notNull(), // Region code (e.g., 'us-east', 'europe')
+  name: text("name").notNull(), // Region display name
+  endpointUrl: text("endpoint_url").notNull(), // Agent endpoint URL
+  enabled: boolean("enabled").default(true),
+  lastHealthCheck: timestamp("last_health_check", { mode: "string" }),
+  isHealthy: boolean("is_healthy").default(true),
+});

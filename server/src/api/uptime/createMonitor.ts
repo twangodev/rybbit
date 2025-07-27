@@ -34,7 +34,8 @@ export async function createMonitor(
       httpConfig,
       tcpConfig,
       validationRules,
-      regions,
+      monitoringType,
+      selectedRegions,
     } = validatedBody;
 
     // Check if user has access to the organization
@@ -61,7 +62,8 @@ export async function createMonitor(
         httpConfig: monitorType === "http" ? httpConfig : null,
         tcpConfig: monitorType === "tcp" ? tcpConfig : null,
         validationRules,
-        regions,
+        monitoringType: monitoringType || "local",
+        selectedRegions: selectedRegions || ["local"],
         createdBy: userId,
       })
       .returning();

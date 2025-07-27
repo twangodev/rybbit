@@ -16,7 +16,8 @@ const baseMonitorSchema = z.object({
   intervalSeconds: z.number().int().min(1).max(86400),
   enabled: z.boolean(),
   validationRules: z.array(z.any()).default([]),
-  regions: z.array(z.string()).default(["local"]),
+  monitoringType: z.enum(["local", "global"]).default("local"),
+  selectedRegions: z.array(z.string()).default(["local"]),
 });
 
 // HTTP config schema
@@ -58,7 +59,8 @@ export const createMonitorSchema = z.object({
   httpConfig: httpConfigSchema.optional(),
   tcpConfig: tcpConfigSchema.optional(),
   validationRules: z.array(z.any()).optional(),
-  regions: z.array(z.string()).optional(),
+  monitoringType: z.enum(["local", "global"]).optional(),
+  selectedRegions: z.array(z.string()).optional(),
 }).refine(
   (data) => {
     if (data.monitorType === "http") {
@@ -71,6 +73,16 @@ export const createMonitorSchema = z.object({
   },
   {
     message: "Monitor type specific configuration is required",
+  }
+).refine(
+  (data) => {
+    if (data.monitoringType === "global") {
+      return data.selectedRegions && data.selectedRegions.length > 0;
+    }
+    return true;
+  },
+  {
+    message: "At least one region must be selected for global monitoring",
   }
 );
 
@@ -105,7 +117,8 @@ export const updateMonitorSchema = z.object({
     timeoutMs: z.number().int().min(1000).max(300000).optional(),
   }).optional(),
   validationRules: z.array(z.any()).optional(),
-  regions: z.array(z.string()).optional(),
+  monitoringType: z.enum(["local", "global"]).optional(),
+  selectedRegions: z.array(z.string()).optional(),
 });
 
 // Type exports

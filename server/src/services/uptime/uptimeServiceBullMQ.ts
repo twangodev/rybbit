@@ -1,14 +1,17 @@
 import { MonitorSchedulerBullMQ } from './monitorSchedulerBullMQ.js';
 import { MonitorExecutorBullMQ } from './monitorExecutorBullMQ.js';
+import { RegionHealthChecker } from './regionHealthChecker.js';
 
 export class UptimeServiceBullMQ {
   private scheduler: MonitorSchedulerBullMQ;
   private executor: MonitorExecutorBullMQ;
+  private regionHealthChecker: RegionHealthChecker;
   private initialized = false;
 
   constructor() {
     this.scheduler = new MonitorSchedulerBullMQ();
     this.executor = new MonitorExecutorBullMQ(10); // 10 concurrent workers
+    this.regionHealthChecker = new RegionHealthChecker(60000); // Check every minute
   }
 
   async initialize(): Promise<void> {
@@ -26,6 +29,9 @@ export class UptimeServiceBullMQ {
       // Start executor (begins processing jobs)
       await this.executor.start();
       
+      // Start region health checker
+      await this.regionHealthChecker.start();
+      
       this.initialized = true;
       console.log('BullMQ uptime monitoring service initialized successfully');
     } catch (error) {
@@ -38,6 +44,9 @@ export class UptimeServiceBullMQ {
     console.log('Shutting down BullMQ uptime monitoring service...');
     
     try {
+      // Stop region health checker
+      await this.regionHealthChecker.stop();
+      
       // Shutdown executor first (stops processing new jobs)
       await this.executor.shutdown();
       

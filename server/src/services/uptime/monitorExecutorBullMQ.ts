@@ -1,13 +1,43 @@
 import { Worker, Job } from 'bullmq';
-import { eq } from 'drizzle-orm';
+import { eq, and, inArray } from 'drizzle-orm';
 import { DateTime } from 'luxon';
 import { db } from '../../db/postgres/postgres.js';
-import { uptimeMonitors, uptimeMonitorStatus } from '../../db/postgres/schema.js';
+import { uptimeMonitors, uptimeMonitorStatus, agentRegions } from '../../db/postgres/schema.js';
 import { clickhouse } from '../../db/clickhouse/clickhouse.js';
 import { MonitorCheckJob, HttpCheckResult, TcpCheckResult, MonitorEvent } from './types.js';
 import { performHttpCheck } from './checks/httpCheck.js';
 import { performTcpCheck } from './checks/tcpCheck.js';
 import { applyValidationRules } from './validationEngine.js';
+
+interface AgentExecuteRequest {
+  jobId: string;
+  monitorId: number;
+  monitorType: string;
+  config: any;
+  validationRules: any[];
+}
+
+interface AgentExecuteResponse {
+  jobId: string;
+  region: string;
+  status: "success" | "failure" | "timeout";
+  responseTimeMs: number;
+  statusCode?: number;
+  headers?: Record<string, string>;
+  timing?: {
+    dnsMs?: number;
+    tcpMs?: number;
+    tlsMs?: number;
+    ttfbMs?: number;
+    transferMs?: number;
+  };
+  error?: {
+    message: string;
+    type: string;
+  };
+  validationErrors?: string[];
+  bodySizeBytes?: number;
+}
 
 export class MonitorExecutorBullMQ {
   private worker: Worker | null = null;
@@ -97,7 +127,13 @@ export class MonitorExecutorBullMQ {
         return;
       }
 
-      // Perform the check based on monitor type
+      // Check if this is a global monitor
+      if (monitor.monitoringType === 'global' && monitor.selectedRegions && monitor.selectedRegions.length > 0) {
+        await this.processGlobalMonitorCheck(monitor);
+        return;
+      }
+
+      // For local monitoring, proceed with the original logic
       let result: HttpCheckResult | TcpCheckResult;
       let responseBody: string | undefined;
 
@@ -183,7 +219,140 @@ export class MonitorExecutorBullMQ {
     }
   }
 
-  private async storeMonitorEvent(monitor: any, result: HttpCheckResult | TcpCheckResult): Promise<void> {
+  private async processGlobalMonitorCheck(monitor: any): Promise<void> {
+    try {
+      // Filter to only include non-local regions
+      const globalRegions = monitor.selectedRegions.filter((r: string) => r !== 'local');
+      
+      if (globalRegions.length === 0) {
+        console.log(`Monitor ${monitor.id} has no global regions selected`);
+        return;
+      }
+
+      // Fetch agent regions information
+      const regions = await db.query.agentRegions.findMany({
+        where: and(
+          inArray(agentRegions.code, globalRegions),
+          eq(agentRegions.enabled, true),
+          eq(agentRegions.isHealthy, true)
+        ),
+      });
+
+      if (regions.length === 0) {
+        console.log(`No healthy regions found for monitor ${monitor.id}`);
+        return;
+      }
+
+      // Execute checks in parallel across all regions
+      const regionPromises = regions.map(region => 
+        this.executeAgentCheck(monitor, region).catch(error => {
+          console.error(`Error executing check in region ${region.code}:`, error);
+          return {
+            region: region.code,
+            result: {
+              status: "failure" as const,
+              responseTimeMs: 0,
+              timing: {},
+              headers: {},
+              bodySizeBytes: 0,
+              validationErrors: [],
+              error: {
+                message: error instanceof Error ? error.message : "Agent communication error",
+                type: "agent_error",
+              },
+            } as HttpCheckResult,
+          };
+        })
+      );
+
+      const regionResults = await Promise.all(regionPromises);
+
+      // Store results for each region
+      for (const { region, result } of regionResults) {
+        await this.storeMonitorEvent(monitor, result, region);
+      }
+
+      // Update monitor status based on the majority of regions
+      const successCount = regionResults.filter(r => r.result.status === "success").length;
+      const overallStatus = successCount > regionResults.length / 2 ? "success" : "failure";
+      
+      // Use the average response time from successful checks
+      const successfulResults = regionResults.filter(r => r.result.status === "success");
+      const avgResponseTime = successfulResults.length > 0
+        ? successfulResults.reduce((sum, r) => sum + r.result.responseTimeMs, 0) / successfulResults.length
+        : 0;
+
+      const aggregatedResult: HttpCheckResult = {
+        status: overallStatus === "success" ? "success" : "failure",
+        responseTimeMs: avgResponseTime,
+        timing: {},
+        headers: {},
+        bodySizeBytes: 0,
+        validationErrors: [],
+      };
+
+      await this.updateMonitorStatus(monitor.id, aggregatedResult);
+
+      console.log(`✅ Global monitor check completed: ${monitor.id} - ${overallStatus} (${regionResults.length} regions)`);
+    } catch (error) {
+      console.error(`Error processing global monitor check ${monitor.id}:`, error);
+    }
+  }
+
+  private async executeAgentCheck(monitor: any, region: any): Promise<{ region: string; result: HttpCheckResult | TcpCheckResult }> {
+    const jobId = `${monitor.id}-${Date.now()}-${region.code}`;
+    
+    const request: AgentExecuteRequest = {
+      jobId,
+      monitorId: monitor.id,
+      monitorType: monitor.monitorType,
+      config: monitor.monitorType === 'http' ? monitor.httpConfig : monitor.tcpConfig,
+      validationRules: monitor.validationRules || [],
+    };
+
+    try {
+      const response = await fetch(`${region.endpointUrl}/execute`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(request),
+        signal: AbortSignal.timeout(60000), // 60 second timeout
+      });
+
+      if (!response.ok) {
+        throw new Error(`Agent returned status ${response.status}`);
+      }
+
+      const agentResponse: AgentExecuteResponse = await response.json();
+
+      // Convert agent response to our internal format
+      const result: HttpCheckResult | TcpCheckResult = monitor.monitorType === 'http'
+        ? {
+            status: agentResponse.status,
+            statusCode: agentResponse.statusCode,
+            responseTimeMs: agentResponse.responseTimeMs,
+            timing: agentResponse.timing || {},
+            headers: agentResponse.headers || {},
+            bodySizeBytes: agentResponse.bodySizeBytes || 0,
+            validationErrors: agentResponse.validationErrors || [],
+            error: agentResponse.error,
+          }
+        : {
+            status: agentResponse.status,
+            responseTimeMs: agentResponse.responseTimeMs,
+            validationErrors: [],
+            error: agentResponse.error,
+          };
+
+      return { region: region.code, result };
+    } catch (error) {
+      console.error(`Failed to execute check via agent ${region.code}:`, error);
+      throw error;
+    }
+  }
+
+  private async storeMonitorEvent(monitor: any, result: HttpCheckResult | TcpCheckResult, regionCode: string = "local"): Promise<void> {
     const event: MonitorEvent = {
       monitor_id: monitor.id,
       organization_id: monitor.organizationId,
@@ -191,7 +360,7 @@ export class MonitorExecutorBullMQ {
       monitor_type: monitor.monitorType,
       monitor_url: monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`,
       monitor_name: monitor.name,
-      region: "local",
+      region: regionCode,
       status: result.status,
       status_code: (result as HttpCheckResult).statusCode,
       response_time_ms: result.responseTimeMs,
