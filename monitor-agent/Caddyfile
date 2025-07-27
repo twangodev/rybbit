@@ -1,0 +1,24 @@
+# Caddyfile for Rybbit Monitor Agent
+{$DOMAIN_NAME} {
+    # Enable compression
+    encode zstd gzip
+
+    # Set max request body size
+    request_body max_size 10MB
+
+    # IP whitelist - only allow specific IPs
+    @allowed {
+        remote_ip {$ALLOWED_IPS}
+    }
+
+    # Block all non-whitelisted IPs
+    handle {
+        @blocked not remote_ip {$ALLOWED_IPS}
+        respond @blocked "Forbidden" 403
+    }
+
+    # Proxy all allowed requests to the monitor agent service
+    handle @allowed {
+        reverse_proxy monitor-agent:3003
+    }
+}

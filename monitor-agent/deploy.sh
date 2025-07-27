@@ -80,11 +80,9 @@ case $ACTION in
             if [ ! -f .env ]; then
                 echo "Creating .env file..."
                 cat > .env << 'ENVFILE'
-PORT=3000
+PORT=3003
 HOST=0.0.0.0
 REGION=$REGION
-REGION_NAME=$REGION
-MAIN_SERVER_URL=\${MAIN_SERVER_URL:-https://your-rybbit-server.com}
 ALLOWED_IPS=\${ALLOWED_IPS:-}
 LOG_LEVEL=info
 ENVFILE
@@ -102,7 +100,7 @@ ENVFILE
             docker run -d \
                 --name rybbit-monitor-agent \
                 --restart always \
-                -p 3000:3000 \
+                -p 3003:3003 \
                 --env-file .env \
                 -e REGION=$REGION \
                 $DOCKER_REGISTRY/$DOCKER_IMAGE:$REGION
@@ -131,7 +129,7 @@ EOF
             docker logs --tail 20 rybbit-monitor-agent 2>&1 || echo "No logs available"
             echo ""
             echo "=== Health Check ==="
-            curl -s http://localhost:3000/health | jq . || echo "Health check failed"
+            curl -s http://localhost:3003/health | jq . || echo "Health check failed"
 EOF
         ;;
         

@@ -29,12 +29,11 @@ sudo nano .env
 
 Add the following to `.env`:
 ```env
-PORT=3000
+PORT=3003
 HOST=0.0.0.0
 REGION=us-east  # Change based on region
-REGION_NAME=US East  # Change based on region
-MAIN_SERVER_URL=https://your-main-rybbit-server.com
 ALLOWED_IPS=1.2.3.4,5.6.7.8  # IP addresses of your main server
+DOMAIN_NAME=your-monitor-domain.com  # Domain for this monitor agent
 LOG_LEVEL=info
 ```
 
@@ -44,7 +43,7 @@ LOG_LEVEL=info
 # Download docker-compose files
 wget https://raw.githubusercontent.com/your-repo/rybbit/main/monitor-agent/docker-compose.yml
 wget https://raw.githubusercontent.com/your-repo/rybbit/main/monitor-agent/docker-compose.prod.yml
-wget https://raw.githubusercontent.com/your-repo/rybbit/main/monitor-agent/nginx.conf
+wget https://raw.githubusercontent.com/your-repo/rybbit/main/monitor-agent/Caddyfile
 
 # Start the services
 REGION=us-east docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
@@ -54,20 +53,16 @@ docker-compose ps
 docker-compose logs -f
 ```
 
-#### 3. SSL Setup with Let's Encrypt
+#### 3. SSL Setup with Caddy
+
+Caddy automatically handles SSL certificates via Let's Encrypt. Simply ensure:
+1. Your domain points to the VPS
+2. Ports 80 and 443 are open
+3. The DOMAIN_NAME environment variable is set correctly
 
 ```bash
-# First time setup - get certificates
-docker-compose run --rm certbot certonly \
-  --webroot \
-  --webroot-path=/var/www/certbot \
-  -d your-monitor-domain.com \
-  --email your-email@example.com \
-  --agree-tos \
-  --no-eff-email
-
-# Restart nginx to load certificates
-docker-compose restart nginx
+# SSL certificates will be automatically obtained when Caddy starts
+docker-compose restart caddy
 ```
 
 ### Method 2: Automated Deployment Script
@@ -155,8 +150,8 @@ sudo ufw allow 443/tcp
 # Allow HTTP traffic (for Let's Encrypt)
 sudo ufw allow 80/tcp
 
-# If not using nginx proxy, allow agent port
-sudo ufw allow 3000/tcp
+# If not using Caddy proxy, allow agent port
+sudo ufw allow 3003/tcp
 ```
 
 ### 3. Setup Monitoring
@@ -181,7 +176,7 @@ Monitor your agents using:
 ```bash
 # Docker deployment
 docker-compose logs monitor-agent
-curl http://localhost:3000/health
+curl http://localhost:3003/health
 
 # Systemd deployment
 sudo journalctl -u rybbit-monitor-agent -f

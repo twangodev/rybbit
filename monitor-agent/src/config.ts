@@ -8,17 +8,11 @@ export const CONFIG = {
   PORT: parseInt(process.env.PORT || "3003", 10),
   HOST: process.env.HOST || "0.0.0.0",
 
-  // Region identifier
+  // Region identifier (e.g., "us-east", "europe", "asia")
   REGION: process.env.REGION || "unknown",
-  REGION_NAME: process.env.REGION_NAME || "Unknown Region",
-
-  // Main Server
-  MAIN_SERVER_URL: process.env.MAIN_SERVER_URL || "",
 
   // Security - IP whitelist for main server
   ALLOWED_IPS: process.env.ALLOWED_IPS?.split(",").map((ip) => ip.trim()) || [],
-  RATE_LIMIT_MAX: parseInt(process.env.RATE_LIMIT_MAX || "100", 10),
-  RATE_LIMIT_WINDOW: parseInt(process.env.RATE_LIMIT_WINDOW || "60000", 10), // 1 minute
 
   // Monitoring defaults
   DEFAULT_TIMEOUT_MS: parseInt(process.env.DEFAULT_TIMEOUT_MS || "30000", 10),
@@ -26,9 +20,6 @@ export const CONFIG = {
 
   // Logging
   LOG_LEVEL: process.env.LOG_LEVEL || "info",
-
-  // Health check
-  HEALTH_CHECK_INTERVAL_MS: parseInt(process.env.HEALTH_CHECK_INTERVAL_MS || "30000", 10),
 };
 
 // Validate required configuration

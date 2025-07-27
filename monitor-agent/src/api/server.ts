@@ -1,6 +1,5 @@
 import Fastify from 'fastify';
 import cors from '@fastify/cors';
-import rateLimit from '@fastify/rate-limit';
 import { CONFIG } from '../config.js';
 import { logger } from '../utils/logger.js';
 import { authenticateRequest } from './auth.js';
@@ -18,11 +17,6 @@ export async function createServer() {
   // Register plugins
   await fastify.register(cors, {
     origin: false, // Accept requests from any origin
-  });
-
-  await fastify.register(rateLimit, {
-    max: CONFIG.RATE_LIMIT_MAX,
-    timeWindow: CONFIG.RATE_LIMIT_WINDOW,
   });
 
   // Health check endpoint (no auth required)

@@ -10,7 +10,6 @@ async function start() {
     logger.info(
       { 
         region: CONFIG.REGION,
-        regionName: CONFIG.REGION_NAME,
         port: CONFIG.PORT,
       }, 
       'Starting monitor agent'

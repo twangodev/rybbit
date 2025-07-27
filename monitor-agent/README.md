@@ -10,7 +10,6 @@ Regional monitoring agent for Rybbit uptime monitoring system. This lightweight 
 - SMTP monitoring (coming soon)
 - PING monitoring (coming soon)
 - Authentication via API key
-- Rate limiting
 - Health check endpoint
 - Prometheus metrics (coming soon)
 
@@ -40,7 +39,7 @@ docker build -t monitor-agent .
 # Run
 docker run -d \
   --name monitor-agent \
-  -p 3000:3000 \
+  -p 3003:3003 \
   --env-file .env \
   --restart always \
   monitor-agent
@@ -54,12 +53,12 @@ services:
   monitor-agent:
     build: .
     ports:
-      - "3000:3000"
+      - "3003:3003"
     env_file:
       - .env
     restart: always
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:3003/health"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -150,7 +149,7 @@ ssh $REGION_HOST << EOF
   docker rm monitor-agent || true
   docker run -d \
     --name monitor-agent \
-    -p 443:3000 \
+    -p 443:3003 \
     --env-file /etc/monitor-agent/.env \
     --restart always \
     $DOCKER_IMAGE
@@ -159,7 +158,7 @@ EOF
 
 ## Security Considerations
 
-1. Always use HTTPS in production (reverse proxy with nginx/caddy)
+1. Always use HTTPS in production (reverse proxy with Caddy)
 2. Keep API keys secure and rotate regularly
 3. Use IP whitelisting when possible
 4. Monitor agent logs for suspicious activity
