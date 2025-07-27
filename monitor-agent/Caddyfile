@@ -6,20 +6,6 @@
     # Set max request body size
     request_body max_size 10MB
 
-    # Handle requests based on IP whitelist
-    @allowed {
-        # Each IP must be on its own line or as separate arguments
-        # The ALLOWED_IPS env var should contain space-separated IPs
-        remote_ip {$ALLOWED_IPS}
-    }
-
-    # Proxy allowed requests to the monitor agent service
-    handle @allowed {
-        reverse_proxy monitor-agent:3003
-    }
-
-    # Block all non-whitelisted IPs
-    handle {
-        respond "Forbidden" 403
-    }
+    # Reverse proxy to monitor agent
+    reverse_proxy monitor-agent:3003
 }

@@ -67,7 +67,7 @@ services:
       - "80:80"
       - "443:443/udp" # Needed for HTTP/3
     volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile
+      - ./Caddyfile${ENABLE_IP_WHITELIST:+.whitelist}:/etc/caddy/Caddyfile
       - caddy_data:/data
       - caddy_config:/config
     environment:
