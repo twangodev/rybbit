@@ -6,6 +6,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, X } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 interface AdvancedTabProps {
   form: UseFormReturn<any>;
@@ -142,6 +143,27 @@ export function AdvancedTab({ form, monitorType }: AdvancedTabProps) {
                 </FormItem>
               );
             }}
+          />
+
+          <FormField
+            control={form.control}
+            name="httpConfig.body"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Request Body</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder='{"key": "value"}'
+                    {...field}
+                    value={field.value || ""}
+                    className="font-mono min-h-[100px]"
+                    style={{ fontSize: "12px" }}
+                  />
+                </FormControl>
+                <FormDescription>Request body for POST, PUT, PATCH methods. Usually JSON or form data.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
           />
 
           <FormField
