@@ -64,6 +64,10 @@ const SettingsMenu = () => {
 export function AppSidebar() {
   const pathname = usePathname();
 
+  if (IS_CLOUD) {
+    return null;
+  }
+
   return (
     <div className="flex flex-col items-center justify-between h-screen p-2 py-4 bg-neutral-900 border-r border-neutral-750 gap-3">
       <div className="flex flex-col items-center gap-2">
