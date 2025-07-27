@@ -8,6 +8,13 @@ export async function authenticateRequest(
 ): Promise<void> {
   const clientIp = request.ip;
   
+  logger.debug({ 
+    clientIp, 
+    allowedIPs: CONFIG.ALLOWED_IPS,
+    allowedIPsLength: CONFIG.ALLOWED_IPS.length,
+    rawEnv: process.env.ALLOWED_IPS 
+  }, 'Checking IP whitelist');
+  
   // If no IPs are whitelisted, allow all (with warning)
   if (CONFIG.ALLOWED_IPS.length === 0) {
     logger.debug({ ip: clientIp }, 'No IP whitelist configured, allowing request');

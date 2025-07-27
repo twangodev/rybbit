@@ -12,7 +12,9 @@ export const CONFIG = {
   REGION: process.env.REGION || "unknown",
 
   // Security - IP whitelist for main server
-  ALLOWED_IPS: process.env.ALLOWED_IPS?.split(",").map((ip) => ip.trim()).filter((ip) => ip.length > 0) || [],
+  ALLOWED_IPS: process.env.ALLOWED_IPS && process.env.ALLOWED_IPS.trim() 
+    ? process.env.ALLOWED_IPS.split(",").map((ip) => ip.trim()).filter((ip) => ip.length > 0) 
+    : [],
 
   // Monitoring defaults
   DEFAULT_TIMEOUT_MS: parseInt(process.env.DEFAULT_TIMEOUT_MS || "30000", 10),
