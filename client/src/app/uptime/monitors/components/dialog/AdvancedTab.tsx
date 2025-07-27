@@ -15,13 +15,13 @@ interface AdvancedTabProps {
 export function AdvancedTab({ form, monitorType }: AdvancedTabProps) {
   return (
     <div className="space-y-4">
-      {/* Monitor Name (Optional) */}
+      {/* Monitor Name */}
       <FormField
         control={form.control}
         name="name"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Monitor Name (Optional)</FormLabel>
+            <FormLabel>Monitor Name</FormLabel>
             <FormControl>
               <Input placeholder="My API Endpoint" {...field} value={field.value || ""} />
             </FormControl>
@@ -34,9 +34,7 @@ export function AdvancedTab({ form, monitorType }: AdvancedTabProps) {
       />
 
       {monitorType === "tcp" ? (
-        <div className="text-sm text-neutral-500 mt-4">
-          No additional advanced options available for TCP monitors.
-        </div>
+        <div className="text-sm text-neutral-500 mt-4">No additional advanced options available for TCP monitors.</div>
       ) : (
         <>
           <FormField
@@ -54,118 +52,113 @@ export function AdvancedTab({ form, monitorType }: AdvancedTabProps) {
             )}
           />
 
-      <FormField
-        control={form.control}
-        name="httpConfig.headers"
-        render={({ field }) => {
-          // Use local state to manage headers array
-          const [localHeaders, setLocalHeaders] = React.useState<Array<{ key: string; value: string; id: string }>>(() => {
-            if (!field.value) return [];
-            return Object.entries(field.value).map(([key, value], index) => ({
-              key,
-              value: value as string,
-              id: `header_${index}_${Date.now()}`
-            }));
-          });
+          <FormField
+            control={form.control}
+            name="httpConfig.headers"
+            render={({ field }) => {
+              // Use local state to manage headers array
+              const [localHeaders, setLocalHeaders] = React.useState<Array<{ key: string; value: string; id: string }>>(
+                () => {
+                  if (!field.value) return [];
+                  return Object.entries(field.value).map(([key, value], index) => ({
+                    key,
+                    value: value as string,
+                    id: `header_${index}_${Date.now()}`,
+                  }));
+                }
+              );
 
-          // Sync local state changes back to form field
-          React.useEffect(() => {
-            const headersObject = localHeaders
-              .filter(h => h.key !== '') // Only include headers with keys
-              .reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
-            
-            field.onChange(Object.keys(headersObject).length > 0 ? headersObject : undefined);
-          }, [localHeaders, field]);
+              // Sync local state changes back to form field
+              React.useEffect(() => {
+                const headersObject = localHeaders
+                  .filter((h) => h.key !== "") // Only include headers with keys
+                  .reduce((acc, { key, value }) => ({ ...acc, [key]: value }), {});
 
-          const updateHeader = (id: string, type: 'key' | 'value', newValue: string) => {
-            setLocalHeaders(prev => 
-              prev.map(header => 
-                header.id === id 
-                  ? { ...header, [type]: newValue }
-                  : header
-              )
-            );
-          };
+                field.onChange(Object.keys(headersObject).length > 0 ? headersObject : undefined);
+              }, [localHeaders, field]);
 
-          const removeHeader = (id: string) => {
-            setLocalHeaders(prev => prev.filter(header => header.id !== id));
-          };
+              const updateHeader = (id: string, type: "key" | "value", newValue: string) => {
+                setLocalHeaders((prev) =>
+                  prev.map((header) => (header.id === id ? { ...header, [type]: newValue } : header))
+                );
+              };
 
-          const addHeader = () => {
-            setLocalHeaders(prev => [...prev, { 
-              key: '', 
-              value: '', 
-              id: `header_${Date.now()}` 
-            }]);
-          };
+              const removeHeader = (id: string) => {
+                setLocalHeaders((prev) => prev.filter((header) => header.id !== id));
+              };
 
-          return (
-            <FormItem>
-              <div className="flex items-center justify-between mb-2">
-                <FormLabel>Custom Headers</FormLabel>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={addHeader}
-                  className="h-8"
-                >
-                  <Plus className="h-4 w-4 mr-1" />
-                  Add header
-                </Button>
-              </div>
-              <div className="space-y-2">
-                {localHeaders.map((header) => (
-                  <div key={header.id} className="flex gap-2 items-center">
-                    <Input
-                      placeholder="Header name"
-                      value={header.key}
-                      onChange={(e) => updateHeader(header.id, 'key', e.target.value)}
-                      className="flex-1"
-                    />
-                    <Input
-                      placeholder="Header value"
-                      value={header.value}
-                      onChange={(e) => updateHeader(header.id, 'value', e.target.value)}
-                      className="flex-1"
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeHeader(header.id)}
-                      className="px-2"
-                    >
-                      <X className="h-4 w-4" />
+              const addHeader = () => {
+                setLocalHeaders((prev) => [
+                  ...prev,
+                  {
+                    key: "",
+                    value: "",
+                    id: `header_${Date.now()}`,
+                  },
+                ]);
+              };
+
+              return (
+                <FormItem>
+                  <div className="flex items-center justify-between mb-2">
+                    <FormLabel>Custom Headers</FormLabel>
+                    <Button type="button" variant="outline" size="sm" onClick={addHeader} className="h-8">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Add header
                     </Button>
                   </div>
-                ))}
-                {localHeaders.length === 0 && (
-                  <div className="text-sm text-neutral-500">No custom headers added</div>
-                )}
-              </div>
-              <FormDescription>Additional headers to send with requests</FormDescription>
-              <FormMessage />
-            </FormItem>
-          );
-        }}
-      />
+                  <div className="space-y-2">
+                    {localHeaders.map((header) => (
+                      <div key={header.id} className="flex gap-2 items-center">
+                        <Input
+                          placeholder="Header name"
+                          value={header.key}
+                          onChange={(e) => updateHeader(header.id, "key", e.target.value)}
+                          className="flex-1"
+                        />
+                        <Input
+                          placeholder="Header value"
+                          value={header.value}
+                          onChange={(e) => updateHeader(header.id, "value", e.target.value)}
+                          className="flex-1"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeHeader(header.id)}
+                          className="px-2"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ))}
+                    {localHeaders.length === 0 && (
+                      <div className="text-sm text-neutral-500">No custom headers added</div>
+                    )}
+                  </div>
+                  <FormDescription>Additional headers to send with requests</FormDescription>
+                  <FormMessage />
+                </FormItem>
+              );
+            }}
+          />
 
-      <FormField
-        control={form.control}
-        name="httpConfig.followRedirects"
-        render={({ field }) => (
-          <FormItem className="flex flex-row items-center justify-between">
-            <div className="space-y-0.5">
-              <FormLabel>Follow Redirects</FormLabel>
-              <FormDescription>Automatically follow HTTP redirects</FormDescription>
-            </div>
-            <FormControl>
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
-            </FormControl>
-          </FormItem>
-        )}
-      />
+          <FormField
+            control={form.control}
+            name="httpConfig.followRedirects"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between">
+                <div className="space-y-0.5">
+                  <FormLabel>Follow Redirects</FormLabel>
+                  <FormDescription>Automatically follow HTTP redirects</FormDescription>
+                </div>
+                <FormControl>
+                  <Switch checked={field.value} onCheckedChange={field.onChange} />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
           <FormField
             control={form.control}
