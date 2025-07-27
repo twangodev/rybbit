@@ -133,8 +133,7 @@ export class MonitorSchedulerBullMQ {
         jobData,
         {
           repeat: {
-            every: intervalSeconds * 1000, // Convert to milliseconds
-            immediately: true // Run immediately on first schedule
+            every: intervalSeconds * 1000 // Convert to milliseconds
           },
           jobId: jobName // Use monitor ID as job ID to prevent duplicates
         }
@@ -186,6 +185,32 @@ export class MonitorSchedulerBullMQ {
 
   async updateMonitorSchedule(monitorId: number, intervalSeconds: number): Promise<void> {
     await this.scheduleMonitor(monitorId, intervalSeconds);
+  }
+
+  async triggerImmediateCheck(monitorId: number): Promise<void> {
+    try {
+      const jobName = `monitor-${monitorId}-immediate`;
+      const jobData: MonitorCheckJob = {
+        monitorId,
+        intervalSeconds: 0 // Not used for immediate checks
+      };
+      
+      // Add a one-time job for immediate execution
+      const job = await this.queue.add(
+        jobName,
+        jobData,
+        {
+          delay: 0, // No delay
+          priority: 1, // Higher priority than regular checks
+          removeOnComplete: true,
+          removeOnFail: false
+        }
+      );
+      
+      console.log(`Triggered immediate check for monitor ${monitorId} (job: ${job.id})`);
+    } catch (error) {
+      console.error(`Error triggering immediate check for monitor ${monitorId}:`, error);
+    }
   }
 
   async shutdown(): Promise<void> {

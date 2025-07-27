@@ -63,7 +63,12 @@ export class UptimeServiceBullMQ {
   // Methods for managing monitors after CRUD operations
   async onMonitorCreated(monitorId: number, intervalSeconds: number): Promise<void> {
     if (!this.initialized) return;
+    
+    // Schedule the monitor for recurring checks
     await this.scheduler.scheduleMonitor(monitorId, intervalSeconds);
+    
+    // Trigger an immediate check
+    await this.scheduler.triggerImmediateCheck(monitorId);
   }
 
   async onMonitorUpdated(monitorId: number, intervalSeconds: number, enabled: boolean): Promise<void> {
@@ -71,6 +76,8 @@ export class UptimeServiceBullMQ {
     
     if (enabled) {
       await this.scheduler.updateMonitorSchedule(monitorId, intervalSeconds);
+      // Trigger immediate check when monitor is re-enabled
+      await this.scheduler.triggerImmediateCheck(monitorId);
     } else {
       await this.scheduler.removeMonitorSchedule(monitorId);
     }

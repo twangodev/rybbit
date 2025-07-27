@@ -207,7 +207,7 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
         </div>
 
         {/* Pagination */}
-        {!isLoadingEvents && eventsData?.events?.length && eventsData?.events?.length > 0 && (
+        {!isLoadingEvents && eventsData?.events?.length && eventsData?.events?.length > 0 ? (
           <Pagination
             table={table}
             data={{
@@ -219,7 +219,7 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
             isLoading={isLoadingEvents}
             itemName="events"
           />
-        )}
+        ) : null}
       </CardContent>
     </Card>
   );
