@@ -46,11 +46,11 @@ wget https://raw.githubusercontent.com/your-repo/rybbit/main/monitor-agent/docke
 wget https://raw.githubusercontent.com/your-repo/rybbit/main/monitor-agent/Caddyfile
 
 # Start the services
-REGION=us-east docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
+REGION=us-east docker compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 
 # Check status
-docker-compose ps
-docker-compose logs -f
+docker compose ps
+docker compose logs -f
 ```
 
 #### 3. SSL Setup with Caddy
@@ -62,7 +62,7 @@ Caddy automatically handles SSL certificates via Let's Encrypt. Simply ensure:
 
 ```bash
 # SSL certificates will be automatically obtained when Caddy starts
-docker-compose restart caddy
+docker compose restart caddy
 ```
 
 ### Method 2: Automated Deployment Script
@@ -175,7 +175,7 @@ Monitor your agents using:
 ### Check Agent Status
 ```bash
 # Docker deployment
-docker-compose logs monitor-agent
+docker compose logs monitor-agent
 curl http://localhost:3003/health
 
 # Systemd deployment
@@ -199,8 +199,8 @@ Enable debug logging by setting `LOG_LEVEL=debug` in the `.env` file.
 ### Update Agent
 ```bash
 # Docker
-docker-compose pull
-docker-compose up -d
+docker compose pull
+docker compose up -d
 
 # Systemd
 # Copy new files and restart
