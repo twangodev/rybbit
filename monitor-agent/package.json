@@ -1,7 +1,7 @@
 {
-  "name": "frogstats-monitor-agent",
+  "name": "rybbit-monitor-agent",
   "version": "1.0.0",
-  "description": "Regional monitoring agent for FrogStats uptime monitoring",
+  "description": "Regional monitoring agent for Rybbit uptime monitoring",
   "main": "dist/index.js",
   "type": "module",
   "scripts": {

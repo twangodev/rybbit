@@ -5,7 +5,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: frogstats-monitor-agent
+    container_name: rybbit-monitor-agent
     ports:
       - "${PORT:-3003}:3003"
     environment:
@@ -21,7 +21,7 @@ services:
       - API_KEY=${API_KEY}
 
       # Main Server URL
-      - MAIN_SERVER_URL=${MAIN_SERVER_URL:-https://your-frogstats-server.com}
+      - MAIN_SERVER_URL=${MAIN_SERVER_URL:-https://your-rybbit-server.com}
 
       # Security
       - ALLOWED_IPS=${ALLOWED_IPS:-}
@@ -77,7 +77,7 @@ services:
   # Optional: Nginx reverse proxy for HTTPS
   nginx:
     image: nginx:alpine
-    container_name: frogstats-monitor-nginx
+    container_name: rybbit-monitor-nginx
     ports:
       - "443:443"
       - "80:80"

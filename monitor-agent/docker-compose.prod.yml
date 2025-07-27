@@ -5,7 +5,7 @@ version: '3.8'
 
 services:
   monitor-agent:
-    image: ${DOCKER_REGISTRY:-docker.io}/${DOCKER_IMAGE:-frogstats/monitor-agent}:${REGION:-latest}
+    image: ${DOCKER_REGISTRY:-docker.io}/${DOCKER_IMAGE:-rybbit/monitor-agent}:${REGION:-latest}
     restart: always
     
     # Production logging
@@ -44,7 +44,7 @@ services:
   # Nginx with auto-renewed SSL via Let's Encrypt
   nginx:
     image: nginx:alpine
-    container_name: frogstats-monitor-nginx-${REGION}
+    container_name: rybbit-monitor-nginx-${REGION}
     ports:
       - "443:443"
       - "80:80"
@@ -61,7 +61,7 @@ services:
   # Certbot for SSL certificate management
   certbot:
     image: certbot/certbot
-    container_name: frogstats-monitor-certbot-${REGION}
+    container_name: rybbit-monitor-certbot-${REGION}
     volumes:
       - certbot-certs:/etc/letsencrypt
       - certbot-webroot:/var/www/certbot

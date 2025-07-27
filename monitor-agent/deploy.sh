@@ -9,7 +9,7 @@ set -e
 REGION=${1:-us-east}
 ACTION=${2:-deploy}
 DOCKER_REGISTRY=${DOCKER_REGISTRY:-docker.io}
-DOCKER_IMAGE=${DOCKER_IMAGE:-frogstats/monitor-agent}
+DOCKER_IMAGE=${DOCKER_IMAGE:-rybbit/monitor-agent}
 VERSION=${VERSION:-latest}
 
 # Region configurations
@@ -73,8 +73,8 @@ case $ACTION in
             set -e
             
             # Create directories
-            mkdir -p /opt/frogstats-monitor-agent
-            cd /opt/frogstats-monitor-agent
+            mkdir -p /opt/rybbit-monitor-agent
+            cd /opt/rybbit-monitor-agent
             
             # Create .env file if it doesn't exist
             if [ ! -f .env ]; then
@@ -84,23 +84,23 @@ PORT=3000
 HOST=0.0.0.0
 REGION=$REGION
 REGION_NAME=$REGION
-MAIN_SERVER_URL=\${MAIN_SERVER_URL:-https://your-frogstats-server.com}
+MAIN_SERVER_URL=\${MAIN_SERVER_URL:-https://your-rybbit-server.com}
 ALLOWED_IPS=\${ALLOWED_IPS:-}
 LOG_LEVEL=info
 ENVFILE
-                echo "Please edit /opt/frogstats-monitor-agent/.env with correct values"
+                echo "Please edit /opt/rybbit-monitor-agent/.env with correct values"
             fi
             
             # Pull latest image
             docker pull $DOCKER_REGISTRY/$DOCKER_IMAGE:$REGION
             
             # Stop existing container
-            docker stop frogstats-monitor-agent 2>/dev/null || true
-            docker rm frogstats-monitor-agent 2>/dev/null || true
+            docker stop rybbit-monitor-agent 2>/dev/null || true
+            docker rm rybbit-monitor-agent 2>/dev/null || true
             
             # Start new container
             docker run -d \
-                --name frogstats-monitor-agent \
+                --name rybbit-monitor-agent \
                 --restart always \
                 -p 3000:3000 \
                 --env-file .env \
@@ -109,12 +109,12 @@ ENVFILE
                 
             # Check if container is running
             sleep 5
-            if docker ps | grep -q frogstats-monitor-agent; then
+            if docker ps | grep -q rybbit-monitor-agent; then
                 echo "Container started successfully"
-                docker logs --tail 20 frogstats-monitor-agent
+                docker logs --tail 20 rybbit-monitor-agent
             else
                 echo "Container failed to start"
-                docker logs frogstats-monitor-agent
+                docker logs rybbit-monitor-agent
                 exit 1
             fi
 EOF
@@ -125,10 +125,10 @@ EOF
         log_info "Checking status of $REGION ($SERVER)..."
         ssh $SERVER << EOF
             echo "=== Container Status ==="
-            docker ps -a | grep frogstats-monitor-agent || echo "No container found"
+            docker ps -a | grep rybbit-monitor-agent || echo "No container found"
             echo ""
             echo "=== Recent Logs ==="
-            docker logs --tail 20 frogstats-monitor-agent 2>&1 || echo "No logs available"
+            docker logs --tail 20 rybbit-monitor-agent 2>&1 || echo "No logs available"
             echo ""
             echo "=== Health Check ==="
             curl -s http://localhost:3000/health | jq . || echo "Health check failed"
@@ -137,17 +137,17 @@ EOF
         
     logs)
         log_info "Fetching logs from $REGION ($SERVER)..."
-        ssh $SERVER "docker logs --tail 100 -f frogstats-monitor-agent"
+        ssh $SERVER "docker logs --tail 100 -f rybbit-monitor-agent"
         ;;
         
     restart)
         log_info "Restarting $REGION ($SERVER)..."
-        ssh $SERVER "docker restart frogstats-monitor-agent"
+        ssh $SERVER "docker restart rybbit-monitor-agent"
         ;;
         
     stop)
         log_info "Stopping $REGION ($SERVER)..."
-        ssh $SERVER "docker stop frogstats-monitor-agent"
+        ssh $SERVER "docker stop rybbit-monitor-agent"
         ;;
         
     *)
