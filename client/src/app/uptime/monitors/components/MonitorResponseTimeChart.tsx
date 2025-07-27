@@ -35,7 +35,7 @@ export function MonitorResponseTimeChart({
   const monitorType = monitor?.monitorType;
   const monitorId = monitor?.id;
 
-  const { timeRange, bucket, setBucket } = useUptimeStore();
+  const { timeRange, bucket, setBucket, selectedRegion } = useUptimeStore();
 
   const [visibleMetrics, setVisibleMetrics] = useState<Set<string>>(new Set());
 
@@ -50,6 +50,7 @@ export function MonitorResponseTimeChart({
   const { data: statsData, isLoading } = useMonitorStats(monitorId, {
     hours: getHoursFromTimeRange(timeRange),
     bucket,
+    region: selectedRegion,
   });
 
   const toggleMetric = (metricKey: string) => {

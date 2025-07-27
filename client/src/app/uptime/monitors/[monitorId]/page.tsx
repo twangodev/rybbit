@@ -1,11 +1,9 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
-import { DateTime } from "luxon";
 import { useParams, useRouter } from "next/navigation";
 import {
   UptimeMonitor,
@@ -18,9 +16,10 @@ import { MonitorActions } from "../components/MonitorActions";
 import { MonitorResponseTimeChart } from "../components/MonitorResponseTimeChart";
 import { Scaffolding } from "../components/Scaffolding";
 import { StatusOrb } from "../components/StatusOrb";
-import { TIME_RANGES, useUptimeStore } from "../components/uptimeStore";
+import { useUptimeStore } from "../components/uptimeStore";
 import { getHoursFromTimeRange } from "../components/utils";
 import { EventsTable } from "./components/EventsTable";
+import { FilterBar } from "./components/FilterBar";
 
 interface StatCardProps {
   label: string;
@@ -91,10 +90,11 @@ export default function MonitorDetailPage() {
   const router = useRouter();
   const monitorId = parseInt(params.monitorId as string);
 
-  const { timeRange, setTimeRange } = useUptimeStore();
+  const { timeRange, selectedRegion } = useUptimeStore();
   const { data: monitor, isLoading: isLoadingMonitor } = useMonitor(monitorId);
   const { data: stats, isLoading: isLoadingStats } = useMonitorStats(monitorId, {
     hours: getHoursFromTimeRange(timeRange),
+    region: selectedRegion,
   });
   const { data: eventsData, isLoading: isLoadingEvents } = useMonitorEvents(monitorId, {
     limit: 100,
@@ -157,19 +157,7 @@ export default function MonitorDetailPage() {
         <MonitorHeader monitor={monitor} isLoadingMonitor={isLoadingMonitor} />
         <MonitorActions monitor={monitor} />
       </div>
-      <div className="flex items-center gap-1">
-        {TIME_RANGES.map((range) => (
-          <Button
-            key={range.value}
-            variant={timeRange === range.value ? "default" : "ghost"}
-            size="sm"
-            onClick={() => setTimeRange(range.value)}
-            className="h-7 px-2 text-xs"
-          >
-            {range.label}
-          </Button>
-        ))}
-      </div>
+      <FilterBar monitor={monitor} isLoading={isLoadingMonitor} />
 
       {/* Stats Grid */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
