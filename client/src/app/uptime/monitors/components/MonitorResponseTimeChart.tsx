@@ -71,15 +71,12 @@ export function MonitorResponseTimeChart({
       ?.map((item: any) => {
         if (!item.hour) return null;
 
-        const timestamp = DateTime.fromSQL(item.hour);
+        const timestamp = DateTime.fromSQL(item.hour, { zone: "utc" }).toLocal();
         if (!timestamp.isValid) return null;
 
-        const localTimestamp = timestamp.toLocal();
-
         const dataPoint: any = {
-          time: localTimestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
-          timestamp: localTimestamp.toISO(), // Store ISO timestamp for proper timezone handling
-          jsDate: localTimestamp.toJSDate(), // Store JS Date object for Nivo
+          time: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
+          timestamp: timestamp.toISO(), // Store ISO timestamp for proper timezone handling
           response_time_ms: item.avg_response_time,
           check_count: item.check_count || 0,
           success_count: item.success_count || 0,
@@ -116,7 +113,7 @@ export function MonitorResponseTimeChart({
           color: "hsl(180, 70%, 45%)",
           data: processedData
             .map((item: any) => ({
-              x: item.jsDate,
+              x: item.time,
               y: item.response_time_ms,
             }))
             .filter((point: any) => point.y !== null && point.y > 0),
@@ -131,7 +128,7 @@ export function MonitorResponseTimeChart({
       color: metric.color,
       data: processedData
         .map((item: any) => ({
-          x: item.jsDate,
+          x: item.time,
           y: item[metric.key] || 0,
         }))
         .filter((point: any) => point.y !== null),
@@ -257,7 +254,7 @@ export function MonitorResponseTimeChart({
             </div>
           </div>
         ) : (
-          <div className="h-[400px] w-full relative" style={{ overflow: 'visible', zIndex: 10 }}>
+          <div className="h-[400px] w-full relative" style={{ overflow: "visible", zIndex: 10 }}>
             <ResponsiveLine
               data={data}
               theme={{ ...nivoTheme }}
@@ -267,6 +264,7 @@ export function MonitorResponseTimeChart({
               xScale={{
                 type: "time",
                 precision: "second",
+                format: "%Y-%m-%d %H:%M:%S",
                 useUTC: false,
               }}
               yScale={{
