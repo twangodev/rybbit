@@ -20,12 +20,43 @@ import { useUptimeStore } from "../components/uptimeStore";
 import { getHoursFromTimeRange } from "../components/utils";
 import { EventsTable } from "./components/EventsTable";
 import { FilterBar } from "./components/FilterBar";
+import { INTERVAL_OPTIONS } from "../components/dialog/GeneralTab";
 
 interface StatCardProps {
   label: string;
   value: string;
   isLoading?: boolean;
 }
+
+const formatResponseTime = (value?: number) => {
+  if (!value) return "-";
+  return `${Math.round(value)}ms`;
+};
+
+const formatPercentage = (value?: number) => {
+  if (!value) return "-";
+  return `${value.toFixed(1)}%`;
+};
+
+const formatUptime = (seconds?: number) => {
+  if (!seconds) return "-";
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+
+  if (days > 0) {
+    return `${days}d ${hours}h`;
+  }
+  if (hours > 0) {
+    return `${hours}h ${minutes}m`;
+  }
+  return `${minutes}m`;
+};
+
+const formatInterval = (seconds?: number) => {
+  const interval = INTERVAL_OPTIONS.find((interval) => interval.value === seconds);
+  return interval?.label || `${seconds}s`;
+};
 
 function StatCard({ label, value, isLoading }: StatCardProps) {
   return (
@@ -56,7 +87,9 @@ const MonitorHeader = ({ monitor, isLoadingMonitor }: { monitor?: UptimeMonitor;
         <div className="flex items-center gap-2 mt-1">
           <Skeleton className="h-4 w-4" /> {/* Status text */}
           <span className="text-neutral-500">•</span>
-          <Skeleton className="h-4 w-48" /> {/* URL/host */}
+          <Skeleton className="h-4 w-40" /> {/* URL/host */}
+          <span className="text-neutral-500">•</span>
+          <Skeleton className="h-4 w-28" /> {/* Interval */}
         </div>
       </div>
     );
@@ -80,6 +113,7 @@ const MonitorHeader = ({ monitor, isLoadingMonitor }: { monitor?: UptimeMonitor;
             ? monitor.httpConfig?.url
             : `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`}
         </span>
+        •<span>every {formatInterval(monitor.intervalSeconds)}</span>
       </p>
     </div>
   );
@@ -101,31 +135,6 @@ export default function MonitorDetailPage() {
   });
   const { data: uptimeData, isLoading: isLoadingUptime } = useMonitorUptime(monitorId);
 
-  const formatResponseTime = (value?: number) => {
-    if (!value) return "-";
-    return `${Math.round(value)}ms`;
-  };
-
-  const formatPercentage = (value?: number) => {
-    if (!value) return "-";
-    return `${value.toFixed(1)}%`;
-  };
-
-  const formatUptime = (seconds?: number) => {
-    if (!seconds) return "-";
-    const days = Math.floor(seconds / 86400);
-    const hours = Math.floor((seconds % 86400) / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
-
-    if (days > 0) {
-      return `${days}d ${hours}h`;
-    }
-    if (hours > 0) {
-      return `${hours}h ${minutes}m`;
-    }
-    return `${minutes}m`;
-  };
-
   if (!monitor && !isLoadingMonitor) {
     return (
       <Scaffolding>
@@ -138,8 +147,6 @@ export default function MonitorDetailPage() {
       </Scaffolding>
     );
   }
-
-  const events = eventsData?.events || [];
 
   return (
     <Scaffolding>

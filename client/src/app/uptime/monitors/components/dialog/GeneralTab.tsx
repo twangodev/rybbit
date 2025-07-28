@@ -13,7 +13,7 @@ interface GeneralTabProps {
   monitorType: "http" | "tcp";
 }
 
-const INTERVAL_OPTIONS = [
+export const INTERVAL_OPTIONS = [
   { value: 30, label: "30 seconds" },
   { value: 60, label: "1 minute" },
   { value: 120, label: "2 minutes" },
