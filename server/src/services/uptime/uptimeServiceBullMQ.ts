@@ -7,6 +7,7 @@ export class UptimeServiceBullMQ {
   private executor: MonitorExecutorBullMQ;
   private regionHealthChecker: RegionHealthChecker;
   private initialized = false;
+  private initializationPromise: Promise<void> | null = null;
 
   constructor() {
     this.scheduler = new MonitorSchedulerBullMQ();
@@ -20,6 +21,17 @@ export class UptimeServiceBullMQ {
       return;
     }
     
+    // If already initializing, return the existing promise
+    if (this.initializationPromise) {
+      return this.initializationPromise;
+    }
+    
+    // Create and store the initialization promise
+    this.initializationPromise = this.performInitialization();
+    return this.initializationPromise;
+  }
+
+  private async performInitialization(): Promise<void> {
     try {
       console.log('Initializing BullMQ uptime monitoring service...');
       
@@ -36,6 +48,7 @@ export class UptimeServiceBullMQ {
       console.log('BullMQ uptime monitoring service initialized successfully');
     } catch (error) {
       console.error('Failed to initialize uptime service:', error);
+      this.initializationPromise = null; // Reset on failure
       throw error;
     }
   }
@@ -62,7 +75,15 @@ export class UptimeServiceBullMQ {
 
   // Methods for managing monitors after CRUD operations
   async onMonitorCreated(monitorId: number, intervalSeconds: number): Promise<void> {
-    if (!this.initialized) return;
+    // Wait for initialization if it's in progress
+    if (!this.initialized && this.initializationPromise) {
+      await this.initializationPromise;
+    }
+    
+    if (!this.initialized) {
+      console.warn('Uptime service not initialized, cannot schedule monitor');
+      return;
+    }
     
     // Schedule the monitor for recurring checks
     await this.scheduler.scheduleMonitor(monitorId, intervalSeconds);
@@ -72,7 +93,15 @@ export class UptimeServiceBullMQ {
   }
 
   async onMonitorUpdated(monitorId: number, intervalSeconds: number, enabled: boolean): Promise<void> {
-    if (!this.initialized) return;
+    // Wait for initialization if it's in progress
+    if (!this.initialized && this.initializationPromise) {
+      await this.initializationPromise;
+    }
+    
+    if (!this.initialized) {
+      console.warn('Uptime service not initialized, cannot update monitor');
+      return;
+    }
     
     if (enabled) {
       await this.scheduler.updateMonitorSchedule(monitorId, intervalSeconds);
@@ -84,7 +113,16 @@ export class UptimeServiceBullMQ {
   }
 
   async onMonitorDeleted(monitorId: number): Promise<void> {
-    if (!this.initialized) return;
+    // Wait for initialization if it's in progress
+    if (!this.initialized && this.initializationPromise) {
+      await this.initializationPromise;
+    }
+    
+    if (!this.initialized) {
+      console.warn('Uptime service not initialized, cannot delete monitor');
+      return;
+    }
+    
     await this.scheduler.removeMonitorSchedule(monitorId);
   }
 }

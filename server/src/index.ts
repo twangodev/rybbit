@@ -342,17 +342,20 @@ const start = async () => {
     await Promise.all([initializeClickhouse(), loadAllowedDomains(), siteConfig.loadSiteConfigs(), initPostgres()]);
 
     telemetryService.startTelemetryCron();
-    
-    // Initialize uptime monitoring service
-    try {
-      await uptimeService.initialize();
-    } catch (error) {
-      console.error("Failed to initialize uptime service:", error);
-      // Continue running without uptime monitoring
-    }
 
-    // Start the server
+    // Start the server first
     await server.listen({ port: 3001, host: "0.0.0.0" });
+    console.info("Server is listening on http://0.0.0.0:3001");
+
+    // Initialize uptime monitoring service in the background (non-blocking)
+    uptimeService.initialize()
+      .then(() => {
+        console.info("Uptime monitoring service initialized successfully");
+      })
+      .catch((error) => {
+        console.error("Failed to initialize uptime service:", error);
+        // Continue running without uptime monitoring
+      });
   } catch (err) {
     server.log.error(err);
     process.exit(1);
@@ -369,38 +372,38 @@ const shutdown = async (signal: string) => {
     console.log(`${signal} received during shutdown, forcing exit...`);
     process.exit(1);
   }
-  
+
   isShuttingDown = true;
   console.log(`${signal} received, shutting down gracefully...`);
-  
+
   // Set a timeout to force exit if shutdown takes too long
   const forceExitTimeout = setTimeout(() => {
-    console.error('Shutdown timeout exceeded, forcing exit...');
+    console.error("Shutdown timeout exceeded, forcing exit...");
     process.exit(1);
   }, 10000); // 10 second timeout
-  
+
   try {
     // Stop accepting new connections
     await server.close();
-    console.log('Server closed');
-    
+    console.log("Server closed");
+
     // Shutdown uptime service
     await uptimeService.shutdown();
-    console.log('Uptime service shut down');
-    
+    console.log("Uptime service shut down");
+
     // Clear the timeout since we're done
     clearTimeout(forceExitTimeout);
-    
+
     process.exit(0);
   } catch (error) {
-    console.error('Error during shutdown:', error);
+    console.error("Error during shutdown:", error);
     clearTimeout(forceExitTimeout);
     process.exit(1);
   }
 };
 
-process.on('SIGTERM', () => shutdown('SIGTERM'));
-process.on('SIGINT', () => shutdown('SIGINT'));
+process.on("SIGTERM", () => shutdown("SIGTERM"));
+process.on("SIGINT", () => shutdown("SIGINT"));
 
 declare module "fastify" {
   interface FastifyRequest {
