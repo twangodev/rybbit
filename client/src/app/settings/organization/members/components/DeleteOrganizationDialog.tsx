@@ -14,7 +14,7 @@ import { AlertTriangle, Trash } from "lucide-react";
 import { authClient } from "@/lib/auth";
 import { toast } from "sonner";
 import { Organization } from "../page";
-import { USER_ORGANIZATIONS_QUERY_KEY } from "../../../../api/admin/organizations";
+import { USER_ORGANIZATIONS_QUERY_KEY } from "../../../../../api/admin/organizations";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface DeleteOrganizationDialogProps {

@@ -16,10 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Alert } from "../../../../components/ui/alert";
-import { authClient } from "../../../../lib/auth";
-import { authedFetch } from "../../../../api/utils";
-import { validateEmail } from "../../../../lib/auth-utils";
+import { Alert } from "../../../../../components/ui/alert";
+import { authClient } from "../../../../../lib/auth";
+import { authedFetch } from "../../../../../api/utils";
+import { validateEmail } from "../../../../../lib/auth-utils";
 
 interface CreateUserDialogProps {
   organizationId: string;

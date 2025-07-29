@@ -3,12 +3,12 @@
 import { CreditCard, Users } from "lucide-react";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
-import { CreateOrganizationDialog } from "../../components/CreateOrganizationDialog";
-import { OrganizationSelector } from "../../components/OrganizationSelector";
-import { StandardPage } from "../../components/StandardPage";
-import { Button } from "../../components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "../../components/ui/tabs";
-import { IS_CLOUD } from "../../lib/const";
+import { CreateOrganizationDialog } from "../../../components/CreateOrganizationDialog";
+import { OrganizationSelector } from "../../../components/OrganizationSelector";
+import { StandardPage } from "../../../components/StandardPage";
+import { Button } from "../../../components/ui/button";
+import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
+import { IS_CLOUD } from "../../../lib/const";
 
 export default function OrganizationLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -20,14 +20,14 @@ export default function OrganizationLayout({ children }: { children: React.React
 
   const handleTabChange = (value: string) => {
     if (value === "members") {
-      router.push("/organization/members");
+      router.push("/settings/organization/members");
     } else if (value === "subscription") {
-      router.push("/organization/subscription");
+      router.push("/settings/organization/subscription");
     }
   };
 
   return (
-    <StandardPage>
+    <StandardPage showSidebar={false}>
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Organization Settings</h1>

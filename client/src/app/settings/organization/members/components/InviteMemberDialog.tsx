@@ -12,28 +12,19 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { UserPlus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
-import { Alert } from "../../../../components/ui/alert";
-import { authClient } from "../../../../lib/auth";
+import { Alert } from "../../../../../components/ui/alert";
+import { authClient } from "../../../../../lib/auth";
 
 interface InviteMemberDialogProps {
   organizationId: string;
   onSuccess: () => void;
 }
 
-export function InviteMemberDialog({
-  organizationId,
-  onSuccess,
-}: InviteMemberDialogProps) {
+export function InviteMemberDialog({ organizationId, onSuccess }: InviteMemberDialogProps) {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<"admin" | "member">("member");
 
@@ -79,9 +70,7 @@ export function InviteMemberDialog({
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle>Invite a new member</DialogTitle>
-          <DialogDescription>
-            Invite a new member to this organization.
-          </DialogDescription>
+          <DialogDescription>Invite a new member to this organization.</DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -91,17 +80,12 @@ export function InviteMemberDialog({
               type="email"
               placeholder="email@example.com"
               value={email}
-              onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                setEmail(e.target.value)
-              }
+              onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
             />
           </div>
           <div className="grid gap-2">
             <Label htmlFor="role">Role</Label>
-            <Select
-              value={role}
-              onValueChange={(value) => setRole(value as "admin" | "member")}
-            >
+            <Select value={role} onValueChange={(value) => setRole(value as "admin" | "member")}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>

@@ -1,20 +1,30 @@
 "use client";
 
 import { authClient } from "@/lib/auth";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../../../components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
-import { Input } from "../../../components/ui/input";
+import { Button } from "../../../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
+import { Input } from "../../../../components/ui/input";
 import { ChangePassword } from "./ChangePassword";
 import { DeleteAccount } from "./DeleteAccount";
-import { validateEmail } from "../../../lib/auth-utils";
+import { validateEmail } from "../../../../lib/auth-utils";
+import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 
 export function AccountInner({ session }: { session: ReturnType<typeof authClient.useSession> }) {
+  const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [email, setEmail] = useState(session.data?.user.email ?? "");
   const [name, setName] = useState(session.data?.user.name ?? "");
   const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
   const [isUpdatingName, setIsUpdatingName] = useState(false);
+
+  useEffect(() => {
+    setEmail(session.data?.user.email ?? "");
+    setName(session.data?.user.name ?? "");
+  }, [session]);
 
   const handleNameUpdate = async () => {
     if (!name) {
@@ -116,6 +126,17 @@ export function AccountInner({ session }: { session: ReturnType<typeof authClien
               </Button>
             </div>
           </div>
+          <Button
+            variant="outline"
+            onClick={async () => {
+              // Clear the query cache before signing out
+              queryClient.clear();
+              await authClient.signOut();
+              router.push("/login");
+            }}
+          >
+            Sign out
+          </Button>
         </CardContent>
       </Card>
 

@@ -1,16 +1,10 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import {
-  CheckCircle2,
-  KeyRound,
-  ShieldAlert,
-  ShieldCheck,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, KeyRound, ShieldAlert, ShieldCheck, XCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Button } from "../../../components/ui/button";
+import { Button } from "../../../../components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -20,10 +14,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "../../../components/ui/dialog";
-import { Input } from "../../../components/ui/input";
-import { Label } from "../../../components/ui/label";
-import { authClient } from "../../../lib/auth";
+} from "../../../../components/ui/dialog";
+import { Input } from "../../../../components/ui/input";
+import { Label } from "../../../../components/ui/label";
+import { authClient } from "../../../../lib/auth";
 
 export function ChangePassword() {
   const [open, setOpen] = useState(false);
@@ -66,20 +60,14 @@ export function ChangePassword() {
     } else if (strength >= 3 && newPassword.length >= 8) {
       feedback = "Good password";
     } else if (newPassword.length >= 8) {
-      feedback =
-        "Add uppercase, lowercase, numbers, or symbols for a stronger password";
+      feedback = "Add uppercase, lowercase, numbers, or symbols for a stronger password";
     }
 
     setPasswordStrength(strength);
     setPasswordFeedback(feedback);
   }, [newPassword]);
 
-  const canSubmit =
-    currentPassword &&
-    newPassword &&
-    confirmPassword &&
-    passwordsMatch &&
-    passwordStrength >= 3;
+  const canSubmit = currentPassword && newPassword && confirmPassword && passwordsMatch && passwordStrength >= 3;
 
   const resetForm = () => {
     setCurrentPassword("");
@@ -148,17 +136,12 @@ export function ChangePassword() {
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Change Password</DialogTitle>
-          <DialogDescription>
-            Update your password to keep your account secure
-          </DialogDescription>
+          <DialogDescription>Update your password to keep your account secure</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-5 py-4">
           <div className="space-y-2">
-            <Label
-              htmlFor="currentPassword"
-              className="text-sm font-medium flex items-center"
-            >
+            <Label htmlFor="currentPassword" className="text-sm font-medium flex items-center">
               Current Password
             </Label>
             <div className="relative">
@@ -179,10 +162,7 @@ export function ChangePassword() {
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor="newPassword"
-              className="text-sm font-medium flex items-center justify-between"
-            >
+            <Label htmlFor="newPassword" className="text-sm font-medium flex items-center justify-between">
               <span>New Password</span>
               {passwordStrength > 0 && (
                 <span
@@ -195,11 +175,7 @@ export function ChangePassword() {
                       : "text-green-500"
                   )}
                 >
-                  {passwordStrength <= 2
-                    ? "Weak"
-                    : passwordStrength === 3
-                    ? "Good"
-                    : "Strong"}
+                  {passwordStrength <= 2 ? "Weak" : passwordStrength === 3 ? "Good" : "Strong"}
                 </span>
               )}
             </Label>
@@ -232,9 +208,7 @@ export function ChangePassword() {
                       key={index}
                       className={cn(
                         "h-1.5 w-1/4 rounded-full transition-colors duration-300",
-                        index <= passwordStrength
-                          ? getStrengthColor()
-                          : "bg-neutral-200 dark:bg-neutral-700"
+                        index <= passwordStrength ? getStrengthColor() : "bg-neutral-200 dark:bg-neutral-700"
                       )}
                     />
                   ))}
@@ -258,10 +232,7 @@ export function ChangePassword() {
           </div>
 
           <div className="space-y-2">
-            <Label
-              htmlFor="confirmPassword"
-              className="text-sm font-medium flex items-center"
-            >
+            <Label htmlFor="confirmPassword" className="text-sm font-medium flex items-center">
               Confirm Password
             </Label>
             <div className="relative">
@@ -283,11 +254,7 @@ export function ChangePassword() {
                 </div>
               )}
             </div>
-            {!passwordsMatch && confirmPassword && (
-              <p className="text-xs text-red-500 mt-1">
-                Passwords do not match
-              </p>
-            )}
+            {!passwordsMatch && confirmPassword && <p className="text-xs text-red-500 mt-1">Passwords do not match</p>}
           </div>
         </div>
 
@@ -297,12 +264,7 @@ export function ChangePassword() {
               Cancel
             </Button>
           </DialogClose>
-          <Button
-            onClick={handleSubmit}
-            disabled={!canSubmit || isSubmitting}
-            variant="success"
-            className="sm:flex-1"
-          >
+          <Button onClick={handleSubmit} disabled={!canSubmit || isSubmitting} variant="success" className="sm:flex-1">
             {isSubmitting ? "Changing..." : "Change Password"}
           </Button>
         </DialogFooter>

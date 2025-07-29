@@ -15,12 +15,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "../../../components/ui/alert-dialog";
-import { Button } from "../../../components/ui/button";
-import { Input } from "../../../components/ui/input";
-import { Label } from "../../../components/ui/label";
-import { authClient } from "../../../lib/auth";
-import { cn } from "../../../lib/utils";
+} from "../../../../components/ui/alert-dialog";
+import { Button } from "../../../../components/ui/button";
+import { Input } from "../../../../components/ui/input";
+import { Label } from "../../../../components/ui/label";
+import { authClient } from "../../../../lib/auth";
+import { cn } from "../../../../lib/utils";
 
 export function DeleteAccount() {
   const [isDeleting, setIsDeleting] = useState(false);
@@ -44,15 +44,8 @@ export function DeleteAccount() {
       });
 
       if (response.error) {
-        toast.error(
-          `Failed to delete account: ${
-            response.error.message || "Unknown error"
-          }`
-        );
-        if (
-          response.error.message &&
-          response.error.message.toLowerCase().includes("password")
-        ) {
+        toast.error(`Failed to delete account: ${response.error.message || "Unknown error"}`);
+        if (response.error.message && response.error.message.toLowerCase().includes("password")) {
           setPasswordError("Incorrect password");
         }
         return;
@@ -77,11 +70,7 @@ export function DeleteAccount() {
   return (
     <AlertDialog open={isOpen} onOpenChange={setIsOpen}>
       <AlertDialogTrigger asChild>
-        <Button
-          variant="destructive"
-          className="w-full"
-          onClick={() => setIsOpen(true)}
-        >
+        <Button variant="destructive" className="w-full" onClick={() => setIsOpen(true)}>
           Delete Account
         </Button>
       </AlertDialogTrigger>
@@ -92,8 +81,8 @@ export function DeleteAccount() {
             Delete your account?
           </AlertDialogTitle>
           <AlertDialogDescription>
-            This action cannot be undone. This will permanently delete your
-            account and remove all your data from our servers.
+            This action cannot be undone. This will permanently delete your account and remove all your data from our
+            servers.
           </AlertDialogDescription>
         </AlertDialogHeader>
 
@@ -110,9 +99,7 @@ export function DeleteAccount() {
             className={cn("mt-1", passwordError && "border-red-500")}
             disabled={isDeleting}
           />
-          {passwordError && (
-            <p className="text-sm text-red-500 mt-1">{passwordError}</p>
-          )}
+          {passwordError && <p className="text-sm text-red-500 mt-1">{passwordError}</p>}
         </div>
 
         <AlertDialogFooter>

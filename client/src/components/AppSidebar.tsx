@@ -1,81 +1,18 @@
 "use client";
 
-import { useQueryClient } from "@tanstack/react-query";
-import { BarChart, SquareActivity, User, UserPlus } from "lucide-react";
+import { BarChart, SquareActivity, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
-import { authClient } from "../lib/auth";
 import { IS_CLOUD } from "../lib/const";
 import { cn } from "../lib/utils";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
-
-const SettingsMenu = ({ expanded }: { expanded?: boolean }) => {
-  const { data: session, isPending } = authClient.useSession();
-  const router = useRouter();
-  const queryClient = useQueryClient();
-
-  return (
-    <>
-      {session ? (
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            className={cn(
-              "flex items-center text-xs font-medium rounded-md transition-all duration-200 w-full",
-              "text-neutral-400 hover:text-white hover:bg-neutral-750/80",
-              expanded ? "p-2 gap-3 justify-start" : "p-2 justify-center"
-            )}
-            variant="ghost"
-          >
-            <User className="w-5 h-5 flex-shrink-0" />
-            {expanded && <span className="text-sm font-medium whitespace-nowrap overflow-hidden">Account</span>}
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align={expanded ? "start" : "end"} side="right">
-            <Link href="/account" passHref>
-              <DropdownMenuItem>Account</DropdownMenuItem>
-            </Link>
-            <Link href="/organization/members" passHref>
-              <DropdownMenuItem>Organization</DropdownMenuItem>
-            </Link>
-            <DropdownMenuItem
-              onClick={async () => {
-                // Clear the query cache before signing out
-                queryClient.clear();
-                await authClient.signOut();
-                router.push("/login");
-              }}
-            >
-              Sign out
-            </DropdownMenuItem>
-            {session?.user.role === "admin" && IS_CLOUD && (
-              <Link href="/admin" passHref>
-                <DropdownMenuItem>Admin</DropdownMenuItem>
-              </Link>
-            )}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      ) : isPending ? null : (
-        <SidebarLink
-          href={
-            typeof window !== "undefined" && globalThis.location.hostname === "demo.rybbit.io"
-              ? "https://app.rybbit.io/signup"
-              : "/signup"
-          }
-          icon={<UserPlus className="w-5 h-5" />}
-          label="Sign up"
-          expanded={expanded}
-        />
-      )}
-    </>
-  );
-};
 
 export function AppSidebar() {
   const pathname = usePathname();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (!IS_CLOUD) {
+  if (IS_CLOUD) {
     return null;
   }
 
@@ -107,7 +44,13 @@ export function AppSidebar() {
           expanded={isExpanded}
         />
       </div>
-      <SettingsMenu expanded={isExpanded} />
+      <SidebarLink
+        href="/settings/account"
+        icon={<User className="w-5 h-5" />}
+        label="Account"
+        active={pathname.startsWith("/settings/account")}
+        expanded={isExpanded}
+      />
     </div>
   );
 }

@@ -1,19 +1,19 @@
 "use client";
 import { DateTime } from "luxon";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../components/ui/table";
-import { authClient } from "../../../lib/auth";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../components/ui/table";
+import { authClient } from "../../../../lib/auth";
 
-import { useOrganizationMembers } from "../../../api/admin/auth";
-import { useOrganizationInvitations } from "../../../api/admin/organizations";
-import { NoOrganization } from "../../../components/NoOrganization";
+import { useOrganizationMembers } from "../../../../api/admin/auth";
+import { useOrganizationInvitations } from "../../../../api/admin/organizations";
+import { NoOrganization } from "../../../../components/NoOrganization";
 import { InviteMemberDialog } from "./components/InviteMemberDialog";
-import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
+import { useSetPageTitle } from "../../../../hooks/useSetPageTitle";
 import { EditOrganizationDialog } from "./components/EditOrganizationDialog";
 import { DeleteOrganizationDialog } from "./components/DeleteOrganizationDialog";
 import { RemoveMemberDialog } from "./components/RemoveMemberDialog";
 import { Invitations } from "./components/Invitations";
-import { IS_CLOUD } from "../../../lib/const";
+import { IS_CLOUD } from "../../../../lib/const";
 import { CreateUserDialog } from "./components/CreateUserDialog";
 
 // Types for our component

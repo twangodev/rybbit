@@ -8,7 +8,7 @@ export default function OrganizationPage() {
 
   useEffect(() => {
     // Redirect to members page by default
-    router.replace("/organization/members");
+    router.replace("/settings/organization/members");
   }, [router]);
 
   return null;

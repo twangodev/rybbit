@@ -1,34 +1,26 @@
 "use client";
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProPlan } from "../../../components/subscription/ProPlan";
-import { useStripeSubscription } from "../../../lib/subscription/useStripeSubscription";
-import { NoOrganization } from "../../../components/NoOrganization";
-import { TrialPlan } from "../../../components/subscription/TrialPlan";
-import { ExpiredTrialPlan } from "../../../components/subscription/ExpiredTrialPlan";
-import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
-import { FreePlan } from "../../../components/subscription/FreePlan";
+import { ProPlan } from "../../../../components/subscription/ProPlan";
+import { useStripeSubscription } from "../../../../lib/subscription/useStripeSubscription";
+import { NoOrganization } from "../../../../components/NoOrganization";
+import { TrialPlan } from "../../../../components/subscription/TrialPlan";
+import { ExpiredTrialPlan } from "../../../../components/subscription/ExpiredTrialPlan";
+import { useSetPageTitle } from "../../../../hooks/useSetPageTitle";
+import { FreePlan } from "../../../../components/subscription/FreePlan";
 import { Building } from "lucide-react";
 import { authClient } from "@/lib/auth";
 
 export default function OrganizationSubscriptionPage() {
   useSetPageTitle("Rybbit · Organization Subscription");
-  const { data: activeSubscription, isLoading: isLoadingSubscription } =
-    useStripeSubscription();
+  const { data: activeSubscription, isLoading: isLoadingSubscription } = useStripeSubscription();
 
   const { data: activeOrg, isPending } = authClient.useActiveOrganization();
   const { data: session } = authClient.useSession();
 
   // Check if the current user is an owner by looking at the members in the active organization
-  const currentUserMember = activeOrg?.members?.find(
-    (member) => member.userId === session?.user?.id
-  );
+  const currentUserMember = activeOrg?.members?.find((member) => member.userId === session?.user?.id);
   const isOwner = currentUserMember?.role === "owner";
 
   const isLoading = isLoadingSubscription || isPending;
@@ -36,9 +28,7 @@ export default function OrganizationSubscriptionPage() {
   // Determine which plan to display
   const renderPlanComponent = () => {
     if (!activeOrg && !isPending) {
-      return (
-        <NoOrganization message="You need to select an organization to manage your subscription." />
-      );
+      return <NoOrganization message="You need to select an organization to manage your subscription." />;
     }
 
     if (!isOwner) {

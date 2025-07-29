@@ -1,26 +1,13 @@
 "use client";
 import { DateTime } from "luxon";
-import { useQuery } from "@tanstack/react-query";
-import { authClient } from "../../../../lib/auth";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../../../../components/ui/card";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../../../../components/ui/table";
-import { Badge } from "../../../../components/ui/badge";
-import { Button } from "../../../../components/ui/button";
 import { useState } from "react";
 import { toast } from "sonner";
-import { useOrganizationInvitations } from "../../../../api/admin/organizations";
+import { useOrganizationInvitations } from "../../../../../api/admin/organizations";
+import { Badge } from "../../../../../components/ui/badge";
+import { Button } from "../../../../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../../components/ui/table";
+import { authClient } from "../../../../../lib/auth";
 
 interface InvitationsProps {
   organizationId: string;
@@ -28,9 +15,7 @@ interface InvitationsProps {
 }
 
 export function Invitations({ organizationId, isOwner }: InvitationsProps) {
-  const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(
-    null
-  );
+  const [loadingInvitationId, setLoadingInvitationId] = useState<string | null>(null);
 
   const {
     data: invitations,
@@ -133,18 +118,12 @@ export function Invitations({ organizationId, isOwner }: InvitationsProps) {
                   invitations.map((invitation) => (
                     <TableRow key={invitation.id}>
                       <TableCell>{invitation.email}</TableCell>
-                      <TableCell className="capitalize">
-                        {invitation.role}
+                      <TableCell className="capitalize">{invitation.role}</TableCell>
+                      <TableCell>
+                        <Badge variant={getBadgeVariant(invitation.status)}>{invitation.status}</Badge>
                       </TableCell>
                       <TableCell>
-                        <Badge variant={getBadgeVariant(invitation.status)}>
-                          {invitation.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {DateTime.fromJSDate(
-                          new Date(invitation.expiresAt)
-                        ).toLocaleString(DateTime.DATE_SHORT)}
+                        {DateTime.fromJSDate(new Date(invitation.expiresAt)).toLocaleString(DateTime.DATE_SHORT)}
                       </TableCell>
                       {isOwner && (
                         <TableCell className="text-right">
@@ -153,13 +132,9 @@ export function Invitations({ organizationId, isOwner }: InvitationsProps) {
                               variant="default"
                               size="sm"
                               disabled={loadingInvitationId === invitation.id}
-                              onClick={() =>
-                                handleCancelInvitation(invitation.id)
-                              }
+                              onClick={() => handleCancelInvitation(invitation.id)}
                             >
-                              {loadingInvitationId === invitation.id
-                                ? "Processing..."
-                                : "Cancel"}
+                              {loadingInvitationId === invitation.id ? "Processing..." : "Cancel"}
                             </Button>
                           )}
                           {invitation.status === "canceled" && (
@@ -169,9 +144,7 @@ export function Invitations({ organizationId, isOwner }: InvitationsProps) {
                               disabled={loadingInvitationId === invitation.id}
                               onClick={() => handleResendInvitation(invitation)}
                             >
-                              {loadingInvitationId === invitation.id
-                                ? "Processing..."
-                                : "Resend"}
+                              {loadingInvitationId === invitation.id ? "Processing..." : "Resend"}
                             </Button>
                           )}
                         </TableCell>
@@ -180,10 +153,7 @@ export function Invitations({ organizationId, isOwner }: InvitationsProps) {
                   ))
                 ) : (
                   <TableRow>
-                    <TableCell
-                      colSpan={isOwner ? 5 : 4}
-                      className="text-center py-6 text-muted-foreground"
-                    >
+                    <TableCell colSpan={isOwner ? 5 : 4} className="text-center py-6 text-muted-foreground">
                       No pending invitations
                     </TableCell>
                   </TableRow>

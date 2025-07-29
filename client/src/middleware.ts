@@ -38,6 +38,7 @@ export async function middleware(request: NextRequest) {
       "organization",
       "account",
       "uptime",
+      "settings",
       "_next",
       "api",
     ];
