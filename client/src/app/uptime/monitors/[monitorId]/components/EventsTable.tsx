@@ -5,34 +5,58 @@ import {
   flexRender,
   getCoreRowModel,
   getFilteredRowModel,
-  getPaginationRowModel,
   getSortedRowModel,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table";
-import React, { useMemo, useState } from "react";
-import { MonitorEvent, useMonitorEvents } from "../../../../../api/uptime/monitors";
-import { Pagination } from "../../../../../components/pagination";
+import { Loader2 } from "lucide-react";
+import { DateTime } from "luxon";
+import React, { useEffect, useMemo, useState } from "react";
+import { MonitorEvent, useMonitorEventsInfinite } from "../../../../../api/uptime/monitors";
+import { Badge } from "../../../../../components/ui/badge";
+import { Button } from "../../../../../components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
 import { Skeleton } from "../../../../../components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "../../../../../components/ui/table";
-import { DateTime } from "luxon";
-import { Badge } from "../../../../../components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
+import { CountryFlag } from "../../../../[site]/components/shared/icons/CountryFlag";
+import { useUptimeStore } from "../../components/uptimeStore";
+import { REGIONS } from "../../const";
 import { EventDetailsRow } from "./EventDetailsRow";
 
 const columnHelper = createColumnHelper<MonitorEvent>();
 
 export function EventsTable({ monitorId }: { monitorId: number }) {
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [pagination, setPagination] = useState({
-    pageIndex: 0,
-    pageSize: 10,
-  });
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
+  const { selectedRegion } = useUptimeStore();
 
-  const { data: eventsData, isLoading: isLoadingEvents } = useMonitorEvents(monitorId, {
-    limit: 100,
+  const {
+    data,
+    isLoading: isLoadingEvents,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = useMonitorEventsInfinite(monitorId, {
+    region: selectedRegion,
   });
+
+  // Flatten all pages of events
+  const allEvents = useMemo(() => {
+    return data?.pages.flatMap((page) => page.events) || [];
+  }, [data]);
+
+  // Auto-fetch when scrolled to bottom
+  useEffect(() => {
+    const handleScroll = () => {
+      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
+      if (scrollTop + clientHeight >= scrollHeight - 100 && hasNextPage && !isFetchingNextPage) {
+        fetchNextPage();
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggleRow = (rowId: string) => {
     const newExpanded = new Set(expandedRows);
@@ -66,7 +90,6 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
           const timestamp = DateTime.fromSQL(row.original.timestamp, { zone: "utc" });
           return (
             <div className="text-sm">
-              {/* <div className="font-medium">{timestamp.toLocal().toRelative()}</div> */}
               <div className="">{timestamp.toLocal().toFormat("MMM dd, HH:mm:ss")}</div>
             </div>
           );
@@ -103,7 +126,15 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
       }),
       columnHelper.accessor("region", {
         header: "Region",
-        cell: ({ row }) => <span className="text-sm uppercase">{row.original.region || "-"}</span>,
+        cell: ({ row }) => {
+          const region = REGIONS.find((r) => r.code === row.original.region);
+          return (
+            <span className="text-sm flex items-center gap-2">
+              <CountryFlag country={region?.countryCode || "US"} className="w-5 h-5" />
+              <span className="text-sm">{region?.name || "-"}</span>
+            </span>
+          );
+        },
       }),
     ],
     []
@@ -111,18 +142,16 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
 
   // Create table instance
   const table = useReactTable({
-    data: eventsData?.events || [],
+    data: allEvents,
     columns,
     state: {
       sorting,
-      pagination,
     },
     onSortingChange: setSorting,
-    onPaginationChange: setPagination,
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
+    manualPagination: true,
   });
 
   return (
@@ -151,7 +180,7 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
             </TableHeader>
             <TableBody>
               {isLoadingEvents ? (
-                Array.from({ length: 5 }).map((_, i) => (
+                Array.from({ length: 10 }).map((_, i) => (
                   <TableRow key={`skeleton-${i}`}>
                     {/* Status dot */}
                     <TableCell className="w-10">
@@ -206,20 +235,24 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
           </Table>
         </div>
 
-        {/* Pagination */}
-        {!isLoadingEvents && eventsData?.events?.length && eventsData?.events?.length > 0 ? (
-          <Pagination
-            table={table}
-            data={{
-              items: table.getFilteredRowModel().rows.map((row) => row.original),
-              total: table.getFilteredRowModel().rows.length,
-            }}
-            pagination={pagination}
-            setPagination={setPagination}
-            isLoading={isLoadingEvents}
-            itemName="events"
-          />
-        ) : null}
+        {/* Infinite scroll loader */}
+        {isFetchingNextPage && (
+          <div className="flex justify-center py-4">
+            <Button variant="ghost" size="sm" disabled>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Loading more events...
+            </Button>
+          </div>
+        )}
+
+        {/* Load more button (as fallback) */}
+        {hasNextPage && !isFetchingNextPage && (
+          <div className="flex justify-center">
+            <Button variant="outline" size="sm" onClick={() => fetchNextPage()}>
+              Load More
+            </Button>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

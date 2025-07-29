@@ -130,9 +130,7 @@ export default function MonitorDetailPage() {
     hours: getHoursFromTimeRange(timeRange),
     region: selectedRegion,
   });
-  const { data: eventsData, isLoading: isLoadingEvents } = useMonitorEvents(monitorId, {
-    limit: 100,
-  });
+
   const { data: uptimeData, isLoading: isLoadingUptime } = useMonitorUptime(monitorId);
 
   if (!monitor && !isLoadingMonitor) {

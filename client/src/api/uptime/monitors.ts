@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import axios from "axios";
 import { BACKEND_URL } from "../../lib/const";
 import { authedFetch } from "../utils";
@@ -279,6 +279,21 @@ export function useMonitorEvents(monitorId: number | undefined, params?: Paramet
   });
 }
 
+export function useMonitorEventsInfinite(monitorId: number | undefined, params?: Omit<Parameters<typeof getMonitorEvents>[1], 'offset'>) {
+  return useInfiniteQuery({
+    queryKey: ["uptime-monitor-events-infinite", monitorId, params],
+    queryFn: ({ pageParam = 0 }) => 
+      monitorId ? getMonitorEvents(monitorId, { ...params, offset: pageParam, limit: 100 }) : Promise.reject("No monitor ID"),
+    getNextPageParam: (lastPage, pages) => {
+      const currentOffset = (pages.length - 1) * 100;
+      const hasMore = currentOffset + lastPage.events.length < lastPage.pagination.total;
+      return hasMore ? currentOffset + 100 : undefined;
+    },
+    enabled: !!monitorId,
+    initialPageParam: 0,
+  });
+}
+
 export function useMonitorUptime(monitorId: number | undefined) {
   return useQuery({
     queryKey: ["uptime-monitor-uptime", monitorId],
@@ -295,42 +310,6 @@ export function useMonitorUptimeBuckets(
     queryKey: ["uptime-monitor-buckets", monitorId, params],
     queryFn: () => (monitorId ? getMonitorUptimeBuckets(monitorId, params) : Promise.reject("No monitor ID")),
     enabled: !!monitorId,
-  });
-}
-
-// Hook to fetch events for all monitors (used in the monitors table)
-export function useAllMonitorEvents(monitors: UptimeMonitor[]) {
-  return useQuery({
-    queryKey: ["uptime-all-monitor-events", monitors.map((m) => m.id)],
-    queryFn: async () => {
-      const eventsMap: Record<number, MonitorEvent[]> = {};
-
-      // Fetch events for all monitors in parallel
-      const promises = monitors.map(async (monitor) => {
-        try {
-          const response = await fetch(`${BACKEND_URL}/uptime/monitors/${monitor.id}/events?limit=1000`, {
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            eventsMap[monitor.id] = data.events || [];
-          }
-        } catch (error) {
-          console.error(`Failed to fetch events for monitor ${monitor.id}:`, error);
-          eventsMap[monitor.id] = [];
-        }
-      });
-
-      await Promise.all(promises);
-      return eventsMap;
-    },
-    enabled: monitors.length > 0,
-    staleTime: 30 * 1000, // Consider data stale after 30 seconds
-    refetchInterval: 60 * 1000, // Refetch every minute
   });
 }
 
