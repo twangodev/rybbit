@@ -11,7 +11,7 @@ import {
 } from "@tanstack/react-table";
 import { Loader2 } from "lucide-react";
 import { DateTime } from "luxon";
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { MonitorEvent, useMonitorEventsInfinite } from "../../../../../api/uptime/monitors";
 import { Badge } from "../../../../../components/ui/badge";
 import { Button } from "../../../../../components/ui/button";
@@ -22,6 +22,7 @@ import { CountryFlag } from "../../../../[site]/components/shared/icons/CountryF
 import { useUptimeStore } from "../../components/uptimeStore";
 import { REGIONS } from "../../const";
 import { EventDetailsRow } from "./EventDetailsRow";
+import { InlineTimingWaterfall } from "./InlineTimingWaterfall";
 
 const columnHelper = createColumnHelper<MonitorEvent>();
 
@@ -44,19 +45,6 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
   const allEvents = useMemo(() => {
     return data?.pages.flatMap((page) => page.events) || [];
   }, [data]);
-
-  // Auto-fetch when scrolled to bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      const { scrollTop, scrollHeight, clientHeight } = document.documentElement;
-      if (scrollTop + clientHeight >= scrollHeight - 100 && hasNextPage && !isFetchingNextPage) {
-        fetchNextPage();
-      }
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   const toggleRow = (rowId: string) => {
     const newExpanded = new Set(expandedRows);
@@ -123,6 +111,11 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
             {row.original.response_time_ms ? `${Math.round(row.original.response_time_ms)}ms` : "-"}
           </span>
         ),
+      }),
+      columnHelper.display({
+        id: "timings",
+        header: "Timings",
+        cell: ({ row }) => <InlineTimingWaterfall event={row.original} />,
       }),
       columnHelper.accessor("region", {
         header: "Region",
@@ -200,6 +193,10 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
                     <TableCell>
                       <Skeleton className="h-4 w-16" />
                     </TableCell>
+                    {/* Timings */}
+                    <TableCell>
+                      <Skeleton className="h-3 w-24" />
+                    </TableCell>
                     {/* Region */}
                     <TableCell>
                       <Skeleton className="h-4 w-12" />
@@ -237,7 +234,7 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
 
         {/* Infinite scroll loader */}
         {isFetchingNextPage && (
-          <div className="flex justify-center py-4">
+          <div className="flex justify-center">
             <Button variant="ghost" size="sm" disabled>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
               Loading more events...
