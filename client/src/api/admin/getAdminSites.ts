@@ -7,7 +7,12 @@ export interface AdminSiteData {
   createdAt: string;
   public: boolean;
   eventsLast24Hours: number;
+  eventsLast30Days: number;
   organizationOwnerEmail: string | null;
+  subscription: {
+    planName: string;
+    status: string;
+  };
 }
 
 async function getAdminSites() {

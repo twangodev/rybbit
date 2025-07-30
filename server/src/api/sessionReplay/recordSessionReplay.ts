@@ -1,9 +1,10 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { SessionReplayIngestService } from "../../services/replay/sessionReplayIngestService.js";
+import { validateApiKey, validateOrigin } from "../../services/shared/requestValidation.js";
+import { usageService } from "../../services/usageService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 import { getIpAddress } from "../../utils.js";
-import { validateApiKey, validateOrigin, checkApiKeyRateLimit } from "../../services/shared/requestValidation.js";
 
 const recordSessionReplaySchema = z.object({
   userId: z.string(),
@@ -34,6 +35,13 @@ export async function recordSessionReplay(
 ) {
   try {
     const siteId = Number(request.params.site);
+
+    // Check if the site has exceeded its monthly limit
+    if (usageService.isSiteOverLimit(Number(siteId))) {
+      console.log(`[SessionReplay] Skipping event for site ${siteId} - over monthly limit`);
+      return reply.status(200).send("Site over monthly limit, event not tracked");
+    }
+
     const body = recordSessionReplaySchema.parse(request.body) as RecordSessionReplayRequest;
 
     // First check if API key is provided and valid

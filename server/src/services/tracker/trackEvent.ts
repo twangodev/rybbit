@@ -3,9 +3,10 @@ import { isbot } from "isbot";
 import { z, ZodError } from "zod";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { sessionsService } from "../sessions/sessionsService.js";
-import { validateApiKey, validateOrigin, checkApiKeyRateLimit } from "../shared/requestValidation.js";
-import { createBasePayload, isSiteOverLimit } from "./utils.js";
+import { checkApiKeyRateLimit, validateApiKey, validateOrigin } from "../shared/requestValidation.js";
+import { usageService } from "../usageService.js";
 import { pageviewQueue } from "./pageviewQueue.js";
+import { createBasePayload } from "./utils.js";
 
 // Define Zod schema for validation
 export const trackingPayloadSchema = z.discriminatedUnion("type", [
@@ -146,7 +147,6 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     .strict(),
 ]);
 
-
 // Unified handler for all events (pageviews and custom events)
 export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
   try {
@@ -222,7 +222,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     }
 
     // Check if the site has exceeded its monthly limit
-    if (isSiteOverLimit(validatedPayload.site_id)) {
+    if (usageService.isSiteOverLimit(Number(validatedPayload.site_id))) {
       console.log(`[Tracking] Skipping event for site ${validatedPayload.site_id} - over monthly limit`);
       return reply.status(200).send("Site over monthly limit, event not tracked");
     }

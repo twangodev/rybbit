@@ -5,7 +5,7 @@ import { gunzipSync } from "zlib";
 import { compress as zstdCompress, decompress as zstdDecompress } from "@mongodb-js/zstd";
 import { IS_CLOUD } from "../../lib/const.js";
 
-export class R2StorageService {
+class R2StorageService {
   private client: S3Client | null = null;
   private bucketName: string = "";
   private enabled: boolean = false;

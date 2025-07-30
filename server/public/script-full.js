@@ -89,13 +89,13 @@
     const apiKey = scriptTag.getAttribute("data-api-key") || void 0;
     const sessionReplayBatchSize = scriptTag.getAttribute(
       "data-replay-batch-size"
-    ) ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 25;
+    ) ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 250;
     const sessionReplayBatchInterval = scriptTag.getAttribute(
       "data-replay-batch-interval"
     ) ? Math.max(
       1e3,
       parseInt(scriptTag.getAttribute("data-replay-batch-interval"))
-    ) : 2e3;
+    ) : 5e3;
     return {
       analyticsHost,
       siteId,

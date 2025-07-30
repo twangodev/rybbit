@@ -27,8 +27,7 @@ export function formatSecondsAsMinutesAndSeconds(value: number) {
   }
 }
 
-export const sleep = (ms: number) =>
-  new Promise((resolve) => setTimeout(resolve, ms));
+export const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 export const getCountryName = (countryCode: string) => {
   return countries[countryCode as keyof typeof countries]?.name;
@@ -61,20 +60,31 @@ export const getLanguageName = (languageCode: string) => {
 
 export function normalizeDomain(domain: string): string {
   if (!domain) return domain;
-  
+
   let normalized = domain.trim();
-  
+
   // Remove protocol (http:// or https://)
-  normalized = normalized.replace(/^https?:\/\//, '');
-  
+  normalized = normalized.replace(/^https?:\/\//, "");
+
   // Remove www. prefix
-  normalized = normalized.replace(/^www\./, '');
-  
+  normalized = normalized.replace(/^www\./, "");
+
   // Remove trailing slash and any path
-  normalized = normalized.split('/')[0];
-  
+  normalized = normalized.split("/")[0];
+
   // Remove trailing dots
-  normalized = normalized.replace(/\.+$/, '');
-  
+  normalized = normalized.replace(/\.+$/, "");
+
   return normalized;
+}
+
+/**
+ * A simple domain validation function:
+ * - Ensures at least one dot separator
+ * - Allows subdomains (e.g. sub.example.com)
+ * - Requires the TLD to be alphabetical (e.g. .com)
+ */
+export function isValidDomain(domain: string): boolean {
+  const domainRegex = /^(?:https?:\/\/)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+  return domainRegex.test(domain);
 }

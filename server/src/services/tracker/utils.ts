@@ -1,11 +1,10 @@
 import { FastifyRequest } from "fastify";
 import UAParser, { UAParser as userAgentParser } from "ua-parser-js";
 import { z } from "zod";
-import { usageService } from "../usageService.js";
+import { getIpAddress } from "../../utils.js";
 import { userIdService } from "../userId/userIdService.js";
 import { trackingPayloadSchema } from "./trackEvent.js";
 import { TrackingPayload } from "./types.js";
-import { getIpAddress } from "../../utils.js";
 
 export type TotalTrackingPayload = TrackingPayload & {
   type?: string;
@@ -80,11 +79,6 @@ export function clearSelfReferrer(referrer: string, hostname: string): string {
   }
 
   return referrer;
-}
-
-// Check if site is over the monthly limit
-export function isSiteOverLimit(siteId: number | string): boolean {
-  return usageService.getSitesOverLimit().has(Number(siteId));
 }
 
 // Create base tracking payload from request

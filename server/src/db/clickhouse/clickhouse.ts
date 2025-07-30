@@ -86,6 +86,14 @@ export const initializeClickhouse = async () => {
 
   await clickhouse.exec({
     query: `
+      ALTER TABLE session_replay_events
+        ADD COLUMN IF NOT EXISTS event_data_key Nullable(String), -- R2 storage key for cloud deployments
+        ADD COLUMN IF NOT EXISTS batch_index Nullable(UInt16) -- Index within the R2 batch
+      `,
+  });
+
+  await clickhouse.exec({
+    query: `
       CREATE TABLE IF NOT EXISTS session_replay_metadata (
         site_id UInt16,
         session_id String,

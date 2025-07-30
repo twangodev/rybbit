@@ -80,39 +80,3 @@ export async function parseTrackingData(
     referrer: referrer || "",
   };
 }
-
-/**
- * Extract browser info from user agent
- */
-export function getBrowserInfo(userAgent: string): {
-  name: string;
-  version: string;
-} {
-  const ua = UAParser(userAgent);
-  return {
-    name: ua.browser.name || "Unknown",
-    version: ua.browser.major || "",
-  };
-}
-
-/**
- * Extract OS info from user agent
- */
-export function getOSInfo(userAgent: string): {
-  name: string;
-  version: string;
-} {
-  const ua = UAParser(userAgent);
-  return {
-    name: ua.os.name || "Unknown",
-    version: ua.os.version || "",
-  };
-}
-
-/**
- * Get device type from user agent and screen dimensions
- */
-export function getDeviceTypeFromUA(userAgent: string, screenWidth: number, screenHeight: number): string {
-  const ua = UAParser(userAgent);
-  return getDeviceType(screenWidth, screenHeight, ua);
-}

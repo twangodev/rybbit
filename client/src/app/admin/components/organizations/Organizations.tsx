@@ -2,30 +2,13 @@
 
 import { useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import {
-  useAdminOrganizations,
-  AdminOrganizationData,
-} from "@/api/admin/getAdminOrganizations";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { useAdminOrganizations, AdminOrganizationData } from "@/api/admin/getAdminOrganizations";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
-import {
-  ChevronDown,
-  ChevronRight,
-  User,
-  Building2,
-  CreditCard,
-  UserCheck,
-  ExternalLink,
-} from "lucide-react";
+import { parseUtcTimestamp } from "@/lib/dateTimeUtils";
+import { ChevronDown, ChevronRight, User, Building2, CreditCard, UserCheck, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Pagination } from "@/components/pagination";
@@ -43,6 +26,7 @@ import { SortableHeader } from "../shared/SortableHeader";
 import { SearchInput } from "../shared/SearchInput";
 import { ErrorAlert } from "../shared/ErrorAlert";
 import { AdminLayout } from "../shared/AdminLayout";
+import { GrowthChart } from "../shared/GrowthChart";
 
 export function Organizations() {
   const router = useRouter();
@@ -79,9 +63,7 @@ export function Organizations() {
     return organizations.filter((org) => {
       return (
         org.name.toLowerCase().includes(lowerSearchQuery) ||
-        org.sites.some((site) =>
-          site.domain.toLowerCase().includes(lowerSearchQuery)
-        ) ||
+        org.sites.some((site) => site.domain.toLowerCase().includes(lowerSearchQuery)) ||
         org.members.some(
           (member) =>
             member.email.toLowerCase().includes(lowerSearchQuery) ||
@@ -102,8 +84,7 @@ export function Organizations() {
         router.push("/");
         return true;
       } catch (err) {
-        const errorMessage =
-          err instanceof Error ? err.message : "Unknown error occurred";
+        const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
         console.error(`Failed to impersonate user: ${errorMessage}`);
         return false;
       }
@@ -112,19 +93,13 @@ export function Organizations() {
   );
 
   // Format subscription status
-  const formatSubscriptionStatus = (
-    subscription: AdminOrganizationData["subscription"]
-  ) => {
+  const formatSubscriptionStatus = (subscription: AdminOrganizationData["subscription"]) => {
     if (!subscription.id) {
       return <Badge variant="secondary">Free</Badge>;
     }
 
     const statusColor =
-      subscription.status === "active"
-        ? "default"
-        : subscription.status === "canceled"
-        ? "destructive"
-        : "secondary";
+      subscription.status === "active" ? "default" : subscription.status === "canceled" ? "destructive" : "secondary";
 
     return <Badge variant={statusColor}>{subscription.planName}</Badge>;
   };
@@ -136,12 +111,7 @@ export function Organizations() {
         id: "expand",
         header: "",
         cell: ({ row }) => (
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5 p-0"
-            onClick={() => toggleExpand(row.original.id)}
-          >
+          <Button variant="ghost" size="icon" className="h-5 w-5 p-0" onClick={() => toggleExpand(row.original.id)}>
             {expandedOrgs.has(row.original.id) ? (
               <ChevronDown className="h-4 w-4" />
             ) : (
@@ -153,28 +123,20 @@ export function Organizations() {
       },
       {
         accessorKey: "name",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Organization</SortableHeader>
-        ),
-        cell: ({ row }) => (
-          <div className="font-medium">{row.getValue("name")}</div>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Organization</SortableHeader>,
+        cell: ({ row }) => <div className="font-medium">{row.getValue("name")}</div>,
       },
       {
         accessorKey: "createdAt",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Created</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Created</SortableHeader>,
         cell: ({ row }) =>
-          formatDistanceToNow(new Date(row.getValue("createdAt")), {
+          formatDistanceToNow(parseUtcTimestamp(row.getValue("createdAt")).toJSDate(), {
             addSuffix: true,
           }),
       },
       {
         accessorKey: "monthlyEventCount",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Monthly Events</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Monthly Events</SortableHeader>,
         cell: ({ row }) => {
           const count = row.getValue("monthlyEventCount") as number;
           const isOverLimit = row.original.overMonthlyLimit;
@@ -188,49 +150,30 @@ export function Organizations() {
       },
       {
         id: "eventsLast24Hours",
-        header: ({ column }) => (
-          <SortableHeader column={column}>24h Events</SortableHeader>
-        ),
-        accessorFn: (row) =>
-          row.sites.reduce(
-            (total, site) => total + Number(site.eventsLast24Hours || 0),
-            0
-          ),
+        header: ({ column }) => <SortableHeader column={column}>24h Events</SortableHeader>,
+        accessorFn: (row) => row.sites.reduce((total, site) => total + Number(site.eventsLast24Hours || 0), 0),
         cell: ({ row }) => {
-          const total = row.original.sites.reduce(
-            (sum, site) => sum + Number(site.eventsLast24Hours || 0),
-            0
-          );
+          const total = row.original.sites.reduce((sum, site) => sum + Number(site.eventsLast24Hours || 0), 0);
           return total.toLocaleString();
         },
       },
       {
         id: "subscription",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Subscription</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Subscription</SortableHeader>,
         accessorFn: (row) => row.subscription.planName,
         cell: ({ row }) => formatSubscriptionStatus(row.original.subscription),
       },
       {
         id: "sites",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Sites</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Sites</SortableHeader>,
         accessorFn: (row) => row.sites.length,
-        cell: ({ row }) => (
-          <Badge variant="outline">{row.original.sites.length}</Badge>
-        ),
+        cell: ({ row }) => <Badge variant="outline">{row.original.sites.length}</Badge>,
       },
       {
         id: "members",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Members</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Members</SortableHeader>,
         accessorFn: (row) => row.members.length,
-        cell: ({ row }) => (
-          <Badge variant="outline">{row.original.members.length}</Badge>
-        ),
+        cell: ({ row }) => <Badge variant="outline">{row.original.members.length}</Badge>,
       },
     ],
     [toggleExpand]
@@ -252,10 +195,7 @@ export function Organizations() {
   // Paginate the sorted and filtered organizations
   const paginatedOrganizations = table
     .getRowModel()
-    .rows.slice(
-      pagination.pageIndex * pagination.pageSize,
-      (pagination.pageIndex + 1) * pagination.pageSize
-    );
+    .rows.slice(pagination.pageIndex * pagination.pageSize, (pagination.pageIndex + 1) * pagination.pageSize);
 
   // Pagination controller for TablePagination
   const paginationController = {
@@ -263,15 +203,11 @@ export function Organizations() {
     getCanPreviousPage: () => pagination.pageIndex > 0,
     getCanNextPage: () =>
       table.getRowModel().rows.length > 0
-        ? pagination.pageIndex <
-          Math.ceil(table.getRowModel().rows.length / pagination.pageSize) - 1
+        ? pagination.pageIndex < Math.ceil(table.getRowModel().rows.length / pagination.pageSize) - 1
         : false,
     getPageCount: () =>
-      table.getRowModel().rows.length > 0
-        ? Math.ceil(table.getRowModel().rows.length / pagination.pageSize)
-        : 0,
-    setPageIndex: (index: number) =>
-      setPagination({ ...pagination, pageIndex: index }),
+      table.getRowModel().rows.length > 0 ? Math.ceil(table.getRowModel().rows.length / pagination.pageSize) : 0,
+    setPageIndex: (index: number) => setPagination({ ...pagination, pageIndex: index }),
     previousPage: () =>
       setPagination({
         ...pagination,
@@ -282,8 +218,7 @@ export function Organizations() {
         ...pagination,
         pageIndex: Math.min(
           table.getRowModel().rows.length > 0
-            ? Math.ceil(table.getRowModel().rows.length / pagination.pageSize) -
-                1
+            ? Math.ceil(table.getRowModel().rows.length / pagination.pageSize) - 1
             : 0,
           pagination.pageIndex + 1
         ),
@@ -300,6 +235,8 @@ export function Organizations() {
 
   return (
     <AdminLayout title="Organizations">
+      <GrowthChart data={organizations || []} title="Organizations" color="#8b5cf6" />
+      
       <div className="mb-4">
         <SearchInput
           placeholder="Search by name, slug, domain, or member email..."
@@ -314,16 +251,8 @@ export function Organizations() {
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {headerGroup.headers.map((header) => (
-                  <TableHead
-                    key={header.id}
-                    className={header.id === "expand" ? "w-8" : ""}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                  <TableHead key={header.id} className={header.id === "expand" ? "w-8" : ""}>
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -366,20 +295,12 @@ export function Organizations() {
                 <>
                   <TableRow key={row.id} className="group">
                     {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                     ))}
                   </TableRow>
                   {expandedOrgs.has(row.original.id) && (
                     <TableRow>
-                      <TableCell
-                        colSpan={columns.length}
-                        className="bg-neutral-900 py-4 px-8"
-                      >
+                      <TableCell colSpan={columns.length} className="bg-neutral-900 py-4 px-8">
                         <div className="space-y-6">
                           {/* Subscription Details */}
                           <div>
@@ -389,55 +310,33 @@ export function Organizations() {
                             </div>
                             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 border border-neutral-700 rounded">
                               <div>
-                                <div className="text-xs text-neutral-400 uppercase tracking-wide">
-                                  Plan
-                                </div>
-                                <div className="font-medium">
-                                  {row.original.subscription.planName}
-                                </div>
+                                <div className="text-xs text-neutral-400 uppercase tracking-wide">Plan</div>
+                                <div className="font-medium">{row.original.subscription.planName}</div>
                               </div>
                               <div>
-                                <div className="text-xs text-neutral-400 uppercase tracking-wide">
-                                  Status
-                                </div>
-                                <div className="font-medium">
-                                  {row.original.subscription.status}
-                                </div>
+                                <div className="text-xs text-neutral-400 uppercase tracking-wide">Status</div>
+                                <div className="font-medium">{row.original.subscription.status}</div>
                               </div>
                               <div>
-                                <div className="text-xs text-neutral-400 uppercase tracking-wide">
-                                  Event Limit
-                                </div>
+                                <div className="text-xs text-neutral-400 uppercase tracking-wide">Event Limit</div>
                                 <div className="font-medium">
-                                  {row.original.subscription.eventLimit?.toLocaleString() ||
-                                    "Unlimited"}
+                                  {row.original.subscription.eventLimit?.toLocaleString() || "Unlimited"}
                                 </div>
                               </div>
                               {row.original.subscription.currentPeriodEnd && (
                                 <div>
-                                  <div className="text-xs text-neutral-400 uppercase tracking-wide">
-                                    Period End
-                                  </div>
+                                  <div className="text-xs text-neutral-400 uppercase tracking-wide">Period End</div>
                                   <div className="font-medium">
-                                    {formatDistanceToNow(
-                                      new Date(
-                                        row.original.subscription.currentPeriodEnd
-                                      ),
-                                      {
-                                        addSuffix: true,
-                                      }
-                                    )}
+                                    {formatDistanceToNow(new Date(row.original.subscription.currentPeriodEnd), {
+                                      addSuffix: true,
+                                    })}
                                   </div>
                                 </div>
                               )}
                               {row.original.subscription.cancelAtPeriodEnd && (
                                 <div>
-                                  <div className="text-xs text-neutral-400 uppercase tracking-wide">
-                                    Cancellation
-                                  </div>
-                                  <div className="font-medium text-orange-400">
-                                    Cancels at period end
-                                  </div>
+                                  <div className="text-xs text-neutral-400 uppercase tracking-wide">Cancellation</div>
+                                  <div className="font-medium text-orange-400">Cancels at period end</div>
                                 </div>
                               )}
                             </div>
@@ -459,12 +358,9 @@ export function Organizations() {
                                     className="inline-flex items-center gap-2 px-3 py-2 bg-neutral-800 hover:bg-neutral-700 border border-neutral-600 rounded-md text-sm transition-colors"
                                   >
                                     <div className="flex flex-col">
-                                      <span className="font-medium">
-                                        {site.domain}
-                                      </span>
+                                      <span className="font-medium">{site.domain}</span>
                                       <span className="text-xs text-neutral-400">
-                                        {site.eventsLast24Hours.toLocaleString()}{" "}
-                                        events (24h)
+                                        {site.eventsLast24Hours.toLocaleString()} events (24h)
                                       </span>
                                     </div>
                                     <ExternalLink className="h-3 w-3" />
@@ -472,9 +368,7 @@ export function Organizations() {
                                 ))}
                               </div>
                             ) : (
-                              <div className="text-neutral-400 p-4 border border-neutral-700 rounded">
-                                No sites
-                              </div>
+                              <div className="text-neutral-400 p-4 border border-neutral-700 rounded">No sites</div>
                             )}
                           </div>
 
@@ -492,32 +386,20 @@ export function Organizations() {
                                     className="p-3 border border-neutral-700 rounded flex items-center justify-between"
                                   >
                                     <div>
-                                      <div className="font-medium">
-                                        {member.name}
-                                      </div>
-                                      <div className="text-sm text-neutral-400">
-                                        {member.email}
-                                      </div>
+                                      <div className="font-medium">{member.name}</div>
+                                      <div className="text-sm text-neutral-400">{member.email}</div>
                                       <div className="text-xs text-neutral-500 mt-1">
-                                        <Badge
-                                          variant="outline"
-                                          className="text-xs"
-                                        >
+                                        <Badge variant="outline" className="text-xs">
                                           {member.role}
                                         </Badge>
                                       </div>
                                     </div>
                                     <Button
-                                      onClick={() =>
-                                        handleImpersonate(member.userId)
-                                      }
+                                      onClick={() => handleImpersonate(member.userId)}
                                       size="sm"
                                       variant="outline"
                                       className="flex items-center gap-1"
-                                      disabled={
-                                        member.userId ===
-                                        userStore.getState().user?.id
-                                      }
+                                      disabled={member.userId === userStore.getState().user?.id}
                                     >
                                       <UserCheck className="h-3 w-3" />
                                       Impersonate
@@ -526,9 +408,7 @@ export function Organizations() {
                                 ))}
                               </div>
                             ) : (
-                              <div className="text-neutral-400 p-4 border border-neutral-700 rounded">
-                                No members
-                              </div>
+                              <div className="text-neutral-400 p-4 border border-neutral-700 rounded">No members</div>
                             )}
                           </div>
                         </div>
@@ -539,13 +419,8 @@ export function Organizations() {
               ))
             ) : (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center py-6 text-muted-foreground"
-                >
-                  {searchQuery
-                    ? "No organizations match your search"
-                    : "No organizations found"}
+                <TableCell colSpan={columns.length} className="text-center py-6 text-muted-foreground">
+                  {searchQuery ? "No organizations match your search" : "No organizations found"}
                 </TableCell>
               </TableRow>
             )}

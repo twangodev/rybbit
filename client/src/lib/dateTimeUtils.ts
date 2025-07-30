@@ -209,3 +209,12 @@ export const formatChartDateTime = (dt: DateTime, bucket: TimeBucket) => {
   }
   return new Intl.DateTimeFormat(userLocale, options).format(dt.toJSDate());
 };
+
+/**
+ * Converts a UTC timestamp string to local time for display
+ * @param timestamp - UTC timestamp string from the server
+ * @returns DateTime object in local timezone
+ */
+export const parseUtcTimestamp = (timestamp: string): DateTime => {
+  return DateTime.fromSQL(timestamp, { zone: "utc" }).toLocal();
+};

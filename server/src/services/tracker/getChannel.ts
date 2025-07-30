@@ -15,9 +15,7 @@ import {
 import { getUTMParams } from "./utils.js";
 
 // Categorize mobile app by its bundle ID/package name
-function getMobileAppCategory(
-  appId: string
-): { type: string; isPaid: boolean } | null {
+function getMobileAppCategory(appId: string): { type: string; isPaid: boolean } | null {
   const appIdLower = appId.toLowerCase();
 
   // Check against our defined app ID lists
@@ -98,10 +96,10 @@ function isSelfReferral(referringDomain: string, hostname: string): boolean {
  * // }
  * ```
  */
-export function getChannelDetails(
+function getChannelDetails(
   referrer: string,
   querystring: string,
-  hostname?: string
+  hostname?: string,
 ): {
   channel: string;
   sourceType: string;
@@ -126,9 +124,7 @@ export function getChannelDetails(
   const sourceType = getSourceType(utmSource || referringDomain);
   const mediumType = getMediumType(utmMedium);
   const isPaid =
-    isPaidTraffic(utmMedium, utmSource) ||
-    utmParams["gclid"] !== undefined ||
-    utmParams["gad_source"] !== undefined;
+    isPaidTraffic(utmMedium, utmSource) || utmParams["gclid"] !== undefined || utmParams["gad_source"] !== undefined;
   const isMobile = utmSource ? isMobileAppId(utmSource) : false;
 
   return {
@@ -146,18 +142,12 @@ export function getChannelDetails(
   };
 }
 
-export function getChannel(
-  referrer: string,
-  querystring: string,
-  hostname?: string
-): string {
+export function getChannel(referrer: string, querystring: string, hostname?: string): string {
   const utmParams = getUTMParams(querystring);
   const referringDomain = getDomainFromReferrer(referrer);
 
   // Check if this is a self-referral (internal navigation)
-  const selfReferral = hostname
-    ? isSelfReferral(referringDomain, hostname)
-    : false;
+  const selfReferral = hostname ? isSelfReferral(referringDomain, hostname) : false;
 
   // UTM parameters
   const utmSource = utmParams["utm_source"] || "";
@@ -170,29 +160,19 @@ export function getChannel(
   if (utmSource && isMobileAppId(utmSource)) {
     const appCategory = getMobileAppCategory(utmSource);
     if (appCategory) {
-      return appCategory.isPaid
-        ? "Paid " + appCategory.type.split(" ")[1]
-        : appCategory.type;
+      return appCategory.isPaid ? "Paid " + appCategory.type.split(" ")[1] : appCategory.type;
     }
   }
 
   // If it's a self-referral and has no UTM parameters, treat it as internal traffic
-  if (
-    !referrer &&
-    !utmSource &&
-    !utmMedium &&
-    !utmCampaign &&
-    !gclid &&
-    !gadSource
-  ) {
+  if (!referrer && !utmSource && !utmMedium && !utmCampaign && !gclid && !gadSource) {
     return selfReferral ? "Internal" : "Direct";
   }
 
   // Use utility functions for better categorization
   const sourceType = getSourceType(utmSource || referringDomain);
   const mediumType = getMediumType(utmMedium);
-  const isPaid =
-    isPaidTraffic(utmMedium, utmSource) || gclid !== "" || gadSource !== "";
+  const isPaid = isPaidTraffic(utmMedium, utmSource) || gclid !== "" || gadSource !== "";
 
   // Apply channel detection logic (in order of precedence)
 
@@ -292,13 +272,11 @@ export function getChannel(
   if (/shop|shopping/.test(utmCampaign)) return "Organic Shopping";
   if (/influencer|creator|sponsored/.test(utmCampaign)) return "Influencer";
   if (/event|conference|webinar/.test(utmCampaign)) return "Event";
-  if (/social|facebook|twitter|instagram|linkedin/.test(utmCampaign))
-    return "Organic Social";
+  if (/social|facebook|twitter|instagram|linkedin/.test(utmCampaign)) return "Organic Social";
 
   // If referring domain exists but we couldn't categorize it
   // Don't mark as referral if it's a self-referral
-  if (referringDomain && referringDomain !== "$direct" && !selfReferral)
-    return "Referral";
+  if (referringDomain && referringDomain !== "$direct" && !selfReferral) return "Referral";
 
   // Default fallback
   return "Unknown";

@@ -48,7 +48,7 @@ export function parseScriptConfig(
     "data-replay-batch-size"
   )
     ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size")!))
-    : 25; // Increased to 25 for better performance
+    : 250; // Industry standard batch size
 
   const sessionReplayBatchInterval = scriptTag.getAttribute(
     "data-replay-batch-interval"
@@ -57,7 +57,7 @@ export function parseScriptConfig(
         1000,
         parseInt(scriptTag.getAttribute("data-replay-batch-interval")!)
       )
-    : 2000; // Reduced from 5000 to 2000ms for faster, smaller batches
+    : 5000; // 5 seconds - industry standard interval
 
   return {
     analyticsHost,

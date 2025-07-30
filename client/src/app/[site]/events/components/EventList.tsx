@@ -133,13 +133,13 @@ export function EventList({
     );
   }
 
-  // Find the highest count to calculate percentages
-  const maxCount = Math.max(...events.map((event) => event.count));
+  // Find the total count to calculate percentages
+  const totalCount = events.reduce((sum, event) => sum + event.count, 0);
 
   return (
     <div className="flex flex-col gap-2">
       {events.map((event) => {
-        const percentage = (event.count / maxCount) * 100;
+        const percentage = (event.count / totalCount) * 100;
         const isExpanded = expandedEvent === event.eventName;
 
         return (
