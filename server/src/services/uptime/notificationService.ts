@@ -35,12 +35,12 @@ export class NotificationService {
       const channels = await db.query.notificationChannels.findMany({
         where: and(
           eq(notificationChannels.organizationId, monitor.organizationId),
-          eq(notificationChannels.enabled, true)
-        )
+          eq(notificationChannels.enabled, true),
+        ),
       });
 
       // Filter channels that should receive notifications for this monitor
-      const relevantChannels = channels.filter(channel => {
+      const relevantChannels = channels.filter((channel) => {
         // Check if channel triggers for this event type
         if (!channel.triggerEvents?.includes(eventType)) {
           return false;
@@ -51,15 +51,15 @@ export class NotificationService {
           // null means all monitors
           return true;
         }
-        
+
         return channel.monitorIds.includes(monitor.id);
       });
 
       // Check cooldown for each channel
       const now = new Date();
-      const channelsToNotify = relevantChannels.filter(channel => {
+      const channelsToNotify = relevantChannels.filter((channel) => {
         if (!channel.lastNotifiedAt) return true;
-        
+
         const lastNotified = new Date(channel.lastNotifiedAt);
         const cooldownMs = (channel.cooldownMinutes || 5) * 60 * 1000;
         return now.getTime() - lastNotified.getTime() > cooldownMs;
@@ -73,11 +73,18 @@ export class NotificationService {
           } else if (channel.type === "discord" && channel.config.webhookUrl) {
             await this.sendDiscordNotification(channel.config.webhookUrl, monitor, incident, eventType);
           } else if (channel.type === "slack" && channel.config.slackWebhookUrl) {
-            await this.sendSlackNotification(channel.config.slackWebhookUrl, channel.config.slackChannel, monitor, incident, eventType);
+            await this.sendSlackNotification(
+              channel.config.slackWebhookUrl,
+              channel.config.slackChannel,
+              monitor,
+              incident,
+              eventType,
+            );
           }
-          
+
           // Update last notified time for successful notifications
-          await db.update(notificationChannels)
+          await db
+            .update(notificationChannels)
             .set({ lastNotifiedAt: now.toISOString() })
             .where(eq(notificationChannels.id, channel.id));
         } catch (error) {
@@ -89,14 +96,20 @@ export class NotificationService {
     }
   }
 
-  private async sendEmailNotification(email: string, monitor: Monitor, incident: Incident, eventType: "down" | "recovery"): Promise<void> {
-    const monitorName = monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
+  private async sendEmailNotification(
+    email: string,
+    monitor: Monitor,
+    incident: Incident,
+    eventType: "down" | "recovery",
+  ): Promise<void> {
+    const monitorName =
+      monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
     const region = incident.region || "local";
-    const incidentTime = DateTime.fromISO(incident.startTime).toLocaleString(DateTime.DATETIME_FULL);
-    
+    const incidentTime = DateTime.fromSQL(incident.startTime).toLocaleString(DateTime.DATETIME_FULL);
+
     let subject: string;
     let html: string;
-    
+
     if (eventType === "down") {
       subject = `🔴 Monitor Alert: ${monitorName} is DOWN`;
       html = `
@@ -107,15 +120,17 @@ export class NotificationService {
           <li><strong>Type:</strong> ${monitor.monitorType.toUpperCase()}</li>
           <li><strong>Region:</strong> ${region}</li>
           <li><strong>Time:</strong> ${incidentTime}</li>
-          ${incident.lastError ? `<li><strong>Error:</strong> ${incident.lastError}</li>` : ''}
+          ${incident.lastError ? `<li><strong>Error:</strong> ${incident.lastError}</li>` : ""}
         </ul>
         <p>We'll continue monitoring and notify you when the service recovers.</p>
       `;
     } else {
-      const duration = incident.endTime 
-        ? DateTime.fromISO(incident.endTime).diff(DateTime.fromISO(incident.startTime)).toFormat("hh 'hours' mm 'minutes'")
+      const duration = incident.endTime
+        ? DateTime.fromSQL(incident.endTime)
+            .diff(DateTime.fromSQL(incident.startTime))
+            .toFormat("hh 'hours' mm 'minutes'")
         : "Unknown";
-      
+
       subject = `✅ Monitor Recovery: ${monitorName} is UP`;
       html = `
         <h2>Monitor Recovery: ${monitorName} is UP</h2>
@@ -129,73 +144,86 @@ export class NotificationService {
         </ul>
       `;
     }
-    
+
     await sendEmail(email, subject, html);
     console.log(`[Uptime] Sent ${eventType} email notification to ${email} for monitor ${monitor.id}`);
   }
 
-  private async sendDiscordNotification(webhookUrl: string, monitor: Monitor, incident: Incident, eventType: "down" | "recovery"): Promise<void> {
-    const monitorName = monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
+  private async sendDiscordNotification(
+    webhookUrl: string,
+    monitor: Monitor,
+    incident: Incident,
+    eventType: "down" | "recovery",
+  ): Promise<void> {
+    const monitorName =
+      monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
     const region = incident.region || "local";
-    
+
     const embed = {
-      title: eventType === "down" 
-        ? `🔴 Monitor Alert: ${monitorName} is DOWN`
-        : `✅ Monitor Recovery: ${monitorName} is UP`,
-      color: eventType === "down" ? 0xFF0000 : 0x00FF00,
+      title:
+        eventType === "down" ? `🔴 Monitor Alert: ${monitorName} is DOWN` : `✅ Monitor Recovery: ${monitorName} is UP`,
+      color: eventType === "down" ? 0xff0000 : 0x00ff00,
       fields: [
         {
           name: "Monitor",
           value: monitorName,
-          inline: true
+          inline: true,
         },
         {
           name: "Type",
           value: monitor.monitorType.toUpperCase(),
-          inline: true
+          inline: true,
         },
         {
           name: "Region",
           value: region,
-          inline: true
+          inline: true,
         },
-        ...(eventType === "down" ? [
-          {
-            name: "Time",
-            value: DateTime.fromISO(incident.startTime).toLocaleString(DateTime.DATETIME_FULL),
-            inline: false
-          },
-          ...(incident.lastError ? [{
-            name: "Error",
-            value: incident.lastError,
-            inline: false
-          }] : [])
-        ] : [
-          {
-            name: "Downtime Duration",
-            value: incident.endTime 
-              ? DateTime.fromISO(incident.endTime).diff(DateTime.fromISO(incident.startTime)).toFormat("hh 'hours' mm 'minutes'")
-              : "Unknown",
-            inline: true
-          },
-          {
-            name: "Recovery Time",
-            value: DateTime.now().toLocaleString(DateTime.DATETIME_FULL),
-            inline: true
-          }
-        ])
+        ...(eventType === "down"
+          ? [
+              {
+                name: "Time",
+                value: DateTime.fromSQL(incident.startTime).toLocaleString(DateTime.DATETIME_FULL),
+                inline: false,
+              },
+              ...(incident.lastError
+                ? [
+                    {
+                      name: "Error",
+                      value: incident.lastError,
+                      inline: false,
+                    },
+                  ]
+                : []),
+            ]
+          : [
+              {
+                name: "Downtime Duration",
+                value: incident.endTime
+                  ? DateTime.fromSQL(incident.endTime)
+                      .diff(DateTime.fromSQL(incident.startTime))
+                      .toFormat("hh 'hours' mm 'minutes'")
+                  : "Unknown",
+                inline: true,
+              },
+              {
+                name: "Recovery Time",
+                value: DateTime.now().toLocaleString(DateTime.DATETIME_FULL),
+                inline: true,
+              },
+            ]),
       ],
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
     };
 
     const response = await fetch(webhookUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        embeds: [embed]
-      })
+        embeds: [embed],
+      }),
     });
 
     if (!response.ok) {
@@ -205,52 +233,66 @@ export class NotificationService {
     console.log(`[Uptime] Sent ${eventType} Discord notification for monitor ${monitor.id}`);
   }
 
-  private async sendSlackNotification(webhookUrl: string, channel: string | undefined, monitor: Monitor, incident: Incident, eventType: "down" | "recovery"): Promise<void> {
-    const monitorName = monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
+  private async sendSlackNotification(
+    webhookUrl: string,
+    channel: string | undefined,
+    monitor: Monitor,
+    incident: Incident,
+    eventType: "down" | "recovery",
+  ): Promise<void> {
+    const monitorName =
+      monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
     const region = incident.region || "local";
     const emoji = eventType === "down" ? ":red_circle:" : ":white_check_mark:";
-    
+
     const blocks: any[] = [
       {
         type: "header",
         text: {
           type: "plain_text",
-          text: eventType === "down" 
-            ? `${emoji} Monitor Alert: ${monitorName} is DOWN`
-            : `${emoji} Monitor Recovery: ${monitorName} is UP`,
-          emoji: true
-        }
+          text:
+            eventType === "down"
+              ? `${emoji} Monitor Alert: ${monitorName} is DOWN`
+              : `${emoji} Monitor Recovery: ${monitorName} is UP`,
+          emoji: true,
+        },
       },
       {
         type: "section",
         fields: [
           {
             type: "mrkdwn",
-            text: `*Monitor:*\n${monitorName}`
+            text: `*Monitor:*\n${monitorName}`,
           },
           {
             type: "mrkdwn",
-            text: `*Type:*\n${monitor.monitorType.toUpperCase()}`
+            text: `*Type:*\n${monitor.monitorType.toUpperCase()}`,
           },
           {
             type: "mrkdwn",
-            text: `*Region:*\n${region}`
+            text: `*Region:*\n${region}`,
           },
-          ...(eventType === "down" ? [
-            {
-              type: "mrkdwn",
-              text: `*Time:*\n${DateTime.fromISO(incident.startTime).toLocaleString(DateTime.DATETIME_FULL)}`
-            }
-          ] : [
-            {
-              type: "mrkdwn",
-              text: `*Duration:*\n${incident.endTime 
-                ? DateTime.fromISO(incident.endTime).diff(DateTime.fromISO(incident.startTime)).toFormat("hh 'hours' mm 'minutes'")
-                : "Unknown"}`
-            }
-          ])
-        ]
-      }
+          ...(eventType === "down"
+            ? [
+                {
+                  type: "mrkdwn",
+                  text: `*Time:*\n${DateTime.fromSQL(incident.startTime).toLocaleString(DateTime.DATETIME_FULL)}`,
+                },
+              ]
+            : [
+                {
+                  type: "mrkdwn",
+                  text: `*Duration:*\n${
+                    incident.endTime
+                      ? DateTime.fromSQL(incident.endTime)
+                          .diff(DateTime.fromSQL(incident.startTime))
+                          .toFormat("hh 'hours' mm 'minutes'")
+                      : "Unknown"
+                  }`,
+                },
+              ]),
+        ],
+      },
     ];
 
     if (eventType === "down" && incident.lastError) {
@@ -258,16 +300,14 @@ export class NotificationService {
         type: "section",
         text: {
           type: "mrkdwn",
-          text: `*Error:* ${incident.lastError}`
-        }
+          text: `*Error:* ${incident.lastError}`,
+        },
       });
     }
 
     const payload: any = {
       blocks,
-      text: eventType === "down" 
-        ? `Monitor Alert: ${monitorName} is DOWN`
-        : `Monitor Recovery: ${monitorName} is UP`
+      text: eventType === "down" ? `Monitor Alert: ${monitorName} is DOWN` : `Monitor Recovery: ${monitorName} is UP`,
     };
 
     if (channel) {
@@ -275,11 +315,11 @@ export class NotificationService {
     }
 
     const response = await fetch(webhookUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
     });
 
     if (!response.ok) {
