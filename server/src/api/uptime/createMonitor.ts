@@ -10,10 +10,7 @@ interface CreateMonitorBody {
   Body: CreateMonitorInput;
 }
 
-export async function createMonitor(
-  request: FastifyRequest<CreateMonitorBody>,
-  reply: FastifyReply
-) {
+export async function createMonitor(request: FastifyRequest<CreateMonitorBody>, reply: FastifyReply) {
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
 
@@ -24,7 +21,7 @@ export async function createMonitor(
   try {
     // Validate request body with Zod
     const validatedBody = createMonitorSchema.parse(request.body);
-    
+
     const {
       organizationId,
       name,
@@ -40,10 +37,7 @@ export async function createMonitor(
 
     // Check if user has access to the organization
     const userHasAccess = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, userId),
-        eq(member.organizationId, organizationId)
-      ),
+      where: and(eq(member.userId, userId), eq(member.organizationId, organizationId)),
     });
 
     if (!userHasAccess) {
@@ -78,6 +72,7 @@ export async function createMonitor(
 
     // Schedule the monitor if enabled
     if (enabled) {
+      console.log(`[Uptime] MONITOR CREATED ${newMonitor.id}`);
       await uptimeService.onMonitorCreated(newMonitor.id, intervalSeconds);
     }
 
@@ -85,9 +80,9 @@ export async function createMonitor(
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       const zodError = error as any;
-      return reply.status(400).send({ 
+      return reply.status(400).send({
         error: "Validation error",
-        details: zodError.errors 
+        details: zodError.errors,
       });
     }
     console.error("Error creating monitor:", error);

@@ -61,9 +61,7 @@ export class MonitorExecutorBullMQ {
     this.worker = new Worker(
       "monitor-checks",
       async (job: Job<MonitorCheckJob>) => {
-        console.log(`[Uptime] 🔍 Processing monitor check job ${job.name} for monitor ${job.data.monitorId}`);
         await this.processMonitorCheck(job.data);
-        console.log(`[Uptime] ✅ Completed monitor check job ${job.name}`);
       },
       {
         connection: this.connection,
@@ -79,9 +77,9 @@ export class MonitorExecutorBullMQ {
     );
 
     // Set up event listeners
-    this.worker.on("completed", (job) => {
-      console.log(`[Uptime] Job ${job.id} completed successfully`);
-    });
+    // this.worker.on("completed", (job) => {
+    //   console.log(`[Uptime] Job ${job.id} completed successfully`);
+    // });
 
     this.worker.on("failed", (job, err) => {
       console.error(`Job ${job?.id} failed:`, err);
@@ -95,9 +93,9 @@ export class MonitorExecutorBullMQ {
       console.log("[Uptime] BullMQ worker is ready and listening for jobs");
     });
 
-    this.worker.on("active", (job) => {
-      console.log(`[Uptime] Job ${job.id} is now active`);
-    });
+    // this.worker.on("active", (job) => {
+    //   console.log(`[Uptime] Job ${job.id} is now active`);
+    // });
 
     // Wait for worker to be ready
     await new Promise<void>((resolve) => {
