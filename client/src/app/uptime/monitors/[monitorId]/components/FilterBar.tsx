@@ -46,7 +46,7 @@ export function FilterBar({ monitor, isLoading }: FilterBarProps) {
             <SelectValue placeholder="Select region" />
           </SelectTrigger>
           <SelectContent size="sm">
-            {REGIONS.filter((region) => monitor?.selectedRegions.includes(region.code)).map((region) => (
+            {REGIONS.filter((region, i) => i === 0 || monitor?.selectedRegions.includes(region.code)).map((region) => (
               <SelectItem key={region.code} value={region.code} size="sm">
                 <div className="flex items-center gap-2">
                   {region.countryCode ? (

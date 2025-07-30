@@ -14,6 +14,8 @@ export const getHoursFromTimeRange = (timeRange: TimeRange) => {
       return 72;
     case "7d":
       return 168;
+    case "14d":
+      return 336;
     case "30d":
       return 720;
     case "60d":
