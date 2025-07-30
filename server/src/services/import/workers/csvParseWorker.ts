@@ -27,7 +27,7 @@ export async function registerCsvParseWorker() {
         return;
       }
 
-      const chunkSize = 1000;
+      const chunkSize = 5000;
       let chunk: UmamiEvent[] = [];
       let rowsProcessed = 0;
 
