@@ -17,8 +17,9 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 import { SiteResponse, useGetSite } from "@/api/admin/sites";
-import { useUserOrganizations } from "../../api/admin/organizations";
+import { useUserOrganizations } from "@/api/admin/organizations";
 import { ApiKeyManager } from "./ApiKeyManager";
+import { ImportManager } from "./ImportManager";
 import { ScriptBuilder } from "./ScriptBuilder";
 import { SiteConfiguration } from "./SiteConfiguration";
 
@@ -66,7 +67,7 @@ function SiteSettingsInner({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px]">
+      <DialogContent className="sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle>Site Settings</DialogTitle>
           <DialogDescription>
@@ -74,10 +75,11 @@ function SiteSettingsInner({
           </DialogDescription>
         </DialogHeader>
         <Tabs value={activeTab} onValueChange={setActiveTab} className="pb-4">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="script">Tracking Script</TabsTrigger>
             <TabsTrigger value="apikey">API Key</TabsTrigger>
             <TabsTrigger value="settings">Site Settings</TabsTrigger>
+            <TabsTrigger value="import">Import</TabsTrigger>
           </TabsList>
 
           <TabsContent
@@ -100,6 +102,12 @@ function SiteSettingsInner({
               disabled={disabled}
               onClose={() => setDialogOpen(false)}
             />
+          </TabsContent>
+          <TabsContent
+            value="import"
+            className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto"
+          >
+            <ImportManager siteId={siteMetadata.siteId} disabled={disabled} />
           </TabsContent>
         </Tabs>
 
