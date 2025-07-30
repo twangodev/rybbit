@@ -76,8 +76,6 @@ export class UptimeServiceBullMQ {
   // Methods for managing monitors after CRUD operations
   async onMonitorCreated(monitorId: number, intervalSeconds: number): Promise<void> {
     // Wait for initialization if it's in progress
-    console.log(`[Uptime] initialized: ${this.initialized} this.initializationPromise: ${this.initializationPromise}`);
-
     if (!this.initialized && this.initializationPromise) {
       await this.initializationPromise;
     }

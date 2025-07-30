@@ -62,8 +62,6 @@ export async function createMonitor(request: FastifyRequest<CreateMonitorBody>, 
       })
       .returning();
 
-    console.info("MONITOR CREATED", newMonitor);
-
     // Initialize monitor status
     await db.insert(uptimeMonitorStatus).values({
       monitorId: newMonitor.id,
@@ -71,11 +69,9 @@ export async function createMonitor(request: FastifyRequest<CreateMonitorBody>, 
       consecutiveFailures: 0,
       consecutiveSuccesses: 0,
     });
-    console.info("MONITOR CREATED: ", enabled);
 
     // Schedule the monitor if enabled
     if (enabled) {
-      console.log(`[Uptime] MONITOR CREATED ${newMonitor.id}`);
       await uptimeService.onMonitorCreated(newMonitor.id, intervalSeconds);
     }
 

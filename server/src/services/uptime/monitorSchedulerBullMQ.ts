@@ -177,7 +177,6 @@ export class MonitorSchedulerBullMQ {
   }
 
   async triggerImmediateCheck(monitorId: number): Promise<void> {
-    console.log(`[Uptime] Triggering immediate check for monitor ${monitorId}`);
     try {
       const jobName = `monitor-${monitorId}-immediate`;
       const jobData: MonitorCheckJob = {
