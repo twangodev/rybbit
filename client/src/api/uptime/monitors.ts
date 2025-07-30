@@ -2,6 +2,7 @@ import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tansta
 import axios from "axios";
 import { BACKEND_URL } from "../../lib/const";
 import { authedFetch } from "../utils";
+import { timeZone } from "../../lib/dateTimeUtils";
 
 export interface UptimeMonitor {
   id: number;
@@ -226,6 +227,8 @@ async function getMonitorUptimeBuckets(
   if (params?.bucket) queryParams.append("bucket", params.bucket);
   if (params?.days) queryParams.append("days", params.days.toString());
 
+  queryParams.append("timeZone", timeZone);
+
   const queryString = queryParams.toString();
   const url = queryString
     ? `/uptime/monitors/${monitorId}/buckets?${queryString}`
@@ -279,11 +282,16 @@ export function useMonitorEvents(monitorId: number | undefined, params?: Paramet
   });
 }
 
-export function useMonitorEventsInfinite(monitorId: number | undefined, params?: Omit<Parameters<typeof getMonitorEvents>[1], 'offset'>) {
+export function useMonitorEventsInfinite(
+  monitorId: number | undefined,
+  params?: Omit<Parameters<typeof getMonitorEvents>[1], "offset">
+) {
   return useInfiniteQuery({
     queryKey: ["uptime-monitor-events-infinite", monitorId, params],
-    queryFn: ({ pageParam = 0 }) => 
-      monitorId ? getMonitorEvents(monitorId, { ...params, offset: pageParam, limit: 100 }) : Promise.reject("No monitor ID"),
+    queryFn: ({ pageParam = 0 }) =>
+      monitorId
+        ? getMonitorEvents(monitorId, { ...params, offset: pageParam, limit: 100 })
+        : Promise.reject("No monitor ID"),
     getNextPageParam: (lastPage, pages) => {
       const currentOffset = (pages.length - 1) * 100;
       const hasMore = currentOffset + lastPage.events.length < lastPage.pagination.total;

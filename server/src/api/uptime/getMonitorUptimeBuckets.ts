@@ -11,6 +11,7 @@ import { processResults } from "../analytics/utils.js";
 const getMonitorUptimeBucketsQuerySchema = z.object({
   bucket: z.enum(["hour", "day", "week"]).default("day"),
   days: z.string().transform(Number).pipe(z.number().int().positive().max(90)).default("7"),
+  timeZone: z.string().optional(),
 });
 
 interface GetMonitorUptimeBucketsRequest {
@@ -35,7 +36,7 @@ export async function getMonitorUptimeBuckets(
   try {
     // Validate query parameters
     const query = getMonitorUptimeBucketsQuerySchema.parse(request.query);
-    const { bucket, days } = query;
+    const { bucket, days, timeZone = "UTC" } = query;
 
     // First check if monitor exists and user has access
     const monitor = await db.query.uptimeMonitors.findFirst({
@@ -60,16 +61,16 @@ export async function getMonitorUptimeBuckets(
     let dateFormat: string;
     switch (bucket) {
       case "hour":
-        timeBucketFn = "toStartOfHour(timestamp)";
+        timeBucketFn = `toStartOfHour(toTimeZone(timestamp, '${timeZone}'))`;
         dateFormat = "%Y-%m-%d %H:00:00";
         break;
       case "week":
-        timeBucketFn = "toStartOfWeek(timestamp)";
+        timeBucketFn = `toStartOfWeek(toTimeZone(timestamp, '${timeZone}'))`;
         dateFormat = "%Y-%m-%d";
         break;
       case "day":
       default:
-        timeBucketFn = "toStartOfDay(timestamp)";
+        timeBucketFn = `toStartOfDay(toTimeZone(timestamp, '${timeZone}'))`;
         dateFormat = "%Y-%m-%d";
         break;
     }
@@ -77,8 +78,8 @@ export async function getMonitorUptimeBuckets(
     // Query to get bucketed uptime data
     const query_str = `
       SELECT 
-        ${timeBucketFn} as bucket_time,
-        formatDateTime(${timeBucketFn}, '${dateFormat}') as bucket_formatted,
+        toTimeZone(bucket_time_tz, 'UTC') as bucket_time,
+        formatDateTime(bucket_time_tz, '${dateFormat}', '${timeZone}') as bucket_formatted,
         count() as total_checks,
         countIf(status = 'success') as successful_checks,
         countIf(status = 'failure') as failed_checks,
@@ -86,11 +87,16 @@ export async function getMonitorUptimeBuckets(
         if(count() > 0, 
            round(100.0 * countIf(status = 'success') / count(), 2), 
            100.0) as uptime_percentage
-      FROM monitor_events
-      WHERE monitor_id = {monitorId: UInt32}
-        AND timestamp >= now() - INTERVAL {days: UInt32} DAY
-      GROUP BY bucket_time
-      ORDER BY bucket_time DESC
+      FROM (
+        SELECT 
+          *,
+          ${timeBucketFn} as bucket_time_tz
+        FROM monitor_events
+        WHERE monitor_id = {monitorId: UInt32}
+          AND timestamp >= now() - INTERVAL {days: UInt32} DAY
+      )
+      GROUP BY bucket_time_tz
+      ORDER BY bucket_time_tz DESC
     `;
 
     const result = await clickhouse.query({
@@ -105,7 +111,8 @@ export async function getMonitorUptimeBuckets(
     const buckets = await processResults(result);
 
     // Generate all expected buckets for the time range
-    const now = new Date();
+    // Use timezone-aware date generation
+    const nowInTz = new Date(new Date().toLocaleString("en-US", { timeZone }));
     const allBuckets: Array<{
       bucket_time: string;
       bucket_formatted: string;
@@ -117,14 +124,14 @@ export async function getMonitorUptimeBuckets(
     }> = [];
     
     for (let i = 0; i < days; i++) {
-      const date = new Date(now);
+      const date = new Date(nowInTz);
       
       if (bucket === "hour") {
         // For hourly buckets, generate 24 buckets per day
         for (let h = 0; h < 24; h++) {
           date.setDate(date.getDate() - i);
           date.setHours(23 - h, 0, 0, 0);
-          if (date <= now) {
+          if (date <= nowInTz) {
             allBuckets.push({
               bucket_time: date.toISOString(),
               bucket_formatted: date.toISOString().slice(0, 13) + ':00:00',
