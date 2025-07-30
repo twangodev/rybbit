@@ -27,7 +27,6 @@ export const CHANNEL_CONFIG: Record<string, ChannelConfigItem> = {
   sms: {
     icon: Smartphone,
     title: "SMS",
-    description: "Send notifications via SMS (Coming soon)",
-    disabled: true,
+    description: "Send notifications via SMS",
   },
 };

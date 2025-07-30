@@ -4,6 +4,7 @@ import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
 import { notificationChannels, uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
+import { isSMSConfigured } from "../../lib/twilio.js";
 
 // Schemas
 const channelTypeSchema = z.enum(["email", "discord", "slack", "sms"]);
@@ -50,6 +51,24 @@ async function getUserOrganizations(userId: string) {
 }
 
 export const notificationRoutes = async (server: FastifyInstance) => {
+  // Get notification configuration status
+  server.route({
+    method: "GET",
+    url: "/api/uptime/notification-config",
+    handler: async (request: FastifyRequest, reply: FastifyReply) => {
+      const session = await getSessionFromReq(request);
+      const userId = session?.user?.id;
+
+      if (!userId) {
+        return reply.status(401).send({ error: "Unauthorized" });
+      }
+
+      return reply.send({
+        smsEnabled: isSMSConfigured(),
+      });
+    },
+  });
+
   // Get all notification channels
   server.route({
     method: "GET",

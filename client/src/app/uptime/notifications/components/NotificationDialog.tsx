@@ -204,6 +204,27 @@ export function NotificationDialog() {
             </>
           )}
 
+          {selectedType === "sms" && (
+            <div>
+              <Label htmlFor="phoneNumber">Phone Number</Label>
+              <Input
+                id="phoneNumber"
+                placeholder="+1234567890"
+                {...register("phoneNumber", {
+                  required: "Phone number is required",
+                  pattern: {
+                    value: /^\+[1-9]\d{1,14}$/,
+                    message: "Phone number must be in E.164 format (e.g., +14155552671)",
+                  },
+                })}
+              />
+              <p className="text-xs text-neutral-500 mt-1">
+                Use international E.164 format: +[country code][number]
+              </p>
+              {errors.phoneNumber && <p className="text-sm text-red-500 mt-1">{errors.phoneNumber.message}</p>}
+            </div>
+          )}
+
           {/* Monitor Selection */}
           <div className="space-y-2">
             <Label>Monitors</Label>

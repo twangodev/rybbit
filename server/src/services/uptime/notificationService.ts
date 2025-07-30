@@ -3,6 +3,7 @@ import { and, eq } from "drizzle-orm";
 import { db } from "../../db/postgres/postgres.js";
 import { notificationChannels } from "../../db/postgres/schema.js";
 import { sendEmail } from "../../lib/resend.js";
+import { sendSMS } from "../../lib/twilio.js";
 
 interface Monitor {
   id: number;
@@ -80,6 +81,8 @@ export class NotificationService {
               incident,
               eventType,
             );
+          } else if (channel.type === "sms" && channel.config.phoneNumber) {
+            await this.sendSMSNotification(channel.config.phoneNumber, monitor, incident, eventType);
           }
 
           // Update last notified time for successful notifications
@@ -327,5 +330,48 @@ export class NotificationService {
     }
 
     console.log(`[Uptime] Sent ${eventType} Slack notification for monitor ${monitor.id}`);
+  }
+
+  private async sendSMSNotification(
+    phoneNumber: string,
+    monitor: Monitor,
+    incident: Incident,
+    eventType: "down" | "recovery",
+  ): Promise<void> {
+    const monitorName =
+      monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
+    const region = incident.region || "local";
+
+    let message: string;
+    if (eventType === "down") {
+      message = `🔴 ALERT: ${monitorName} is DOWN in ${region}`;
+      if (incident.lastError) {
+        // Truncate error to fit SMS limits
+        const truncatedError = incident.lastError.length > 50 
+          ? incident.lastError.substring(0, 47) + "..."
+          : incident.lastError;
+        message += ` - ${truncatedError}`;
+      }
+    } else {
+      const duration = incident.endTime
+        ? DateTime.fromSQL(incident.endTime)
+            .diff(DateTime.fromSQL(incident.startTime))
+            .toFormat("h'h' m'm'")
+        : "Unknown";
+      message = `✅ RECOVERY: ${monitorName} is UP in ${region} after ${duration} downtime`;
+    }
+
+    // SMS messages should be concise - limit to 160 chars for single SMS
+    if (message.length > 160) {
+      message = message.substring(0, 157) + "...";
+    }
+
+    const result = await sendSMS(phoneNumber, message);
+    
+    if (!result.success) {
+      throw new Error(result.error || "Failed to send SMS");
+    }
+
+    console.log(`[Uptime] Sent ${eventType} SMS notification to ${phoneNumber} for monitor ${monitor.id}`);
   }
 }
