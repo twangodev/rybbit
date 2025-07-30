@@ -123,7 +123,7 @@ export async function importSiteData(
 
         console.log(`[Import] File streamed to R2: ${r2Key}`);
       } else {
-        const importDir = "./tmp/imports";
+        const importDir = "/tmp/imports";
         const savedFileName = `${importId}.csv`;
         const tempFilePath = path.join(importDir, savedFileName);
 
