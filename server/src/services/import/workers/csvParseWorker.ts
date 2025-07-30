@@ -9,6 +9,16 @@ import { ImportStatusManager } from "../importStatusManager.js";
 import { ImportLimiter } from "../importLimiter.js";
 import { r2Storage } from "../../storage/r2StorageService.js";
 import { DateTime } from "luxon";
+import { deleteImportFile } from "../utils.js";
+
+const getImportDataHeaders = (source: string) => {
+  switch (source) {
+    case "umami":
+      return umamiHeaders;
+    default:
+      throw new Error(`Unsupported import source: ${source}`);
+  }
+}
 
 export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
@@ -18,12 +28,7 @@ export async function registerCsvParseWorker() {
       const importableEvents = await ImportLimiter.countImportableEvents(organization);
       if (importableEvents <= 0) {
         await ImportStatusManager.updateStatus(importId, "failed", "Event import limit reached");
-
-        if (isR2Storage) {
-          await r2Storage.deleteImportFile(storageLocation);
-        } else {
-          await fs.promises.unlink(storageLocation);
-        }
+        await deleteImportFile(storageLocation, isR2Storage);
         return;
       }
 
@@ -37,14 +42,14 @@ export async function registerCsvParseWorker() {
         console.log(`[CSV Parser] Reading from R2: ${storageLocation}`);
         const fileStream = await r2Storage.getImportFileStream(storageLocation);
         stream = fileStream.pipe(parse({
-          headers: umamiHeaders,
+          headers: getImportDataHeaders(source),
           renameHeaders: true,
           ignoreEmpty: true,
         }));
       } else {
         console.log(`[CSV Parser] Reading from local disk: ${storageLocation}`);
         stream = fs.createReadStream(storageLocation).pipe(parse({
-          headers: umamiHeaders,
+          headers: getImportDataHeaders(source),
           renameHeaders: true,
           ignoreEmpty: true,
         }));
@@ -119,18 +124,7 @@ export async function registerCsvParseWorker() {
       );
       throw error;
     } finally {
-      try {
-        if (isR2Storage) {
-          await r2Storage.deleteImportFile(storageLocation);
-          console.log(`[CSV Parser] Cleaned up R2 file: ${storageLocation}`);
-        } else {
-          await fs.promises.unlink(storageLocation);
-          console.log(`[CSV Parser] Cleaned up local file: ${storageLocation}`);
-        }
-      } catch (cleanupError) {
-        console.error("Error cleaning up import file:", cleanupError);
-        // Don't throw here as the main processing might have succeeded
-      }
+      await deleteImportFile(storageLocation, isR2Storage);
     }
   });
 }

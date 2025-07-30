@@ -12,6 +12,7 @@ import { ImportLimiter } from "../../services/import/importLimiter.js";
 import { r2Storage } from "../../services/storage/r2StorageService.js";
 import { IS_CLOUD } from "../../lib/const.js";
 import { DateTime } from "luxon";
+import { deleteImportFile } from "../../services/import/utils.js";
 
 const isValidDate = (val: string) => {
   const dt = DateTime.fromFormat(val, "yyyy-MM-dd", { zone: "utc" });
@@ -151,11 +152,7 @@ export async function importSiteData(
       });
     } catch (queueError) {
       await ImportStatusManager.updateStatus(importId, "failed", "Failed to queue import job");
-      if (IS_CLOUD && r2Storage.isEnabled()) {
-        await r2Storage.deleteImportFile(storageLocation);
-      } else {
-        await fs.promises.unlink(storageLocation);
-      }
+      await deleteImportFile(storageLocation, IS_CLOUD && r2Storage.isEnabled());
       console.error("Failed to enqueue import job:", queueError);
       return reply.status(500).send({ error: "Failed to initiate import process." });
     }
