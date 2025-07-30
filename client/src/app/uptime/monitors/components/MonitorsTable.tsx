@@ -169,7 +169,7 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
       columnHelper.accessor((row) => row.status?.lastCheckedAt, {
         id: "lastPing",
         header: ({ column }) => <SortHeader column={column}>Last Ping</SortHeader>,
-        cell: ({ getValue }) => formatLastPing(getValue()),
+        cell: ({ getValue }) => <span className="text-neutral-300">{formatLastPing(getValue())}</span>,
         size: 112,
       }),
       columnHelper.accessor((row) => row.status?.uptimePercentage7d, {
@@ -179,7 +179,7 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
             <span className="whitespace-nowrap">Uptime %</span>
           </SortHeader>
         ),
-        cell: ({ getValue }) => <div className="text-right">{formatPercentage(getValue())}</div>,
+        cell: ({ getValue }) => <div className="text-right text-neutral-300">{formatPercentage(getValue())}</div>,
         size: 80,
       }),
     ],

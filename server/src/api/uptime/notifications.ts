@@ -1,6 +1,7 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import { DateTime } from "luxon";
 import { db } from "../../db/postgres/postgres.js";
 import { member, notificationChannels } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
@@ -266,7 +267,7 @@ export const notificationRoutes = async (server: FastifyInstance) => {
       const testIncident = {
         id: 0,
         region: "test",
-        startTime: new Date().toISOString(),
+        startTime: DateTime.now().toSQL()!,
         endTime: null,
         lastError: "This is a test notification",
         lastErrorType: "test",
