@@ -30,6 +30,29 @@ interface Incident {
 }
 
 export class NotificationService {
+  async sendTestNotification(channel: any, monitor: Monitor, incident: Incident, eventType: "down" | "recovery"): Promise<void> {
+    try {
+      if (channel.type === "email" && channel.config.email) {
+        await this.sendEmailNotification(channel.config.email, monitor, incident, eventType);
+      } else if (channel.type === "discord" && channel.config.webhookUrl) {
+        await this.sendDiscordNotification(channel.config.webhookUrl, monitor, incident, eventType);
+      } else if (channel.type === "slack" && channel.config.slackWebhookUrl) {
+        await this.sendSlackNotification(
+          channel.config.slackWebhookUrl,
+          channel.config.slackChannel,
+          monitor,
+          incident,
+          eventType,
+        );
+      } else if (channel.type === "sms" && channel.config.phoneNumber) {
+        await this.sendSMSNotification(channel.config.phoneNumber, monitor, incident, eventType);
+      }
+    } catch (error) {
+      console.error(`Failed to send test ${channel.type} notification:`, error);
+      throw error;
+    }
+  }
+
   async sendIncidentNotifications(monitor: Monitor, incident: Incident, eventType: "down" | "recovery"): Promise<void> {
     try {
       // Get all enabled notification channels for this organization

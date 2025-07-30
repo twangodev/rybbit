@@ -1,10 +1,10 @@
 import { and, eq, inArray } from "drizzle-orm";
-import { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
+import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
-import { notificationChannels, uptimeMonitors, member } from "../../db/postgres/schema.js";
+import { member, notificationChannels } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
-import { isSMSConfigured } from "../../lib/twilio.js";
+import { NotificationService } from "../../services/uptime/notificationService.js";
 
 // Schemas
 const channelTypeSchema = z.enum(["email", "discord", "slack", "sms"]);
@@ -51,24 +51,6 @@ async function getUserOrganizations(userId: string) {
 }
 
 export const notificationRoutes = async (server: FastifyInstance) => {
-  // Get notification configuration status
-  server.route({
-    method: "GET",
-    url: "/api/uptime/notification-config",
-    handler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const session = await getSessionFromReq(request);
-      const userId = session?.user?.id;
-
-      if (!userId) {
-        return reply.status(401).send({ error: "Unauthorized" });
-      }
-
-      return reply.send({
-        smsEnabled: isSMSConfigured(),
-      });
-    },
-  });
-
   // Get all notification channels
   server.route({
     method: "GET",
@@ -269,12 +251,47 @@ export const notificationRoutes = async (server: FastifyInstance) => {
         return reply.code(404).send({ error: "Channel not found" });
       }
 
-      // TODO: Implement actual notification sending
-      // For now, just return success
-      return reply.send({
-        success: true,
-        message: `Test notification would be sent to ${channel.type} channel: ${channel.name}`,
-      });
+      // Create a test monitor and incident for the notification
+      const testMonitor = {
+        id: 0,
+        organizationId: channel.organizationId,
+        name: "Test Monitor",
+        monitorType: "http",
+        httpConfig: {
+          url: "https://example.com",
+        },
+        tcpConfig: null,
+      };
+
+      const testIncident = {
+        id: 0,
+        region: "test",
+        startTime: new Date().toISOString(),
+        endTime: null,
+        lastError: "This is a test notification",
+        lastErrorType: "test",
+        status: "active",
+      };
+
+      // Send test notification
+      const notificationService = new NotificationService();
+
+      try {
+        // Send the test notification to only this specific channel
+        await notificationService.sendTestNotification(channel, testMonitor, testIncident, "down");
+
+        return reply.send({
+          success: true,
+          message: `Test notification sent to ${channel.type} channel: ${channel.name}`,
+        });
+      } catch (error) {
+        console.error("Failed to send test notification:", error);
+        return reply.code(500).send({
+          success: false,
+          message: "Failed to send test notification",
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
+      }
     },
   });
 };

@@ -26,7 +26,6 @@ export interface NotificationChannel {
   createdBy: string;
 }
 
-
 // Channels API
 async function getChannels() {
   return authedFetch<{ channels: NotificationChannel[] }>("/uptime/notification-channels");
