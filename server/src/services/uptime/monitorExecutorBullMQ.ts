@@ -2,7 +2,7 @@ import { Worker, Job } from 'bullmq';
 import { eq, and, inArray } from 'drizzle-orm';
 import { DateTime } from 'luxon';
 import { db } from '../../db/postgres/postgres.js';
-import { uptimeMonitors, uptimeMonitorStatus, agentRegions } from '../../db/postgres/schema.js';
+import { uptimeMonitors, uptimeMonitorStatus, agentRegions, uptimeIncidents } from '../../db/postgres/schema.js';
 import { clickhouse } from '../../db/clickhouse/clickhouse.js';
 import { MonitorCheckJob, HttpCheckResult, TcpCheckResult, MonitorEvent } from './types.js';
 import { performHttpCheck } from './checks/httpCheck.js';
@@ -272,6 +272,11 @@ export class MonitorExecutorBullMQ {
         await this.storeMonitorEvent(monitor, result, region);
       }
 
+      // Handle incidents per region
+      for (const { region, result } of regionResults) {
+        await this.handleRegionalIncident(monitor, region, result);
+      }
+
       // Update monitor status based on the majority of regions
       const successCount = regionResults.filter(r => r.result.status === "success").length;
       const overallStatus = successCount > regionResults.length / 2 ? "success" : "failure";
@@ -400,6 +405,7 @@ export class MonitorExecutorBullMQ {
 
       let consecutiveFailures = existingStatus?.consecutiveFailures || 0;
       let consecutiveSuccesses = existingStatus?.consecutiveSuccesses || 0;
+      const previousStatus = existingStatus?.currentStatus;
 
       if (currentStatus === "up") {
         consecutiveSuccesses++;
@@ -431,8 +437,146 @@ export class MonitorExecutorBullMQ {
           updatedAt: now.toISOString(),
         });
       }
+
+      // Handle incident creation/resolution based on status changes
+      await this.handleIncidentManagement(monitorId, previousStatus || undefined, currentStatus, result);
     } catch (error) {
       console.error("Failed to update monitor status:", error);
+    }
+  }
+
+  private async handleIncidentManagement(
+    monitorId: number, 
+    previousStatus: string | undefined, 
+    currentStatus: string,
+    result: HttpCheckResult | TcpCheckResult
+  ): Promise<void> {
+    try {
+      // Get monitor details for incident creation
+      const monitor = await db.query.uptimeMonitors.findFirst({
+        where: eq(uptimeMonitors.id, monitorId),
+      });
+
+      if (!monitor) {
+        console.error(`Monitor ${monitorId} not found for incident management`);
+        return;
+      }
+
+      // Check for active incidents
+      const activeIncident = await db.query.uptimeIncidents.findFirst({
+        where: and(
+          eq(uptimeIncidents.monitorId, monitorId),
+          eq(uptimeIncidents.status, "active"),
+          eq(uptimeIncidents.region, "local")
+        ),
+      });
+
+      // Status transition: UP -> DOWN (Create new incident)
+      if (previousStatus === "up" && currentStatus === "down") {
+        // Only create incident if there isn't already an active one
+        if (!activeIncident) {
+          await db.insert(uptimeIncidents).values({
+            organizationId: monitor.organizationId as string,
+            monitorId: monitorId,
+            region: "local",
+            startTime: new Date().toISOString(),
+            status: "active",
+            lastError: result.error?.message || null,
+            lastErrorType: result.error?.type || null,
+            failureCount: 1,
+          });
+          console.log(`Created new incident for monitor ${monitorId} (${monitor.name})`);
+        }
+      }
+      // Status transition: DOWN -> UP (Resolve active incident)
+      else if (previousStatus === "down" && currentStatus === "up") {
+        if (activeIncident) {
+          const now = new Date().toISOString();
+          await db
+            .update(uptimeIncidents)
+            .set({
+              status: "resolved",
+              endTime: now,
+              resolvedAt: now,
+            })
+            .where(eq(uptimeIncidents.id, activeIncident.id));
+          console.log(`Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
+        }
+      }
+      // Status remains DOWN (Update failure count)
+      else if (currentStatus === "down" && activeIncident) {
+        await db
+          .update(uptimeIncidents)
+          .set({
+            failureCount: (activeIncident.failureCount || 0) + 1,
+            lastError: result.error?.message || activeIncident.lastError,
+            lastErrorType: result.error?.type || activeIncident.lastErrorType,
+          })
+          .where(eq(uptimeIncidents.id, activeIncident.id));
+      }
+    } catch (error) {
+      console.error("Failed to manage incident:", error);
+    }
+  }
+
+  private async handleRegionalIncident(
+    monitor: any, 
+    region: string,
+    result: HttpCheckResult | TcpCheckResult
+  ): Promise<void> {
+    try {
+      const currentStatus = result.status === "success" ? "up" : "down";
+      
+      // Check for active incidents in this region
+      const activeIncident = await db.query.uptimeIncidents.findFirst({
+        where: and(
+          eq(uptimeIncidents.monitorId, monitor.id),
+          eq(uptimeIncidents.status, "active"),
+          eq(uptimeIncidents.region, region)
+        ),
+      });
+
+      // If check failed and no active incident, create one
+      if (currentStatus === "down" && !activeIncident) {
+        await db.insert(uptimeIncidents).values({
+          organizationId: monitor.organizationId as string,
+          monitorId: monitor.id,
+          region: region,
+          startTime: new Date().toISOString(),
+          status: "active",
+          lastError: result.error?.message || null,
+          lastErrorType: result.error?.type || null,
+          failureCount: 1,
+        });
+        console.log(`Created new incident for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
+      }
+      // If check succeeded and there's an active incident, resolve it
+      else if (currentStatus === "up" && activeIncident) {
+        const now = new Date().toISOString();
+        await db
+          .update(uptimeIncidents)
+          .set({
+            status: "resolved",
+            endTime: now,
+            resolvedAt: now,
+            updatedAt: now,
+          })
+          .where(eq(uptimeIncidents.id, activeIncident.id));
+        console.log(`Resolved incident ${activeIncident.id} for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
+      }
+      // If check failed and there's already an active incident, update it
+      else if (currentStatus === "down" && activeIncident) {
+        await db
+          .update(uptimeIncidents)
+          .set({
+            failureCount: (activeIncident.failureCount || 0) + 1,
+            lastError: result.error?.message || activeIncident.lastError,
+            lastErrorType: result.error?.type || activeIncident.lastErrorType,
+          })
+          .where(eq(uptimeIncidents.id, activeIncident.id));
+      }
+    } catch (error) {
+      console.error(`Failed to manage regional incident for region ${region}:`, error);
     }
   }
 

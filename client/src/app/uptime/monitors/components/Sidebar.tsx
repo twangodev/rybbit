@@ -24,12 +24,11 @@ export function Sidebar() {
           icon={<AlertCircle className="w-4 h-4" />}
         />
         <SidebarLink
-          label="Integrations"
-          active={pathname.startsWith("/uptime/integrations")}
-          href={"/uptime/integrations"}
+          label="Notifications"
+          active={pathname.startsWith("/uptime/notifications")}
+          href={"/uptime/notifications"}
           icon={<Plug2 className="w-4 h-4" />}
         />
-
         <SidebarLink
           label="Status Page"
           active={pathname.startsWith("/uptime/status-page")}

@@ -5,9 +5,9 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Plus, RefreshCw } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { StandardPage } from "../../../components/StandardPage";
 import { MonitorDialog } from "./components/dialog";
 import { MonitorsTable } from "./components/MonitorsTable";
-import { Scaffolding } from "./components/Scaffolding";
 
 export default function UptimePage() {
   const queryClient = useQueryClient();
@@ -24,8 +24,8 @@ export default function UptimePage() {
   };
 
   return (
-    <Scaffolding>
-      <div className="flex items-center justify-between">
+    <StandardPage showSidebar={false}>
+      <div className="flex items-center justify-between mb-6">
         <div>
           <h1 className="text-2xl font-semibold">Uptime Monitoring</h1>
           <p className="text-sm text-neutral-500 mt-1">Monitor the availability and performance of your endpoints</p>
@@ -45,6 +45,6 @@ export default function UptimePage() {
       <MonitorsTable onMonitorClick={handleMonitorClick} />
 
       <MonitorDialog open={showCreateDialog} onOpenChange={setShowCreateDialog} />
-    </Scaffolding>
+    </StandardPage>
   );
 }

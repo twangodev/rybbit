@@ -63,7 +63,6 @@ export function Sidebar() {
             href={getTabPath("realtime")}
             icon={<Earth className="w-4 h-4" />}
           />
-
           <SidebarLink
             label="Map"
             active={isActiveTab("map")}

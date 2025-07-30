@@ -73,6 +73,8 @@ import { getMonitorUptimeBuckets } from "./api/uptime/getMonitorUptimeBuckets.js
 import { getMonitorStatus } from "./api/uptime/getMonitorStatus.js";
 import { getMonitorUptime } from "./api/uptime/getMonitorUptime.js";
 import { getRegions } from "./api/uptime/getRegions.js";
+import { incidentsRoutes } from "./api/uptime/incidents.js";
+import { notificationRoutes } from "./api/uptime/notifications.js";
 import { initializeClickhouse } from "./db/clickhouse/clickhouse.js";
 import { initPostgres } from "./db/postgres/initPostgres.js";
 import { loadAllowedDomains } from "./lib/allowedDomains.js";
@@ -316,6 +318,12 @@ server.get("/api/uptime/monitors/:monitorId/uptime", getMonitorUptime);
 server.get("/api/uptime/monitors/:monitorId/buckets", getMonitorUptimeBuckets);
 server.get("/api/uptime/regions", getRegions);
 
+// Register incidents routes
+server.register(incidentsRoutes);
+
+// Register notification routes
+server.register(notificationRoutes);
+
 // STRIPE & ADMIN
 
 if (IS_CLOUD) {
@@ -348,7 +356,8 @@ const start = async () => {
     console.info("Server is listening on http://0.0.0.0:3001");
 
     // Initialize uptime monitoring service in the background (non-blocking)
-    uptimeService.initialize()
+    uptimeService
+      .initialize()
       .then(() => {
         console.info("Uptime monitoring service initialized successfully");
       })

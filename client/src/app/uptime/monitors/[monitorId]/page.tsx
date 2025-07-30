@@ -5,22 +5,16 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { ArrowLeft } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
-import {
-  UptimeMonitor,
-  useMonitor,
-  useMonitorEvents,
-  useMonitorStats,
-  useMonitorUptime,
-} from "../../../../api/uptime/monitors";
+import { UptimeMonitor, useMonitor, useMonitorStats, useMonitorUptime } from "../../../../api/uptime/monitors";
+import { StandardPage } from "../../../../components/StandardPage";
+import { INTERVAL_OPTIONS } from "../components/dialog/GeneralTab";
 import { MonitorActions } from "../components/MonitorActions";
 import { MonitorResponseTimeChart } from "../components/MonitorResponseTimeChart";
-import { Scaffolding } from "../components/Scaffolding";
 import { StatusOrb } from "../components/StatusOrb";
 import { useUptimeStore } from "../components/uptimeStore";
 import { getHoursFromTimeRange } from "../components/utils";
 import { EventsTable } from "./components/EventsTable";
 import { FilterBar } from "./components/FilterBar";
-import { INTERVAL_OPTIONS } from "../components/dialog/GeneralTab";
 
 interface StatCardProps {
   label: string;
@@ -135,19 +129,19 @@ export default function MonitorDetailPage() {
 
   if (!monitor && !isLoadingMonitor) {
     return (
-      <Scaffolding>
+      <StandardPage showSidebar={false}>
         <div className="text-center py-12">
           <h2 className="text-xl font-semibold mb-2">Monitor not found</h2>
           <Button onClick={() => router.push("/uptime")} variant="outline">
             Back to Monitors
           </Button>
         </div>
-      </Scaffolding>
+      </StandardPage>
     );
   }
 
   return (
-    <Scaffolding>
+    <StandardPage showSidebar={false}>
       {/* Header */}
       <Button
         variant="ghost"
@@ -181,6 +175,6 @@ export default function MonitorDetailPage() {
       {/* Response Time Chart */}
       <MonitorResponseTimeChart monitor={monitor} isLoading={isLoadingMonitor} />
       <EventsTable monitorId={monitorId} />
-    </Scaffolding>
+    </StandardPage>
   );
 }
