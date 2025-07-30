@@ -1,13 +1,13 @@
-import { Worker, Job } from 'bullmq';
-import { eq, and, inArray } from 'drizzle-orm';
-import { DateTime } from 'luxon';
-import { db } from '../../db/postgres/postgres.js';
-import { uptimeMonitors, uptimeMonitorStatus, agentRegions, uptimeIncidents } from '../../db/postgres/schema.js';
-import { clickhouse } from '../../db/clickhouse/clickhouse.js';
-import { MonitorCheckJob, HttpCheckResult, TcpCheckResult, MonitorEvent } from './types.js';
-import { performHttpCheck } from './checks/httpCheck.js';
-import { performTcpCheck } from './checks/tcpCheck.js';
-import { applyValidationRules } from './validationEngine.js';
+import { Worker, Job } from "bullmq";
+import { eq, and, inArray } from "drizzle-orm";
+import { DateTime } from "luxon";
+import { db } from "../../db/postgres/postgres.js";
+import { uptimeMonitors, uptimeMonitorStatus, agentRegions, uptimeIncidents } from "../../db/postgres/schema.js";
+import { clickhouse } from "../../db/clickhouse/clickhouse.js";
+import { MonitorCheckJob, HttpCheckResult, TcpCheckResult, MonitorEvent } from "./types.js";
+import { performHttpCheck } from "./checks/httpCheck.js";
+import { performTcpCheck } from "./checks/tcpCheck.js";
+import { applyValidationRules } from "./validationEngine.js";
 
 interface AgentExecuteRequest {
   jobId: string;
@@ -48,74 +48,74 @@ export class MonitorExecutorBullMQ {
   constructor(concurrency: number = 10) {
     this.concurrency = concurrency;
     this.connection = {
-      host: process.env.REDIS_HOST || 'localhost',
-      port: parseInt(process.env.REDIS_PORT || '6379', 10),
-      ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD })
+      host: process.env.REDIS_HOST || "localhost",
+      port: parseInt(process.env.REDIS_PORT || "6379", 10),
+      ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
     };
   }
 
   async start(): Promise<void> {
-    console.log(`Starting BullMQ monitor executor with concurrency: ${this.concurrency}`);
+    console.log(`[Uptime] Starting BullMQ monitor executor with concurrency: ${this.concurrency}`);
 
     // Create worker to process jobs
     this.worker = new Worker(
-      'monitor-checks',
+      "monitor-checks",
       async (job: Job<MonitorCheckJob>) => {
-        console.log(`🔍 Processing monitor check job ${job.name} for monitor ${job.data.monitorId}`);
+        console.log(`[Uptime] 🔍 Processing monitor check job ${job.name} for monitor ${job.data.monitorId}`);
         await this.processMonitorCheck(job.data);
-        console.log(`✅ Completed monitor check job ${job.name}`);
+        console.log(`[Uptime] ✅ Completed monitor check job ${job.name}`);
       },
       {
         connection: this.connection,
         concurrency: this.concurrency,
         autorun: true,
         removeOnComplete: {
-          count: 100
+          count: 100,
         },
         removeOnFail: {
-          count: 100
-        }
-      }
+          count: 100,
+        },
+      },
     );
 
     // Set up event listeners
-    this.worker.on('completed', (job) => {
-      console.log(`Job ${job.id} completed successfully`);
+    this.worker.on("completed", (job) => {
+      console.log(`[Uptime] Job ${job.id} completed successfully`);
     });
 
-    this.worker.on('failed', (job, err) => {
+    this.worker.on("failed", (job, err) => {
       console.error(`Job ${job?.id} failed:`, err);
     });
 
-    this.worker.on('error', (err) => {
-      console.error('Worker error:', err);
+    this.worker.on("error", (err) => {
+      console.error("Worker error:", err);
     });
 
-    this.worker.on('ready', () => {
-      console.log('BullMQ worker is ready and listening for jobs');
+    this.worker.on("ready", () => {
+      console.log("[Uptime] BullMQ worker is ready and listening for jobs");
     });
 
-    this.worker.on('active', (job) => {
-      console.log(`Job ${job.id} is now active`);
+    this.worker.on("active", (job) => {
+      console.log(`[Uptime] Job ${job.id} is now active`);
     });
 
     // Wait for worker to be ready
     await new Promise<void>((resolve) => {
       if (this.worker) {
-        this.worker.once('ready', () => {
+        this.worker.once("ready", () => {
           resolve();
         });
       }
     });
 
-    console.log('BullMQ monitor executor started successfully');
+    console.log("[Uptime] BullMQ monitor executor started successfully");
   }
 
   private async processMonitorCheck(jobData: MonitorCheckJob): Promise<void> {
     const { monitorId } = jobData;
 
     try {
-      console.log(`🔍 Starting to process monitor check for monitor ID: ${monitorId}`);
+      console.log(`[Uptime] 🔍 Starting to process monitor check for monitor ID: ${monitorId}`);
 
       // Fetch monitor configuration
       const monitor = await db.query.uptimeMonitors.findFirst({
@@ -123,12 +123,12 @@ export class MonitorExecutorBullMQ {
       });
 
       if (!monitor || !monitor.enabled) {
-        console.log(`Monitor ${monitorId} not found or disabled`);
+        console.log(`[Uptime] Monitor ${monitorId} not found or disabled`);
         return;
       }
 
       // Check if this is a global monitor
-      if (monitor.monitoringType === 'global' && monitor.selectedRegions && monitor.selectedRegions.length > 0) {
+      if (monitor.monitoringType === "global" && monitor.selectedRegions && monitor.selectedRegions.length > 0) {
         await this.processGlobalMonitorCheck(monitor);
         return;
       }
@@ -186,7 +186,7 @@ export class MonitorExecutorBullMQ {
       // Update monitor status in PostgreSQL
       await this.updateMonitorStatus(monitor.id, result);
 
-      console.log(`✅ Monitor check completed: ${monitorId} - ${result.status} (${result.responseTimeMs}ms)`);
+      console.log(`[Uptime] ✅ Monitor check completed: ${monitorId} - ${result.status} (${result.responseTimeMs}ms)`);
     } catch (error) {
       console.error(`Error processing monitor check ${monitorId}:`, error);
 
@@ -222,10 +222,10 @@ export class MonitorExecutorBullMQ {
   private async processGlobalMonitorCheck(monitor: any): Promise<void> {
     try {
       // Filter to only include non-local regions
-      const globalRegions = monitor.selectedRegions.filter((r: string) => r !== 'local');
-      
+      const globalRegions = monitor.selectedRegions.filter((r: string) => r !== "local");
+
       if (globalRegions.length === 0) {
-        console.log(`Monitor ${monitor.id} has no global regions selected`);
+        console.log(`[Uptime] Monitor ${monitor.id} has no global regions selected`);
         return;
       }
 
@@ -234,18 +234,18 @@ export class MonitorExecutorBullMQ {
         where: and(
           inArray(agentRegions.code, globalRegions),
           eq(agentRegions.enabled, true),
-          eq(agentRegions.isHealthy, true)
+          eq(agentRegions.isHealthy, true),
         ),
       });
 
       if (regions.length === 0) {
-        console.log(`No healthy regions found for monitor ${monitor.id}`);
+        console.log(`[Uptime] No healthy regions found for monitor ${monitor.id}`);
         return;
       }
 
       // Execute checks in parallel across all regions
-      const regionPromises = regions.map(region => 
-        this.executeAgentCheck(monitor, region).catch(error => {
+      const regionPromises = regions.map((region) =>
+        this.executeAgentCheck(monitor, region).catch((error) => {
           console.error(`Error executing check in region ${region.code}:`, error);
           return {
             region: region.code,
@@ -262,7 +262,7 @@ export class MonitorExecutorBullMQ {
               },
             } as HttpCheckResult,
           };
-        })
+        }),
       );
 
       const regionResults = await Promise.all(regionPromises);
@@ -278,14 +278,15 @@ export class MonitorExecutorBullMQ {
       }
 
       // Update monitor status based on the majority of regions
-      const successCount = regionResults.filter(r => r.result.status === "success").length;
+      const successCount = regionResults.filter((r) => r.result.status === "success").length;
       const overallStatus = successCount > regionResults.length / 2 ? "success" : "failure";
-      
+
       // Use the average response time from successful checks
-      const successfulResults = regionResults.filter(r => r.result.status === "success");
-      const avgResponseTime = successfulResults.length > 0
-        ? successfulResults.reduce((sum, r) => sum + r.result.responseTimeMs, 0) / successfulResults.length
-        : 0;
+      const successfulResults = regionResults.filter((r) => r.result.status === "success");
+      const avgResponseTime =
+        successfulResults.length > 0
+          ? successfulResults.reduce((sum, r) => sum + r.result.responseTimeMs, 0) / successfulResults.length
+          : 0;
 
       const aggregatedResult: HttpCheckResult = {
         status: overallStatus === "success" ? "success" : "failure",
@@ -298,28 +299,33 @@ export class MonitorExecutorBullMQ {
 
       await this.updateMonitorStatus(monitor.id, aggregatedResult);
 
-      console.log(`✅ Global monitor check completed: ${monitor.id} - ${overallStatus} (${regionResults.length} regions)`);
+      console.log(
+        `[Uptime] ✅ Global monitor check completed: ${monitor.id} - ${overallStatus} (${regionResults.length} regions)`,
+      );
     } catch (error) {
       console.error(`Error processing global monitor check ${monitor.id}:`, error);
     }
   }
 
-  private async executeAgentCheck(monitor: any, region: any): Promise<{ region: string; result: HttpCheckResult | TcpCheckResult }> {
+  private async executeAgentCheck(
+    monitor: any,
+    region: any,
+  ): Promise<{ region: string; result: HttpCheckResult | TcpCheckResult }> {
     const jobId = `${monitor.id}-${Date.now()}-${region.code}`;
-    
+
     const request: AgentExecuteRequest = {
       jobId,
       monitorId: monitor.id,
       monitorType: monitor.monitorType,
-      config: monitor.monitorType === 'http' ? monitor.httpConfig : monitor.tcpConfig,
+      config: monitor.monitorType === "http" ? monitor.httpConfig : monitor.tcpConfig,
       validationRules: monitor.validationRules || [],
     };
 
     try {
       const response = await fetch(`${region.endpointUrl}/execute`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(request),
         signal: AbortSignal.timeout(60000), // 60 second timeout
@@ -332,23 +338,24 @@ export class MonitorExecutorBullMQ {
       const agentResponse: AgentExecuteResponse = await response.json();
 
       // Convert agent response to our internal format
-      const result: HttpCheckResult | TcpCheckResult = monitor.monitorType === 'http'
-        ? {
-            status: agentResponse.status,
-            statusCode: agentResponse.statusCode,
-            responseTimeMs: agentResponse.responseTimeMs,
-            timing: agentResponse.timing || {},
-            headers: agentResponse.headers || {},
-            bodySizeBytes: agentResponse.bodySizeBytes || 0,
-            validationErrors: agentResponse.validationErrors || [],
-            error: agentResponse.error,
-          }
-        : {
-            status: agentResponse.status,
-            responseTimeMs: agentResponse.responseTimeMs,
-            validationErrors: [],
-            error: agentResponse.error,
-          };
+      const result: HttpCheckResult | TcpCheckResult =
+        monitor.monitorType === "http"
+          ? {
+              status: agentResponse.status,
+              statusCode: agentResponse.statusCode,
+              responseTimeMs: agentResponse.responseTimeMs,
+              timing: agentResponse.timing || {},
+              headers: agentResponse.headers || {},
+              bodySizeBytes: agentResponse.bodySizeBytes || 0,
+              validationErrors: agentResponse.validationErrors || [],
+              error: agentResponse.error,
+            }
+          : {
+              status: agentResponse.status,
+              responseTimeMs: agentResponse.responseTimeMs,
+              validationErrors: [],
+              error: agentResponse.error,
+            };
 
       return { region: region.code, result };
     } catch (error) {
@@ -357,7 +364,17 @@ export class MonitorExecutorBullMQ {
     }
   }
 
-  private async storeMonitorEvent(monitor: any, result: HttpCheckResult | TcpCheckResult, regionCode: string = "local"): Promise<void> {
+  private async storeMonitorEvent(
+    monitor: any,
+    result: HttpCheckResult | TcpCheckResult,
+    regionCode: string = "local",
+  ): Promise<void> {
+    // Helper to ensure timing values are non-negative or undefined
+    const sanitizeTiming = (value: number | undefined): number | undefined => {
+      if (value === undefined || value === null) return undefined;
+      return value >= 0 ? Math.round(value) : undefined;
+    };
+
     const event: MonitorEvent = {
       monitor_id: monitor.id,
       organization_id: monitor.organizationId,
@@ -368,12 +385,12 @@ export class MonitorExecutorBullMQ {
       region: regionCode,
       status: result.status,
       status_code: (result as HttpCheckResult).statusCode,
-      response_time_ms: result.responseTimeMs,
-      dns_time_ms: (result as HttpCheckResult).timing?.dnsMs,
-      tcp_time_ms: (result as HttpCheckResult).timing?.tcpMs,
-      tls_time_ms: (result as HttpCheckResult).timing?.tlsMs,
-      ttfb_ms: (result as HttpCheckResult).timing?.ttfbMs,
-      transfer_time_ms: (result as HttpCheckResult).timing?.transferMs,
+      response_time_ms: Math.max(0, Math.round(result.responseTimeMs)),
+      dns_time_ms: sanitizeTiming((result as HttpCheckResult).timing?.dnsMs),
+      tcp_time_ms: sanitizeTiming((result as HttpCheckResult).timing?.tcpMs),
+      tls_time_ms: sanitizeTiming((result as HttpCheckResult).timing?.tlsMs),
+      ttfb_ms: sanitizeTiming((result as HttpCheckResult).timing?.ttfbMs),
+      transfer_time_ms: sanitizeTiming((result as HttpCheckResult).timing?.transferMs),
       validation_errors: result.validationErrors,
       response_headers: (result as HttpCheckResult).headers || {},
       response_size_bytes: (result as HttpCheckResult).bodySizeBytes,
@@ -446,10 +463,10 @@ export class MonitorExecutorBullMQ {
   }
 
   private async handleIncidentManagement(
-    monitorId: number, 
-    previousStatus: string | undefined, 
+    monitorId: number,
+    previousStatus: string | undefined,
     currentStatus: string,
-    result: HttpCheckResult | TcpCheckResult
+    result: HttpCheckResult | TcpCheckResult,
   ): Promise<void> {
     try {
       // Get monitor details for incident creation
@@ -467,7 +484,7 @@ export class MonitorExecutorBullMQ {
         where: and(
           eq(uptimeIncidents.monitorId, monitorId),
           eq(uptimeIncidents.status, "active"),
-          eq(uptimeIncidents.region, "local")
+          eq(uptimeIncidents.region, "local"),
         ),
       });
 
@@ -485,7 +502,7 @@ export class MonitorExecutorBullMQ {
             lastErrorType: result.error?.type || null,
             failureCount: 1,
           });
-          console.log(`Created new incident for monitor ${monitorId} (${monitor.name})`);
+          console.log(`[Uptime] Created new incident for monitor ${monitorId} (${monitor.name})`);
         }
       }
       // Status transition: DOWN -> UP (Resolve active incident)
@@ -500,7 +517,7 @@ export class MonitorExecutorBullMQ {
               resolvedAt: now,
             })
             .where(eq(uptimeIncidents.id, activeIncident.id));
-          console.log(`Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
+          console.log(`[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
         }
       }
       // Status remains DOWN (Update failure count)
@@ -520,19 +537,19 @@ export class MonitorExecutorBullMQ {
   }
 
   private async handleRegionalIncident(
-    monitor: any, 
+    monitor: any,
     region: string,
-    result: HttpCheckResult | TcpCheckResult
+    result: HttpCheckResult | TcpCheckResult,
   ): Promise<void> {
     try {
       const currentStatus = result.status === "success" ? "up" : "down";
-      
+
       // Check for active incidents in this region
       const activeIncident = await db.query.uptimeIncidents.findFirst({
         where: and(
           eq(uptimeIncidents.monitorId, monitor.id),
           eq(uptimeIncidents.status, "active"),
-          eq(uptimeIncidents.region, region)
+          eq(uptimeIncidents.region, region),
         ),
       });
 
@@ -548,7 +565,7 @@ export class MonitorExecutorBullMQ {
           lastErrorType: result.error?.type || null,
           failureCount: 1,
         });
-        console.log(`Created new incident for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
+        console.log(`[Uptime] Created new incident for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
       }
       // If check succeeded and there's an active incident, resolve it
       else if (currentStatus === "up" && activeIncident) {
@@ -562,7 +579,9 @@ export class MonitorExecutorBullMQ {
             updatedAt: now,
           })
           .where(eq(uptimeIncidents.id, activeIncident.id));
-        console.log(`Resolved incident ${activeIncident.id} for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
+        console.log(
+          `[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitor.id} (${monitor.name}) in region ${region}`,
+        );
       }
       // If check failed and there's already an active incident, update it
       else if (currentStatus === "down" && activeIncident) {
@@ -581,7 +600,7 @@ export class MonitorExecutorBullMQ {
   }
 
   async shutdown(): Promise<void> {
-    console.log("Shutting down BullMQ monitor executor...");
+    console.log("[Uptime] Shutting down BullMQ monitor executor...");
     this.isShuttingDown = true;
 
     if (this.worker) {
@@ -589,11 +608,9 @@ export class MonitorExecutorBullMQ {
         // Close the worker with a timeout
         await Promise.race([
           this.worker.close(),
-          new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('Worker close timeout')), 5000)
-          )
+          new Promise((_, reject) => setTimeout(() => reject(new Error("Worker close timeout")), 5000)),
         ]);
-        console.log("BullMQ monitor executor shut down successfully");
+        console.log("[Uptime] BullMQ monitor executor shut down successfully");
       } catch (error) {
         console.error("Error closing worker:", error);
         // Force close if needed

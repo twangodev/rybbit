@@ -4,17 +4,12 @@ import { usePathname } from "next/navigation";
 import { useGetSite } from "../api/admin/sites";
 import { Sidebar } from "../app/[site]/components/Sidebar/Sidebar";
 import { Button } from "./ui/button";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "./ui/sheet";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "./ui/sheet";
 
 import { Menu } from "lucide-react";
 import { VisuallyHidden } from "radix-ui";
 import { Favicon } from "./Favicon";
+import { AppSidebar } from "./AppSidebar";
 
 export function MobileSidebar() {
   const pathname = usePathname();
@@ -33,7 +28,8 @@ export function MobileSidebar() {
             <SheetTitle>Rybbit Sidebar</SheetTitle>
           </SheetHeader>
         </VisuallyHidden.Root>
-        <SheetContent side="left" className="p-0 w-[223px]" showClose={false}>
+        <SheetContent side="left" className="p-0 w-[240px] flex gap-0" showClose={false}>
+          <AppSidebar />
           <Sidebar />
         </SheetContent>
       </Sheet>
