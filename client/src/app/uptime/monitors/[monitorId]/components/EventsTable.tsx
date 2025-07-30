@@ -153,7 +153,7 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
         <CardTitle className="text-base">Recent Events</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <div className="rounded-md border border-neutral-800">
+        <div className="rounded-lg border border-neutral-800">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (

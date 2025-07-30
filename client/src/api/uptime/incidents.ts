@@ -21,7 +21,6 @@ export interface UptimeIncident {
   failureCount: number;
   createdAt: string;
   updatedAt: string;
-  duration?: string;
 }
 
 interface GetIncidentsParams {

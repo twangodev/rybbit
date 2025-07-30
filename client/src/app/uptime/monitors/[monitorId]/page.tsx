@@ -142,39 +142,41 @@ export default function MonitorDetailPage() {
 
   return (
     <StandardPage showSidebar={false}>
-      {/* Header */}
-      <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => router.push("/uptime/monitors")}
-        className="flex items-center gap-2"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back
-      </Button>
-      <div className="flex items-start justify-between">
-        <MonitorHeader monitor={monitor} isLoadingMonitor={isLoadingMonitor} />
-        <MonitorActions monitor={monitor} />
-      </div>
-      <FilterBar monitor={monitor} isLoading={isLoadingMonitor} />
+      <div className="space-y-4">
+        {/* Header */}
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => router.push("/uptime/monitors")}
+          className="flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back
+        </Button>
+        <div className="flex items-start justify-between">
+          <MonitorHeader monitor={monitor} isLoadingMonitor={isLoadingMonitor} />
+          <MonitorActions monitor={monitor} />
+        </div>
+        <FilterBar monitor={monitor} isLoading={isLoadingMonitor} />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-        <StatCard label="Uptime" value={formatPercentage(stats?.stats.uptimePercentage)} isLoading={isLoadingStats} />
-        <StatCard
-          label="Current Uptime"
-          value={formatUptime(uptimeData?.currentUptimeSeconds)}
-          isLoading={isLoadingUptime}
-        />
-        <StatCard label="P50" value={formatResponseTime(stats?.stats.responseTime.p50)} isLoading={isLoadingStats} />
-        <StatCard label="P90" value={formatResponseTime(stats?.stats.responseTime.p90)} isLoading={isLoadingStats} />
-        <StatCard label="P95" value={formatResponseTime(stats?.stats.responseTime.p95)} isLoading={isLoadingStats} />
-        <StatCard label="P99" value={formatResponseTime(stats?.stats.responseTime.p99)} isLoading={isLoadingStats} />
-      </div>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+          <StatCard label="Uptime" value={formatPercentage(stats?.stats.uptimePercentage)} isLoading={isLoadingStats} />
+          <StatCard
+            label="Current Uptime"
+            value={formatUptime(uptimeData?.currentUptimeSeconds)}
+            isLoading={isLoadingUptime}
+          />
+          <StatCard label="P50" value={formatResponseTime(stats?.stats.responseTime.p50)} isLoading={isLoadingStats} />
+          <StatCard label="P90" value={formatResponseTime(stats?.stats.responseTime.p90)} isLoading={isLoadingStats} />
+          <StatCard label="P95" value={formatResponseTime(stats?.stats.responseTime.p95)} isLoading={isLoadingStats} />
+          <StatCard label="P99" value={formatResponseTime(stats?.stats.responseTime.p99)} isLoading={isLoadingStats} />
+        </div>
 
-      {/* Response Time Chart */}
-      <MonitorResponseTimeChart monitor={monitor} isLoading={isLoadingMonitor} />
-      <EventsTable monitorId={monitorId} />
+        {/* Response Time Chart */}
+        <MonitorResponseTimeChart monitor={monitor} isLoading={isLoadingMonitor} />
+        <EventsTable monitorId={monitorId} />
+      </div>
     </StandardPage>
   );
 }

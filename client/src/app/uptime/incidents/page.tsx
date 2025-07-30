@@ -23,10 +23,40 @@ import {
 } from "../../../api/uptime/incidents";
 import { StandardPage } from "../../../components/StandardPage";
 
+const formatStartTime = (timestamp: string) => {
+  const dt = DateTime.fromSQL(timestamp, { zone: "UTC" }).toLocal();
+  return dt.toRelative() || dt.toFormat("MMM dd, HH:mm");
+};
+
+const formatDuration = (startTime: string, endTime: string | null): string => {
+  const start = DateTime.fromSQL(startTime, { zone: "UTC" });
+  const end = endTime ? DateTime.fromSQL(endTime, { zone: "UTC" }) : DateTime.now().toUTC();
+  const diff = end.diff(start, ["days", "hours", "minutes", "seconds"]);
+
+  const days = Math.floor(diff.days);
+  const hours = Math.floor(diff.hours);
+  const minutes = Math.floor(diff.minutes);
+  const seconds = Math.floor(diff.seconds);
+
+  let result = "";
+  if (days > 0) {
+    result = `${days}d ${hours % 24}h`;
+  } else if (hours > 0) {
+    result = `${hours}h ${minutes % 60}m`;
+  } else if (minutes > 0) {
+    result = `${minutes}m`;
+  } else {
+    result = `${seconds}s`;
+  }
+
+  return endTime ? result : `${result} (ongoing)`;
+};
+
 export default function IncidentsPage() {
   const [statusFilter, setStatusFilter] = useState<"active" | "acknowledged" | "resolved" | "all">("active");
 
   const { data, isLoading } = useIncidents({ status: statusFilter });
+
   const acknowledgeIncident = useAcknowledgeIncident();
   const resolveIncident = useResolveIncident();
 
@@ -51,17 +81,24 @@ export default function IncidentsPage() {
   const getStatusIcon = (status: UptimeIncident["status"]) => {
     switch (status) {
       case "active":
-        return <AlertCircle className="w-4 h-4 text-red-500" />;
+        return (
+          <div className="p-2 rounded-lg bg-red-500/10">
+            <AlertCircle className="w-4 h-4 text-red-500" />
+          </div>
+        );
       case "acknowledged":
-        return <AlertCircle className="w-4 h-4 text-yellow-500" />;
+        return (
+          <div className="p-2 rounded-lg bg-yellow-500/10">
+            <AlertCircle className="w-4 h-4 text-yellow-500" />
+          </div>
+        );
       case "resolved":
-        return <CheckCircle className="w-4 h-4 text-green-500" />;
+        return (
+          <div className="p-2 rounded-lg bg-green-500/10">
+            <CheckCircle className="w-4 h-4 text-green-500" />;
+          </div>
+        );
     }
-  };
-
-  const formatStartTime = (timestamp: string) => {
-    const dt = DateTime.fromISO(timestamp);
-    return dt.toRelative() || dt.toFormat("MMM dd, HH:mm");
   };
 
   return (
@@ -79,7 +116,7 @@ export default function IncidentsPage() {
         </Tabs>
       </div>
 
-      <div className="rounded-md border border-neutral-800">
+      <div className="rounded-lg border border-neutral-800">
         <Table>
           <TableHeader>
             <TableRow>
@@ -127,11 +164,11 @@ export default function IncidentsPage() {
                       {incident.region && <div className="text-xs text-neutral-500 uppercase">{incident.region}</div>}
                     </div>
                   </TableCell>
-                  <TableCell className="text-sm">{formatStartTime(incident.startTime)}</TableCell>
+                  <TableCell className="text-sm text-neutral-300">{formatStartTime(incident.startTime)}</TableCell>
                   <TableCell>
-                    <span className={cn("text-sm font-mono", incident.status !== "resolved" && "text-red-500")}>
-                      {incident.duration}
-                    </span>
+                    <div className="text-sm text-neutral-300">
+                      {formatDuration(incident.startTime, incident.endTime || null)}
+                    </div>
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>

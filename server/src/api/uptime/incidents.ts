@@ -36,7 +36,6 @@ const incidentSchema = z.object({
   failureCount: z.number(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  duration: z.string().optional(),
 });
 
 export const incidentsRoutes = async (server: FastifyInstance) => {
@@ -82,12 +81,15 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
 
       const total = Number(countResult[0]?.count || 0);
 
-      // Get incidents with monitor names
+      // Get incidents with monitor details
       const incidents = await db
         .select({
           incident: uptimeIncidents,
           monitor: {
             name: uptimeMonitors.name,
+            monitorType: uptimeMonitors.monitorType,
+            httpConfig: uptimeMonitors.httpConfig,
+            tcpConfig: uptimeMonitors.tcpConfig,
           },
         })
         .from(uptimeIncidents)
@@ -97,32 +99,29 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
         .limit(limit)
         .offset(offset);
 
-      // Add computed duration field and flatten the structure
-      const incidentsWithDuration = incidents.map((row: any) => {
-        let duration: string | undefined;
-
-        if (row.incident.endTime) {
-          const start = new Date(row.incident.startTime);
-          const end = new Date(row.incident.endTime);
-          const durationMs = end.getTime() - start.getTime();
-          duration = formatDuration(durationMs);
-        } else {
-          // Ongoing incident
-          const start = new Date(row.incident.startTime);
-          const now = new Date();
-          const durationMs = now.getTime() - start.getTime();
-          duration = `${formatDuration(durationMs)} (ongoing)`;
+      // Flatten the structure and add monitor name
+      const incidentsWithMonitorName = incidents.map((row) => {
+        // Determine monitor display name with fallback
+        let monitorName = "Unknown Monitor";
+        if (row.monitor) {
+          if (row.monitor.name) {
+            monitorName = row.monitor.name;
+          } else if (row.monitor.monitorType === "http" && row.monitor.httpConfig) {
+            monitorName = (row.monitor.httpConfig as any).url || "HTTP Monitor";
+          } else if (row.monitor.monitorType === "tcp" && row.monitor.tcpConfig) {
+            const config = row.monitor.tcpConfig as any;
+            monitorName = `${config.host}:${config.port}` || "TCP Monitor";
+          }
         }
 
         return {
           ...row.incident,
-          monitorName: row.monitor?.name || "Unknown Monitor",
-          duration,
+          monitorName,
         };
       });
 
       return reply.send({
-        incidents: incidentsWithDuration,
+        incidents: incidentsWithMonitorName,
         pagination: {
           total,
           limit,
@@ -269,22 +268,3 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
   });
 };
 
-// Helper function to format duration
-function formatDuration(ms: number): string {
-  const seconds = Math.floor(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const hours = Math.floor(minutes / 60);
-  const days = Math.floor(hours / 24);
-
-  if (days > 0) {
-    const remainingHours = hours % 24;
-    return `${days}d ${remainingHours}h`;
-  } else if (hours > 0) {
-    const remainingMinutes = minutes % 60;
-    return `${hours}h ${remainingMinutes}m`;
-  } else if (minutes > 0) {
-    return `${minutes}m`;
-  } else {
-    return `${seconds}s`;
-  }
-}
