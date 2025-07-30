@@ -60,6 +60,11 @@ export function UptimeBar({ monitorId, className }: UptimeBarProps) {
             else if (issuePercentage >= 0.1) barColor = "bg-orange-500";
             else barColor = "bg-yellow-500";
           }
+          if (totalChecks === 0) {
+            return (
+              <div className={cn("w-[10px] rounded-md cursor-pointer transition-opacity hover:opacity-80", barColor)} />
+            );
+          }
 
           return (
             <Tooltip key={day.date}>

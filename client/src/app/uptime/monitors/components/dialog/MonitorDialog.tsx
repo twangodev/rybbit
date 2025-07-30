@@ -22,6 +22,8 @@ import { AdvancedTab } from "./AdvancedTab";
 import { RegionsTab } from "./RegionsTab";
 import { NotificationsTab } from "./NotificationsTab";
 import { IS_CLOUD } from "@/lib/const";
+import { useQuery } from "@tanstack/react-query";
+import { authedFetch } from "../../../../../api/utils";
 
 interface MonitorDialogProps {
   monitor?: UptimeMonitor;
@@ -34,6 +36,16 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
   const createMonitor = useCreateMonitor();
   const updateMonitor = useUpdateMonitor();
   const isEdit = !!monitor;
+
+  // Fetch available regions
+  const { data: regionsData } = useQuery({
+    queryKey: ["uptime-regions"],
+    queryFn: async () => {
+      const response = await authedFetch<{ regions: Array<{ code: string; name: string; isHealthy: boolean; isLocal: boolean }> }>("/uptime/regions");
+      return response.regions;
+    },
+    enabled: open && IS_CLOUD,
+  });
 
   const form = useForm<any>({
     resolver: zodResolver(isEdit ? updateMonitorSchema : createMonitorSchema),
@@ -113,6 +125,20 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
       form.setValue("organizationId", activeOrganization.id);
     }
   }, [activeOrganization, form, isEdit]);
+
+  // Initialize regions for new monitors in cloud mode
+  useEffect(() => {
+    if (open && !isEdit && IS_CLOUD && regionsData) {
+      const globalRegions = regionsData.filter(r => !r.isLocal && r.isHealthy);
+      if (globalRegions.length > 0) {
+        const currentRegions = form.getValues("selectedRegions");
+        // Only set if empty or has default "local" value
+        if (!currentRegions || currentRegions.length === 0 || (currentRegions.length === 1 && currentRegions[0] === "local")) {
+          form.setValue("selectedRegions", globalRegions.map(r => r.code));
+        }
+      }
+    }
+  }, [open, isEdit, IS_CLOUD, regionsData, form]);
 
   // Reset form when dialog closes or monitor changes
   useEffect(() => {

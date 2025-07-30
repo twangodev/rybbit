@@ -53,7 +53,7 @@ export function MonitorActions({ monitor }: { monitor?: UptimeMonitor }) {
     try {
       await deleteMonitor.mutateAsync(monitor?.id ?? 0);
       toast.success("Monitor deleted successfully");
-      router.push("/uptime");
+      router.push("/uptime/monitors");
     } catch (error: any) {
       toast.error(error.response?.data?.error || "Failed to delete monitor");
     }

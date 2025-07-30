@@ -35,23 +35,15 @@ export function RegionsTab() {
   const regions = regionsData || [];
   const globalRegions = regions.filter((r: Region) => !r.isLocal);
 
-  // Set monitoring type and preselect all regions on mount
+  // Set monitoring type on mount
   useEffect(() => {
     form.setValue("monitoringType", monitoringType);
-
-    // Set all regions as selected by default if they haven't been set yet and we're in cloud mode
-    if (IS_CLOUD && globalRegions.length > 0) {
-      const currentRegions = form.getValues("selectedRegions");
-      // If no regions selected or only has the default "local" value, select all regions
-      if (!currentRegions || currentRegions.length === 0 || (currentRegions.length === 1 && currentRegions[0] === "local")) {
-        const allRegionCodes = globalRegions.map((r) => r.code);
-        form.setValue("selectedRegions", allRegionCodes);
-      }
-    } else if (!IS_CLOUD) {
-      // For local monitoring, ensure "local" is selected
+    
+    // For local monitoring, ensure "local" is selected
+    if (!IS_CLOUD) {
       form.setValue("selectedRegions", ["local"]);
     }
-  }, [monitoringType, form, globalRegions, IS_CLOUD]);
+  }, [monitoringType, form, IS_CLOUD]);
 
   if (isLoading) {
     return (
