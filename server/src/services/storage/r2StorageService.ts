@@ -161,13 +161,9 @@ export class R2StorageService {
           Key: key,
           Body: fileStream,
           ContentType: "text/csv",
-          Metadata: {
-            type: "import-file",
-            uploadTime: Date.now().toString(),
-          },
         },
         queueSize: 4,
-        partSize: 64 * 1024 * 1024,
+        partSize: 5 * 1024 * 1024,
         leavePartsOnError: false,
       });
 
