@@ -4,7 +4,7 @@ import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors } from "../../db/postgres/schema.js";
 import { MonitorCheckJob } from "./types.js";
 
-export class MonitorSchedulerBullMQ {
+export class MonitorScheduler {
   private queue: Queue;
   private queueEvents: QueueEvents;
   private isShuttingDown = false;

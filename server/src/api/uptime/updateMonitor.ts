@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
-import { uptimeServiceBullMQ } from "../../services/uptime/uptimeServiceBullMQ.js";
+import { uptimeServiceBullMQ } from "../../services/uptime/uptimeService.js";
 import { updateMonitorSchema, type UpdateMonitorInput } from "./schemas.js";
 
 interface UpdateMonitorRequest {
@@ -13,10 +13,7 @@ interface UpdateMonitorRequest {
   Body: UpdateMonitorInput;
 }
 
-export async function updateMonitor(
-  request: FastifyRequest<UpdateMonitorRequest>,
-  reply: FastifyReply
-) {
+export async function updateMonitor(request: FastifyRequest<UpdateMonitorRequest>, reply: FastifyReply) {
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
@@ -37,10 +34,7 @@ export async function updateMonitor(
 
     // Check if user has access to the monitor's organization
     const userHasAccess = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, userId),
-        eq(member.organizationId, existingMonitor.organizationId)
-      ),
+      where: and(eq(member.userId, userId), eq(member.organizationId, existingMonitor.organizationId)),
     });
 
     if (!userHasAccess) {
@@ -49,7 +43,7 @@ export async function updateMonitor(
 
     // Validate request body with Zod
     const updateData = updateMonitorSchema.parse(request.body);
-    
+
     // Additional validation for monitor type specific config if changing config
     if (existingMonitor.monitorType === "http" && updateData.httpConfig) {
       if (!updateData.httpConfig.url) {
@@ -73,29 +67,24 @@ export async function updateMonitor(
       .returning();
 
     // Update the monitor schedule if interval or enabled status changed
-    const intervalChanged = updateData.intervalSeconds !== undefined && 
-                          updateData.intervalSeconds !== existingMonitor.intervalSeconds;
-    const enabledChanged = updateData.enabled !== undefined && 
-                          updateData.enabled !== existingMonitor.enabled;
-    
+    const intervalChanged =
+      updateData.intervalSeconds !== undefined && updateData.intervalSeconds !== existingMonitor.intervalSeconds;
+    const enabledChanged = updateData.enabled !== undefined && updateData.enabled !== existingMonitor.enabled;
+
     if (intervalChanged || enabledChanged) {
       const enabled = updateData.enabled !== undefined ? updateData.enabled : existingMonitor.enabled!;
       const intervalSeconds = updateData.intervalSeconds || existingMonitor.intervalSeconds;
-      
-      await uptimeServiceBullMQ.onMonitorUpdated(
-        Number(monitorId),
-        intervalSeconds,
-        enabled
-      );
+
+      await uptimeServiceBullMQ.onMonitorUpdated(Number(monitorId), intervalSeconds, enabled);
     }
 
     return reply.status(200).send(updatedMonitor);
   } catch (error) {
     if (error instanceof Error && error.name === "ZodError") {
       const zodError = error as any;
-      return reply.status(400).send({ 
+      return reply.status(400).send({
         error: "Validation error",
-        details: zodError.errors 
+        details: zodError.errors,
       });
     }
     console.error("Error updating monitor:", error);

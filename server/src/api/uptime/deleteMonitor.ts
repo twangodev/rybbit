@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, uptimeMonitorStatus, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
-import { uptimeServiceBullMQ } from "../../services/uptime/uptimeServiceBullMQ.js";
+import { uptimeServiceBullMQ } from "../../services/uptime/uptimeService.js";
 
 interface DeleteMonitorParams {
   Params: {
@@ -11,10 +11,7 @@ interface DeleteMonitorParams {
   };
 }
 
-export async function deleteMonitor(
-  request: FastifyRequest<DeleteMonitorParams>,
-  reply: FastifyReply
-) {
+export async function deleteMonitor(request: FastifyRequest<DeleteMonitorParams>, reply: FastifyReply) {
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
@@ -35,10 +32,7 @@ export async function deleteMonitor(
 
     // Check if user has access to the monitor's organization
     const userHasAccess = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, userId),
-        eq(member.organizationId, existingMonitor.organizationId)
-      ),
+      where: and(eq(member.userId, userId), eq(member.organizationId, existingMonitor.organizationId)),
     });
 
     if (!userHasAccess) {
@@ -51,14 +45,10 @@ export async function deleteMonitor(
     // Delete monitor and related records in a transaction
     await db.transaction(async (tx) => {
       // Delete monitor status first
-      await tx
-        .delete(uptimeMonitorStatus)
-        .where(eq(uptimeMonitorStatus.monitorId, Number(monitorId)));
+      await tx.delete(uptimeMonitorStatus).where(eq(uptimeMonitorStatus.monitorId, Number(monitorId)));
 
       // Delete the monitor
-      await tx
-        .delete(uptimeMonitors)
-        .where(eq(uptimeMonitors.id, Number(monitorId)));
+      await tx.delete(uptimeMonitors).where(eq(uptimeMonitors.id, Number(monitorId)));
     });
 
     return reply.status(204).send();

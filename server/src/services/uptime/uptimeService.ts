@@ -1,17 +1,17 @@
-import { MonitorSchedulerBullMQ } from "./monitorSchedulerBullMQ.js";
-import { MonitorExecutorBullMQ } from "./monitorExecutorBullMQ.js";
+import { MonitorScheduler } from "./monitorScheduler.js";
+import { MonitorExecutor } from "./monitorExecutor.js";
 import { RegionHealthChecker } from "./regionHealthChecker.js";
 
-export class UptimeServiceBullMQ {
-  private scheduler: MonitorSchedulerBullMQ;
-  private executor: MonitorExecutorBullMQ;
+export class UptimeService {
+  private scheduler: MonitorScheduler;
+  private executor: MonitorExecutor;
   private regionHealthChecker: RegionHealthChecker;
   private initialized = false;
   private initializationPromise: Promise<void> | null = null;
 
   constructor() {
-    this.scheduler = new MonitorSchedulerBullMQ();
-    this.executor = new MonitorExecutorBullMQ(10); // 10 concurrent workers
+    this.scheduler = new MonitorScheduler();
+    this.executor = new MonitorExecutor(10); // 10 concurrent workers
     this.regionHealthChecker = new RegionHealthChecker(60000); // Check every minute
   }
 
@@ -128,4 +128,4 @@ export class UptimeServiceBullMQ {
 }
 
 // Export singleton instance
-export const uptimeServiceBullMQ = new UptimeServiceBullMQ();
+export const uptimeServiceBullMQ = new UptimeService();

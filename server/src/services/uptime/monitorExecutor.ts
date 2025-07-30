@@ -2,13 +2,13 @@ import { Worker, Job } from "bullmq";
 import { eq, and, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, uptimeMonitorStatus, agentRegions, uptimeIncidents, notificationChannels } from "../../db/postgres/schema.js";
+import { uptimeMonitors, uptimeMonitorStatus, agentRegions, uptimeIncidents } from "../../db/postgres/schema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { MonitorCheckJob, HttpCheckResult, TcpCheckResult, MonitorEvent } from "./types.js";
 import { performHttpCheck } from "./checks/httpCheck.js";
 import { performTcpCheck } from "./checks/tcpCheck.js";
 import { applyValidationRules } from "./validationEngine.js";
-import { sendEmail } from "../../lib/resend.js";
+import { NotificationService } from "./notificationService.js";
 
 interface AgentExecuteRequest {
   jobId: string;
@@ -40,11 +40,12 @@ interface AgentExecuteResponse {
   bodySizeBytes?: number;
 }
 
-export class MonitorExecutorBullMQ {
+export class MonitorExecutor {
   private worker: Worker | null = null;
   private concurrency: number;
   private isShuttingDown = false;
   private connection: { host: string; port: number; password?: string };
+  private notificationService: NotificationService;
 
   constructor(concurrency: number = 10) {
     this.concurrency = concurrency;
@@ -53,6 +54,7 @@ export class MonitorExecutorBullMQ {
       port: parseInt(process.env.REDIS_PORT || "6379", 10),
       ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
     };
+    this.notificationService = new NotificationService();
   }
 
   async start(): Promise<void> {
@@ -491,20 +493,23 @@ export class MonitorExecutorBullMQ {
       if (previousStatus === "up" && currentStatus === "down") {
         // Only create incident if there isn't already an active one
         if (!activeIncident) {
-          const [newIncident] = await db.insert(uptimeIncidents).values({
-            organizationId: monitor.organizationId as string,
-            monitorId: monitorId,
-            region: "local",
-            startTime: new Date().toISOString(),
-            status: "active",
-            lastError: result.error?.message || null,
-            lastErrorType: result.error?.type || null,
-            failureCount: 1,
-          }).returning();
+          const [newIncident] = await db
+            .insert(uptimeIncidents)
+            .values({
+              organizationId: monitor.organizationId as string,
+              monitorId: monitorId,
+              region: "local",
+              startTime: new Date().toISOString(),
+              status: "active",
+              lastError: result.error?.message || null,
+              lastErrorType: result.error?.type || null,
+              failureCount: 1,
+            })
+            .returning();
           console.log(`[Uptime] Created new incident for monitor ${monitorId} (${monitor.name})`);
-          
+
           // Send notifications for new incident
-          await this.sendIncidentNotifications(monitor, newIncident, "down");
+          await this.notificationService.sendIncidentNotifications(monitor, newIncident, "down");
         }
       }
       // Status transition: DOWN -> UP (Resolve active incident)
@@ -520,9 +525,13 @@ export class MonitorExecutorBullMQ {
             })
             .where(eq(uptimeIncidents.id, activeIncident.id));
           console.log(`[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
-          
+
           // Send recovery notifications
-          await this.sendIncidentNotifications(monitor, {...activeIncident, status: "resolved", endTime: now}, "recovery");
+          await this.notificationService.sendIncidentNotifications(
+            monitor,
+            { ...activeIncident, status: "resolved", endTime: now },
+            "recovery",
+          );
         }
       }
       // Status remains DOWN (Update failure count)
@@ -560,20 +569,23 @@ export class MonitorExecutorBullMQ {
 
       // If check failed and no active incident, create one
       if (currentStatus === "down" && !activeIncident) {
-        const [newIncident] = await db.insert(uptimeIncidents).values({
-          organizationId: monitor.organizationId as string,
-          monitorId: monitor.id,
-          region: region,
-          startTime: new Date().toISOString(),
-          status: "active",
-          lastError: result.error?.message || null,
-          lastErrorType: result.error?.type || null,
-          failureCount: 1,
-        }).returning();
+        const [newIncident] = await db
+          .insert(uptimeIncidents)
+          .values({
+            organizationId: monitor.organizationId as string,
+            monitorId: monitor.id,
+            region: region,
+            startTime: new Date().toISOString(),
+            status: "active",
+            lastError: result.error?.message || null,
+            lastErrorType: result.error?.type || null,
+            failureCount: 1,
+          })
+          .returning();
         console.log(`[Uptime] Created new incident for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
-        
+
         // Send notifications for new regional incident
-        await this.sendIncidentNotifications(monitor, newIncident, "down");
+        await this.notificationService.sendIncidentNotifications(monitor, newIncident, "down");
       }
       // If check succeeded and there's an active incident, resolve it
       else if (currentStatus === "up" && activeIncident) {
@@ -590,9 +602,13 @@ export class MonitorExecutorBullMQ {
         console.log(
           `[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitor.id} (${monitor.name}) in region ${region}`,
         );
-        
+
         // Send recovery notifications for regional incident
-        await this.sendIncidentNotifications(monitor, {...activeIncident, status: "resolved", endTime: now}, "recovery");
+        await this.notificationService.sendIncidentNotifications(
+          monitor,
+          { ...activeIncident, status: "resolved", endTime: now },
+          "recovery",
+        );
       }
       // If check failed and there's already an active incident, update it
       else if (currentStatus === "down" && activeIncident) {
@@ -608,108 +624,6 @@ export class MonitorExecutorBullMQ {
     } catch (error) {
       console.error(`Failed to manage regional incident for region ${region}:`, error);
     }
-  }
-
-  private async sendIncidentNotifications(monitor: any, incident: any, eventType: "down" | "recovery"): Promise<void> {
-    try {
-      // Get all enabled notification channels for this organization
-      const channels = await db.query.notificationChannels.findMany({
-        where: and(
-          eq(notificationChannels.organizationId, monitor.organizationId),
-          eq(notificationChannels.enabled, true)
-        )
-      });
-
-      // Filter channels that should receive notifications for this monitor
-      const relevantChannels = channels.filter(channel => {
-        // Check if channel triggers for this event type
-        if (!channel.triggerEvents?.includes(eventType)) {
-          return false;
-        }
-
-        // Check if channel monitors this specific monitor or all monitors
-        if (channel.monitorIds === null) {
-          // null means all monitors
-          return true;
-        }
-        
-        return channel.monitorIds.includes(monitor.id);
-      });
-
-      // Check cooldown for each channel
-      const now = new Date();
-      const channelsToNotify = relevantChannels.filter(channel => {
-        if (!channel.lastNotifiedAt) return true;
-        
-        const lastNotified = new Date(channel.lastNotifiedAt);
-        const cooldownMs = (channel.cooldownMinutes || 5) * 60 * 1000;
-        return now.getTime() - lastNotified.getTime() > cooldownMs;
-      });
-
-      // Send notifications for each channel
-      for (const channel of channelsToNotify) {
-        try {
-          if (channel.type === "email" && channel.config.email) {
-            await this.sendEmailNotification(channel.config.email, monitor, incident, eventType);
-            
-            // Update last notified time
-            await db.update(notificationChannels)
-              .set({ lastNotifiedAt: now.toISOString() })
-              .where(eq(notificationChannels.id, channel.id));
-          }
-          // Add other notification types here (Discord, Slack, etc.)
-        } catch (error) {
-          console.error(`Failed to send ${channel.type} notification for channel ${channel.id}:`, error);
-        }
-      }
-    } catch (error) {
-      console.error("Failed to send incident notifications:", error);
-    }
-  }
-
-  private async sendEmailNotification(email: string, monitor: any, incident: any, eventType: "down" | "recovery"): Promise<void> {
-    const monitorName = monitor.name || monitor.httpConfig?.url || `${monitor.tcpConfig?.host}:${monitor.tcpConfig?.port}`;
-    const region = incident.region || "local";
-    const incidentTime = DateTime.fromISO(incident.startTime).toLocaleString(DateTime.DATETIME_FULL);
-    
-    let subject: string;
-    let html: string;
-    
-    if (eventType === "down") {
-      subject = `🔴 Monitor Alert: ${monitorName} is DOWN`;
-      html = `
-        <h2>Monitor Alert: ${monitorName} is DOWN</h2>
-        <p>Your monitor has stopped responding.</p>
-        <ul>
-          <li><strong>Monitor:</strong> ${monitorName}</li>
-          <li><strong>Type:</strong> ${monitor.monitorType.toUpperCase()}</li>
-          <li><strong>Region:</strong> ${region}</li>
-          <li><strong>Time:</strong> ${incidentTime}</li>
-          ${incident.lastError ? `<li><strong>Error:</strong> ${incident.lastError}</li>` : ''}
-        </ul>
-        <p>We'll continue monitoring and notify you when the service recovers.</p>
-      `;
-    } else {
-      const duration = incident.endTime 
-        ? DateTime.fromISO(incident.endTime).diff(DateTime.fromISO(incident.startTime)).toFormat("hh 'hours' mm 'minutes'")
-        : "Unknown";
-      
-      subject = `✅ Monitor Recovery: ${monitorName} is UP`;
-      html = `
-        <h2>Monitor Recovery: ${monitorName} is UP</h2>
-        <p>Your monitor has recovered and is responding normally.</p>
-        <ul>
-          <li><strong>Monitor:</strong> ${monitorName}</li>
-          <li><strong>Type:</strong> ${monitor.monitorType.toUpperCase()}</li>
-          <li><strong>Region:</strong> ${region}</li>
-          <li><strong>Downtime Duration:</strong> ${duration}</li>
-          <li><strong>Recovery Time:</strong> ${DateTime.now().toLocaleString(DateTime.DATETIME_FULL)}</li>
-        </ul>
-      `;
-    }
-    
-    await sendEmail(email, subject, html);
-    console.log(`[Uptime] Sent ${eventType} email notification to ${email} for monitor ${monitor.id}`);
   }
 
   async shutdown(): Promise<void> {
