@@ -356,15 +356,15 @@ const start = async () => {
     console.info("Server is listening on http://0.0.0.0:3001");
 
     // Initialize uptime monitoring service in the background (non-blocking)
-    uptimeService
-      .initialize()
-      .then(() => {
-        console.info("Uptime monitoring service initialized successfully");
-      })
-      .catch((error) => {
-        console.error("Failed to initialize uptime service:", error);
-        // Continue running without uptime monitoring
-      });
+    // uptimeService
+    //   .initialize()
+    //   .then(() => {
+    //     console.info("Uptime monitoring service initialized successfully");
+    //   })
+    //   .catch((error) => {
+    //     console.error("Failed to initialize uptime service:", error);
+    //     // Continue running without uptime monitoring
+    //   });
   } catch (err) {
     server.log.error(err);
     process.exit(1);
