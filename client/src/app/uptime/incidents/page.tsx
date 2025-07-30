@@ -28,6 +28,29 @@ const formatStartTime = (timestamp: string) => {
   return dt.toRelative() || dt.toFormat("MMM dd, HH:mm");
 };
 
+const getStatusIcon = (status: UptimeIncident["status"]) => {
+  switch (status) {
+    case "active":
+      return (
+        <div className="p-2 rounded-lg bg-red-500/10">
+          <AlertCircle className="w-4 h-4 text-red-500" />
+        </div>
+      );
+    case "acknowledged":
+      return (
+        <div className="p-2 rounded-lg bg-yellow-500/10">
+          <AlertCircle className="w-4 h-4 text-yellow-500" />
+        </div>
+      );
+    case "resolved":
+      return (
+        <div className="p-2 rounded-lg bg-green-500/10">
+          <CheckCircle className="w-4 h-4 text-green-500" />
+        </div>
+      );
+  }
+};
+
 const formatDuration = (startTime: string, endTime: string | null): string => {
   const start = DateTime.fromSQL(startTime, { zone: "UTC" });
   const end = endTime ? DateTime.fromSQL(endTime, { zone: "UTC" }) : DateTime.now().toUTC();
@@ -75,29 +98,6 @@ export default function IncidentsPage() {
       toast.success("Incident resolved");
     } catch (error) {
       toast.error("Failed to resolve incident");
-    }
-  };
-
-  const getStatusIcon = (status: UptimeIncident["status"]) => {
-    switch (status) {
-      case "active":
-        return (
-          <div className="p-2 rounded-lg bg-red-500/10">
-            <AlertCircle className="w-4 h-4 text-red-500" />
-          </div>
-        );
-      case "acknowledged":
-        return (
-          <div className="p-2 rounded-lg bg-yellow-500/10">
-            <AlertCircle className="w-4 h-4 text-yellow-500" />
-          </div>
-        );
-      case "resolved":
-        return (
-          <div className="p-2 rounded-lg bg-green-500/10">
-            <CheckCircle className="w-4 h-4 text-green-500" />;
-          </div>
-        );
     }
   };
 
@@ -172,7 +172,7 @@ export default function IncidentsPage() {
                   </TableCell>
                   <TableCell>
                     <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
+                      <DropdownMenuTrigger asChild disabled={incident.status === "resolved"}>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
                           <MoreVertical className="h-4 w-4" />
                         </Button>

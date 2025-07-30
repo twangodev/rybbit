@@ -96,13 +96,13 @@ export const createMonitorSchema = z
     organizationId: z.string().min(1, "Organization ID is required"),
     name: z.string().max(256).optional(), // Made optional
     monitorType: z.enum(["http", "tcp"]),
-    intervalSeconds: z.number().int().min(60).max(86400, "Interval must be between 60 and 86400 seconds"),
+    intervalSeconds: z.number().int().min(30).max(86400, "Interval must be between 60 and 86400 seconds"),
     enabled: z.boolean().default(true),
     httpConfig: httpConfigSchema.optional(),
     tcpConfig: tcpConfigSchema.optional(),
     validationRules: z.array(validationRuleSchema).default([]),
     monitoringType: z.enum(["local", "global"]).default("local"),
-    selectedRegions: z.array(z.string()).default(["local"]),
+    selectedRegions: z.array(z.string()).default([]),
   })
   .refine(
     (data) => {

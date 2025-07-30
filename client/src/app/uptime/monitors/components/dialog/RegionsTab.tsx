@@ -9,6 +9,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { CountryFlag } from "@/app/[site]/components/shared/icons/CountryFlag";
 import { IS_CLOUD } from "@/lib/const";
 import { cn } from "@/lib/utils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Region {
   code: string;
@@ -38,12 +39,19 @@ export function RegionsTab() {
   useEffect(() => {
     form.setValue("monitoringType", monitoringType);
 
-    // Only set regions if they haven't been set yet and we're in cloud mode
-    if (IS_CLOUD && globalRegions.length > 0 && !form.getValues("selectedRegions")?.length) {
-      const allRegionCodes = globalRegions.map((r) => r.code);
-      form.setValue("selectedRegions", allRegionCodes);
+    // Set all regions as selected by default if they haven't been set yet and we're in cloud mode
+    if (IS_CLOUD && globalRegions.length > 0) {
+      const currentRegions = form.getValues("selectedRegions");
+      // If no regions selected or only has the default "local" value, select all regions
+      if (!currentRegions || currentRegions.length === 0 || (currentRegions.length === 1 && currentRegions[0] === "local")) {
+        const allRegionCodes = globalRegions.map((r) => r.code);
+        form.setValue("selectedRegions", allRegionCodes);
+      }
+    } else if (!IS_CLOUD) {
+      // For local monitoring, ensure "local" is selected
+      form.setValue("selectedRegions", ["local"]);
     }
-  }, [monitoringType, form, globalRegions.length]); // Add proper dependencies
+  }, [monitoringType, form, globalRegions, IS_CLOUD]);
 
   if (isLoading) {
     return (
@@ -97,7 +105,7 @@ export function RegionsTab() {
                 <FormDescription>
                   Choose which regions to monitor from. More regions provide better coverage.
                 </FormDescription> */}
-                <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="space-y-4 mt-4">
                   {globalRegions.map((region: Region) => (
                     <FormField
                       key={region.code}
@@ -109,39 +117,45 @@ export function RegionsTab() {
 
                         return (
                           <FormItem>
-                            <FormControl>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (!isDisabled) {
-                                    const newValue = isSelected
-                                      ? field.value?.filter((value: string) => value !== region.code)
-                                      : [...(field.value || []), region.code];
-                                    field.onChange(newValue);
-                                  }
-                                }}
-                                disabled={isDisabled}
-                                className={cn(
-                                  "w-full flex items-center gap-3 rounded-lg border p-4 transition-all",
-                                  "hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2",
-                                  isSelected &&
-                                    !isDisabled &&
-                                    "border-emerald-500 bg-emerald-500/10 ring-1 ring-emerald-500",
-                                  !isSelected && !isDisabled && "border-neutral-700 hover:border-neutral-600",
-                                  isDisabled && "border-neutral-800 opacity-50 cursor-not-allowed"
-                                )}
-                              >
+                            <div className="flex items-center space-x-3">
+                              <FormControl>
+                                <Checkbox
+                                  checked={isSelected}
+                                  onCheckedChange={(checked) => {
+                                    if (!isDisabled) {
+                                      let newValue: string[];
+                                      if (checked) {
+                                        newValue = [...(field.value || []), region.code];
+                                      } else {
+                                        newValue = field.value?.filter((value: string) => value !== region.code) || [];
+                                        // Ensure at least one region is selected
+                                        if (newValue.length === 0) {
+                                          return; // Don't allow unchecking the last region
+                                        }
+                                      }
+                                      field.onChange(newValue);
+                                    }
+                                  }}
+                                  disabled={isDisabled}
+                                  className="data-[state=checked]:bg-emerald-500 data-[state=checked]:border-emerald-500 dark:data-[state=checked]:bg-emerald-500"
+                                />
+                              </FormControl>
+                              <div className="flex items-center gap-2 flex-1">
                                 {regionToCountry[region.code] && (
-                                  <CountryFlag country={regionToCountry[region.code]} className="w-6 h-4" />
+                                  <CountryFlag country={regionToCountry[region.code]} className="w-5 h-3.5" />
                                 )}
-                                <span
-                                  className={cn("text-sm font-medium", isSelected && !isDisabled && "text-emerald-400")}
+                                <label
+                                  htmlFor={region.code}
+                                  className={cn(
+                                    "text-sm font-medium cursor-pointer",
+                                    isDisabled && "opacity-50 cursor-not-allowed"
+                                  )}
                                 >
                                   {region.name}
-                                </span>
+                                </label>
                                 {!region.isHealthy && <span className="ml-auto text-xs text-red-500">Offline</span>}
-                              </button>
-                            </FormControl>
+                              </div>
+                            </div>
                           </FormItem>
                         );
                       }}
@@ -154,9 +168,16 @@ export function RegionsTab() {
           />
 
           {selectedRegions.length === 0 && (
-            <Alert>
+            <Alert variant="destructive">
               <Info className="h-4 w-4" />
               <AlertDescription>Please select at least one region for global monitoring.</AlertDescription>
+            </Alert>
+          )}
+
+          {selectedRegions.length === 1 && (
+            <Alert>
+              <Info className="h-4 w-4" />
+              <AlertDescription>At least one region must remain selected.</AlertDescription>
             </Alert>
           )}
         </>

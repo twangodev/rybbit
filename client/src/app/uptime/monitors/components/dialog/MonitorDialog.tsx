@@ -21,6 +21,7 @@ import { GeneralTab } from "./GeneralTab";
 import { AdvancedTab } from "./AdvancedTab";
 import { RegionsTab } from "./RegionsTab";
 import { NotificationsTab } from "./NotificationsTab";
+import { IS_CLOUD } from "@/lib/const";
 
 interface MonitorDialogProps {
   monitor?: UptimeMonitor;
@@ -79,8 +80,8 @@ export function MonitorDialog({ monitor, open, onOpenChange }: MonitorDialogProp
             ipVersion: "any" as const,
           },
           validationRules: [],
-          monitoringType: "local",
-          selectedRegions: ["local"],
+          monitoringType: IS_CLOUD ? "global" : "local",
+          selectedRegions: IS_CLOUD ? [] : ["local"], // Empty array for cloud, will be populated in RegionsTab
         },
   });
 
