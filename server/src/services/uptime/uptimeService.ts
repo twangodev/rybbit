@@ -128,4 +128,4 @@ export class UptimeService {
 }
 
 // Export singleton instance
-export const uptimeServiceBullMQ = new UptimeService();
+export const uptimeService = new UptimeService();

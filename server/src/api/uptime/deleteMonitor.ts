@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors, uptimeMonitorStatus, member } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
-import { uptimeServiceBullMQ } from "../../services/uptime/uptimeService.js";
+import { uptimeService } from "../../services/uptime/uptimeService.js";
 
 interface DeleteMonitorParams {
   Params: {
@@ -40,7 +40,7 @@ export async function deleteMonitor(request: FastifyRequest<DeleteMonitorParams>
     }
 
     // Remove the monitor from the scheduler first
-    await uptimeServiceBullMQ.onMonitorDeleted(Number(monitorId));
+    await uptimeService.onMonitorDeleted(Number(monitorId));
 
     // Delete monitor and related records in a transaction
     await db.transaction(async (tx) => {
