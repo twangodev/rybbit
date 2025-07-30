@@ -11,6 +11,14 @@ import { ImportStatusManager } from "../../services/import/importStatusManager.j
 import { ImportLimiter } from "../../services/import/importLimiter.js";
 import { r2Storage } from "../../services/storage/r2StorageService.js";
 import { IS_CLOUD } from "../../lib/const.js";
+import { DateTime } from "luxon";
+
+const isValidDate = (val: string) => {
+  const dt = DateTime.fromFormat(val, "yyyy-MM-dd");
+  return dt.isValid;
+};
+
+const parseDate = (val: string) => DateTime.fromFormat(val, "yyyy-MM-dd");
 
 const importDataRequestSchema = z.object({
   params: z.object({
@@ -18,6 +26,22 @@ const importDataRequestSchema = z.object({
   }),
   body: z.object({
     source: z.enum(["umami"]),
+    startDate: z.string().refine(isValidDate).optional(),
+    endDate: z.string().refine(isValidDate).optional(),
+  }).refine((data) => {
+    if (data.startDate && data.endDate) {
+      const start = parseDate(data.startDate);
+      const end = parseDate(data.endDate);
+      return start <= end;
+    }
+    return true;
+  }).refine((data) => {
+    if (data.endDate) {
+      const today = DateTime.now().startOf("day");
+      const end = parseDate(data.endDate);
+      return end <= today;
+    }
+    return true;
   }),
 }).strict();
 
@@ -44,7 +68,7 @@ export async function importSiteData(
     }
 
     const { site } = parsed.data.params;
-    const { source } = parsed.data.body;
+    const { source, startDate, endDate } = parsed.data.body;
 
     const userHasAccess = await getUserHasAdminAccessToSite(request, site);
     if (!userHasAccess) {
@@ -116,12 +140,14 @@ export async function importSiteData(
 
     try {
       await boss.send(CSV_PARSE_QUEUE, {
-        storageLocation,
-        isR2Storage: IS_CLOUD && r2Storage.isEnabled(),
-        organization,
         site,
         importId,
         source,
+        storageLocation,
+        isR2Storage: IS_CLOUD && r2Storage.isEnabled(),
+        organization,
+        startDate,
+        endDate,
       });
     } catch (queueError) {
       await ImportStatusManager.updateStatus(importId, "failed", "Failed to queue import job");
