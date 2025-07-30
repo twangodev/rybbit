@@ -14,11 +14,11 @@ import { IS_CLOUD } from "../../lib/const.js";
 import { DateTime } from "luxon";
 
 const isValidDate = (val: string) => {
-  const dt = DateTime.fromFormat(val, "yyyy-MM-dd");
+  const dt = DateTime.fromFormat(val, "yyyy-MM-dd", { zone: "utc" });
   return dt.isValid;
 };
 
-const parseDate = (val: string) => DateTime.fromFormat(val, "yyyy-MM-dd");
+const parseDate = (val: string) => DateTime.fromFormat(val, "yyyy-MM-dd", { zone: "utc" });
 
 const importDataRequestSchema = z.object({
   params: z.object({
@@ -37,7 +37,7 @@ const importDataRequestSchema = z.object({
     return true;
   }).refine((data) => {
     if (data.endDate) {
-      const today = DateTime.now().startOf("day");
+      const today = DateTime.utc().startOf("day");
       const end = parseDate(data.endDate);
       return end <= today;
     }
