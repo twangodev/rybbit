@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNotificationsStore } from "../notificationsStore";
-import { useCreateChannel } from "@/api/uptime/notifications";
+import { useCreateChannel, useUpdateChannel } from "@/api/uptime/notifications";
 import { CHANNEL_CONFIG } from "../constants";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
@@ -25,7 +25,8 @@ type FormData = {
 
 export function NotificationDialog() {
   const createChannel = useCreateChannel();
-  const { isDialogOpen, selectedType, closeDialog, resetForm: resetStoreForm } = useNotificationsStore();
+  const updateChannel = useUpdateChannel();
+  const { isDialogOpen, selectedType, editingChannel, closeDialog, resetForm: resetStoreForm } = useNotificationsStore();
   const { data: monitorsData, isLoading: monitorsLoading } = useMonitors({ enabled: true });
   const [selectedMonitorIds, setSelectedMonitorIds] = useState<string[]>([]);
 
@@ -47,13 +48,26 @@ export function NotificationDialog() {
     },
   });
 
-  // Reset form when dialog closes or channel type changes
+  // Reset form when dialog closes or populate with editing data
   useEffect(() => {
     if (!isDialogOpen) {
       reset();
       setSelectedMonitorIds([]);
+    } else if (editingChannel) {
+      // Populate form with existing channel data
+      reset({
+        name: editingChannel.name,
+        email: editingChannel.config?.email || "",
+        webhookUrl: editingChannel.config?.webhookUrl || "",
+        slackWebhookUrl: editingChannel.config?.slackWebhookUrl || "",
+        slackChannel: editingChannel.config?.slackChannel || "",
+        phoneNumber: editingChannel.config?.phoneNumber || "",
+      });
+      setSelectedMonitorIds(
+        editingChannel.monitorIds?.map((id) => id.toString()) || []
+      );
     }
-  }, [isDialogOpen, reset]);
+  }, [isDialogOpen, editingChannel, reset]);
 
   const monitorOptions = React.useMemo(() => {
     if (!monitorsData) return [];
@@ -80,19 +94,33 @@ export function NotificationDialog() {
     if (selectedType === "sms" && data.phoneNumber) config.phoneNumber = data.phoneNumber;
 
     try {
-      await createChannel.mutateAsync({
-        type: selectedType,
-        name: data.name,
-        config,
-        monitorIds: selectedMonitorIds.length > 0 ? selectedMonitorIds.map((id) => parseInt(id, 10)) : null,
-      });
-      toast.success("Notification channel created");
+      const monitorIds = selectedMonitorIds.length > 0 ? selectedMonitorIds.map((id) => parseInt(id, 10)) : null;
+      
+      if (editingChannel) {
+        await updateChannel.mutateAsync({
+          id: editingChannel.id,
+          data: {
+            name: data.name,
+            config,
+            monitorIds,
+          },
+        });
+        toast.success("Notification channel updated");
+      } else {
+        await createChannel.mutateAsync({
+          type: selectedType,
+          name: data.name,
+          config,
+          monitorIds,
+        });
+        toast.success("Notification channel created");
+      }
       closeDialog();
       resetStoreForm();
       reset();
       setSelectedMonitorIds([]);
     } catch (error) {
-      toast.error("Failed to create channel");
+      toast.error(editingChannel ? "Failed to update channel" : "Failed to create channel");
     }
   };
 
@@ -123,7 +151,8 @@ export function NotificationDialog() {
       <DialogContent className="max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-3">
-            {Icon && <Icon />}Add {selectedConfig && selectedConfig.title} Channel
+            {Icon && <Icon />}
+            {editingChannel ? "Edit" : "Add"} {selectedConfig && selectedConfig.title} Channel
           </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -246,8 +275,18 @@ export function NotificationDialog() {
             <Button type="button" variant="outline" onClick={closeDialog}>
               Cancel
             </Button>
-            <Button type="submit" variant="success" disabled={!isFormValid() || createChannel.isPending}>
-              {createChannel.isPending ? "Creating..." : "Create Channel"}
+            <Button 
+              type="submit" 
+              variant="success" 
+              disabled={!isFormValid() || createChannel.isPending || updateChannel.isPending}
+            >
+              {editingChannel
+                ? updateChannel.isPending
+                  ? "Updating..."
+                  : "Update Channel"
+                : createChannel.isPending
+                ? "Creating..."
+                : "Create Channel"}
             </Button>
           </div>
         </form>

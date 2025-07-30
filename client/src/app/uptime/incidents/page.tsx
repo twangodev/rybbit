@@ -10,9 +10,8 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { cn } from "@/lib/utils";
+import { AlertCircle, CheckCircle, MoreHorizontal } from "lucide-react";
 import { DateTime } from "luxon";
-import { AlertCircle, CheckCircle, MoreVertical } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -174,7 +173,7 @@ export default function IncidentsPage() {
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild disabled={incident.status === "resolved"}>
                         <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                          <MoreVertical className="h-4 w-4" />
+                          <MoreHorizontal className="h-4 w-4" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">

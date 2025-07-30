@@ -3,11 +3,18 @@
 import { ConfirmationModal } from "@/components/ConfirmationModal";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
-import { Bell, Trash2 } from "lucide-react";
+import { Bell, Edit, MoreHorizontal, Power, Trash2 } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import {
@@ -80,6 +87,10 @@ export default function NotificationsPage() {
     openDialog(type);
   };
 
+  const openEditDialog = (channel: NotificationChannel) => {
+    openDialog(channel.type, channel);
+  };
+
   return (
     <StandardPage showSidebar={false}>
       <div className="mb-6">
@@ -116,13 +127,7 @@ export default function NotificationsPage() {
       </div>
       <div className="space-y-4">
         <h2 className="text-lg font-medium">Active Channels</h2>
-        {isLoading ? (
-          <Card>
-            <CardContent className="p-4">
-              <Skeleton className="h-[200px] w-full" />
-            </CardContent>
-          </Card>
-        ) : data?.channels?.length === 0 ? (
+        {data?.channels?.length === 0 && !isLoading ? (
           <Card>
             <CardContent className="p-8 text-center text-neutral-500">
               No notification channels configured yet
@@ -136,24 +141,48 @@ export default function NotificationsPage() {
                   <TableHead>Channel</TableHead>
                   <TableHead>Type</TableHead>
                   <TableHead>Details</TableHead>
-                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {data?.channels?.map((channel) => {
-                  const config = CHANNEL_CONFIG[channel.type];
-                  const Icon = config.icon;
-                  return (
+                {isLoading
+                  ? Array.from({ length: 3 }).map((_, i) => (
+                      <TableRow key={`skeleton-${i}`}>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <Skeleton className="h-4 w-32" />
+                            <Skeleton className="h-3 w-16" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-40" />
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <Skeleton className="h-8 w-8 ml-auto" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : data?.channels?.map((channel) => {
+                      const config = CHANNEL_CONFIG[channel.type];
+                      const Icon = config.icon;
+                      return (
                     <TableRow key={channel.id}>
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          <Icon className="w-4 h-4" />
                           {channel.name}
+                          {!channel.enabled && (
+                            <span className="text-xs bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded">Disabled</span>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
-                        <span className="capitalize">{channel.type}</span>
+                        <div className="flex items-center gap-2">
+                          <Icon className="w-4 h-4" />
+                          <span className="capitalize">{channel.type}</span>
+                        </div>
                       </TableCell>
                       <TableCell className="text-sm text-neutral-500">
                         {channel.type === "email" && channel.config?.email}
@@ -161,27 +190,38 @@ export default function NotificationsPage() {
                         {channel.type === "slack" && `Slack ${channel.config?.slackChannel || "webhook"}`}
                         {channel.type === "sms" && channel.config?.phoneNumber}
                       </TableCell>
-                      <TableCell>
-                        <Switch checked={channel.enabled} onCheckedChange={() => handleToggleChannel(channel)} />
-                      </TableCell>
                       <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleTestChannel(channel)}
-                            disabled={!channel.enabled}
-                          >
-                            <Bell className="w-4 h-4" />
-                          </Button>
-                          <Button variant="ghost" size="sm" onClick={() => openDeleteModal(channel)}>
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                              <MoreHorizontal className="h-4 w-4" />
+                              <span className="sr-only">Open menu</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem onClick={() => handleToggleChannel(channel)}>
+                              <Power className="mr-2 h-4 w-4" />
+                              {channel.enabled ? "Disable" : "Enable"}
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleTestChannel(channel)} disabled={!channel.enabled}>
+                              <Bell className="mr-2 h-4 w-4" />
+                              Test
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => openEditDialog(channel)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Edit
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => openDeleteModal(channel)} className="text-red-600">
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Delete
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
                       </TableCell>
-                    </TableRow>
-                  );
-                })}
+                        </TableRow>
+                      );
+                    })}
               </TableBody>
             </Table>
           </Card>
