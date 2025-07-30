@@ -1,6 +1,7 @@
 import { db } from "../../db/postgres/postgres.js";
 import { eq, desc, sql } from "drizzle-orm";
 import { importStatus } from "../../db/postgres/schema.js";
+import { DateTime } from "luxon";
 
 type SelectImportStatus = typeof importStatus.$inferSelect;
 type InsertImportStatus = typeof importStatus.$inferInsert;
@@ -15,7 +16,7 @@ export class ImportStatusManager {
     status: InsertImportStatus["status"],
     errorMessage?: string
   ): Promise<void> {
-    const completedAt = status === "completed" || status === "failed" ? new Date() : null;
+    const completedAt = status === "completed" || status === "failed" ? DateTime.utc().toISO() : null;
 
     await db
       .update(importStatus)
