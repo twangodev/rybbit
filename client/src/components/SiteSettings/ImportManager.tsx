@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Progress } from "@/components/ui/progress";
 import {
   Table,
   TableBody,
@@ -13,93 +12,475 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
+import {
+  Upload,
+  RefreshCw,
+  FileText,
+  AlertCircle,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Calendar,
+  X
+} from "lucide-react";
 import { DateTime } from "luxon";
 import { useGetSiteImports, useImportSiteData } from "@/api/sites";
+import { CustomDateRangePicker } from "@/components/DateSelector/CustomDateRangePicker";
+import { DateRangeMode, Time } from "@/components/DateSelector/types";
+import { timeZone } from "@/lib/dateTimeUtils";
+
+interface FileValidationError {
+  type: "size" | "type" | "name";
+  message: string;
+}
+
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
+const ALLOWED_FILE_TYPES = ["text/csv"];
+const ALLOWED_EXTENSIONS = [".csv"];
 
 export function ImportManager({ siteId, disabled }: { siteId: number, disabled: boolean }) {
   const [file, setFile] = useState<File | null>(null);
-  const [source] = useState("umami"); // Default to umami, can be extended later
+  const [source] = useState("umami");
+  const [dateRange, setDateRange] = useState<{ startDate?: string; endDate?: string }>({});
+  const [fileError, setFileError] = useState<FileValidationError | null>(null);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isManualRefresh, setIsManualRefresh] = useState(false);
+  const [time, setTime] = useState<Time>({
+    mode: "range",
+    startDate: DateTime.now().minus({ days: 7 }).toISODate(),
+    endDate: DateTime.now().toISODate(),
+    wellKnown: "Last 7 days",
+    timeZone: timeZone,
+  } as DateRangeMode);
 
-  const { data, isLoading, error } = useGetSiteImports(siteId);
+  const { data, isLoading, error, refetch } = useGetSiteImports(siteId);
   const mutation = useImportSiteData(siteId);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setFile(event.target.files[0]);
+  const validateFile = useCallback((file: File): FileValidationError | null => {
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      return {
+        type: "size",
+        message: `File size (${(file.size / 1024 / 1024).toFixed(1)}MB) exceeds the maximum limit of 100MB.`
+      };
     }
-  };
 
-  const handleImport = () => {
-    if (file) {
-      mutation.mutate({ file, source });
+    // Check file type
+    if (!ALLOWED_FILE_TYPES.includes(file.type) && file.type !== "") {
+      return {
+        type: "type",
+        message: "Invalid file type. Only CSV files are accepted."
+      };
+    }
+
+    // Check file extension as fallback
+    const extension = "." + file.name.split(".").pop()?.toLowerCase();
+    if (!ALLOWED_EXTENSIONS.includes(extension)) {
+      return {
+        type: "type",
+        message: "Invalid file extension. Only .csv files are accepted."
+      };
+    }
+
+    // Check for reasonable filename
+    if (file.name.length > 255) {
+      return {
+        type: "name",
+        message: "Filename is too long. Please use a shorter filename."
+      };
+    }
+
+    return null;
+  }, []);
+
+  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const selectedFile = event.target.files?.[0];
+    setFileError(null);
+
+    if (selectedFile) {
+      const validationError = validateFile(selectedFile);
+      if (validationError) {
+        setFileError(validationError);
+        setFile(null);
+        event.target.value = ""; // Clear the input
+        return;
+      }
+      setFile(selectedFile);
+    } else {
       setFile(null);
     }
-  };
+  }, [validateFile]);
+
+  const handleImportClick = useCallback(() => {
+    if (file && file.size > 50 * 1024 * 1024) { // Show confirmation for files > 50MB
+      setShowConfirmDialog(true);
+    } else {
+      handleImport();
+    }
+  }, [file]);
+
+  const handleImport = useCallback(() => {
+    if (file) {
+      mutation.mutate({
+        file,
+        source,
+        ...dateRange
+      });
+      setFile(null);
+      setShowConfirmDialog(false);
+      // Clear the file input
+      const fileInput = document.getElementById("file") as HTMLInputElement;
+      if (fileInput) fileInput.value = "";
+    }
+  }, [file, source, dateRange, mutation]);
+
+  const handleManualRefresh = useCallback(async () => {
+    setIsManualRefresh(true);
+    await refetch();
+    setIsManualRefresh(false);
+  }, [refetch]);
+
+  const clearDateRange = useCallback(() => {
+    setDateRange({});
+  }, []);
+
+  const getStatusInfo = useCallback((status: string) => {
+    switch (status.toLowerCase()) {
+      case "completed":
+        return {
+          color: "bg-green-100 text-green-800 border-green-200",
+          icon: CheckCircle2,
+          label: "Completed"
+        };
+      case "failed":
+        return {
+          color: "bg-red-100 text-red-800 border-red-200",
+          icon: AlertCircle,
+          label: "Failed"
+        };
+      case "processing":
+        return {
+          color: "bg-blue-100 text-blue-800 border-blue-200",
+          icon: Loader2,
+          label: "Processing"
+        };
+      case "pending":
+        return {
+          color: "bg-yellow-100 text-yellow-800 border-yellow-200",
+          icon: Clock,
+          label: "Pending"
+        };
+      default:
+        return {
+          color: "bg-gray-100 text-gray-800 border-gray-200",
+          icon: Clock,
+          label: status
+        };
+    }
+  }, []);
+
+  const sortedImports = useMemo(() => {
+    if (!data?.imports) return [];
+
+    // Always sort by startedAt descending (newest first)
+    return [...data.imports].sort((a, b) => {
+      const aTime = new Date(a.startedAt).getTime();
+      const bTime = new Date(b.startedAt).getTime();
+      return bTime - aTime; // Descending order
+    });
+  }, [data?.imports]);
+
+  const formatFileSize = useCallback((bytes: number) => {
+    if (bytes === 0) return "0 B";
+    const k = 1024;
+    const sizes = ["B", "KB", "MB", "GB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
+  }, []);
+
+  const hasActiveImports = useMemo(() => {
+    return data?.imports?.some(imp =>
+      imp.status === "processing" || imp.status === "pending"
+    ) ?? false;
+  }, [data?.imports]);
 
   return (
     <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium">Import Data</h3>
-        <p className="text-sm text-muted-foreground">
-          Import site data from other analytics platforms.
-        </p>
-      </div>
-      <div className="space-y-4">
-        <div className="grid w-full max-w-sm items-center gap-1.5">
-          <Label htmlFor="file">CSV File</Label>
-          <Input id="file" type="file" accept=".csv" onChange={handleFileChange} disabled={disabled}/>
-        </div>
-        <Button onClick={handleImport} disabled={!file || mutation.isPending || disabled}>
-          {mutation.isPending ? "Importing..." : "Import"}
-        </Button>
-        {mutation.isError && (
-          <p className="text-sm text-red-500">
-            {mutation.error.message}
-          </p>
-        )}
-      </div>
+      {/* Import Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Upload className="h-5 w-5" />
+            Import Data
+          </CardTitle>
+          <CardDescription>
+            Import site data from other analytics platforms. Supports CSV files up to 100MB.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {/* Date Range Picker */}
+          <div className="space-y-2">
+            <Label className="flex items-center gap-2">
+              <Calendar className="h-4 w-4" />
+              Date Range (Optional)
+            </Label>
+            <div className="flex items-center gap-2">
+              <CustomDateRangePicker
+                setTime={setTime}
+              />
+              {(dateRange.startDate || dateRange.endDate) && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={clearDateRange}
+                  className="shrink-0"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            {(dateRange.startDate || dateRange.endDate) && (
+              <p className="text-xs text-muted-foreground">
+                {dateRange.startDate && dateRange.endDate
+                  ? `Importing data from ${dateRange.startDate} to ${dateRange.endDate}`
+                  : dateRange.startDate
+                    ? `Importing data from ${dateRange.startDate} onwards`
+                    : `Importing data up to ${dateRange.endDate}`
+                }
+              </p>
+            )}
+          </div>
 
-      <div>
-        <h3 className="text-lg font-medium">Import History</h3>
-        {isLoading ? (
-          <p>Loading import history...</p>
-        ) : error ? (
-          <p className="text-sm text-red-500">
-            Failed to load import history.
-          </p>
-        ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>File</TableHead>
-                <TableHead>Source</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Imported</TableHead>
-                <TableHead>Started</TableHead>
-                <TableHead>Completed</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data?.imports?.map((imp) => (
-                <TableRow key={imp.importId}>
-                  <TableCell>{imp.fileName}</TableCell>
-                  <TableCell>{imp.source}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <span>{imp.status}</span>
-                      {(imp.status === 'processing' || imp.status === 'pending') && <Progress value={50} className="w-24" />}
-                    </div>
-                    {imp.errorMessage && <p className="text-xs text-red-500">{imp.errorMessage}</p>}
-                  </TableCell>
-                  <TableCell>{imp.importedEvents ?? "N/A"}</TableCell>
-                  <TableCell>{DateTime.fromISO(imp.startedAt).toRelative()}</TableCell>
-                  <TableCell>{imp.completedAt ? DateTime.fromISO(imp.completedAt).toRelative() : "N/A"}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        )}
-      </div>
+          <Separator />
+
+          {/* File Upload */}
+          <div className="space-y-2">
+            <Label htmlFor="file" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              CSV File
+            </Label>
+            <Input
+              id="file"
+              type="file"
+              accept=".csv"
+              onChange={handleFileChange}
+              disabled={disabled || mutation.isPending}
+              aria-describedby={fileError ? "file-error" : undefined}
+            />
+            {file && !fileError && (
+              <p className="text-xs text-muted-foreground">
+                Selected: {file.name} ({formatFileSize(file.size)})
+              </p>
+            )}
+          </div>
+
+          {/* File Validation Error */}
+          {fileError && (
+            <Alert variant="destructive" id="file-error">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {fileError.message}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Import Button */}
+          <Button
+            onClick={handleImportClick}
+            disabled={!file || mutation.isPending || disabled || !!fileError}
+            className="w-full sm:w-auto"
+          >
+            {mutation.isPending ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Importing...
+              </>
+            ) : (
+              <>
+                <Upload className="mr-2 h-4 w-4" />
+                Import
+              </>
+            )}
+          </Button>
+
+          {/* Import Error */}
+          {mutation.isError && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                {mutation.error?.message || "Failed to import file. Please try again."}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Success Message */}
+          {mutation.isSuccess && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle2 className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                File uploaded successfully and is being processed.
+              </AlertDescription>
+            </Alert>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Import History */}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle>Import History</CardTitle>
+              <CardDescription>
+                Track the status of your data imports
+                {hasActiveImports && " • Updates automatically every 5 seconds"}
+              </CardDescription>
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleManualRefresh}
+              disabled={isLoading || isManualRefresh}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${(isLoading || isManualRefresh) ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {isLoading && !data ? (
+            <div className="flex items-center justify-center py-8">
+              <Loader2 className="h-6 w-6 animate-spin mr-2" />
+              <span>Loading import history...</span>
+            </div>
+          ) : error ? (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                Failed to load import history. Please try refreshing the page.
+              </AlertDescription>
+            </Alert>
+          ) : !data?.imports?.length ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
+              <p>No imports yet</p>
+              <p className="text-sm">Upload a CSV file to get started</p>
+            </div>
+          ) : (
+            <div className="rounded-md border">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>File</TableHead>
+                    <TableHead>Source</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Events</TableHead>
+                    <TableHead>Started</TableHead>
+                    <TableHead>Completed</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {sortedImports.map((imp) => {
+                    const statusInfo = getStatusInfo(imp.status);
+                    const StatusIcon = statusInfo.icon;
+
+                    return (
+                      <TableRow key={imp.importId}>
+                        <TableCell className="font-medium">
+                          <div className="max-w-[200px] truncate" title={imp.fileName}>
+                            {imp.fileName}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="capitalize">
+                            {imp.source}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <Badge
+                              variant="outline"
+                              className={`${statusInfo.color} flex items-center gap-1 w-fit`}
+                            >
+                              <StatusIcon
+                                className={`h-3 w-3 ${
+                                  imp.status === "processing" ? "animate-spin" : ""
+                                }`}
+                              />
+                              {statusInfo.label}
+                            </Badge>
+                            {imp.errorMessage && (
+                              <p className="text-xs text-red-600 max-w-[200px] truncate" title={imp.errorMessage}>
+                                {imp.errorMessage}
+                              </p>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {imp.importedEvents?.toLocaleString() ?? "—"}
+                        </TableCell>
+                        <TableCell>
+                          <time
+                            dateTime={imp.startedAt}
+                            title={DateTime.fromISO(imp.startedAt).toLocaleString(DateTime.DATETIME_FULL)}
+                          >
+                            {DateTime.fromISO(imp.startedAt).toRelative()}
+                          </time>
+                        </TableCell>
+                        <TableCell>
+                          {imp.completedAt ? (
+                            <time
+                              dateTime={imp.completedAt}
+                              title={DateTime.fromISO(imp.completedAt).toLocaleString(DateTime.DATETIME_FULL)}
+                            >
+                              {DateTime.fromISO(imp.completedAt).toRelative()}
+                            </time>
+                          ) : (
+                            "—"
+                          )}
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Confirmation Dialog */}
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirm Large File Import</AlertDialogTitle>
+            <AlertDialogDescription>
+              You"re about to import a large file ({file && formatFileSize(file.size)}).
+              This may take several minutes to process. Are you sure you want to continue?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleImport}>
+              Yes, Import File
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
