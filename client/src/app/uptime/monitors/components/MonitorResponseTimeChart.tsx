@@ -27,13 +27,14 @@ const formatTooltipValue = (value: number) => {
 
 export function MonitorResponseTimeChart({
   monitor,
+  monitorId,
   isLoading: isLoadingMonitor,
 }: {
   monitor?: UptimeMonitor;
+  monitorId: number;
   isLoading: boolean;
 }) {
   const monitorType = monitor?.monitorType;
-  const monitorId = monitor?.id;
 
   const { timeRange, bucket, setBucket, selectedRegion } = useUptimeStore();
 

@@ -12,7 +12,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { DateTime } from "luxon";
 import React, { useMemo, useState } from "react";
-import { MonitorEvent, useMonitorEventsInfinite } from "../../../../../api/uptime/monitors";
+import { MonitorEvent, UptimeMonitor, useMonitorEventsInfinite } from "../../../../../api/uptime/monitors";
 import { Badge } from "../../../../../components/ui/badge";
 import { Button } from "../../../../../components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../../../components/ui/card";
@@ -26,7 +26,7 @@ import { InlineTimingWaterfall } from "./InlineTimingWaterfall";
 
 const columnHelper = createColumnHelper<MonitorEvent>();
 
-export function EventsTable({ monitorId }: { monitorId: number }) {
+export function EventsTable({ monitor, monitorId }: { monitor?: UptimeMonitor; monitorId: number }) {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
   const { selectedRegion } = useUptimeStore();
@@ -117,20 +117,25 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
         header: "Timings",
         cell: ({ row }) => <InlineTimingWaterfall event={row.original} />,
       }),
-      columnHelper.accessor("region", {
-        header: "Region",
-        cell: ({ row }) => {
-          const region = REGIONS.find((r) => r.code === row.original.region);
-          return (
-            <span className="text-sm flex items-center gap-2">
-              <CountryFlag country={region?.countryCode || "US"} className="w-5 h-5" />
-              <span className="text-sm">{region?.name || "-"}</span>
-            </span>
-          );
-        },
-      }),
+      // Conditionally add region column for global monitoring
+      ...(monitor?.monitoringType === "global"
+        ? [
+            columnHelper.accessor("region", {
+              header: "Region",
+              cell: ({ row }) => {
+                const region = REGIONS.find((r) => r.code === row.original.region);
+                return (
+                  <span className="text-sm flex items-center gap-2">
+                    <CountryFlag country={region?.countryCode || "US"} className="w-5 h-5" />
+                    <span className="text-sm">{region?.name || "-"}</span>
+                  </span>
+                );
+              },
+            }),
+          ]
+        : []),
     ],
-    []
+    [monitor?.monitoringType]
   );
 
   // Create table instance
@@ -197,10 +202,12 @@ export function EventsTable({ monitorId }: { monitorId: number }) {
                     <TableCell>
                       <Skeleton className="h-3 w-24" />
                     </TableCell>
-                    {/* Region */}
-                    <TableCell>
-                      <Skeleton className="h-4 w-12" />
-                    </TableCell>
+                    {/* Region - only show for global monitoring */}
+                    {monitor?.monitoringType === "global" && (
+                      <TableCell>
+                        <Skeleton className="h-4 w-12" />
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))
               ) : table.getRowModel().rows.length === 0 ? (
