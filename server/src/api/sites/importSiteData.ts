@@ -151,6 +151,11 @@ export async function importSiteData(
       });
     } catch (queueError) {
       await ImportStatusManager.updateStatus(importId, "failed", "Failed to queue import job");
+      if (IS_CLOUD && r2Storage.isEnabled()) {
+        await r2Storage.deleteImportFile(storageLocation);
+      } else {
+        await fs.promises.unlink(storageLocation);
+      }
       console.error("Failed to enqueue import job:", queueError);
       return reply.status(500).send({ error: "Failed to initiate import process." });
     }
