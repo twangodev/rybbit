@@ -492,7 +492,6 @@ export const uptimeIncidents = pgTable(
     lastError: text("last_error"),
     lastErrorType: text("last_error_type"),
     failureCount: integer("failure_count").default(1),
-
     createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
   },

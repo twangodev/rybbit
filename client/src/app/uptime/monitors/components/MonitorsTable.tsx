@@ -213,7 +213,7 @@ export function MonitorsTable({ onMonitorClick }: MonitorsTableProps) {
         onChange={(e) => setGlobalFilter(e.target.value)}
         className="max-w-sm bg-neutral-900"
       />
-      <div className="rounded-md border border-neutral-800">
+      <div className="rounded-lg border border-neutral-800">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (

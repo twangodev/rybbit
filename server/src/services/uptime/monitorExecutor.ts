@@ -46,6 +46,10 @@ export class MonitorExecutor {
   private isShuttingDown = false;
   private connection: { host: string; port: number; password?: string };
   private notificationService: NotificationService;
+  
+  // Confirmation thresholds - require multiple consecutive checks before triggering incidents
+  private static readonly FAILURE_THRESHOLD = 2; // Consecutive failures before creating incident
+  private static readonly SUCCESS_THRESHOLD = 2; // Consecutive successes before resolving incident
 
   constructor(concurrency: number = 10) {
     this.concurrency = concurrency;
@@ -273,7 +277,7 @@ export class MonitorExecutor {
         await this.storeMonitorEvent(monitor, result, region);
       }
 
-      // Handle incidents per region
+      // Handle incidents per region with thresholds
       for (const { region, result } of regionResults) {
         await this.handleRegionalIncident(monitor, region, result);
       }
@@ -456,8 +460,15 @@ export class MonitorExecutor {
         });
       }
 
-      // Handle incident creation/resolution based on status changes
-      await this.handleIncidentManagement(monitorId, previousStatus || undefined, currentStatus, result);
+      // Handle incident creation/resolution based on consecutive failures/successes
+      await this.handleIncidentManagement(
+        monitorId, 
+        previousStatus || undefined, 
+        currentStatus, 
+        result,
+        consecutiveFailures,
+        consecutiveSuccesses
+      );
     } catch (error) {
       console.error("Failed to update monitor status:", error);
     }
@@ -468,6 +479,8 @@ export class MonitorExecutor {
     previousStatus: string | undefined,
     currentStatus: string,
     result: HttpCheckResult | TcpCheckResult,
+    consecutiveFailures: number,
+    consecutiveSuccesses: number,
   ): Promise<void> {
     try {
       // Get monitor details for incident creation
@@ -489,10 +502,8 @@ export class MonitorExecutor {
         ),
       });
 
-      // Status transition: UP -> DOWN (Create new incident)
-      if (previousStatus === "up" && currentStatus === "down") {
-        // Only create incident if there isn't already an active one
-        if (!activeIncident) {
+      // Create incident when failures reach threshold
+      if (currentStatus === "down" && consecutiveFailures === MonitorExecutor.FAILURE_THRESHOLD && !activeIncident) {
           const [newIncident] = await db
             .insert(uptimeIncidents)
             .values({
@@ -510,29 +521,26 @@ export class MonitorExecutor {
 
           // Send notifications for new incident
           await this.notificationService.sendIncidentNotifications(monitor, newIncident, "down");
-        }
       }
-      // Status transition: DOWN -> UP (Resolve active incident)
-      else if (previousStatus === "down" && currentStatus === "up") {
-        if (activeIncident) {
-          const now = new Date().toISOString();
-          await db
-            .update(uptimeIncidents)
-            .set({
-              status: "resolved",
-              endTime: now,
-              resolvedAt: now,
-            })
-            .where(eq(uptimeIncidents.id, activeIncident.id));
-          console.log(`[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
+      // Resolve incident when successes reach threshold after being down
+      else if (currentStatus === "up" && consecutiveSuccesses === MonitorExecutor.SUCCESS_THRESHOLD && activeIncident) {
+        const now = new Date().toISOString();
+        await db
+          .update(uptimeIncidents)
+          .set({
+            status: "resolved",
+            endTime: now,
+            resolvedAt: now,
+          })
+          .where(eq(uptimeIncidents.id, activeIncident.id));
+        console.log(`[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
 
-          // Send recovery notifications
-          await this.notificationService.sendIncidentNotifications(
-            monitor,
-            { ...activeIncident, status: "resolved", endTime: now },
-            "recovery",
-          );
-        }
+        // Send recovery notifications
+        await this.notificationService.sendIncidentNotifications(
+          monitor,
+          { ...activeIncident, status: "resolved", endTime: now },
+          "recovery",
+        );
       }
       // Status remains DOWN (Update failure count)
       else if (currentStatus === "down" && activeIncident) {
@@ -557,6 +565,47 @@ export class MonitorExecutor {
   ): Promise<void> {
     try {
       const currentStatus = result.status === "success" ? "up" : "down";
+      
+      // Get recent events from ClickHouse to determine consecutive counts
+      const recentEvents = await clickhouse.query({
+        query: `
+          SELECT status, timestamp
+          FROM monitor_events
+          WHERE monitor_id = {monitorId:Int32}
+            AND region = {region:String}
+          ORDER BY timestamp DESC
+          LIMIT {limit:Int32}
+        `,
+        query_params: {
+          monitorId: monitor.id,
+          region: region,
+          limit: MonitorExecutor.FAILURE_THRESHOLD + 1 // Get enough events to check threshold
+        }
+      });
+      
+      const events = await recentEvents.json<{ status: string; timestamp: string }>();
+      
+      // Count consecutive failures/successes from most recent events
+      let consecutiveFailures = 0;
+      let consecutiveSuccesses = 0;
+      
+      // Start with current result
+      if (currentStatus === "down") {
+        consecutiveFailures = 1;
+      } else {
+        consecutiveSuccesses = 1;
+      }
+      
+      // Check previous events
+      for (const event of events.data) {
+        if (currentStatus === "down" && event.status === "failure") {
+          consecutiveFailures++;
+        } else if (currentStatus === "up" && event.status === "success") {
+          consecutiveSuccesses++;
+        } else {
+          break; // Different status, not consecutive
+        }
+      }
 
       // Check for active incidents in this region
       const activeIncident = await db.query.uptimeIncidents.findFirst({
@@ -567,8 +616,8 @@ export class MonitorExecutor {
         ),
       });
 
-      // If check failed and no active incident, create one
-      if (currentStatus === "down" && !activeIncident) {
+      // Create incident when failures reach threshold
+      if (currentStatus === "down" && consecutiveFailures === MonitorExecutor.FAILURE_THRESHOLD && !activeIncident) {
         const [newIncident] = await db
           .insert(uptimeIncidents)
           .values({
@@ -587,8 +636,8 @@ export class MonitorExecutor {
         // Send notifications for new regional incident
         await this.notificationService.sendIncidentNotifications(monitor, newIncident, "down");
       }
-      // If check succeeded and there's an active incident, resolve it
-      else if (currentStatus === "up" && activeIncident) {
+      // Resolve incident when successes reach threshold
+      else if (currentStatus === "up" && consecutiveSuccesses === MonitorExecutor.SUCCESS_THRESHOLD && activeIncident) {
         const now = new Date().toISOString();
         await db
           .update(uptimeIncidents)

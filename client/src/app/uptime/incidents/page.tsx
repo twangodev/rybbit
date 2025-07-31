@@ -14,6 +14,7 @@ import { AlertCircle, CheckCircle, MoreHorizontal } from "lucide-react";
 import { DateTime } from "luxon";
 import { useState } from "react";
 import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import {
   UptimeIncident,
   useAcknowledgeIncident,
@@ -121,6 +122,7 @@ export default function IncidentsPage() {
             <TableRow>
               <TableHead className="w-10"></TableHead>
               <TableHead>Monitor Name</TableHead>
+              <TableHead>Affected Regions</TableHead>
               <TableHead>Start Time</TableHead>
               <TableHead>Duration</TableHead>
               <TableHead className="w-10"></TableHead>
@@ -140,6 +142,9 @@ export default function IncidentsPage() {
                     <Skeleton className="h-4 w-32" />
                   </TableCell>
                   <TableCell>
+                    <Skeleton className="h-4 w-32" />
+                  </TableCell>
+                  <TableCell>
                     <Skeleton className="h-4 w-24" />
                   </TableCell>
                   <TableCell>
@@ -149,7 +154,7 @@ export default function IncidentsPage() {
               ))
             ) : data?.incidents?.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-8 text-neutral-500">
+                <TableCell colSpan={6} className="text-center py-8 text-neutral-500">
                   No incidents found
                 </TableCell>
               </TableRow>
@@ -158,10 +163,60 @@ export default function IncidentsPage() {
                 <TableRow key={incident.id}>
                   <TableCell>{getStatusIcon(incident.status)}</TableCell>
                   <TableCell>
-                    <div>
-                      <div className="font-medium">{incident.monitorName}</div>
-                      {incident.region && <div className="text-xs text-neutral-500 uppercase">{incident.region}</div>}
-                    </div>
+                    <div className="font-medium">{incident.monitorName}</div>
+                  </TableCell>
+                  <TableCell>
+                    {incident.affectedRegions && incident.affectedRegions.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {incident.affectedRegions.length > 3 ? (
+                          <>
+                            {incident.affectedRegions.slice(0, 3).map((region) => (
+                              <span
+                                key={region}
+                                className={cn(
+                                  "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full",
+                                  region === "global"
+                                    ? "bg-red-500/20 text-red-400"
+                                    : "bg-neutral-700 text-neutral-300"
+                                )}
+                              >
+                                {region.toUpperCase()}
+                              </span>
+                            ))}
+                            <span className="inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full bg-neutral-700 text-neutral-300">
+                              +{incident.affectedRegions.length - 3} more
+                            </span>
+                          </>
+                        ) : (
+                          incident.affectedRegions.map((region) => (
+                            <span
+                              key={region}
+                              className={cn(
+                                "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full",
+                                region === "global"
+                                  ? "bg-red-500/20 text-red-400"
+                                  : "bg-neutral-700 text-neutral-300"
+                              )}
+                            >
+                              {region.toUpperCase()}
+                            </span>
+                          ))
+                        )}
+                      </div>
+                    ) : incident.region ? (
+                      <span
+                        className={cn(
+                          "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full",
+                          incident.region === "global"
+                            ? "bg-red-500/20 text-red-400"
+                            : "bg-neutral-700 text-neutral-300"
+                        )}
+                      >
+                        {incident.region.toUpperCase()}
+                      </span>
+                    ) : (
+                      <span className="text-neutral-500">-</span>
+                    )}
                   </TableCell>
                   <TableCell className="text-sm text-neutral-300">{formatStartTime(incident.startTime)}</TableCell>
                   <TableCell>

@@ -9,6 +9,7 @@ export interface UptimeIncident {
   monitorId: number;
   monitorName: string;
   region?: string;
+  affectedRegions?: string[];
   startTime: string;
   endTime?: string;
   status: "active" | "acknowledged" | "resolved";

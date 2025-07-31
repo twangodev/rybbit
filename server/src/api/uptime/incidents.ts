@@ -73,55 +73,80 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
         conditions.push(eq(uptimeIncidents.status, status));
       }
 
-      // Get total count
-      const countResult = await db
-        .select({ count: sql<number>`count(*)` })
-        .from(uptimeIncidents)
-        .where(and(...conditions));
-
-      const total = Number(countResult[0]?.count || 0);
-
-      // Get incidents with monitor details
-      const incidents = await db
+      // Use SQL to group incidents by monitor and aggregate regions
+      const groupedIncidents = await db
         .select({
-          incident: uptimeIncidents,
-          monitor: {
-            name: uptimeMonitors.name,
-            monitorType: uptimeMonitors.monitorType,
-            httpConfig: uptimeMonitors.httpConfig,
-            tcpConfig: uptimeMonitors.tcpConfig,
-          },
+          id: sql<number>`MIN(${uptimeIncidents.id})`,
+          organizationId: sql<string>`MIN(${uptimeIncidents.organizationId})`,
+          monitorId: uptimeIncidents.monitorId,
+          monitorName: sql<string>`
+            CASE 
+              WHEN ${uptimeMonitors.name} IS NOT NULL AND ${uptimeMonitors.name} != '' THEN ${uptimeMonitors.name}
+              WHEN ${uptimeMonitors.monitorType} = 'http' THEN COALESCE(${uptimeMonitors.httpConfig}->>'url', 'HTTP Monitor')
+              WHEN ${uptimeMonitors.monitorType} = 'tcp' THEN CONCAT(${uptimeMonitors.tcpConfig}->>'host', ':', ${uptimeMonitors.tcpConfig}->>'port')
+              ELSE 'Unknown Monitor'
+            END
+          `,
+          affectedRegions: sql<string[]>`ARRAY_REMOVE(ARRAY_AGG(DISTINCT ${uptimeIncidents.region} ORDER BY ${uptimeIncidents.region}), NULL)`,
+          startTime: sql<string>`MIN(${uptimeIncidents.startTime})`,
+          endTime: sql<string>`MAX(${uptimeIncidents.endTime})`,
+          status: uptimeIncidents.status,
+          acknowledgedBy: sql<string>`MAX(${uptimeIncidents.acknowledgedBy})`,
+          acknowledgedAt: sql<string>`MAX(${uptimeIncidents.acknowledgedAt})`,
+          resolvedBy: sql<string>`MAX(${uptimeIncidents.resolvedBy})`,
+          resolvedAt: sql<string>`MAX(${uptimeIncidents.resolvedAt})`,
+          lastError: sql<string>`(ARRAY_AGG(${uptimeIncidents.lastError} ORDER BY ${uptimeIncidents.updatedAt} DESC))[1]`,
+          lastErrorType: sql<string>`(ARRAY_AGG(${uptimeIncidents.lastErrorType} ORDER BY ${uptimeIncidents.updatedAt} DESC))[1]`,
+          failureCount: sql<number>`SUM(${uptimeIncidents.failureCount})`,
+          createdAt: sql<string>`MIN(${uptimeIncidents.createdAt})`,
+          updatedAt: sql<string>`MAX(${uptimeIncidents.updatedAt})`,
         })
         .from(uptimeIncidents)
         .leftJoin(uptimeMonitors, eq(uptimeIncidents.monitorId, uptimeMonitors.id))
         .where(and(...conditions))
-        .orderBy(desc(uptimeIncidents.startTime))
+        .groupBy(
+          uptimeIncidents.monitorId,
+          uptimeIncidents.status,
+          sql`CASE 
+            WHEN ${uptimeIncidents.status} = 'resolved' THEN 
+              DATE_TRUNC('hour', ${uptimeIncidents.endTime})
+            ELSE 
+              NULL
+          END`,
+          uptimeMonitors.name,
+          uptimeMonitors.monitorType,
+          uptimeMonitors.httpConfig,
+          uptimeMonitors.tcpConfig
+        )
+        .orderBy(desc(sql`MIN(${uptimeIncidents.startTime})`))
         .limit(limit)
         .offset(offset);
 
-      // Flatten the structure and add monitor name
-      const incidentsWithMonitorName = incidents.map((row) => {
-        // Determine monitor display name with fallback
-        let monitorName = "Unknown Monitor";
-        if (row.monitor) {
-          if (row.monitor.name) {
-            monitorName = row.monitor.name;
-          } else if (row.monitor.monitorType === "http" && row.monitor.httpConfig) {
-            monitorName = (row.monitor.httpConfig as any).url || "HTTP Monitor";
-          } else if (row.monitor.monitorType === "tcp" && row.monitor.tcpConfig) {
-            const config = row.monitor.tcpConfig as any;
-            monitorName = `${config.host}:${config.port}` || "TCP Monitor";
-          }
-        }
+      // Get total count for pagination
+      const totalCountResult = await db
+        .select({
+          count: sql<number>`COUNT(DISTINCT 
+            CONCAT(
+              ${uptimeIncidents.monitorId}, 
+              '-', 
+              ${uptimeIncidents.status},
+              '-',
+              CASE 
+                WHEN ${uptimeIncidents.status} = 'resolved' THEN 
+                  DATE_TRUNC('hour', ${uptimeIncidents.endTime})::text
+                ELSE 
+                  ''
+              END
+            )
+          )`,
+        })
+        .from(uptimeIncidents)
+        .where(and(...conditions));
 
-        return {
-          ...row.incident,
-          monitorName,
-        };
-      });
+      const total = Number(totalCountResult[0]?.count || 0);
 
       return reply.send({
-        incidents: incidentsWithMonitorName,
+        incidents: groupedIncidents,
         pagination: {
           total,
           limit,
