@@ -1,30 +1,24 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { authedFetch } from "@/api/utils";
+import { useStore } from "@/lib/store";
+import { APIResponse } from "@/api/types";
 
-type SiteImport = {
+interface SiteImport {
   importId: string;
-  source: string;
-  status: string;
-  importedEvents: number | null;
+  source: "umami";
+  status: "pending" | "processing" | "completed" | "failed";
+  importedEvents: number;
   errorMessage: string | null;
   startedAt: string;
   completedAt: string | null;
   fileName: string;
-};
+}
 
 interface ImportSiteDataParams {
   file: File;
   source: string;
   startDate?: string;
   endDate?: string;
-}
-
-async function getSiteImports(siteId: number): Promise<{ imports: SiteImport[] }> {
-  const res = await fetch(`/api/sites/${siteId}/imports`);
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({ message: 'Failed to fetch site imports' }));
-    throw new Error(errorData.message || 'Failed to fetch site imports');
-  }
-  return res.json();
 }
 
 async function importSiteData(siteId: number, params: ImportSiteDataParams) {
@@ -46,33 +40,26 @@ async function importSiteData(siteId: number, params: ImportSiteDataParams) {
   });
 
   if (!res.ok) {
-    const errorData = await res.json().catch(() => ({ message: 'Failed to import site data' }));
-    throw new Error(errorData.message || errorData.error || 'Failed to import site data');
+    const errorData = await res.json().catch(() => ({ message: "Failed to import site data" }));
+    throw new Error(errorData.message || errorData.error || "Failed to import site data");
   }
 
   return res.json();
 }
 
-export function useGetSiteImports(siteId: number) {
+export function useGetSiteImports() {
+  const { site } = useStore();
+
   return useQuery({
-    queryKey: ["siteImports", siteId],
-    queryFn: () => getSiteImports(siteId),
+    queryKey: ["get-site-imports", site],
+    queryFn: async () => await authedFetch<APIResponse<SiteImport[]>>(`/get-site-imports/${site}`),
     refetchInterval: (data) => {
-      // Only refetch automatically if there are active imports
-      const hasActiveImports = data.state.data?.imports?.some(imp =>
-        imp.status === 'processing' || imp.status === 'pending'
+      const hasActiveImports = data.state.data?.data.some(imp =>
+        imp.status === "processing" || imp.status === "pending"
       );
-      return hasActiveImports ? 5000 : false; // 5 seconds if active, otherwise no auto-refetch
+      return hasActiveImports ? 5000 : false;
     },
-    retry: (failureCount, error) => {
-      // Don't retry if it's a client error (400-499)
-      if (error.message.includes('403') || error.message.includes('404')) {
-        return false;
-      }
-      return failureCount < 3;
-    },
-    staleTime: 30000, // Consider data stale after 30 seconds
-    gcTime: 5 * 60 * 1000, // Keep in cache for 5 minutes
+    staleTime: 30000,
   });
 }
 
@@ -89,8 +76,8 @@ export function useImportSiteData(siteId: number) {
       });
     },
     onError: (error) => {
-      console.error('Import failed:', error);
+      console.error("Import failed:", error);
     },
-    retry: false, // Don't retry file uploads automatically
+    retry: false, // Don"t retry file uploads automatically
   });
 }

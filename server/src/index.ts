@@ -78,7 +78,7 @@ import { importSiteData } from "./api/sites/importSiteData.js";
 import boss from "./db/postgres/boss.js";
 import { registerCsvParseWorker } from "./services/import/workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./services/import/workers/dataInsertWorker.js";
-import { listSiteImports } from "./api/sites/listSiteImports.js";
+import { getSiteImports } from "./api/sites/getSiteImports.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -290,7 +290,7 @@ server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 
 // Imports
 server.post("/api/import-site-data/:site", importSiteData);
-server.get("/api/list-site-imports/:site", listSiteImports);
+server.get("/api/get-site-imports/:site", getSiteImports);
 
 // Administrative
 server.get("/api/config", getConfig);
