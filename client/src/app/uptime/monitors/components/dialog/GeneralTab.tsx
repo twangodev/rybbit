@@ -5,9 +5,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Switch } from "@/components/ui/switch";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { UptimeMonitor } from "@/api/uptime/monitors";
+import { CreateMonitorFormData, UpdateMonitorFormData } from "../monitorSchemas";
 
 interface GeneralTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CreateMonitorFormData | UpdateMonitorFormData>;
   monitor?: UptimeMonitor;
   isEdit: boolean;
   monitorType: "http" | "tcp";

@@ -122,7 +122,7 @@ export const createMonitorSchema = z
 // Update monitor schema (similar to create but with optional fields)
 export const updateMonitorSchema = z.object({
   name: z.string().max(256).optional(), // Allow empty string to remove name
-  intervalSeconds: z.number().int().min(60).max(86400).optional(),
+  intervalSeconds: z.number().int().min(30).max(86400).optional(),
   enabled: z.boolean().optional(),
   httpConfig: httpConfigSchema.optional(),
   tcpConfig: tcpConfigSchema.optional(),

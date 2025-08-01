@@ -7,9 +7,10 @@ import { Button } from "@/components/ui/button";
 import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Plus, X } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { CreateMonitorFormData, UpdateMonitorFormData } from "../monitorSchemas";
 
 interface AdvancedTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<CreateMonitorFormData | UpdateMonitorFormData>;
   monitorType: "http" | "tcp";
 }
 
