@@ -38,7 +38,7 @@ import {
   X
 } from "lucide-react";
 import { DateTime } from "luxon";
-import { useGetSiteImports, useImportSiteData } from "@/api/sites";
+import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
 import { CustomDateRangePicker } from "@/components/DateSelector/CustomDateRangePicker";
 import { DateRangeMode, Time } from "@/components/DateSelector/types";
 import { timeZone } from "@/lib/dateTimeUtils";
