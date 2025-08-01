@@ -1,9 +1,9 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authedFetch } from "@/api/utils";
 import { useStore } from "@/lib/store";
 import { APIResponse } from "@/api/types";
 
-interface SiteImport {
+interface GetSiteImportsResponse {
   importId: string;
   source: "umami";
   status: "pending" | "processing" | "completed" | "failed";
@@ -21,30 +21,8 @@ interface ImportSiteDataParams {
   endDate?: string;
 }
 
-async function importSiteData(siteId: number, params: ImportSiteDataParams) {
-  const formData = new FormData();
-  formData.append("file", params.file);
-  formData.append("source", params.source);
-
-  // Add date range parameters if provided
-  if (params.startDate) {
-    formData.append("startDate", params.startDate);
-  }
-  if (params.endDate) {
-    formData.append("endDate", params.endDate);
-  }
-
-  const res = await fetch(`/api/sites/${siteId}/import`, {
-    method: "POST",
-    body: formData,
-  });
-
-  if (!res.ok) {
-    const errorData = await res.json().catch(() => ({ message: "Failed to import site data" }));
-    throw new Error(errorData.message || errorData.error || "Failed to import site data");
-  }
-
-  return res.json();
+interface ImportSiteDataResponse {
+  message: string;
 }
 
 export function useGetSiteImports() {
@@ -52,7 +30,7 @@ export function useGetSiteImports() {
 
   return useQuery({
     queryKey: ["get-site-imports", site],
-    queryFn: async () => await authedFetch<APIResponse<SiteImport[]>>(`/get-site-imports/${site}`),
+    queryFn: async () => await authedFetch<APIResponse<GetSiteImportsResponse[]>>(`/get-site-imports/${site}`),
     refetchInterval: (data) => {
       const hasActiveImports = data.state.data?.data.some(imp =>
         imp.status === "processing" || imp.status === "pending"
@@ -63,21 +41,34 @@ export function useGetSiteImports() {
   });
 }
 
-export function useImportSiteData(siteId: number) {
+export function useImportSiteData() {
+  const { site } = useStore();
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (params: ImportSiteDataParams) =>
-      importSiteData(siteId, params),
-    onSuccess: () => {
-      // Invalidate and refetch imports list
-      queryClient.invalidateQueries({
-        queryKey: ["siteImports", siteId]
+    mutationFn: async (params: ImportSiteDataParams) => {
+      const formData = new FormData();
+
+      formData.append("file", params.file);
+      formData.append("source", params.source);
+
+      if (params.startDate) {
+        formData.append("startDate", params.startDate);
+      }
+      if (params.endDate) {
+        formData.append("endDate", params.endDate);
+      }
+
+      return await authedFetch<APIResponse<ImportSiteDataResponse>>(`/import-site-data/${site}`, undefined, {
+        method: "POST",
+        data: formData,
       });
     },
-    onError: (error) => {
-      console.error("Import failed:", error);
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["get-site-imports", site]
+      });
     },
-    retry: false, // Don"t retry file uploads automatically
+    retry: false,
   });
 }

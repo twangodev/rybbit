@@ -62,10 +62,7 @@ export async function importSiteData(
     });
 
     if (!parsed.success) {
-      return reply.status(400).send({
-        error: "Validation failed",
-        details: parsed.error.flatten(),
-      });
+      return reply.status(400).send({ error: "Validation failed" });
     }
 
     const { site } = parsed.data.params;
@@ -78,10 +75,7 @@ export async function importSiteData(
 
     const concurrentImportLimitResult = await ImportLimiter.checkConcurrentImportLimit(Number(site));
     if (!concurrentImportLimitResult.allowed) {
-      return reply.status(429).send({
-        error: "Organization limit exceeded",
-        message: concurrentImportLimitResult.reason,
-      });
+      return reply.status(429).send({ error: concurrentImportLimitResult.reason });
     }
 
     const fileData = await request.file();
@@ -94,9 +88,7 @@ export async function importSiteData(
     }
 
     if (fileData.mimetype !== "text/csv" || !fileData.filename.endsWith(".csv")) {
-      return reply.status(400).send({
-        error: "Invalid file type. Only .csv files are accepted.",
-      });
+      return reply.status(400).send({ error: "Invalid file type. Only .csv files are accepted." });
     }
 
     const organization = concurrentImportLimitResult.organizationId;
@@ -158,14 +150,12 @@ export async function importSiteData(
     }
 
     return reply.status(202).send({
-      success: true,
-      message: "File upload accepted and is now being processed.",
-      importId,
+      data: {
+        message: "File upload accepted and is now being processed.",
+      }
     });
   } catch (error) {
     console.error("Unexpected error during import:", error);
-    return reply.status(500).send({
-      error: "An unexpected error occurred. Please try again later.",
-    });
+    return reply.status(500).send({ error: "An unexpected error occurred. Please try again later." });
   }
 }
