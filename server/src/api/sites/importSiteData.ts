@@ -14,12 +14,12 @@ import { IS_CLOUD } from "../../lib/const.js";
 import { DateTime } from "luxon";
 import { deleteImportFile } from "../../services/import/utils.js";
 
-const isValidDate = (val: string) => {
-  const dt = DateTime.fromFormat(val, "yyyy-MM-dd", { zone: "utc" });
+const isValidDate = (date: string) => {
+  const dt = DateTime.fromFormat(date, "yyyy-MM-dd", { zone: "utc" });
   return dt.isValid;
 };
 
-const parseDate = (val: string) => DateTime.fromFormat(val, "yyyy-MM-dd", { zone: "utc" });
+const parseDate = (date: string) => DateTime.fromFormat(date, "yyyy-MM-dd", { zone: "utc" });
 
 const importDataRequestSchema = z.object({
   params: z.object({
@@ -29,15 +29,15 @@ const importDataRequestSchema = z.object({
     source: z.enum(["umami"]),
     startDate: z.string().refine(isValidDate).optional(),
     endDate: z.string().refine(isValidDate).optional(),
-  }).refine((data) => {
-    if (data.startDate && data.endDate) {
-      const start = parseDate(data.startDate);
-      const end = parseDate(data.endDate);
+  }).refine((body) => {
+    if (body.startDate && body.endDate) {
+      const start = parseDate(body.startDate);
+      const end = parseDate(body.endDate);
       return start <= end;
     }
-    if (data.startDate) {
+    if (body.startDate) {
       const today = DateTime.utc().startOf("day");
-      const start = parseDate(data.startDate);
+      const start = parseDate(body.startDate);
       return start <= today;
     }
     return true;
