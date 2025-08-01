@@ -37,6 +37,7 @@ export function useGetSiteImports() {
       );
       return hasActiveImports ? 5000 : false;
     },
+    placeholderData: { data: [] },
     staleTime: 30000,
   });
 }
