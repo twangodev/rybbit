@@ -141,7 +141,7 @@ export default function MonitorDetailPage() {
   }
 
   return (
-    <StandardPage showSidebar={false}>
+    <>
       <div className="space-y-4">
         {/* Header */}
         <Button
@@ -177,6 +177,6 @@ export default function MonitorDetailPage() {
         <MonitorResponseTimeChart monitor={monitor} monitorId={monitorId} isLoading={isLoadingMonitor} />
         <EventsTable monitor={monitor} monitorId={monitorId} />
       </div>
-    </StandardPage>
+    </>
   );
 }

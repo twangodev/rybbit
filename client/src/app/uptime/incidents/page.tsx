@@ -10,18 +10,17 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { AlertCircle, CheckCircle, MoreHorizontal } from "lucide-react";
 import { DateTime } from "luxon";
 import { useState } from "react";
 import { toast } from "sonner";
-import { cn } from "@/lib/utils";
 import {
   UptimeIncident,
   useAcknowledgeIncident,
   useIncidents,
   useResolveIncident,
 } from "../../../api/uptime/incidents";
-import { StandardPage } from "../../../components/StandardPage";
 
 const formatStartTime = (timestamp: string) => {
   const dt = DateTime.fromSQL(timestamp, { zone: "UTC" }).toLocal();
@@ -102,7 +101,7 @@ export default function IncidentsPage() {
   };
 
   return (
-    <StandardPage showSidebar={false}>
+    <>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-2xl font-semibold">Incidents</h1>
 
@@ -175,9 +174,7 @@ export default function IncidentsPage() {
                                 key={region}
                                 className={cn(
                                   "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full",
-                                  region === "global"
-                                    ? "bg-red-500/20 text-red-400"
-                                    : "bg-neutral-700 text-neutral-300"
+                                  region === "global" ? "bg-red-500/20 text-red-400" : "bg-neutral-700 text-neutral-300"
                                 )}
                               >
                                 {region.toUpperCase()}
@@ -193,9 +190,7 @@ export default function IncidentsPage() {
                               key={region}
                               className={cn(
                                 "inline-flex items-center px-2 py-0.5 text-xs font-medium rounded-full",
-                                region === "global"
-                                  ? "bg-red-500/20 text-red-400"
-                                  : "bg-neutral-700 text-neutral-300"
+                                region === "global" ? "bg-red-500/20 text-red-400" : "bg-neutral-700 text-neutral-300"
                               )}
                             >
                               {region.toUpperCase()}
@@ -247,6 +242,6 @@ export default function IncidentsPage() {
           </TableBody>
         </Table>
       </div>
-    </StandardPage>
+    </>
   );
 }

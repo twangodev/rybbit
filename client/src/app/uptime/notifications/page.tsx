@@ -92,7 +92,7 @@ export default function NotificationsPage() {
   };
 
   return (
-    <StandardPage showSidebar={false}>
+    <>
       <div className="mb-6">
         <h1 className="text-2xl font-semibold">Notifications</h1>
         <p className="text-sm text-neutral-500 mt-1">Configure how you want to be notified about monitor incidents</p>
@@ -169,56 +169,61 @@ export default function NotificationsPage() {
                       const config = CHANNEL_CONFIG[channel.type];
                       const Icon = config.icon;
                       return (
-                    <TableRow key={channel.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {channel.name}
-                          {!channel.enabled && (
-                            <span className="text-xs bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded">Disabled</span>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Icon className="w-4 h-4" />
-                          <span className="capitalize">{channel.type}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-sm text-neutral-500">
-                        {channel.type === "email" && channel.config?.email}
-                        {channel.type === "discord" && "Discord webhook"}
-                        {channel.type === "slack" && `Slack ${channel.config?.slackChannel || "webhook"}`}
-                        {channel.type === "sms" && channel.config?.phoneNumber}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                              <MoreHorizontal className="h-4 w-4" />
-                              <span className="sr-only">Open menu</span>
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleToggleChannel(channel)}>
-                              <Power className="mr-2 h-4 w-4" />
-                              {channel.enabled ? "Disable" : "Enable"}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleTestChannel(channel)} disabled={!channel.enabled}>
-                              <Bell className="mr-2 h-4 w-4" />
-                              Test
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => openEditDialog(channel)}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => openDeleteModal(channel)} className="text-red-600">
-                              <Trash2 className="mr-2 h-4 w-4" />
-                              Delete
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
+                        <TableRow key={channel.id}>
+                          <TableCell className="font-medium">
+                            <div className="flex items-center gap-2">
+                              {channel.name}
+                              {!channel.enabled && (
+                                <span className="text-xs bg-neutral-800 text-neutral-400 px-2 py-0.5 rounded">
+                                  Disabled
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Icon className="w-4 h-4" />
+                              <span className="capitalize">{channel.type}</span>
+                            </div>
+                          </TableCell>
+                          <TableCell className="text-sm text-neutral-500">
+                            {channel.type === "email" && channel.config?.email}
+                            {channel.type === "discord" && "Discord webhook"}
+                            {channel.type === "slack" && `Slack ${channel.config?.slackChannel || "webhook"}`}
+                            {channel.type === "sms" && channel.config?.phoneNumber}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                  <span className="sr-only">Open menu</span>
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuItem onClick={() => handleToggleChannel(channel)}>
+                                  <Power className="mr-2 h-4 w-4" />
+                                  {channel.enabled ? "Disable" : "Enable"}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => handleTestChannel(channel)}
+                                  disabled={!channel.enabled}
+                                >
+                                  <Bell className="mr-2 h-4 w-4" />
+                                  Test
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => openEditDialog(channel)}>
+                                  <Edit className="mr-2 h-4 w-4" />
+                                  Edit
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => openDeleteModal(channel)} className="text-red-600">
+                                  <Trash2 className="mr-2 h-4 w-4" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </TableCell>
                         </TableRow>
                       );
                     })}
@@ -248,6 +253,6 @@ export default function NotificationsPage() {
           variant: "destructive",
         }}
       />
-    </StandardPage>
+    </>
   );
 }

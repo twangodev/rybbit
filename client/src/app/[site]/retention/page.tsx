@@ -4,7 +4,6 @@ import { DateTime } from "luxon"; // Import Luxon for date formatting
 import { Fragment, useMemo, useState } from "react";
 import { RetentionMode, useGetRetention } from "../../../api/analytics/useGetRetention";
 import { ThreeDotLoader } from "../../../components/Loaders";
-import { MobileSidebar } from "../../../components/MobileSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "../../../components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/select";
 import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
@@ -12,6 +11,7 @@ import { RetentionChart } from "./RetentionChart";
 import { NothingFound } from "../../../components/NothingFound";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
+import { MobileSidebar } from "../components/Sidebar/MobileSidebar";
 
 // Available time range options (in days)
 const RANGE_OPTIONS = [

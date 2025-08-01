@@ -1,12 +1,30 @@
+"use client";
+
+import { useWindowSize } from "@uidotdev/usehooks";
 import { AppSidebar } from "../../components/AppSidebar";
-import { Sidebar } from "./monitors/components/Sidebar";
+import { MobileSidebar } from "./monitors/components/Sidebar/MobileSidebar";
+import { StandardPage } from "../../components/StandardPage";
+import { Sidebar } from "./monitors/components/Sidebar/Sidebar";
 
 export default function UptimeLayout({ children }: { children: React.ReactNode }) {
+  const { width } = useWindowSize();
+
+  if (width && width < 768) {
+    return (
+      <StandardPage showSidebar={false}>
+        <MobileSidebar />
+        <div className="mt-4">{children}</div>
+      </StandardPage>
+    );
+  }
+
   return (
     <div className="flex h-full">
       <AppSidebar />
       <Sidebar />
-      <div className="flex-1 overflow-auto">{children}</div>
+      <StandardPage showSidebar={false}>
+        <div className="flex-1 overflow-auto mt-4">{children}</div>
+      </StandardPage>
     </div>
   );
 }

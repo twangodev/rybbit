@@ -4,12 +4,12 @@ import { SavedFunnel, useGetFunnels } from "../../../api/analytics/funnels/useGe
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "@/lib/store";
 import { ArrowRight, FilterIcon } from "lucide-react";
-import { MobileSidebar } from "../../../components/MobileSidebar";
 import { NothingFound } from "../../../components/NothingFound";
 import { CreateFunnelDialog } from "./components/CreateFunnel";
 import { FunnelRow } from "./components/FunnelRow";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
+import { MobileSidebar } from "../components/Sidebar/MobileSidebar";
 
 // Skeleton for the funnel row component
 const FunnelRowSkeleton = () => (

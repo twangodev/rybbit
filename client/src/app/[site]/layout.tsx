@@ -2,14 +2,13 @@
 import { useWindowSize } from "@uidotdev/usehooks";
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { useGetSite, useSiteHasData } from "../../api/admin/sites";
+import { AppSidebar } from "../../components/AppSidebar";
 import { TopBar } from "../../components/TopBar";
 import { useStore } from "../../lib/store";
 import { useSyncStateWithUrl } from "../../lib/urlParams";
+import { Footer } from "../components/Footer";
 import { Header } from "./components/Header/Header";
 import { Sidebar } from "./components/Sidebar/Sidebar";
-import { Footer } from "../components/Footer";
-import { AppSidebar } from "../../components/AppSidebar";
 
 export default function SiteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

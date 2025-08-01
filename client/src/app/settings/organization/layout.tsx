@@ -5,7 +5,6 @@ import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { CreateOrganizationDialog } from "../../../components/CreateOrganizationDialog";
 import { OrganizationSelector } from "../../../components/OrganizationSelector";
-import { StandardPage } from "../../../components/StandardPage";
 import { Button } from "../../../components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "../../../components/ui/tabs";
 import { IS_CLOUD } from "../../../lib/const";
@@ -27,8 +26,8 @@ export default function OrganizationLayout({ children }: { children: React.React
   };
 
   return (
-    <StandardPage showSidebar={false}>
-      <div className="space-y-6">
+    <>
+      <div className="space-y-5">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Organization Settings</h1>
           <p className="text-gray-500 dark:text-gray-400">Manage your organization settings and members</p>
@@ -60,6 +59,6 @@ export default function OrganizationLayout({ children }: { children: React.React
 
         <div className="mt-6">{children}</div>
       </div>
-    </StandardPage>
+    </>
   );
 }

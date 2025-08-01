@@ -1,27 +1,27 @@
-import { Edit2, RefreshCw, Trash2, Power, MoreVertical } from "lucide-react";
+import { Edit2, MoreVertical, Power, Trash2 } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { Button } from "../../../../components/ui/button";
+import { toast } from "sonner";
+import { UptimeMonitor, useDeleteMonitor, useUpdateMonitor } from "../../../../api/uptime/monitors";
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
-  AlertDialogFooter,
-  AlertDialogDescription,
-  AlertDialogTitle,
   AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
   AlertDialogHeader,
+  AlertDialogTitle,
 } from "../../../../components/ui/alert-dialog";
+import { Button } from "../../../../components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../../../../components/ui/dropdown-menu";
-import { UptimeMonitor, useDeleteMonitor, useUpdateMonitor } from "../../../../api/uptime/monitors";
-import { MonitorDialog } from "./dialog";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { cn } from "../../../../lib/utils";
+import { MonitorDialog } from "./dialog";
 
 export function MonitorActions({ monitor }: { monitor?: UptimeMonitor }) {
   const router = useRouter();
@@ -78,10 +78,6 @@ export function MonitorActions({ monitor }: { monitor?: UptimeMonitor }) {
             {monitor?.enabled ? "On" : "Off"}
           </Button>
         )}
-        <Button size="sm" onClick={() => window.location.reload()} className="flex items-center gap-2">
-          <RefreshCw className="h-4 w-4" />
-          Refresh
-        </Button>
         <Button size="sm" onClick={() => setShowEditDialog(true)} className="flex items-center gap-2">
           <Edit2 className="h-4 w-4" />
           Edit

@@ -46,7 +46,7 @@ export function UptimeBar({ monitorId, className }: UptimeBarProps) {
   return (
     <TooltipProvider>
       <div className={cn("flex gap-1 h-6", className)}>
-        {days.map((day, index) => {
+        {days.map((day) => {
           const totalChecks = day.totalChecks;
           const hasIssues = day.failureCount > 0 || day.timeoutCount > 0;
           const uptimePercentage = day.uptimePercentage.toFixed(1);
@@ -62,7 +62,10 @@ export function UptimeBar({ monitorId, className }: UptimeBarProps) {
           }
           if (totalChecks === 0) {
             return (
-              <div className={cn("w-[10px] rounded-md cursor-pointer transition-opacity hover:opacity-80", barColor)} />
+              <div
+                key={day.date}
+                className={cn("w-[10px] rounded-md cursor-pointer transition-opacity hover:opacity-80", barColor)}
+              />
             );
           }
 
