@@ -34,14 +34,10 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
-  Calendar,
-  X
 } from "lucide-react";
 import { DateTime } from "luxon";
 import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
-import { CustomDateRangePicker } from "@/components/DateSelector/CustomDateRangePicker";
-import { DateRangeMode, Time } from "@/components/DateSelector/types";
-import { timeZone } from "@/lib/dateTimeUtils";
+import { DateRangePicker, DateRange, formatDateRange } from "@/components/DateRangePicker";
 
 interface FileValidationError {
   type: "size" | "type" | "name";
@@ -55,17 +51,10 @@ const ALLOWED_EXTENSIONS = [".csv"];
 export function ImportManager({ disabled }: { disabled: boolean }) {
   const [file, setFile] = useState<File | null>(null);
   const [source] = useState("umami");
-  const [dateRange, setDateRange] = useState<{ startDate?: string; endDate?: string }>({});
+  const [dateRange, setDateRange] = useState<DateRange>({});
   const [fileError, setFileError] = useState<FileValidationError | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isManualRefresh, setIsManualRefresh] = useState(false);
-  const [time, setTime] = useState<Time>({
-    mode: "range",
-    startDate: DateTime.now().minus({ days: 7 }).toISODate(),
-    endDate: DateTime.now().toISODate(),
-    wellKnown: "Last 7 days",
-    timeZone: timeZone,
-  } as DateRangeMode);
 
   const { data, isLoading, error, refetch } = useGetSiteImports();
   const mutation = useImportSiteData();
@@ -135,10 +124,12 @@ export function ImportManager({ disabled }: { disabled: boolean }) {
 
   const handleImport = useCallback(() => {
     if (file) {
+      const formattedDateRange = formatDateRange(dateRange);
+
       mutation.mutate({
         file,
         source,
-        ...dateRange
+        ...formattedDateRange
       });
       setFile(null);
       setShowConfirmDialog(false);
@@ -233,37 +224,15 @@ export function ImportManager({ disabled }: { disabled: boolean }) {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Date Range Picker */}
-          <div className="space-y-2">
-            <Label className="flex items-center gap-2">
-              <Calendar className="h-4 w-4" />
-              Date Range (Optional)
-            </Label>
-            <div className="flex items-center gap-2">
-              <CustomDateRangePicker
-                setTime={setTime}
-              />
-              {(dateRange.startDate || dateRange.endDate) && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearDateRange}
-                  className="shrink-0"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            {(dateRange.startDate || dateRange.endDate) && (
-              <p className="text-xs text-muted-foreground">
-                {dateRange.startDate && dateRange.endDate
-                  ? `Importing data from ${dateRange.startDate} to ${dateRange.endDate}`
-                  : dateRange.startDate
-                    ? `Importing data from ${dateRange.startDate} onwards`
-                    : `Importing data up to ${dateRange.endDate}`
-                }
-              </p>
-            )}
-          </div>
+          <DateRangePicker
+            value={dateRange}
+            onChange={setDateRange}
+            label="Date Range (Optional)"
+            disabled={disabled || mutation.isPending}
+            showDescription={true}
+            clearButtonText="Clear dates"
+            className="space-y-2"
+          />
 
           <Separator />
 
@@ -469,7 +438,7 @@ export function ImportManager({ disabled }: { disabled: boolean }) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Large File Import</AlertDialogTitle>
             <AlertDialogDescription>
-              You"re about to import a large file ({file && formatFileSize(file.size)}).
+              You're about to import a large file ({file && formatFileSize(file.size)}).
               This may take several minutes to process. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
