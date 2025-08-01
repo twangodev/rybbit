@@ -52,7 +52,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_FILE_TYPES = ["text/csv"];
 const ALLOWED_EXTENSIONS = [".csv"];
 
-export function ImportManager({ siteId, disabled }: { siteId: number, disabled: boolean }) {
+export function ImportManager({ disabled }: { disabled: boolean }) {
   const [file, setFile] = useState<File | null>(null);
   const [source] = useState("umami");
   const [dateRange, setDateRange] = useState<{ startDate?: string; endDate?: string }>({});
@@ -67,8 +67,8 @@ export function ImportManager({ siteId, disabled }: { siteId: number, disabled: 
     timeZone: timeZone,
   } as DateRangeMode);
 
-  const { data, isLoading, error, refetch } = useGetSiteImports(siteId);
-  const mutation = useImportSiteData(siteId);
+  const { data, isLoading, error, refetch } = useGetSiteImports();
+  const mutation = useImportSiteData();
 
   const validateFile = useCallback((file: File): FileValidationError | null => {
     // Check file size
@@ -194,15 +194,15 @@ export function ImportManager({ siteId, disabled }: { siteId: number, disabled: 
   }, []);
 
   const sortedImports = useMemo(() => {
-    if (!data?.imports) return [];
+    if (!data?.data) return [];
 
     // Always sort by startedAt descending (newest first)
-    return [...data.imports].sort((a, b) => {
+    return [...data.data].sort((a, b) => {
       const aTime = new Date(a.startedAt).getTime();
       const bTime = new Date(b.startedAt).getTime();
       return bTime - aTime; // Descending order
     });
-  }, [data?.imports]);
+  }, [data?.data]);
 
   const formatFileSize = useCallback((bytes: number) => {
     if (bytes === 0) return "0 B";
@@ -213,10 +213,10 @@ export function ImportManager({ siteId, disabled }: { siteId: number, disabled: 
   }, []);
 
   const hasActiveImports = useMemo(() => {
-    return data?.imports?.some(imp =>
+    return data?.data.some(imp =>
       imp.status === "processing" || imp.status === "pending"
     ) ?? false;
-  }, [data?.imports]);
+  }, [data?.data]);
 
   return (
     <div className="space-y-6">
@@ -374,7 +374,7 @@ export function ImportManager({ siteId, disabled }: { siteId: number, disabled: 
                 Failed to load import history. Please try refreshing the page.
               </AlertDescription>
             </Alert>
-          ) : !data?.imports?.length ? (
+          ) : !data?.data?.length ? (
             <div className="text-center py-8 text-muted-foreground">
               <FileText className="h-8 w-8 mx-auto mb-2 opacity-50" />
               <p>No imports yet</p>
