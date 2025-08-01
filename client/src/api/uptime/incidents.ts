@@ -1,6 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { BACKEND_URL } from "../../lib/const";
 import { authedFetch } from "../utils";
 
 export interface UptimeIncident {
@@ -50,21 +48,19 @@ async function getIncidents(params?: GetIncidentsParams) {
 }
 
 async function acknowledgeIncident(incidentId: number) {
-  const response = await axios.patch(
-    `${BACKEND_URL}/uptime/incidents/${incidentId}/acknowledge`,
-    {},
-    { withCredentials: true }
+  return authedFetch(
+    `/uptime/incidents/${incidentId}/acknowledge`,
+    undefined,
+    { method: 'PATCH', data: {} }
   );
-  return response.data;
 }
 
 async function resolveIncident(incidentId: number) {
-  const response = await axios.patch(
-    `${BACKEND_URL}/uptime/incidents/${incidentId}/resolve`,
-    {},
-    { withCredentials: true }
+  return authedFetch(
+    `/uptime/incidents/${incidentId}/resolve`,
+    undefined,
+    { method: 'PATCH', data: {} }
   );
-  return response.data;
 }
 
 // Hooks

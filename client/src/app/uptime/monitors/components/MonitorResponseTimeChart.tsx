@@ -175,7 +175,7 @@ export function MonitorResponseTimeChart({
         ]
       : [];
 
-  const formatXAxisValue = (value: any) => {
+  const formatXAxisValue = (value: Date) => {
     const dt = DateTime.fromJSDate(value).setLocale(userLocale);
 
     // Format based on bucket size

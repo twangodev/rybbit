@@ -1,6 +1,4 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { BACKEND_URL } from "../../lib/const";
 import { authedFetch } from "../utils";
 
 export interface NotificationChannel {
@@ -39,10 +37,11 @@ async function createChannel(data: {
   triggerEvents?: string[];
   cooldownMinutes?: number;
 }) {
-  const response = await axios.post(`${BACKEND_URL}/uptime/notification-channels`, data, {
-    withCredentials: true,
-  });
-  return response.data;
+  return authedFetch(
+    `/uptime/notification-channels`,
+    undefined,
+    { method: 'POST', data }
+  );
 }
 
 async function updateChannel(
@@ -56,28 +55,27 @@ async function updateChannel(
     cooldownMinutes?: number;
   }
 ) {
-  const response = await axios.put(`${BACKEND_URL}/uptime/notification-channels/${id}`, data, {
-    withCredentials: true,
-  });
-  return response.data;
+  return authedFetch(
+    `/uptime/notification-channels/${id}`,
+    undefined,
+    { method: 'PUT', data }
+  );
 }
 
 async function deleteChannel(id: number) {
-  const response = await axios.delete(`${BACKEND_URL}/uptime/notification-channels/${id}`, {
-    withCredentials: true,
-  });
-  return response.data;
+  return authedFetch(
+    `/uptime/notification-channels/${id}`,
+    undefined,
+    { method: 'DELETE' }
+  );
 }
 
 async function testChannel(id: number) {
-  const response = await axios.post(
-    `${BACKEND_URL}/uptime/notification-channels/${id}/test`,
-    {},
-    {
-      withCredentials: true,
-    }
+  return authedFetch(
+    `/uptime/notification-channels/${id}/test`,
+    undefined,
+    { method: 'POST', data: {} }
   );
-  return response.data;
 }
 
 

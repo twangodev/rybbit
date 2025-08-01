@@ -31,13 +31,19 @@ const getBucketOptions = (timeRange: string): TimeBucket[] => {
     case "24h":
       return ["minute", "five_minutes", "fifteen_minutes", "hour"];
     case "3d":
-      return ["fifteen_minutes", "hour"];
+      return ["five_minutes", "fifteen_minutes", "hour"];
     case "7d":
-      return ["hour", "day"];
+      return ["fifteen_minutes", "hour", "day"];
     case "30d":
       return ["hour", "day", "week"];
+    case "90d":
+      return ["hour", "day", "week", "month"];
+    case "180d":
+      return ["hour", "day", "week", "month", "year"];
+    case "365d":
+      return ["hour", "day", "week", "month", "year"];
     case "all":
-      return ["day", "week", "month"];
+      return ["day", "week", "month", "year"];
     default:
       return ["hour"];
   }

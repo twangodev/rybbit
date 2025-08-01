@@ -1,8 +1,39 @@
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import axios from "axios";
-import { BACKEND_URL } from "../../lib/const";
 import { authedFetch } from "../utils";
 import { timeZone } from "../../lib/dateTimeUtils";
+
+// Validation rule types
+export type ValidationRule = 
+  | {
+      type: "status_code";
+      operator: "equals" | "not_equals" | "in" | "not_in";
+      value: number | number[];
+    }
+  | {
+      type: "response_time";
+      operator: "less_than" | "greater_than";
+      value: number;
+    }
+  | {
+      type: "response_body_contains" | "response_body_not_contains";
+      value: string;
+      caseSensitive?: boolean;
+    }
+  | {
+      type: "header_exists";
+      header: string;
+    }
+  | {
+      type: "header_value";
+      header: string;
+      operator: "equals" | "contains";
+      value: string;
+    }
+  | {
+      type: "response_size";
+      operator: "less_than" | "greater_than";
+      value: number;
+    };
 
 export interface UptimeMonitor {
   id: number;
@@ -36,7 +67,7 @@ export interface UptimeMonitor {
     port: number;
     timeoutMs?: number;
   };
-  validationRules: Array<any>;
+  validationRules: ValidationRule[];
   monitoringType: "local" | "global";
   selectedRegions: string[];
   createdAt: string;
@@ -126,7 +157,7 @@ export interface MonitorEvent {
   tls_time_ms?: number;
   ttfb_ms?: number;
   transfer_time_ms?: number;
-  validation_errors?: Array<any>;
+  validation_errors?: string[];
   response_headers?: Record<string, string>;
   response_size_bytes?: number;
   port?: number;
@@ -330,7 +361,7 @@ export interface CreateMonitorInput {
   enabled?: boolean;
   httpConfig?: UptimeMonitor["httpConfig"];
   tcpConfig?: UptimeMonitor["tcpConfig"];
-  validationRules?: Array<any>;
+  validationRules?: ValidationRule[];
   regions?: string[];
 }
 
@@ -340,29 +371,32 @@ export interface UpdateMonitorInput {
   enabled?: boolean;
   httpConfig?: UptimeMonitor["httpConfig"];
   tcpConfig?: UptimeMonitor["tcpConfig"];
-  validationRules?: Array<any>;
+  validationRules?: ValidationRule[];
   regions?: string[];
 }
 
 async function createMonitor(data: CreateMonitorInput) {
-  const response = await axios.post(`${BACKEND_URL}/uptime/monitors`, data, {
-    withCredentials: true,
-  });
-  return response.data;
+  return authedFetch(
+    `/uptime/monitors`,
+    undefined,
+    { method: 'POST', data }
+  );
 }
 
 async function updateMonitor(monitorId: number, data: UpdateMonitorInput) {
-  const response = await axios.put(`${BACKEND_URL}/uptime/monitors/${monitorId}`, data, {
-    withCredentials: true,
-  });
-  return response.data;
+  return authedFetch(
+    `/uptime/monitors/${monitorId}`,
+    undefined,
+    { method: 'PUT', data }
+  );
 }
 
 async function deleteMonitor(monitorId: number) {
-  const response = await axios.delete(`${BACKEND_URL}/uptime/monitors/${monitorId}`, {
-    withCredentials: true,
-  });
-  return response.data;
+  return authedFetch(
+    `/uptime/monitors/${monitorId}`,
+    undefined,
+    { method: 'DELETE' }
+  );
 }
 
 export function useCreateMonitor() {
