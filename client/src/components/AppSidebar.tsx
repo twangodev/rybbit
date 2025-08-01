@@ -12,10 +12,6 @@ export function AppSidebar() {
   const pathname = usePathname();
   const [isExpanded, setIsExpanded] = useState(false);
 
-  if (IS_CLOUD) {
-    return null;
-  }
-
   return (
     <div
       className={cn(
@@ -73,7 +69,7 @@ function SidebarLink({
       <div
         className={cn(
           "p-1 rounded-md transition-all duration-200 flex items-center gap-2",
-          active ? "bg-neutral-750 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-750/80"
+          active ? "bg-neutral-800 text-white" : "text-neutral-400 hover:text-white hover:bg-neutral-800/80"
           // expanded ? "w-40" : "w-12"
         )}
       >
