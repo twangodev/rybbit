@@ -65,7 +65,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const mutation = useImportSiteData(siteId);
 
   const validateFile = useCallback((file: File): FileValidationError | null => {
-    // Check file size
     if (file.size > MAX_FILE_SIZE) {
       return {
         type: "size",
@@ -73,7 +72,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       };
     }
 
-    // Check file type
     if (!ALLOWED_FILE_TYPES.includes(file.type) && file.type !== "") {
       return {
         type: "type",
@@ -81,7 +79,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       };
     }
 
-    // Check file extension as fallback
     const extension = "." + file.name.split(".").pop()?.toLowerCase();
     if (!ALLOWED_EXTENSIONS.includes(extension)) {
       return {
@@ -90,7 +87,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       };
     }
 
-    // Check for reasonable filename
     if (file.name.length > 255) {
       return {
         type: "name",
@@ -110,7 +106,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       if (validationError) {
         setFileError(validationError);
         setFile(null);
-        event.target.value = ""; // Clear the input
+        event.target.value = "";
         return;
       }
       setFile(selectedFile);
@@ -120,7 +116,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   }, [validateFile]);
 
   const handleImportClick = useCallback(() => {
-    if (file && file.size > 50 * 1024 * 1024) { // Show confirmation for files > 50MB
+    if (file && file.size > 50 * 1024 * 1024) {
       setShowConfirmDialog(true);
     } else {
       handleImport();
@@ -192,11 +188,10 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const sortedImports = useMemo(() => {
     if (!data?.data) return [];
 
-    // Always sort by startedAt descending (newest first)
     return [...data.data].sort((a, b) => {
       const aTime = new Date(a.startedAt).getTime();
       const bTime = new Date(b.startedAt).getTime();
-      return bTime - aTime; // Descending order
+      return bTime - aTime;
     });
   }, [data?.data]);
 
