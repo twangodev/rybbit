@@ -115,11 +115,8 @@ export async function getMonitorStats(request: FastifyRequest<GetMonitorStatsReq
     };
 
     // Determine time bucket based on time range and interval
-    const timeDiff =
-      DateTime.now()
-        .minus({ hours: hours || 24 })
-        .toMillis() / 1000;
-    const days = timeDiff / (1000 * 60 * 60 * 24);
+    const hoursBack = hours || 24;
+    const days = hoursBack / 24;
 
     let bucket = query.bucket || "hour"; // Default to hour if not specified
     if (!query.bucket) {

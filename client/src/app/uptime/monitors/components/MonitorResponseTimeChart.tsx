@@ -13,12 +13,19 @@ import { UptimeBucketSelection } from "./UptimeBucketSelection";
 import { useUptimeStore } from "./uptimeStore";
 import { getHoursFromTimeRange } from "./utils";
 
+const MONITOR_COLORS = {
+  dns: "hsl(160, 70%, 50%)",
+  connection: "hsl(180, 70%, 45%)",
+  tls: "hsl(200, 70%, 45%)",
+  transfer: "hsl(220, 70%, 50%)",
+} as const;
+
 // HTTP timing metrics with labels for stacked view - gradient from green-turquoise to blue
 const HTTP_METRICS = [
-  { key: "dns_time_ms", label: "DNS", color: "hsl(160, 70%, 50%)" }, // Green
-  { key: "tcp_time_ms", label: "Connection", color: "hsl(180, 70%, 45%)" }, // Turquoise
-  { key: "tls_time_ms", label: "TLS Handshake", color: "hsl(200, 70%, 45%)" }, // Light Blue
-  { key: "transfer_time_ms", label: "Data Transfer", color: "hsl(220, 70%, 50%)" }, // Blue
+  { key: "dns_time_ms", label: "DNS", color: MONITOR_COLORS.dns }, // Green
+  { key: "tcp_time_ms", label: "Connection", color: MONITOR_COLORS.connection }, // Turquoise
+  { key: "tls_time_ms", label: "TLS Handshake", color: MONITOR_COLORS.tls }, // Light Blue
+  { key: "transfer_time_ms", label: "Data Transfer", color: MONITOR_COLORS.transfer }, // Blue
 ] as const;
 
 const formatTooltipValue = (value: number) => {
@@ -145,22 +152,22 @@ export function MonitorResponseTimeChart({
           {
             id: "gradientDNS",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(160, 70%, 50%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: MONITOR_COLORS.dns, opacity: 0.1 }],
           },
           {
             id: "gradientConnection",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(180, 70%, 45%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: MONITOR_COLORS.connection, opacity: 0.1 }],
           },
           {
             id: "gradientTLS",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(200, 70%, 45%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: MONITOR_COLORS.tls, opacity: 0.1 }],
           },
           {
             id: "gradientTransfer",
             type: "linearGradient" as const,
-            colors: [{ offset: 0, color: "hsl(220, 70%, 50%)", opacity: 0.1 }],
+            colors: [{ offset: 0, color: MONITOR_COLORS.transfer, opacity: 0.1 }],
           },
         ]
       : [];
