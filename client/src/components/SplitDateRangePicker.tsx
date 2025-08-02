@@ -35,7 +35,7 @@ interface DateRangePickerProps {
   layout?: "horizontal" | "vertical";
 }
 
-export function DateRangePicker({
+export function SplitDateRangePicker({
   value,
   onChange,
   label = "Date Range",

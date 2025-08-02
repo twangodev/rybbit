@@ -37,7 +37,7 @@ import {
 } from "lucide-react";
 import { DateTime } from "luxon";
 import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
-import { DateRangePicker, DateRange, formatDateRange } from "@/components/DateRangePicker";
+import { SplitDateRangePicker, DateRange, formatDateRange } from "@/components/SplitDateRangePicker";
 
 interface FileValidationError {
   type: "size" | "type" | "name";
@@ -224,7 +224,7 @@ export function ImportManager({ disabled }: { disabled: boolean }) {
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Date Range Picker */}
-          <DateRangePicker
+          <SplitDateRangePicker
             value={dateRange}
             onChange={setDateRange}
             label="Date Range (Optional)"
