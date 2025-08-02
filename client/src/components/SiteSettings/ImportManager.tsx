@@ -39,6 +39,11 @@ import { DateTime } from "luxon";
 import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
 import { SplitDateRangePicker, DateRange, formatDateRange } from "@/components/SplitDateRangePicker";
 
+interface ImportManagerProps {
+  siteId: number;
+  disabled: boolean;
+}
+
 interface FileValidationError {
   type: "size" | "type" | "name";
   message: string;
@@ -48,7 +53,7 @@ const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_FILE_TYPES = ["text/csv"];
 const ALLOWED_EXTENSIONS = [".csv"];
 
-export function ImportManager({ disabled }: { disabled: boolean }) {
+export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const [file, setFile] = useState<File | null>(null);
   const [source] = useState("umami");
   const [dateRange, setDateRange] = useState<DateRange>({});
@@ -56,8 +61,8 @@ export function ImportManager({ disabled }: { disabled: boolean }) {
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isManualRefresh, setIsManualRefresh] = useState(false);
 
-  const { data, isLoading, error, refetch } = useGetSiteImports();
-  const mutation = useImportSiteData();
+  const { data, isLoading, error, refetch } = useGetSiteImports(siteId);
+  const mutation = useImportSiteData(siteId);
 
   const validateFile = useCallback((file: File): FileValidationError | null => {
     // Check file size

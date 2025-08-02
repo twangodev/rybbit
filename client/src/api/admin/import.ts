@@ -1,6 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { authedFetch } from "@/api/utils";
-import { useStore } from "@/lib/store";
 import { APIResponse } from "@/api/types";
 
 interface GetSiteImportsResponse {
@@ -25,9 +24,7 @@ interface ImportSiteDataResponse {
   message: string;
 }
 
-export function useGetSiteImports() {
-  const { site } = useStore();
-
+export function useGetSiteImports(site: number) {
   return useQuery({
     queryKey: ["get-site-imports", site],
     queryFn: async () => await authedFetch<APIResponse<GetSiteImportsResponse[]>>(`/get-site-imports/${site}`),
@@ -42,8 +39,7 @@ export function useGetSiteImports() {
   });
 }
 
-export function useImportSiteData() {
-  const { site } = useStore();
+export function useImportSiteData(site: number) {
   const queryClient = useQueryClient();
 
   return useMutation({
