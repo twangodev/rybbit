@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNotificationsStore } from "../notificationsStore";
-import { useCreateChannel, useUpdateChannel } from "@/api/uptime/notifications";
+import { NotificationChannel, useCreateChannel, useUpdateChannel } from "@/api/uptime/notifications";
 import { CHANNEL_CONFIG } from "../constants";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
@@ -26,7 +26,13 @@ type FormData = {
 export function NotificationDialog() {
   const createChannel = useCreateChannel();
   const updateChannel = useUpdateChannel();
-  const { isDialogOpen, selectedType, editingChannel, closeDialog, resetForm: resetStoreForm } = useNotificationsStore();
+  const {
+    isDialogOpen,
+    selectedType,
+    editingChannel,
+    closeDialog,
+    resetForm: resetStoreForm,
+  } = useNotificationsStore();
   const { data: monitorsData, isLoading: monitorsLoading } = useMonitors({ enabled: true });
   const [selectedMonitorIds, setSelectedMonitorIds] = useState<string[]>([]);
 
@@ -63,9 +69,7 @@ export function NotificationDialog() {
         slackChannel: editingChannel.config?.slackChannel || "",
         phoneNumber: editingChannel.config?.phoneNumber || "",
       });
-      setSelectedMonitorIds(
-        editingChannel.monitorIds?.map((id) => id.toString()) || []
-      );
+      setSelectedMonitorIds(editingChannel.monitorIds?.map((id) => id.toString()) || []);
     }
   }, [isDialogOpen, editingChannel, reset]);
 
@@ -83,8 +87,7 @@ export function NotificationDialog() {
 
   const onSubmit = async (data: FormData) => {
     if (!selectedType) return;
-
-    const config: any = {};
+    const config: Partial<NotificationChannel["config"]> = {};
     if (selectedType === "email" && data.email) config.email = data.email;
     if (selectedType === "discord" && data.webhookUrl) config.webhookUrl = data.webhookUrl;
     if (selectedType === "slack") {
@@ -95,7 +98,7 @@ export function NotificationDialog() {
 
     try {
       const monitorIds = selectedMonitorIds.length > 0 ? selectedMonitorIds.map((id) => parseInt(id, 10)) : null;
-      
+
       if (editingChannel) {
         await updateChannel.mutateAsync({
           id: editingChannel.id,
@@ -247,9 +250,7 @@ export function NotificationDialog() {
                   },
                 })}
               />
-              <p className="text-xs text-neutral-500 mt-1">
-                Use international E.164 format: +[country code][number]
-              </p>
+              <p className="text-xs text-neutral-500 mt-1">Use international E.164 format: +[country code][number]</p>
               {errors.phoneNumber && <p className="text-sm text-red-500 mt-1">{errors.phoneNumber.message}</p>}
             </div>
           )}
@@ -275,9 +276,9 @@ export function NotificationDialog() {
             <Button type="button" variant="outline" onClick={closeDialog}>
               Cancel
             </Button>
-            <Button 
-              type="submit" 
-              variant="success" 
+            <Button
+              type="submit"
+              variant="success"
               disabled={!isFormValid() || createChannel.isPending || updateChannel.isPending}
             >
               {editingChannel

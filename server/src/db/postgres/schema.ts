@@ -9,7 +9,10 @@ import {
   foreignKey,
   unique,
   real,
+  check,
+  index,
 } from "drizzle-orm/pg-core";
+import { sql } from "drizzle-orm";
 
 // User table
 export const user = pgTable(
@@ -391,6 +394,11 @@ export const uptimeMonitorStatus = pgTable(
       foreignColumns: [uptimeMonitors.id],
       name: "uptime_monitor_status_monitor_id_uptime_monitors_id_fk",
     }),
+    check("uptime_monitor_status_current_status_check", sql`current_status IN ('up', 'down', 'unknown')`),
+    check("uptime_monitor_status_uptime_24h_check", sql`uptime_percentage_24h >= 0 AND uptime_percentage_24h <= 100`),
+    check("uptime_monitor_status_uptime_7d_check", sql`uptime_percentage_7d >= 0 AND uptime_percentage_7d <= 100`),
+    check("uptime_monitor_status_uptime_30d_check", sql`uptime_percentage_30d >= 0 AND uptime_percentage_30d <= 100`),
+    index("uptime_monitor_status_updated_at_idx").on(table.updatedAt),
   ],
 );
 

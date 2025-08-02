@@ -1,9 +1,12 @@
 import { DateTime } from "luxon";
-import { and, eq } from "drizzle-orm";
+import { and, eq, InferSelectModel } from "drizzle-orm";
 import { db } from "../../db/postgres/postgres.js";
 import { notificationChannels } from "../../db/postgres/schema.js";
 import { sendEmail } from "../../lib/resend.js";
 import { sendSMS } from "../../lib/twilio.js";
+
+// Type inferred from Drizzle schema
+type NotificationChannel = InferSelectModel<typeof notificationChannels>;
 
 interface Monitor {
   id: number;
@@ -30,7 +33,7 @@ interface Incident {
 }
 
 export class NotificationService {
-  async sendTestNotification(channel: any, monitor: Monitor, incident: Incident, eventType: "down" | "recovery"): Promise<void> {
+  async sendTestNotification(channel: NotificationChannel, monitor: Monitor, incident: Incident, eventType: "down" | "recovery"): Promise<void> {
     try {
       if (channel.type === "email" && channel.config.email) {
         await this.sendEmailNotification(channel.config.email, monitor, incident, eventType);
@@ -261,7 +264,7 @@ export class NotificationService {
 
   private async sendSlackNotification(
     webhookUrl: string,
-    channel: string | undefined,
+    slackChannel: string | undefined,
     monitor: Monitor,
     incident: Incident,
     eventType: "down" | "recovery",
@@ -336,8 +339,8 @@ export class NotificationService {
       text: eventType === "down" ? `Monitor Alert: ${monitorName} is DOWN` : `Monitor Recovery: ${monitorName} is UP`,
     };
 
-    if (channel) {
-      payload.channel = channel;
+    if (slackChannel) {
+      payload.channel = slackChannel;
     }
 
     const response = await fetch(webhookUrl, {
