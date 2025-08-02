@@ -28,7 +28,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Separator } from "@/components/ui/separator";
 import {
   Upload,
-  RefreshCw,
   FileText,
   AlertCircle,
   CheckCircle2,
@@ -59,9 +58,8 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [fileError, setFileError] = useState<FileValidationError | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
-  const [isManualRefresh, setIsManualRefresh] = useState(false);
 
-  const { data, isLoading, error, refetch } = useGetSiteImports(siteId);
+  const { data, isLoading, error } = useGetSiteImports(siteId);
   const mutation = useImportSiteData(siteId);
 
   const validateFile = useCallback((file: File): FileValidationError | null => {
@@ -139,12 +137,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       if (fileInput) fileInput.value = "";
     }
   }, [file, source, dateRange, mutation]);
-
-  const handleManualRefresh = useCallback(async () => {
-    setIsManualRefresh(true);
-    await refetch();
-    setIsManualRefresh(false);
-  }, [refetch]);
 
   const clearDateRange = useCallback(() => {
     setDateRange({});
@@ -311,24 +303,11 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       {/* Import History */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Import History</CardTitle>
-              <CardDescription>
-                Track the status of your data imports
-                {hasActiveImports && " • Updates automatically every 5 seconds"}
-              </CardDescription>
-            </div>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleManualRefresh}
-              disabled={isLoading || isManualRefresh}
-            >
-              <RefreshCw className={`h-4 w-4 mr-2 ${(isLoading || isManualRefresh) ? "animate-spin" : ""}`} />
-              Refresh
-            </Button>
-          </div>
+          <CardTitle>Import History</CardTitle>
+          <CardDescription>
+            Track the status of your data imports
+            {hasActiveImports && " - Updates automatically every 5 seconds"}
+          </CardDescription>
         </CardHeader>
         <CardContent>
           {isLoading && !data ? (
