@@ -9,6 +9,7 @@ import { performHttpCheck } from "./checks/httpCheck.js";
 import { performTcpCheck } from "./checks/tcpCheck.js";
 import { applyValidationRules } from "./validationEngine.js";
 import { NotificationService } from "./notificationService.js";
+import { createServiceLogger } from "../../lib/logger/logger.js";
 
 interface AgentExecuteRequest {
   jobId: string;
@@ -46,7 +47,8 @@ export class MonitorExecutor {
   private isShuttingDown = false;
   private connection: { host: string; port: number; password?: string };
   private notificationService: NotificationService;
-  
+  private logger = createServiceLogger("monitor-executor");
+
   // Confirmation thresholds - require multiple consecutive checks before triggering incidents
   private static readonly FAILURE_THRESHOLD = 2; // Consecutive failures before creating incident
   private static readonly SUCCESS_THRESHOLD = 2; // Consecutive successes before resolving incident
@@ -62,7 +64,7 @@ export class MonitorExecutor {
   }
 
   async start(): Promise<void> {
-    console.log(`[Uptime] Starting BullMQ monitor executor with concurrency: ${this.concurrency}`);
+    this.logger.info(`Starting BullMQ monitor executor with concurrency: ${this.concurrency}`);
 
     // Create worker to process jobs
     this.worker = new Worker(
@@ -85,23 +87,23 @@ export class MonitorExecutor {
 
     // Set up event listeners
     // this.worker.on("completed", (job) => {
-    //   console.log(`[Uptime] Job ${job.id} completed successfully`);
+    //   this.logger.debug(`Job ${job.id} completed successfully`);
     // });
 
     this.worker.on("failed", (job, err) => {
-      console.error(`Job ${job?.id} failed:`, err);
+      this.logger.error(err as Error, `Job ${job?.id} failed`);
     });
 
     this.worker.on("error", (err) => {
-      console.error("Worker error:", err);
+      this.logger.error(err as Error, "Worker error");
     });
 
     this.worker.on("ready", () => {
-      console.log("[Uptime] BullMQ worker is ready and listening for jobs");
+      this.logger.info("BullMQ worker is ready and listening for jobs");
     });
 
     // this.worker.on("active", (job) => {
-    //   console.log(`[Uptime] Job ${job.id} is now active`);
+    //   this.logger.debug(`Job ${job.id} is now active`);
     // });
 
     // Wait for worker to be ready
@@ -113,14 +115,14 @@ export class MonitorExecutor {
       }
     });
 
-    console.log("[Uptime] BullMQ monitor executor started successfully");
+    this.logger.info("BullMQ monitor executor started successfully");
   }
 
   private async processMonitorCheck(jobData: MonitorCheckJob): Promise<void> {
     const { monitorId } = jobData;
 
     try {
-      console.log(`[Uptime] 🔍 Starting to process monitor check for monitor ID: ${monitorId}`);
+      this.logger.debug(`🔍 Starting to process monitor check for monitor ID: ${monitorId}`);
 
       // Fetch monitor configuration
       const monitor = await db.query.uptimeMonitors.findFirst({
@@ -128,7 +130,7 @@ export class MonitorExecutor {
       });
 
       if (!monitor || !monitor.enabled) {
-        console.log(`[Uptime] Monitor ${monitorId} not found or disabled`);
+        this.logger.debug(`Monitor ${monitorId} not found or disabled`);
         return;
       }
 
@@ -191,9 +193,9 @@ export class MonitorExecutor {
       // Update monitor status in PostgreSQL
       await this.updateMonitorStatus(monitor.id, result);
 
-      console.log(`[Uptime] ✅ Monitor check completed: ${monitorId} - ${result.status} (${result.responseTimeMs}ms)`);
+      this.logger.info(`✅ Monitor check completed: ${monitorId} - ${result.status} (${result.responseTimeMs}ms`);
     } catch (error) {
-      console.error(`Error processing monitor check ${monitorId}:`, error);
+      this.logger.error(error as Error, `Error processing monitor check ${monitorId}`);
 
       // Try to store the error event
       try {
@@ -219,7 +221,7 @@ export class MonitorExecutor {
           await this.updateMonitorStatus(monitor.id, errorResult);
         }
       } catch (innerError) {
-        console.error("Failed to store error event:", innerError);
+        this.logger.error(innerError as Error, "Failed to store error event");
       }
     }
   }
@@ -230,7 +232,7 @@ export class MonitorExecutor {
       const globalRegions = monitor.selectedRegions.filter((r: string) => r !== "local");
 
       if (globalRegions.length === 0) {
-        console.log(`[Uptime] Monitor ${monitor.id} has no global regions selected`);
+        this.logger.debug(`Monitor ${monitor.id} has no global regions selected`);
         return;
       }
 
@@ -244,14 +246,14 @@ export class MonitorExecutor {
       });
 
       if (regions.length === 0) {
-        console.log(`[Uptime] No healthy regions found for monitor ${monitor.id}`);
+        this.logger.warn(`No healthy regions found for monitor ${monitor.id}`);
         return;
       }
 
       // Execute checks in parallel across all regions
       const regionPromises = regions.map((region) =>
         this.executeAgentCheck(monitor, region).catch((error) => {
-          console.error(`Error executing check in region ${region.code}:`, error);
+          this.logger.error(error as Error, `Error executing check in region ${region.code}`);
           return {
             region: region.code,
             result: {
@@ -304,11 +306,11 @@ export class MonitorExecutor {
 
       await this.updateMonitorStatus(monitor.id, aggregatedResult);
 
-      console.log(
-        `[Uptime] ✅ Global monitor check completed: ${monitor.id} - ${overallStatus} (${regionResults.length} regions)`,
+      this.logger.info(
+        `✅ Global monitor check completed: ${monitor.id} - ${overallStatus} (${regionResults.length} regions)`,
       );
     } catch (error) {
-      console.error(`Error processing global monitor check ${monitor.id}:`, error);
+      this.logger.error(error as Error, `Error processing global monitor check ${monitor.id}`);
     }
   }
 
@@ -364,7 +366,7 @@ export class MonitorExecutor {
 
       return { region: region.code, result };
     } catch (error) {
-      console.error(`Failed to execute check via agent ${region.code}:`, error);
+      this.logger.error(error as Error, `Failed to execute check via agent ${region.code}`);
       throw error;
     }
   }
@@ -411,7 +413,7 @@ export class MonitorExecutor {
         format: "JSONEachRow",
       });
     } catch (error) {
-      console.error("Failed to store monitor event in ClickHouse:", error);
+      this.logger.error(error as Error, "Failed to store monitor event in ClickHouse");
     }
   }
 
@@ -462,15 +464,15 @@ export class MonitorExecutor {
 
       // Handle incident creation/resolution based on consecutive failures/successes
       await this.handleIncidentManagement(
-        monitorId, 
-        previousStatus || undefined, 
-        currentStatus, 
+        monitorId,
+        previousStatus || undefined,
+        currentStatus,
         result,
         consecutiveFailures,
-        consecutiveSuccesses
+        consecutiveSuccesses,
       );
     } catch (error) {
-      console.error("Failed to update monitor status:", error);
+      this.logger.error(error as Error, "Failed to update monitor status");
     }
   }
 
@@ -489,7 +491,7 @@ export class MonitorExecutor {
       });
 
       if (!monitor) {
-        console.error(`Monitor ${monitorId} not found for incident management`);
+        this.logger.error(`Monitor ${monitorId} not found for incident management`);
         return;
       }
 
@@ -504,23 +506,23 @@ export class MonitorExecutor {
 
       // Create incident when failures reach threshold
       if (currentStatus === "down" && consecutiveFailures === MonitorExecutor.FAILURE_THRESHOLD && !activeIncident) {
-          const [newIncident] = await db
-            .insert(uptimeIncidents)
-            .values({
-              organizationId: monitor.organizationId as string,
-              monitorId: monitorId,
-              region: "local",
-              startTime: new Date().toISOString(),
-              status: "active",
-              lastError: result.error?.message || null,
-              lastErrorType: result.error?.type || null,
-              failureCount: 1,
-            })
-            .returning();
-          console.log(`[Uptime] Created new incident for monitor ${monitorId} (${monitor.name})`);
+        const [newIncident] = await db
+          .insert(uptimeIncidents)
+          .values({
+            organizationId: monitor.organizationId as string,
+            monitorId: monitorId,
+            region: "local",
+            startTime: new Date().toISOString(),
+            status: "active",
+            lastError: result.error?.message || null,
+            lastErrorType: result.error?.type || null,
+            failureCount: 1,
+          })
+          .returning();
+        this.logger.info(`Created new incident for monitor ${monitorId} (${monitor.name})`);
 
-          // Send notifications for new incident
-          await this.notificationService.sendIncidentNotifications(monitor, newIncident, "down");
+        // Send notifications for new incident
+        await this.notificationService.sendIncidentNotifications(monitor, newIncident, "down");
       }
       // Resolve incident when successes reach threshold after being down
       else if (currentStatus === "up" && consecutiveSuccesses === MonitorExecutor.SUCCESS_THRESHOLD && activeIncident) {
@@ -533,7 +535,7 @@ export class MonitorExecutor {
             resolvedAt: now,
           })
           .where(eq(uptimeIncidents.id, activeIncident.id));
-        console.log(`[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
+        this.logger.info(`Resolved incident ${activeIncident.id} for monitor ${monitorId} (${monitor.name})`);
 
         // Send recovery notifications
         await this.notificationService.sendIncidentNotifications(
@@ -554,7 +556,7 @@ export class MonitorExecutor {
           .where(eq(uptimeIncidents.id, activeIncident.id));
       }
     } catch (error) {
-      console.error("Failed to manage incident:", error);
+      this.logger.error(error as Error, "Failed to manage incident");
     }
   }
 
@@ -565,7 +567,7 @@ export class MonitorExecutor {
   ): Promise<void> {
     try {
       const currentStatus = result.status === "success" ? "up" : "down";
-      
+
       // Get recent events from ClickHouse to determine consecutive counts
       const recentEvents = await clickhouse.query({
         query: `
@@ -579,23 +581,23 @@ export class MonitorExecutor {
         query_params: {
           monitorId: monitor.id,
           region: region,
-          limit: MonitorExecutor.FAILURE_THRESHOLD + 1 // Get enough events to check threshold
-        }
+          limit: MonitorExecutor.FAILURE_THRESHOLD + 1, // Get enough events to check threshold
+        },
       });
-      
+
       const events = await recentEvents.json<{ status: string; timestamp: string }>();
-      
+
       // Count consecutive failures/successes from most recent events
       let consecutiveFailures = 0;
       let consecutiveSuccesses = 0;
-      
+
       // Start with current result
       if (currentStatus === "down") {
         consecutiveFailures = 1;
       } else {
         consecutiveSuccesses = 1;
       }
-      
+
       // Check previous events
       for (const event of events.data) {
         if (currentStatus === "down" && event.status === "failure") {
@@ -631,7 +633,7 @@ export class MonitorExecutor {
             failureCount: 1,
           })
           .returning();
-        console.log(`[Uptime] Created new incident for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
+        this.logger.info(`Created new incident for monitor ${monitor.id} (${monitor.name}) in region ${region}`);
 
         // Send notifications for new regional incident
         await this.notificationService.sendIncidentNotifications(monitor, newIncident, "down");
@@ -648,8 +650,8 @@ export class MonitorExecutor {
             updatedAt: now,
           })
           .where(eq(uptimeIncidents.id, activeIncident.id));
-        console.log(
-          `[Uptime] Resolved incident ${activeIncident.id} for monitor ${monitor.id} (${monitor.name}) in region ${region}`,
+        this.logger.info(
+          `Resolved incident ${activeIncident.id} for monitor ${monitor.id} (${monitor.name}) in region ${region}`,
         );
 
         // Send recovery notifications for regional incident
@@ -671,12 +673,12 @@ export class MonitorExecutor {
           .where(eq(uptimeIncidents.id, activeIncident.id));
       }
     } catch (error) {
-      console.error(`Failed to manage regional incident for region ${region}:`, error);
+      this.logger.error(error as Error, `Failed to manage regional incident for region ${region}`);
     }
   }
 
   async shutdown(): Promise<void> {
-    console.log("[Uptime] Shutting down BullMQ monitor executor...");
+    this.logger.info("Shutting down BullMQ monitor executor...");
     this.isShuttingDown = true;
 
     if (this.worker) {
@@ -686,9 +688,9 @@ export class MonitorExecutor {
           this.worker.close(),
           new Promise((_, reject) => setTimeout(() => reject(new Error("Worker close timeout")), 5000)),
         ]);
-        console.log("[Uptime] BullMQ monitor executor shut down successfully");
+        this.logger.info("BullMQ monitor executor shut down successfully");
       } catch (error) {
-        console.error("Error closing worker:", error);
+        this.logger.error(error as Error, "Error closing worker");
         // Force close if needed
         this.worker = null;
       }

@@ -1,7 +1,8 @@
-import { Queue, QueueEvents, JobsOptions } from "bullmq";
+import { Queue, QueueEvents } from "bullmq";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/postgres/postgres.js";
 import { uptimeMonitors } from "../../db/postgres/schema.js";
+import { createServiceLogger } from "../../lib/logger/logger.js";
 import { MonitorCheckJob } from "./types.js";
 
 export class MonitorScheduler {
@@ -9,6 +10,7 @@ export class MonitorScheduler {
   private queueEvents: QueueEvents;
   private isShuttingDown = false;
   private connection: { host: string; port: number; password?: string };
+  private logger = createServiceLogger("monitor-scheduler");
 
   constructor() {
     // Get Redis connection from environment
@@ -18,7 +20,7 @@ export class MonitorScheduler {
       ...(process.env.REDIS_PASSWORD && { password: process.env.REDIS_PASSWORD }),
     };
 
-    console.log(`[Uptime] BullMQ connecting to Redis at ${this.connection.host}:${this.connection.port}`);
+    this.logger.info(`BullMQ connecting to Redis at ${this.connection.host}:${this.connection.port}`);
 
     this.queue = new Queue("monitor-checks", {
       connection: this.connection,
@@ -40,13 +42,13 @@ export class MonitorScheduler {
   }
 
   async initialize(): Promise<void> {
-    console.log("[Uptime] Initializing BullMQ monitor scheduler...");
+    this.logger.info("Initializing BullMQ monitor scheduler...");
 
     // Wait for queue to be ready
     await this.queue.waitUntilReady();
     await this.queueEvents.waitUntilReady();
 
-    console.log("[Uptime] BullMQ queue ready");
+    this.logger.info("BullMQ queue ready");
 
     // Clear any stale jobs from previous runs
     await this.clearStaleJobs();

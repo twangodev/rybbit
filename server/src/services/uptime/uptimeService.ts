@@ -1,6 +1,7 @@
 import { MonitorScheduler } from "./monitorScheduler.js";
 import { MonitorExecutor } from "./monitorExecutor.js";
 import { RegionHealthChecker } from "./regionHealthChecker.js";
+import { createServiceLogger } from "../../lib/logger/logger.js";
 
 export class UptimeService {
   private scheduler: MonitorScheduler;
@@ -8,6 +9,7 @@ export class UptimeService {
   private regionHealthChecker: RegionHealthChecker;
   private initialized = false;
   private initializationPromise: Promise<void> | null = null;
+  private logger = createServiceLogger("uptime");
 
   constructor() {
     this.scheduler = new MonitorScheduler();
@@ -17,7 +19,7 @@ export class UptimeService {
 
   async initialize(): Promise<void> {
     if (this.initialized) {
-      console.log("Uptime service already initialized");
+      this.logger.debug("Uptime service already initialized");
       return;
     }
 
@@ -33,7 +35,7 @@ export class UptimeService {
 
   private async performInitialization(): Promise<void> {
     try {
-      console.log("Initializing BullMQ uptime monitoring service...");
+      this.logger.info("Initializing BullMQ uptime monitoring service...");
 
       // Initialize scheduler (creates queue, loads and schedules all monitors)
       await this.scheduler.initialize();
@@ -45,16 +47,16 @@ export class UptimeService {
       await this.regionHealthChecker.start();
 
       this.initialized = true;
-      console.log("BullMQ uptime monitoring service initialized successfully");
+      this.logger.info("BullMQ uptime monitoring service initialized successfully");
     } catch (error) {
-      console.error("Failed to initialize uptime service:", error);
+      this.logger.error(error, "Failed to initialize uptime service");
       this.initializationPromise = null; // Reset on failure
       throw error;
     }
   }
 
   async shutdown(): Promise<void> {
-    console.log("Shutting down BullMQ uptime monitoring service...");
+    this.logger.info("Shutting down BullMQ uptime monitoring service...");
 
     try {
       // Stop region health checker
@@ -67,9 +69,9 @@ export class UptimeService {
       await this.scheduler.shutdown();
 
       this.initialized = false;
-      console.log("BullMQ uptime monitoring service shut down successfully");
+      this.logger.info("BullMQ uptime monitoring service shut down successfully");
     } catch (error) {
-      console.error("Error during uptime service shutdown:", error);
+      this.logger.error(error, "Error during uptime service shutdown");
     }
   }
 
@@ -81,7 +83,7 @@ export class UptimeService {
     }
 
     if (!this.initialized) {
-      console.warn("Uptime service not initialized, cannot schedule monitor");
+      this.logger.warn("Uptime service not initialized, cannot schedule monitor");
       return;
     }
 
@@ -99,7 +101,7 @@ export class UptimeService {
     }
 
     if (!this.initialized) {
-      console.warn("Uptime service not initialized, cannot update monitor");
+      this.logger.warn("Uptime service not initialized, cannot update monitor");
       return;
     }
 
@@ -119,7 +121,7 @@ export class UptimeService {
     }
 
     if (!this.initialized) {
-      console.warn("Uptime service not initialized, cannot delete monitor");
+      this.logger.warn("Uptime service not initialized, cannot delete monitor");
       return;
     }
 

@@ -1,10 +1,12 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/postgres/postgres.js";
 import { agentRegions } from "../../db/postgres/schema.js";
+import { createServiceLogger } from "../../lib/logger/logger.js";
 
 export class RegionHealthChecker {
   private intervalMs: number;
   private intervalId: NodeJS.Timeout | null = null;
+  private logger = createServiceLogger("region-health-checker");
 
   constructor(intervalMs: number = 60000) {
     // Default: 1 minute
@@ -12,7 +14,7 @@ export class RegionHealthChecker {
   }
 
   async start(): Promise<void> {
-    console.log(`[Uptime] Starting region health checker with interval: ${this.intervalMs}ms`);
+    this.logger.info(`Starting region health checker with interval: ${this.intervalMs}ms`);
 
     // Run initial check
     await this.checkAllRegions();
@@ -27,7 +29,7 @@ export class RegionHealthChecker {
     if (this.intervalId) {
       clearInterval(this.intervalId);
       this.intervalId = null;
-      console.log("[Uptime] Region health checker stopped");
+      this.logger.info("Region health checker stopped");
     }
   }
 
@@ -40,11 +42,11 @@ export class RegionHealthChecker {
       // Filter out local region
       const remoteRegions = regions.filter((r) => r.code !== "local");
 
-      console.log(`[Uptime] Checking health of ${remoteRegions.length} remote regions`);
+      this.logger.debug(`Checking health of ${remoteRegions.length} remote regions`);
 
       const healthPromises = remoteRegions.map((region) =>
         this.checkRegionHealth(region).catch((error) => {
-          console.error(`Error checking health of region ${region.code}:`, error);
+          this.logger.error(error, `Error checking health of region ${region.code}`);
           return { region, isHealthy: false };
         }),
       );

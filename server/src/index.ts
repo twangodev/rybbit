@@ -91,10 +91,39 @@ import { extractSiteId, isSitePublic } from "./utils.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const isDevelopment = process.env.NODE_ENV === "development";
+const isProduction = process.env.NODE_ENV === "production";
+
 const server = Fastify({
   logger: {
-    transport: {
-      target: "@fastify/one-line-logger",
+    level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
+    transport: isProduction
+      ? {
+          target: "@fastify/one-line-logger",
+        }
+      : {
+          target: "pino-pretty",
+          options: {
+            colorize: true,
+            translateTime: "SYS:standard",
+            ignore: "pid,hostname",
+          },
+        },
+    serializers: {
+      req(request) {
+        return {
+          method: request.method,
+          url: request.url,
+          path: request.url,
+          parameters: request.params,
+          headers: request.headers,
+        };
+      },
+      res(reply) {
+        return {
+          statusCode: reply.statusCode,
+        };
+      },
     },
   },
   maxParamLength: 1500,
@@ -353,16 +382,16 @@ const start = async () => {
 
     // Start the server first
     await server.listen({ port: 3001, host: "0.0.0.0" });
-    console.info("Server is listening on http://0.0.0.0:3001");
+    server.log.info("Server is listening on http://0.0.0.0:3001");
 
     // Initialize uptime monitoring service in the background (non-blocking)
     uptimeService
       .initialize()
       .then(() => {
-        console.info("Uptime monitoring service initialized successfully");
+        server.log.info("Uptime monitoring service initialized successfully");
       })
       .catch((error) => {
-        console.error("Failed to initialize uptime service:", error);
+        server.log.error("Failed to initialize uptime service:", error);
         // Continue running without uptime monitoring
       });
   } catch (err) {
@@ -378,34 +407,34 @@ let isShuttingDown = false;
 
 const shutdown = async (signal: string) => {
   if (isShuttingDown) {
-    console.log(`${signal} received during shutdown, forcing exit...`);
+    server.log.warn(`${signal} received during shutdown, forcing exit...`);
     process.exit(1);
   }
 
   isShuttingDown = true;
-  console.log(`${signal} received, shutting down gracefully...`);
+  server.log.info(`${signal} received, shutting down gracefully...`);
 
   // Set a timeout to force exit if shutdown takes too long
   const forceExitTimeout = setTimeout(() => {
-    console.error("Shutdown timeout exceeded, forcing exit...");
+    server.log.error("Shutdown timeout exceeded, forcing exit...");
     process.exit(1);
   }, 10000); // 10 second timeout
 
   try {
     // Stop accepting new connections
     await server.close();
-    console.log("Server closed");
+    server.log.info("Server closed");
 
     // Shutdown uptime service
     await uptimeService.shutdown();
-    console.log("Uptime service shut down");
+    server.log.info("Uptime service shut down");
 
     // Clear the timeout since we're done
     clearTimeout(forceExitTimeout);
 
     process.exit(0);
   } catch (error) {
-    console.error("Error during shutdown:", error);
+    server.log.error(error, "Error during shutdown");
     clearTimeout(forceExitTimeout);
     process.exit(1);
   }
