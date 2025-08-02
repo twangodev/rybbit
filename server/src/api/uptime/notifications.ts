@@ -1,11 +1,12 @@
 import { and, eq, inArray } from "drizzle-orm";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
-import { z } from "zod";
 import { DateTime } from "luxon";
+import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
-import { member, notificationChannels } from "../../db/postgres/schema.js";
+import { notificationChannels } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { NotificationService } from "../../services/uptime/notificationService.js";
+import { getUserOrganizations } from "./utils.js";
 
 // Schemas
 const channelTypeSchema = z.enum(["email", "discord", "slack", "sms"]);
@@ -40,16 +41,6 @@ const updateChannelSchema = z.object({
 const channelIdParamsSchema = z.object({
   id: z.coerce.number().int(),
 });
-
-// Helper to get user's organizations
-async function getUserOrganizations(userId: string) {
-  const userOrgs = await db
-    .select({ organizationId: member.organizationId })
-    .from(member)
-    .where(eq(member.userId, userId));
-
-  return userOrgs.map((org) => org.organizationId);
-}
 
 export const notificationRoutes = async (server: FastifyInstance) => {
   // Get all notification channels

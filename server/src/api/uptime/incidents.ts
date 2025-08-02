@@ -2,8 +2,9 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
-import { member, uptimeIncidents, uptimeMonitors } from "../../db/postgres/schema.js";
+import { uptimeIncidents, uptimeMonitors } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
+import { getUserOrganizations } from "./utils.js";
 
 // Schemas
 const incidentStatusSchema = z.enum(["active", "acknowledged", "resolved", "all"]);
@@ -52,16 +53,11 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
       }
 
       // Get user's organizations
-      const userOrgs = await db
-        .select({ organizationId: member.organizationId })
-        .from(member)
-        .where(eq(member.userId, userId));
+      const organizationIds = await getUserOrganizations(userId);
 
-      if (userOrgs.length === 0) {
+      if (organizationIds.length === 0) {
         return reply.status(403).send({ error: "No organization access" });
       }
-
-      const organizationIds = userOrgs.map((org) => org.organizationId);
 
       const query = getIncidentsQuerySchema.parse(request.query);
       const { status, limit, offset } = query;
@@ -172,16 +168,11 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
       const { id } = params;
 
       // Get user's organizations
-      const userOrgs = await db
-        .select({ organizationId: member.organizationId })
-        .from(member)
-        .where(eq(member.userId, userId));
+      const organizationIds = await getUserOrganizations(userId);
 
-      if (userOrgs.length === 0) {
+      if (organizationIds.length === 0) {
         return reply.status(403).send({ error: "No organization access" });
       }
-
-      const organizationIds = userOrgs.map((org) => org.organizationId);
 
       // Verify incident belongs to user's organization
       const incident = await db
@@ -239,16 +230,11 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
       const { id } = params;
 
       // Get user's organizations
-      const userOrgs = await db
-        .select({ organizationId: member.organizationId })
-        .from(member)
-        .where(eq(member.userId, userId));
+      const organizationIds = await getUserOrganizations(userId);
 
-      if (userOrgs.length === 0) {
+      if (organizationIds.length === 0) {
         return reply.status(403).send({ error: "No organization access" });
       }
-
-      const organizationIds = userOrgs.map((org) => org.organizationId);
 
       // Verify incident belongs to user's organization
       const incident = await db
