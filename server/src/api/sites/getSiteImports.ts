@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import { getUserHasAccessToSite } from "../../lib/auth-utils.js";
+import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
 import { ImportStatusManager } from "../../services/import/importStatusManager.js";
 import { z } from "zod";
 
@@ -28,7 +28,7 @@ export async function getSiteImports(
 
     const { site } = parsed.data.params;
 
-    const userHasAccess = await getUserHasAccessToSite(request, site);
+    const userHasAccess = await getUserHasAdminAccessToSite(request, site);
     if (!userHasAccess) {
       return reply.status(403).send({ error: "Forbidden" });
     }
