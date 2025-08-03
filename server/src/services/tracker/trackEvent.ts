@@ -2,7 +2,6 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { isbot } from "isbot";
 import { z, ZodError } from "zod";
 import { createServiceLogger } from "../../lib/logger/logger.js";
-import { isIPExcluded } from "../../lib/ipUtils.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { sessionsService } from "../sessions/sessionsService.js";
 import { checkApiKeyRateLimit, validateApiKey, validateOrigin } from "../shared/requestValidation.js";
@@ -241,7 +240,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     const requestIP = validatedPayload.ip_address || request.ip || "";
     const excludedIPs = siteConfig.getExcludedIPs(validatedPayload.site_id);
 
-    if (isIPExcluded(requestIP, excludedIPs)) {
+    if (siteConfig.isIPExcluded(requestIP, excludedIPs)) {
       logger.info({ siteId: validatedPayload.site_id, ip: requestIP }, "IP excluded from tracking");
       return reply.status(200).send({
         success: true,

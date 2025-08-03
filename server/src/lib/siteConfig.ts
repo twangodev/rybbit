@@ -1,5 +1,7 @@
 import { db } from "../db/postgres/postgres.js";
 import { sites } from "../db/postgres/schema.js";
+import { logger } from "./logger/logger.js";
+import { matchesCIDR, matchesRange } from "./ipUtils.js";
 
 // Site configuration interface
 interface SiteConfigData {
@@ -197,6 +199,57 @@ class SiteConfig {
       await this.loadSiteConfigs();
     }
   }
+
+  /**
+   * Check if an IP address matches any of the excluded IPs/ranges
+   */
+  isIPExcluded(ipAddress: string, excludedIPs: string[]): boolean {
+    if (!excludedIPs || excludedIPs.length === 0) {
+      return false;
+    }
+
+    for (const excludedPattern of excludedIPs) {
+      if (this.matchesIPPattern(ipAddress, excludedPattern)) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if an IP address matches a specific pattern
+   * Supports:
+   * - Single IP: 192.168.1.1, 2001:db8::1
+   * - CIDR notation: 192.168.1.0/24, 2001:db8::/32
+   * - Range notation: 192.168.1.1-192.168.1.10 (IPv4 only, IPv6 ranges not supported)
+   */
+  private matchesIPPattern(ipAddress: string, pattern: string): boolean {
+    try {
+      const trimmedPattern = pattern.trim();
+
+      // Single IP match
+      if (!trimmedPattern.includes("/") && !trimmedPattern.includes("-")) {
+        return ipAddress === trimmedPattern;
+      }
+
+      // CIDR notation
+      if (trimmedPattern.includes("/")) {
+        return matchesCIDR(ipAddress, trimmedPattern);
+      }
+
+      // Range notation
+      if (trimmedPattern.includes("-")) {
+        return matchesRange(ipAddress, trimmedPattern);
+      }
+
+      return false;
+    } catch (error) {
+      logger.warn(error as Error, `Invalid IP pattern: ${pattern}`);
+      return false;
+    }
+  }
+
 }
 
 // Singleton instance

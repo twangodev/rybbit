@@ -417,15 +417,15 @@ const start = async () => {
     }
 
     // Initialize uptime monitoring service in the background (non-blocking)
-    // uptimeService
-    //   .initialize()
-    //   .then(() => {
-    //     server.log.info("Uptime monitoring service initialized successfully");
-    //   })
-    //   .catch((error) => {
-    //     server.log.error("Failed to initialize uptime service:", error);
-    //     // Continue running without uptime monitoring
-    //   });
+    uptimeService
+      .initialize()
+      .then(() => {
+        server.log.info("Uptime monitoring service initialized successfully");
+      })
+      .catch((error) => {
+        server.log.error("Failed to initialize uptime service:", error);
+        // Continue running without uptime monitoring
+      });
   } catch (err) {
     server.log.error(err);
     process.exit(1);

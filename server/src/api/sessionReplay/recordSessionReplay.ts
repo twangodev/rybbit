@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
-import { isIPExcluded } from "../../lib/ipUtils.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { SessionReplayIngestService } from "../../services/replay/sessionReplayIngestService.js";
 import { validateApiKey, validateOrigin } from "../../services/shared/requestValidation.js";
@@ -94,7 +93,7 @@ export async function recordSessionReplay(
     const requestIP = getIpAddress(request);
     const excludedIPs = siteConfig.getExcludedIPs(siteId);
 
-    if (isIPExcluded(requestIP, excludedIPs)) {
+    if (siteConfig.isIPExcluded(requestIP, excludedIPs)) {
       logger.info(`[SessionReplay] IP ${requestIP} excluded from tracking for site ${siteId}`);
       return reply.status(200).send({
         success: true,

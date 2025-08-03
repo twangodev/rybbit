@@ -32,17 +32,9 @@ export async function getSiteExcludedIPs(request: FastifyRequest, reply: Fastify
       });
     }
 
-    // Check if user is authenticated
-    if (!request.user?.id) {
-      return reply.status(401).send({
-        success: false,
-        error: "Authentication required",
-      });
-    }
-
     // Check if user has access to this site
     const hasAccess = await getUserHasAccessToSite(request, numericSiteId);
-    
+
     if (!hasAccess) {
       return reply.status(403).send({
         success: false,
