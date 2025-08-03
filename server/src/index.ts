@@ -93,11 +93,29 @@ const __dirname = dirname(__filename);
 
 const isDevelopment = process.env.NODE_ENV === "development";
 const isProduction = process.env.NODE_ENV === "production";
+const hasAxiom = !!(process.env.AXIOM_DATASET && process.env.AXIOM_TOKEN);
 
 const server = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
-    transport: isProduction
+    transport: isProduction && hasAxiom
+      ? {
+          targets: [
+            {
+              target: "@axiomhq/pino",
+              options: {
+                dataset: process.env.AXIOM_DATASET,
+                token: process.env.AXIOM_TOKEN,
+              },
+            },
+            // Also log to stdout in production
+            {
+              target: "pino/file",
+              options: { destination: 1 }, // stdout
+            },
+          ],
+        }
+      : isProduction
       ? {
           target: "@fastify/one-line-logger",
         }
