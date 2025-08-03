@@ -1,15 +1,14 @@
 import type { FastifyBaseLogger } from "fastify";
 import { pino } from "pino";
+import { IS_CLOUD } from "../const.js";
 
-const isDevelopment = process.env.NODE_ENV === "development";
-const isProduction = process.env.NODE_ENV === "production";
 const hasAxiom = !!(process.env.AXIOM_DATASET && process.env.AXIOM_TOKEN);
 
 export const createLogger = (name: string): FastifyBaseLogger => {
-  if (isProduction && hasAxiom) {
+  if (process.env.NODE_ENV === "production" && hasAxiom && IS_CLOUD) {
     return pino({
       name,
-      level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
+      level: process.env.LOG_LEVEL || "info",
       transport: {
         target: "@axiomhq/pino",
         options: {

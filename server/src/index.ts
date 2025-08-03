@@ -91,29 +91,28 @@ import { extractSiteId, isSitePublic } from "./utils.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const isDevelopment = process.env.NODE_ENV === "development";
-const isProduction = process.env.NODE_ENV === "production";
 const hasAxiom = !!(process.env.AXIOM_DATASET && process.env.AXIOM_TOKEN);
 
 const server = Fastify({
   logger: {
-    level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
-    transport: isProduction
-      ? {
-          target: "@axiomhq/pino",
-          options: {
-            dataset: process.env.AXIOM_DATASET,
-            token: process.env.AXIOM_TOKEN,
+    level: process.env.LOG_LEVEL || (process.env.NODE_ENV === "development" ? "debug" : "info"),
+    transport:
+      process.env.NODE_ENV === "production" && IS_CLOUD
+        ? {
+            target: "@axiomhq/pino",
+            options: {
+              dataset: process.env.AXIOM_DATASET,
+              token: process.env.AXIOM_TOKEN,
+            },
+          }
+        : {
+            target: "pino-pretty",
+            options: {
+              colorize: true,
+              translateTime: "SYS:standard",
+              ignore: "pid,hostname",
+            },
           },
-        }
-      : {
-          target: "pino-pretty",
-          options: {
-            colorize: true,
-            translateTime: "SYS:standard",
-            ignore: "pid,hostname",
-          },
-        },
     serializers: {
       req(request) {
         return {
