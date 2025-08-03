@@ -584,11 +584,11 @@ export const notificationChannels = pgTable(
   ],
 );
 
-const importSourceEnum = pgEnum("import_source_enum", [
+export const importSourceEnum = pgEnum("import_source_enum", [
   "umami",
 ]);
 
-const importStatusEnum = pgEnum("import_status_enum", [
+export const importStatusEnum = pgEnum("import_status_enum", [
   "pending",
   "processing",
   "completed",
