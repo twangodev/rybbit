@@ -20,12 +20,57 @@ AXIOM_TOKEN=xaat-xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
 
 ## How It Works
 
-When both `AXIOM_DATASET` and `AXIOM_TOKEN` are set in production:
+### Development Mode
+When both `AXIOM_DATASET` and `AXIOM_TOKEN` are set in development:
+- Logs are sent directly to Axiom using the Pino transport
+- This is useful for testing your Axiom integration
 
-1. All logs from the Fastify server and service loggers are sent to Axiom
-2. Logs are also written to stdout for container/server logs
-3. In development, logs continue to use pino-pretty for readable output
-4. In production without Axiom, logs use the one-line logger format
+Without Axiom credentials in development:
+- Logs use pino-pretty for readable console output
+
+### Production Mode
+In production, logs should be piped to Axiom via stdout:
+- The application outputs JSON logs to stdout
+- Your deployment platform (Docker, Kubernetes, etc.) should pipe these logs to Axiom
+- See the "Production Setup" section below
+
+## Production Setup
+
+For production, you have several options:
+
+### Option 1: Using Axiom's log forwarder
+```bash
+# Install axiom CLI
+curl -fsSL https://install.axiom.co/install.sh | sh
+
+# Run your app and pipe to Axiom
+npm start | axiom ingest $AXIOM_DATASET -t $AXIOM_TOKEN
+```
+
+### Option 2: Docker Compose
+```yaml
+services:
+  app:
+    image: your-app
+    environment:
+      - NODE_ENV=production
+    logging:
+      driver: "json-file"
+  
+  log-forwarder:
+    image: axiomhq/axiom-forwarder
+    environment:
+      - AXIOM_DATASET=${AXIOM_DATASET}
+      - AXIOM_TOKEN=${AXIOM_TOKEN}
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+```
+
+### Option 3: Direct in Development
+Set your environment variables and logs will be sent directly to Axiom:
+```bash
+AXIOM_DATASET=your-dataset AXIOM_TOKEN=your-token npm run dev
+```
 
 ## Log Structure
 
