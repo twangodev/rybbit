@@ -5,6 +5,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Table,
   TableBody,
   TableCell,
@@ -33,6 +40,7 @@ import {
   CheckCircle2,
   Clock,
   Loader2,
+  Database,
 } from "lucide-react";
 import { DateTime } from "luxon";
 import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
@@ -51,10 +59,13 @@ interface FileValidationError {
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_FILE_TYPES = ["text/csv"];
 const ALLOWED_EXTENSIONS = [".csv"];
+const DATA_SOURCES = [
+  { value: "umami", label: "Umami" },
+];
 
 export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [source, setSource] = useState<"umami" | null>(null);
+  const [source, setSource] = useState<string>("");
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [fileError, setFileError] = useState<FileValidationError | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
@@ -63,6 +74,14 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
 
   const { data, isLoading, error } = useGetSiteImports(siteId);
   const mutation = useImportSiteData(siteId);
+
+  const resetFileInput = () => {
+    setFile(null);
+    setFileError(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   const validateFile = (file: File): FileValidationError | null => {
     if (file.size > MAX_FILE_SIZE) {
@@ -105,8 +124,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       const validationError = validateFile(selectedFile);
       if (validationError) {
         setFileError(validationError);
-        setFile(null);
-        event.target.value = "";
+        resetFileInput();
         return;
       }
       setFile(selectedFile);
@@ -134,11 +152,11 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
         startDate,
         endDate,
       });
-      setFile(null);
+
+      resetFileInput();
+      setSource("");
+      setDateRange({});
       setShowConfirmDialog(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
     }
   };
 
@@ -205,6 +223,8 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     ) ?? false;
   }, [data?.data]);
 
+  const isImportDisabled = !file || !source || mutation.isPending || disabled || !!fileError;
+
   return (
     <div className="space-y-6">
       {/* Import Section */}
@@ -231,6 +251,30 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
           />
 
           <Separator />
+
+          {/* Data Source Selection */}
+          <div className="space-y-2">
+            <Label htmlFor="source" className="flex items-center gap-2">
+              <Database className="h-4 w-4" />
+              Data Source
+            </Label>
+            <Select
+              value={source}
+              onValueChange={setSource}
+              disabled={disabled || mutation.isPending}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select data source" />
+              </SelectTrigger>
+              <SelectContent>
+                {DATA_SOURCES.map((dataSource) => (
+                  <SelectItem key={dataSource.value} value={dataSource.value}>
+                    {dataSource.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           {/* File Upload */}
           <div className="space-y-2">
@@ -265,7 +309,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
           {/* Import Button */}
           <Button
             onClick={handleImportClick}
-            disabled={!file || mutation.isPending || disabled || !!fileError}
+            disabled={isImportDisabled}
             className="w-full sm:w-auto"
           >
             {mutation.isPending ? (
