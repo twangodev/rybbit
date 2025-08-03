@@ -29,10 +29,11 @@ Without Axiom credentials in development:
 - Logs use pino-pretty for readable console output
 
 ### Production Mode
-In production, logs should be piped to Axiom via stdout:
-- The application outputs JSON logs to stdout
-- Your deployment platform (Docker, Kubernetes, etc.) should pipe these logs to Axiom
-- See the "Production Setup" section below
+In production with Axiom configured:
+- Logs are sent to both Axiom AND stdout simultaneously
+- You can view logs in Axiom for powerful searching and analytics
+- You can still use `docker logs` to see logs locally
+- No additional piping or configuration needed
 
 ## Production Setup
 

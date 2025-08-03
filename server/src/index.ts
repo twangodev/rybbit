@@ -97,22 +97,36 @@ const server = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || (process.env.NODE_ENV === "development" ? "debug" : "info"),
     transport:
-      process.env.NODE_ENV === "production" && IS_CLOUD
+      process.env.NODE_ENV === "production" && IS_CLOUD && hasAxiom
         ? {
-            target: "@axiomhq/pino",
-            options: {
-              dataset: process.env.AXIOM_DATASET,
-              token: process.env.AXIOM_TOKEN,
-            },
+            targets: [
+              // Send to Axiom
+              {
+                target: "@axiomhq/pino",
+                level: process.env.LOG_LEVEL || "info",
+                options: {
+                  dataset: process.env.AXIOM_DATASET,
+                  token: process.env.AXIOM_TOKEN,
+                },
+              },
+              // Also send to stdout for Docker logs
+              {
+                target: "pino/file",
+                level: process.env.LOG_LEVEL || "info",
+                options: { destination: 1 }, // 1 = stdout
+              },
+            ],
           }
-        : {
+        : process.env.NODE_ENV === "development"
+        ? {
             target: "pino-pretty",
             options: {
               colorize: true,
               translateTime: "SYS:standard",
               ignore: "pid,hostname",
             },
-          },
+          }
+        : undefined, // Production without Axiom - plain JSON to stdout
     serializers: {
       req(request) {
         return {
