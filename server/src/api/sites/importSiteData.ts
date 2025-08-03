@@ -62,7 +62,7 @@ export async function importSiteData(
     });
 
     if (!parsed.success) {
-      return reply.status(400).send({ error: "Validation failed" });
+      return reply.status(400).send({ error: parsed.error.flatten() });
     }
 
     const { site } = parsed.data.params;
