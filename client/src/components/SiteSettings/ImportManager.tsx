@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo, useRef } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -64,7 +64,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const { data, isLoading, error } = useGetSiteImports(siteId);
   const mutation = useImportSiteData(siteId);
 
-  const validateFile = useCallback((file: File): FileValidationError | null => {
+  const validateFile = (file: File): FileValidationError | null => {
     if (file.size > MAX_FILE_SIZE) {
       return {
         type: "size",
@@ -95,9 +95,9 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     }
 
     return null;
-  }, []);
+  };
 
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
     setFileError(null);
 
@@ -113,17 +113,17 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     } else {
       setFile(null);
     }
-  }, [validateFile]);
+  };
 
-  const handleImportClick = useCallback(() => {
+  const handleImportClick = () => {
     if (file && file.size > 50 * 1024 * 1024) {
       setShowConfirmDialog(true);
     } else {
       handleImport();
     }
-  }, [file]);
+  };
 
-  const handleImport = useCallback(() => {
+  const handleImport = () => {
     if (file && source) {
       const formattedDateRange = formatDateRange(dateRange);
 
@@ -138,13 +138,13 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
         fileInputRef.current.value = "";
       }
     }
-  }, [file, source, dateRange, mutation]);
+  };
 
-  const clearDateRange = useCallback(() => {
+  const clearDateRange = () => {
     setDateRange({});
-  }, []);
+  };
 
-  const getStatusInfo = useCallback((status: string) => {
+  const getStatusInfo = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
         return {
@@ -177,7 +177,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
           label: status
         };
     }
-  }, []);
+  };
 
   const sortedImports = useMemo(() => {
     if (!data?.data) return [];
@@ -189,13 +189,13 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     });
   }, [data?.data]);
 
-  const formatFileSize = useCallback((bytes: number) => {
+  const formatFileSize = (bytes: number) => {
     if (bytes === 0) return "0 B";
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-  }, []);
+  };
 
   const hasActiveImports = useMemo(() => {
     return data?.data.some(imp =>
