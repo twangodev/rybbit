@@ -35,6 +35,8 @@ const importDataRequestSchema = z.object({
       const end = parseDate(body.endDate);
       return start <= end;
     }
+    return true;
+  }).refine((body) => {
     if (body.startDate) {
       const today = DateTime.utc().startOf("day");
       const start = parseDate(body.startDate);
