@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { format } from "date-fns";
+import { DateTime, DateTimeFormatOptions } from "luxon";
 import { CalendarIcon, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,8 @@ import {
 } from "@/components/ui/popover";
 
 export interface DateRange {
-  startDate?: Date;
-  endDate?: Date;
+  startDate?: DateTime;
+  endDate?: DateTime;
 }
 
 interface DateRangePickerProps {
@@ -28,9 +28,9 @@ interface DateRangePickerProps {
   showClear?: boolean;
   clearButtonText?: string;
   showDescription?: boolean;
-  dateFormat?: string;
-  maxDate?: Date;
-  minDate?: Date;
+  dateFormat?: DateTimeFormatOptions;
+  maxDate?: DateTime;
+  minDate?: DateTime;
   className?: string;
   layout?: "horizontal" | "vertical";
 }
@@ -45,30 +45,36 @@ export function SplitDateRangePicker({
   showClear = true,
   clearButtonText = "Clear dates",
   showDescription = true,
-  dateFormat = "PPP",
-  maxDate = new Date(),
+  dateFormat = DateTime.DATE_FULL,
+  maxDate = DateTime.utc(),
   minDate,
   className,
   layout = "horizontal"
 }: DateRangePickerProps) {
   const [internalValue, setInternalValue] = useState<DateRange>({});
 
-  const currentValue = value !== undefined ? value : internalValue;
+  const currentValue = value ?? internalValue;
   const { startDate, endDate } = currentValue;
 
   const handleDateChange = (newDateRange: DateRange) => {
-    if (value === undefined) {
+    if (!value) {
       setInternalValue(newDateRange);
     }
     onChange?.(newDateRange);
   };
 
-  const handleStartDateChange = (date: Date | undefined) => {
-    handleDateChange({ ...currentValue, startDate: date });
+  const handleStartDateChange = (date?: Date) => {
+    handleDateChange({
+      ...currentValue,
+      startDate: date ? DateTime.fromJSDate(date) : undefined,
+    });
   };
 
-  const handleEndDateChange = (date: Date | undefined) => {
-    handleDateChange({ ...currentValue, endDate: date });
+  const handleEndDateChange = (date?: Date) => {
+    handleDateChange({
+      ...currentValue,
+      endDate: date ? DateTime.fromJSDate(date) : undefined,
+    });
   };
 
   const handleClear = () => {
@@ -104,18 +110,19 @@ export function SplitDateRangePicker({
                 disabled={disabled}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {startDate ? format(startDate, dateFormat) : startDatePlaceholder}
+                {startDate ? startDate.toLocaleString(dateFormat) : startDatePlaceholder}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={startDate}
+                selected={startDate?.toJSDate()}
                 onSelect={handleStartDateChange}
                 disabled={(date) => {
-                  if (maxDate && date > maxDate) return true;
-                  if (minDate && date < minDate) return true;
-                  if (endDate && date > endDate) return true;
+                  const d = DateTime.fromJSDate(date);
+                  if (maxDate && d > maxDate) return true;
+                  if (minDate && d < minDate) return true;
+                  if (endDate && d > endDate) return true;
                   return false;
                 }}
                 captionLayout="dropdown"
@@ -137,18 +144,19 @@ export function SplitDateRangePicker({
                 disabled={disabled}
               >
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {endDate ? format(endDate, dateFormat) : endDatePlaceholder}
+                {endDate ? endDate.toLocaleString(dateFormat) : endDatePlaceholder}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
               <Calendar
                 mode="single"
-                selected={endDate}
+                selected={endDate?.toJSDate()}
                 onSelect={handleEndDateChange}
                 disabled={(date) => {
-                  if (maxDate && date > maxDate) return true;
-                  if (minDate && date < minDate) return true;
-                  if (startDate && date < startDate) return true;
+                  const d = DateTime.fromJSDate(date);
+                  if (maxDate && d > maxDate) return true;
+                  if (minDate && d < minDate) return true;
+                  if (startDate && d < startDate) return true;
                   return false;
                 }}
                 captionLayout="dropdown"
@@ -176,13 +184,12 @@ export function SplitDateRangePicker({
       {showDescription && hasDateSelected && (
         <p className="text-xs text-muted-foreground">
           {startDate && endDate
-            ? `Selected range: ${format(startDate, dateFormat)} to ${format(endDate, dateFormat)}`
+            ? `Selected range: ${startDate.toLocaleString(dateFormat)} to ${endDate.toLocaleString(dateFormat)}`
             : startDate
-              ? `From ${format(startDate, dateFormat)} onwards`
+              ? `From ${startDate.toLocaleString(dateFormat)} onwards`
               : endDate
-                ? `Up to ${format(endDate, dateFormat)}`
-                : ""
-          }
+                ? `Up to ${endDate.toLocaleString(dateFormat)}`
+                : ""}
         </p>
       )}
     </div>
