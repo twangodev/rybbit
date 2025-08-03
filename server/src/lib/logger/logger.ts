@@ -23,11 +23,16 @@ export const createLogger = (name: string): FastifyBaseLogger => {
               token: process.env.AXIOM_TOKEN,
             },
           },
-          // Also send to stdout for Docker logs
+          // Pretty print to stdout for Docker logs
           {
-            target: "pino/file",
+            target: "pino-pretty",
             level: process.env.LOG_LEVEL || "info",
-            options: { destination: 1 }, // 1 = stdout
+            options: {
+              colorize: true,
+              translateTime: "SYS:standard",
+              ignore: "pid,hostname",
+              destination: 1, // stdout
+            },
           },
         ],
       },
