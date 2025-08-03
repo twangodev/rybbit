@@ -170,9 +170,9 @@ class R2StorageService {
       });
 
       await upload.done();
-      console.log(`[R2Storage] Successfully stored import file: ${key}`);
+      this.logger.info({ key }, "Successfully stored import file");
     } catch (error) {
-      console.error("[R2Storage] Failed to store import file:", error);
+      this.logger.error({ error, key }, "Failed to store import file");
       throw error;
     }
   }
@@ -197,10 +197,10 @@ class R2StorageService {
         throw new Error("Empty response body");
       }
 
-      console.log(`[R2Storage] Successfully retrieved import file stream: ${key}`);
+      this.logger.info({ key }, "Successfully retrieved import file stream");
       return response.Body as Readable;
     } catch (error) {
-      console.error("[R2Storage] Failed to retrieve import file stream:", error);
+      this.logger.error({ error, key }, "Failed to retrieve import file stream");
       throw error;
     }
   }
@@ -220,9 +220,9 @@ class R2StorageService {
           Key: key,
         }),
       );
-      console.log(`[R2Storage] Successfully deleted import file: ${key}`);
+      this.logger.info({ key }, "Successfully deleted import file");
     } catch (error) {
-      console.error("[R2Storage] Failed to delete import file:", error);
+      this.logger.error({ error, key }, "Failed to delete import file");
       // Non-critical error, log but don't throw
     }
   }
