@@ -54,7 +54,7 @@ const ALLOWED_EXTENSIONS = [".csv"];
 
 export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const [file, setFile] = useState<File | null>(null);
-  const [source] = useState("umami");
+  const [source, setSource] = useState<"umami" | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [fileError, setFileError] = useState<FileValidationError | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
@@ -124,7 +124,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   }, [file]);
 
   const handleImport = useCallback(() => {
-    if (file) {
+    if (file && source) {
       const formattedDateRange = formatDateRange(dateRange);
 
       mutation.mutate({
