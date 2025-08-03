@@ -125,15 +125,15 @@ const server = Fastify({
             ],
           }
         : process.env.NODE_ENV === "development"
-        ? {
-            target: "pino-pretty",
-            options: {
-              colorize: true,
-              translateTime: "SYS:standard",
-              ignore: "pid,hostname",
-            },
-          }
-        : undefined, // Production without Axiom - plain JSON to stdout
+          ? {
+              target: "pino-pretty",
+              options: {
+                colorize: true,
+                translateTime: "SYS:standard",
+                ignore: "pid,hostname",
+              },
+            }
+          : undefined, // Production without Axiom - plain JSON to stdout
     serializers: {
       req(request) {
         return {
@@ -417,15 +417,15 @@ const start = async () => {
     }
 
     // Initialize uptime monitoring service in the background (non-blocking)
-    uptimeService
-      .initialize()
-      .then(() => {
-        server.log.info("Uptime monitoring service initialized successfully");
-      })
-      .catch((error) => {
-        server.log.error("Failed to initialize uptime service:", error);
-        // Continue running without uptime monitoring
-      });
+    // uptimeService
+    //   .initialize()
+    //   .then(() => {
+    //     server.log.info("Uptime monitoring service initialized successfully");
+    //   })
+    //   .catch((error) => {
+    //     server.log.error("Failed to initialize uptime service:", error);
+    //     // Continue running without uptime monitoring
+    //   });
   } catch (err) {
     server.log.error(err);
     process.exit(1);

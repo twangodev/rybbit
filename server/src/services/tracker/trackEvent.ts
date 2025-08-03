@@ -242,7 +242,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     const excludedIPs = siteConfig.getExcludedIPs(validatedPayload.site_id);
 
     if (isIPExcluded(requestIP, excludedIPs)) {
-      console.log(`[Tracking] IP ${requestIP} excluded from tracking for site ${validatedPayload.site_id}`);
+      logger.info({ siteId: validatedPayload.site_id, ip: requestIP }, "IP excluded from tracking");
       return reply.status(200).send({
         success: true,
         message: "Event not tracked - IP excluded",

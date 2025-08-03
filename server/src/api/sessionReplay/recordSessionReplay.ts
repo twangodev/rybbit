@@ -7,6 +7,7 @@ import { validateApiKey, validateOrigin } from "../../services/shared/requestVal
 import { usageService } from "../../services/usageService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 import { getIpAddress } from "../../utils.js";
+import { logger } from "../../lib/logger/logger.js";
 
 const recordSessionReplaySchema = z.object({
   userId: z.string(),
@@ -40,7 +41,7 @@ export async function recordSessionReplay(
 
     // Check if the site has exceeded its monthly limit
     if (usageService.isSiteOverLimit(Number(siteId))) {
-      console.log(`[SessionReplay] Skipping event for site ${siteId} - over monthly limit`);
+      logger.info(`[SessionReplay] Skipping event for site ${siteId} - over monthly limit`);
       return reply.status(200).send("Site over monthly limit, event not tracked");
     }
 
@@ -51,7 +52,7 @@ export async function recordSessionReplay(
 
     // If API key validation failed with an error, reject the request
     if (apiKeyValidation.error) {
-      console.warn(`[SessionReplay] Request rejected for site ${siteId}: ${apiKeyValidation.error}`);
+      logger.warn(`[SessionReplay] Request rejected for site ${siteId}: ${apiKeyValidation.error}`);
       return reply.status(403).send({
         success: false,
         error: apiKeyValidation.error,
@@ -78,7 +79,7 @@ export async function recordSessionReplay(
       const originValidation = await validateOrigin(siteId, request.headers.origin as string);
 
       if (!originValidation.success) {
-        console.warn(`[SessionReplay] Request rejected for site ${siteId}: ${originValidation.error}`);
+        logger.warn(`[SessionReplay] Request rejected for site ${siteId}: ${originValidation.error}`);
         return reply.status(403).send({
           success: false,
           error: originValidation.error,
@@ -92,9 +93,9 @@ export async function recordSessionReplay(
     // Check if the IP should be excluded from tracking
     const requestIP = getIpAddress(request);
     const excludedIPs = siteConfig.getExcludedIPs(siteId);
-    
+
     if (isIPExcluded(requestIP, excludedIPs)) {
-      console.log(`[SessionReplay] IP ${requestIP} excluded from tracking for site ${siteId}`);
+      logger.info(`[SessionReplay] IP ${requestIP} excluded from tracking for site ${siteId}`);
       return reply.status(200).send({
         success: true,
         message: "Session replay not recorded - IP excluded",
@@ -120,7 +121,7 @@ export async function recordSessionReplay(
     if (error instanceof z.ZodError) {
       return reply.status(400).send({ error: error.errors });
     }
-    console.error("Error recording session replay:", error);
+    logger.error(error as Error, "Error recording session replay");
     return reply.status(500).send({ error: "Internal server error" });
   }
 }

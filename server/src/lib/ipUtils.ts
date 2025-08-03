@@ -1,4 +1,5 @@
 import { Address4, Address6 } from "ip-address";
+import { logger } from "./logger/logger.js";
 
 export interface IPRange {
   ip: string;
@@ -32,7 +33,7 @@ export function isIPExcluded(ipAddress: string, excludedIPs: string[]): boolean 
 function matchesIPPattern(ipAddress: string, pattern: string): boolean {
   try {
     const trimmedPattern = pattern.trim();
-    
+
     // Single IP match
     if (!trimmedPattern.includes("/") && !trimmedPattern.includes("-")) {
       return ipAddress === trimmedPattern;
@@ -50,7 +51,7 @@ function matchesIPPattern(ipAddress: string, pattern: string): boolean {
 
     return false;
   } catch (error) {
-    console.warn(`Invalid IP pattern: ${pattern}`, error);
+    logger.warn(error as Error, `Invalid IP pattern: ${pattern}`);
     return false;
   }
 }
@@ -72,14 +73,14 @@ function matchesCIDR(ipAddress: string, cidr: string): boolean {
       return ipv6.isInSubnet(cidrv6);
     }
   } catch (error) {
-    console.warn(`Error matching CIDR ${cidr} for IP ${ipAddress}:`, error);
+    logger.warn(`Error matching CIDR ${cidr} for IP ${ipAddress}:`, error);
     return false;
   }
 }
 
 /**
  * Check if IP is in range (e.g., 192.168.1.1-192.168.1.10)
- * 
+ *
  * NOTE: Range notation is only supported for IPv4 addresses.
  * IPv6 range notation is not supported due to the complexity of proper
  * numerical comparison of 128-bit addresses. Use CIDR notation instead
@@ -87,19 +88,19 @@ function matchesCIDR(ipAddress: string, cidr: string): boolean {
  */
 function matchesRange(ipAddress: string, range: string): boolean {
   try {
-    const [startIP, endIP] = range.split("-").map(ip => ip.trim());
-    
+    const [startIP, endIP] = range.split("-").map((ip) => ip.trim());
+
     // Try IPv4 first
     try {
       const ip = new Address4(ipAddress);
       const start = new Address4(startIP);
       const end = new Address4(endIP);
-      
+
       // Convert to 32-bit integers for comparison
       const ipInt = ip.toArray().reduce((acc, octet) => (acc << 8) + octet, 0) >>> 0; // Use unsigned right shift
       const startInt = start.toArray().reduce((acc, octet) => (acc << 8) + octet, 0) >>> 0;
       const endInt = end.toArray().reduce((acc, octet) => (acc << 8) + octet, 0) >>> 0;
-      
+
       return ipInt >= startInt && ipInt <= endInt;
     } catch {
       // IPv6 range matching is not supported - reject IPv6 ranges
@@ -108,9 +109,9 @@ function matchesRange(ipAddress: string, range: string): boolean {
         new Address6(ipAddress);
         new Address6(startIP);
         new Address6(endIP);
-        
+
         // All addresses are valid IPv6, but we don't support range notation
-        console.warn(`IPv6 range notation not supported: ${range}. Use CIDR notation instead (e.g., 2001:db8::/32)`);
+        logger.warn(`IPv6 range notation not supported: ${range}. Use CIDR notation instead (e.g., 2001:db8::/32)`);
         return false;
       } catch {
         // Mixed or invalid IP addresses
@@ -118,7 +119,7 @@ function matchesRange(ipAddress: string, range: string): boolean {
       }
     }
   } catch (error) {
-    console.warn(`Error matching range ${range} for IP ${ipAddress}:`, error);
+    logger.warn(`Error matching range ${range} for IP ${ipAddress}:`, error);
     return false;
   }
 }
@@ -129,7 +130,7 @@ function matchesRange(ipAddress: string, range: string): boolean {
 export function validateIPPattern(pattern: string): { valid: boolean; error?: string } {
   try {
     const trimmedPattern = pattern.trim();
-    
+
     // Single IP
     if (!trimmedPattern.includes("/") && !trimmedPattern.includes("-")) {
       try {
@@ -162,11 +163,11 @@ export function validateIPPattern(pattern: string): { valid: boolean; error?: st
 
     // Range notation (IPv4 only)
     if (trimmedPattern.includes("-")) {
-      const [startIP, endIP] = trimmedPattern.split("-").map(ip => ip.trim());
+      const [startIP, endIP] = trimmedPattern.split("-").map((ip) => ip.trim());
       if (!startIP || !endIP) {
         return { valid: false, error: "Invalid range format" };
       }
-      
+
       try {
         new Address4(startIP);
         new Address4(endIP);
@@ -176,9 +177,9 @@ export function validateIPPattern(pattern: string): { valid: boolean; error?: st
         try {
           new Address6(startIP);
           new Address6(endIP);
-          return { 
-            valid: false, 
-            error: "IPv6 range notation not supported. Use CIDR notation instead (e.g., 2001:db8::/32)" 
+          return {
+            valid: false,
+            error: "IPv6 range notation not supported. Use CIDR notation instead (e.g., 2001:db8::/32)",
           };
         } catch {
           return { valid: false, error: "Invalid IP addresses in range" };
