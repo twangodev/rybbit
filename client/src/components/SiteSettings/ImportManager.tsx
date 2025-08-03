@@ -330,7 +330,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {mutation.error?.message || "Failed to import file. Please try again."}
+                {mutation.error.message || "Failed to import file. Please try again."}
               </AlertDescription>
             </Alert>
           )}
@@ -426,7 +426,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
                           </div>
                         </TableCell>
                         <TableCell className="text-right">
-                          {imp.importedEvents?.toLocaleString() ?? "—"}
+                          {imp.importedEvents.toLocaleString()}
                         </TableCell>
                         <TableCell>
                           <time
@@ -445,7 +445,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
                               {DateTime.fromISO(imp.completedAt).toRelative()}
                             </time>
                           ) : (
-                            "—"
+                            "-"
                           )}
                         </TableCell>
                       </TableRow>
