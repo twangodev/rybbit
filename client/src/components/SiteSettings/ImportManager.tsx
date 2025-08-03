@@ -207,16 +207,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     });
   }, [data?.data]);
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) {
-      return "0 B";
-    }
-    const k = 1024;
-    const sizes = ["B", "KB", "MB", "GB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return `${parseFloat((bytes / Math.pow(k, i)).toFixed(1))} ${sizes[i]}`;
-  };
-
   const hasActiveImports = useMemo(() => {
     return data?.data.some(imp =>
       imp.status === "processing" || imp.status === "pending"
@@ -289,11 +279,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
               onChange={handleFileChange}
               disabled={disabled || mutation.isPending}
             />
-            {file && !fileError && (
-              <p className="text-xs text-muted-foreground">
-                Selected: {file.name} ({formatFileSize(file.size)})
-              </p>
-            )}
           </div>
 
           {/* File Validation Error */}
@@ -464,7 +449,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Confirm Large File Import</AlertDialogTitle>
             <AlertDialogDescription>
-              You're about to import a large file ({file && formatFileSize(file.size)}).
+              You're about to import a large file.
               This may take several minutes to process. Are you sure you want to continue?
             </AlertDialogDescription>
           </AlertDialogHeader>
