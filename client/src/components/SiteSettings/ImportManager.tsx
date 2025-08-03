@@ -57,7 +57,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const [source, setSource] = useState<"umami" | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [fileError, setFileError] = useState<FileValidationError | null>(null);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -238,12 +238,10 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
             </Label>
             <Input
               ref={fileInputRef}
-              id="file"
               type="file"
               accept=".csv"
               onChange={handleFileChange}
               disabled={disabled || mutation.isPending}
-              aria-describedby={fileError ? "file-error" : undefined}
             />
             {file && !fileError && (
               <p className="text-xs text-muted-foreground">
@@ -254,7 +252,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
 
           {/* File Validation Error */}
           {fileError && (
-            <Alert variant="destructive" id="file-error">
+            <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 {fileError.message}
