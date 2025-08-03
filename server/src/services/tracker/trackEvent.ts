@@ -1,6 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { isbot } from "isbot";
 import { z, ZodError } from "zod";
+import { createServiceLogger } from "../../lib/logger/logger.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { sessionsService } from "../sessions/sessionsService.js";
 import { checkApiKeyRateLimit, validateApiKey, validateOrigin } from "../shared/requestValidation.js";
@@ -147,6 +148,8 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
     .strict(),
 ]);
 
+const logger = createServiceLogger("track-event");
+
 // Unified handler for all events (pageviews and custom events)
 export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
   try {
@@ -169,7 +172,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
 
     // If API key validation failed with an error, reject the request
     if (apiKeyValidation.error) {
-      console.warn(`[Tracking] Request rejected for site ${validatedPayload.site_id}: ${apiKeyValidation.error}`);
+      logger.warn({ siteId: validatedPayload.site_id, error: apiKeyValidation.error }, "Request rejected - API key validation failed");
       return reply.status(403).send({
         success: false,
         error: apiKeyValidation.error,
@@ -179,8 +182,9 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Check rate limit for API key authenticated requests
     if (apiKeyValidation.success && validatedPayload.api_key) {
       if (!checkApiKeyRateLimit(validatedPayload.api_key)) {
-        console.warn(
-          `[Tracking] Rate limit exceeded for API key ${validatedPayload.api_key} on site ${validatedPayload.site_id}`,
+        logger.warn(
+          { apiKey: validatedPayload.api_key, siteId: validatedPayload.site_id },
+          "Rate limit exceeded for API key"
         );
         return reply.status(429).send({
           success: false,
@@ -194,7 +198,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       const originValidation = await validateOrigin(validatedPayload.site_id, request.headers.origin as string);
 
       if (!originValidation.success) {
-        console.warn(`[Tracking] Request rejected for site ${validatedPayload.site_id}: ${originValidation.error}`);
+        logger.warn({ siteId: validatedPayload.site_id, error: originValidation.error }, "Request rejected - origin validation failed");
         return reply.status(403).send({
           success: false,
           error: originValidation.error,
@@ -211,8 +215,9 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       // Use custom user agent if provided, otherwise fall back to header
       const userAgent = validatedPayload.user_agent || (request.headers["user-agent"] as string);
       if (userAgent && isbot(userAgent)) {
-        console.log(
-          `[Tracking] Bot request filtered for site ${validatedPayload.site_id} from User-Agent: ${userAgent}`,
+        logger.info(
+          { siteId: validatedPayload.site_id, userAgent },
+          "Bot request filtered"
         );
         return reply.status(200).send({
           success: true,
@@ -223,7 +228,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
 
     // Check if the site has exceeded its monthly limit
     if (usageService.isSiteOverLimit(Number(validatedPayload.site_id))) {
-      console.log(`[Tracking] Skipping event for site ${validatedPayload.site_id} - over monthly limit`);
+      logger.info({ siteId: validatedPayload.site_id }, "Skipping event - site over monthly limit");
       return reply.status(200).send("Site over monthly limit, event not tracked");
     }
 
@@ -246,7 +251,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       success: true,
     });
   } catch (error) {
-    console.error("Error tracking event:", error);
+    logger.error(error, "Error tracking event");
     if (error instanceof ZodError) {
       return reply.status(400).send({
         success: false,

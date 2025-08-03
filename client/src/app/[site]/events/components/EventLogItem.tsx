@@ -181,10 +181,21 @@ export function EventLogItem({ event }: EventLogItemProps) {
               <Badge
                 key={key}
                 variant="outline"
-                className="px-1.5 py-0 h-5 text-xs bg-neutral-800 text-neutral-100 font-medium"
+                className="px-1.5 py-0 h-5 text-xs bg-neutral-800 text-neutral-100 font-medium truncate max-w-[90%]"
               >
                 <span className="text-neutral-300 font-light mr-1">{key}:</span>{" "}
-                {String(value)}
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="truncate">
+                      {(typeof value === 'object') ? JSON.stringify(value) : String(value)}
+                    </span>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <span className="max-w-7xl">
+                      {(typeof value === 'object') ? JSON.stringify(value) : String(value)}
+                    </span>
+                  </TooltipContent>
+                </Tooltip>
               </Badge>
             ))}
           </div>

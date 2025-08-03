@@ -1,14 +1,10 @@
-import { Check, ChevronDown, Plus } from "lucide-react";
-import { usePathname, useRouter } from "next/navigation";
+import { ChevronDown, Plus } from "lucide-react";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useGetSite, useGetSitesFromOrg } from "../../../../api/admin/sites";
 import { Favicon } from "../../../../components/Favicon";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "../../../../components/ui/popover";
 import { Button } from "../../../../components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../../../../components/ui/popover";
 import { authClient } from "../../../../lib/auth";
 import { resetStore, useStore } from "../../../../lib/store";
 import { userStore } from "../../../../lib/userStore";
@@ -22,14 +18,12 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
 
   const pathname = usePathname();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const currentSiteId = Number(pathname.split("/")[1]);
 
   const { user } = userStore();
 
-  if (
-    typeof window !== "undefined" &&
-    globalThis.location.hostname === "demo.rybbit.io"
-  ) {
+  if (typeof window !== "undefined" && globalThis.location.hostname === "demo.rybbit.io") {
     return (
       <PopoverContent align="start" className="w-52 p-2">
         <div className="max-h-96 overflow-y-auto">
@@ -54,7 +48,11 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
                   }
                   resetStore();
                   setSite(site.siteId.toString());
-                  router.push(`/${site.siteId}`);
+                  const pathSegments = pathname.split("/");
+                  pathSegments[1] = site.siteId.toString();
+                  const newPath = pathSegments.join("/");
+                  const queryString = searchParams.toString();
+                  router.push(queryString ? `${newPath}?${queryString}` : newPath);
                   onSiteSelect(); // Close popover immediately
                 }}
                 className={cn(
@@ -63,13 +61,8 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
                 )}
               >
                 <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <Favicon
-                    domain={site.domain}
-                    className="w-4 h-4 flex-shrink-0"
-                  />
-                  <div className="text-sm text-white truncate">
-                    {site.domain}
-                  </div>
+                  <Favicon domain={site.domain} className="w-4 h-4 flex-shrink-0" />
+                  <div className="text-sm text-white truncate">{site.domain}</div>
                 </div>
               </div>
             );
@@ -99,7 +92,11 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
                     }
                     resetStore();
                     setSite(site.siteId.toString());
-                    router.push(`/${site.siteId}`);
+                    const pathSegments = pathname.split("/");
+                    pathSegments[1] = site.siteId.toString();
+                    const newPath = pathSegments.join("/");
+                    const queryString = searchParams.toString();
+                    router.push(queryString ? `${newPath}?${queryString}` : newPath);
                     onSiteSelect(); // Close popover immediately
                   }}
                   className={cn(
@@ -108,13 +105,8 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
                   )}
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <Favicon
-                      domain={site.domain}
-                      className="w-4 h-4 flex-shrink-0"
-                    />
-                    <div className="text-sm text-white truncate">
-                      {site.domain}
-                    </div>
+                    <Favicon domain={site.domain} className="w-4 h-4 flex-shrink-0" />
+                    <div className="text-sm text-white truncate">{site.domain}</div>
                   </div>
                   <div className="flex items-center gap-3">
                     <div className="text-xs text-neutral-300 whitespace-nowrap">
@@ -164,9 +156,7 @@ export function SiteSelector() {
         {site ? (
           <button className="flex gap-2 items-center border border-neutral-800 rounded-lg py-1.5 px-3 justify-start cursor-pointer hover:bg-neutral-800/50 transition-colors h-[36px] w-full">
             <Favicon domain={site.domain} className="w-5 h-5" />
-            <div className="text-white truncate text-sm flex-1 text-left">
-              {site.domain}
-            </div>
+            <div className="text-white truncate text-sm flex-1 text-left">{site.domain}</div>
             <ChevronDown className="w-4 h-4 text-neutral-400" />
           </button>
         ) : (

@@ -36,6 +36,7 @@ export type GetSessionsResponse = {
   exit_page: string;
   pageviews: number;
   events: number;
+  errors: number;
 }[];
 
 export interface GetSessionsRequest {
@@ -92,7 +93,8 @@ export async function getSessions(
           argMinIf(pathname, timestamp, type = 'pageview') AS entry_page,
           argMaxIf(pathname, timestamp, type = 'pageview') AS exit_page,
           countIf(type = 'pageview') AS pageviews,
-          countIf(type = 'custom_event') AS events
+          countIf(type = 'custom_event') AS events,
+          countIf(type = 'error') AS errors
       FROM events
       WHERE
           site_id = {siteId:Int32}

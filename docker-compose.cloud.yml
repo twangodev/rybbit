@@ -33,15 +33,7 @@ services:
       - CLICKHOUSE_USER=${CLICKHOUSE_USER:-default}
       - CLICKHOUSE_PASSWORD=${CLICKHOUSE_PASSWORD:-frog}
     healthcheck:
-      test:
-        [
-          "CMD",
-          "wget",
-          "--no-verbose",
-          "--tries=1",
-          "--spider",
-          "http://localhost:8123/ping",
-        ]
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8123/ping"]
       interval: 3s
       timeout: 5s
       retries: 5
@@ -60,6 +52,16 @@ services:
     restart: unless-stopped
     ports:
       - "5432:5432"
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "6379:6379" # Exposed to internet for remote connections
+    volumes:
+      - redis-data:/data
+    restart: unless-stopped
+    command: ["redis-server", "--requirepass", "${REDIS_PASSWORD:-changeme}", "--appendonly", "yes"]
 
   backend:
     container_name: backend
@@ -88,15 +90,25 @@ services:
       - GITHUB_CLIENT_ID=${GITHUB_CLIENT_ID}
       - GITHUB_CLIENT_SECRET=${GITHUB_CLIENT_SECRET}
       - RESEND_API_KEY=${RESEND_API_KEY}
+      # Twilio SMS configuration (cloud only)
+      - TWILIO_ACCOUNT_SID=${TWILIO_ACCOUNT_SID}
+      - TWILIO_AUTH_TOKEN=${TWILIO_AUTH_TOKEN}
+      - TWILIO_PHONE_NUMBER=${TWILIO_PHONE_NUMBER}
       # R2 storage for session replay (cloud only)
       - R2_ACCOUNT_ID=${R2_ACCOUNT_ID}
       - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID}
       - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY}
       - R2_BUCKET_NAME=${R2_BUCKET_NAME:-rybbit}
+      # Redis configuration
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=${REDIS_PASSWORD:-changeme}
     depends_on:
       clickhouse:
         condition: service_healthy
       postgres:
+        condition: service_started
+      redis:
         condition: service_started
     restart: unless-stopped
     ports:
@@ -125,5 +137,6 @@ services:
 volumes:
   clickhouse-data:
   postgres-data:
+  redis-data:
   caddy_data: # Persistent volume for Caddy's certificates and state
   caddy_config: # Persistent volume for Caddy's configuration cache (optional but good practice)
