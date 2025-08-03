@@ -203,7 +203,8 @@ class SiteConfig {
   /**
    * Check if an IP address matches any of the excluded IPs/ranges
    */
-  isIPExcluded(ipAddress: string, excludedIPs: string[]): boolean {
+  isIPExcluded(ipAddress: string, siteId: string | number): boolean {
+    const excludedIPs = this.getExcludedIPs(siteId);
     if (!excludedIPs || excludedIPs.length === 0) {
       return false;
     }

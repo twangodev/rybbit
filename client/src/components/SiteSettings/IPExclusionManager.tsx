@@ -120,7 +120,7 @@ export function IPExclusionManager({ siteId, disabled = false }: IPExclusionMana
               onChange={(e) => updateIPField(index, e.target.value)}
               placeholder="e.g., 192.168.1.1 or 10.0.0.0/24"
               disabled={disabled}
-              className={!validateIPPattern(ip) && ip.trim() !== "" ? "border-red-500" : ""}
+              className={!validateIPPattern(ip).valid && ip.trim() !== "" ? "border-red-500" : ""}
             />
             {ipList.length > 1 && (
               <Button

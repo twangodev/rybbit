@@ -91,9 +91,8 @@ export async function recordSessionReplay(
 
     // Check if the IP should be excluded from tracking
     const requestIP = getIpAddress(request);
-    const excludedIPs = siteConfig.getExcludedIPs(siteId);
 
-    if (siteConfig.isIPExcluded(requestIP, excludedIPs)) {
+    if (siteConfig.isIPExcluded(requestIP, siteId)) {
       logger.info(`[SessionReplay] IP ${requestIP} excluded from tracking for site ${siteId}`);
       return reply.status(200).send({
         success: true,

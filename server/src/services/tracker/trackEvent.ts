@@ -238,9 +238,8 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Check if the IP should be excluded from tracking
     // Use custom IP if provided in payload, otherwise get from request
     const requestIP = validatedPayload.ip_address || request.ip || "";
-    const excludedIPs = siteConfig.getExcludedIPs(validatedPayload.site_id);
 
-    if (siteConfig.isIPExcluded(requestIP, excludedIPs)) {
+    if (siteConfig.isIPExcluded(requestIP, validatedPayload.site_id)) {
       logger.info({ siteId: validatedPayload.site_id, ip: requestIP }, "IP excluded from tracking");
       return reply.status(200).send({
         success: true,
