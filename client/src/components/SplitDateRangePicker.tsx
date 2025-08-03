@@ -66,14 +66,14 @@ export function SplitDateRangePicker({
   const handleStartDateChange = (date?: Date) => {
     handleDateChange({
       ...currentValue,
-      startDate: date ? DateTime.fromJSDate(date) : undefined,
+      startDate: date ? DateTime.fromJSDate(date, { zone: "utc" }) : undefined,
     });
   };
 
   const handleEndDateChange = (date?: Date) => {
     handleDateChange({
       ...currentValue,
-      endDate: date ? DateTime.fromJSDate(date) : undefined,
+      endDate: date ? DateTime.fromJSDate(date, { zone: "utc" }) : undefined,
     });
   };
 
@@ -119,10 +119,10 @@ export function SplitDateRangePicker({
                 selected={startDate?.toJSDate()}
                 onSelect={handleStartDateChange}
                 disabled={(date) => {
-                  const d = DateTime.fromJSDate(date);
-                  if (maxDate && d > maxDate) return true;
-                  if (minDate && d < minDate) return true;
-                  if (endDate && d > endDate) return true;
+                  const d = DateTime.fromJSDate(date, { zone: "utc" }).startOf("day");
+                  if (maxDate && d > maxDate.startOf("day")) return true;
+                  if (minDate && d < minDate.startOf("day")) return true;
+                  if (endDate && d > endDate.startOf("day")) return true;
                   return false;
                 }}
                 captionLayout="dropdown"
@@ -153,10 +153,10 @@ export function SplitDateRangePicker({
                 selected={endDate?.toJSDate()}
                 onSelect={handleEndDateChange}
                 disabled={(date) => {
-                  const d = DateTime.fromJSDate(date);
-                  if (maxDate && d > maxDate) return true;
-                  if (minDate && d < minDate) return true;
-                  if (startDate && d < startDate) return true;
+                  const d = DateTime.fromJSDate(date, { zone: "utc" }).startOf("day");
+                  if (maxDate && d > maxDate.startOf("day")) return true;
+                  if (minDate && d < minDate.startOf("day")) return true;
+                  if (startDate && d < startDate.startOf("day")) return true;
                   return false;
                 }}
                 captionLayout="dropdown"
