@@ -36,7 +36,8 @@ import {
 } from "lucide-react";
 import { DateTime } from "luxon";
 import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
-import { SplitDateRangePicker, DateRange, formatDateRange } from "@/components/SplitDateRangePicker";
+import { SplitDateRangePicker, DateRange } from "@/components/SplitDateRangePicker";
+import { format } from "date-fns";
 
 interface ImportManagerProps {
   siteId: number;
@@ -125,12 +126,14 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
 
   const handleImport = () => {
     if (file && source) {
-      const formattedDateRange = formatDateRange(dateRange);
+      const startDate = dateRange.startDate ? format(dateRange.startDate, "yyyy-MM-dd") : undefined;
+      const endDate = dateRange.endDate ? format(dateRange.endDate, "yyyy-MM-dd") : undefined;
 
       mutation.mutate({
         file,
         source,
-        ...formattedDateRange
+        startDate,
+        endDate,
       });
       setFile(null);
       setShowConfirmDialog(false);

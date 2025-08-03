@@ -188,28 +188,3 @@ export function SplitDateRangePicker({
     </div>
   );
 }
-
-export const formatDateRange = (
-  dateRange: DateRange,
-  dateFormat: string = "yyyy-MM-dd"
-): { startDate?: string; endDate?: string } => {
-  const result: { startDate?: string; endDate?: string } = {};
-
-  if (dateRange.startDate) {
-    result.startDate = format(dateRange.startDate, dateFormat);
-  }
-  if (dateRange.endDate) {
-    result.endDate = format(dateRange.endDate, dateFormat);
-  }
-
-  return result;
-};
-
-export const isValidDateRange = (dateRange: DateRange): boolean => {
-  const { startDate, endDate } = dateRange;
-
-  if (!startDate && !endDate) return true; // Empty range is valid
-  if (!startDate || !endDate) return true; // Partial range is valid
-
-  return startDate <= endDate;
-};
