@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -58,6 +58,8 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [fileError, setFileError] = useState<FileValidationError | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, error } = useGetSiteImports(siteId);
   const mutation = useImportSiteData(siteId);
@@ -132,9 +134,9 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       });
       setFile(null);
       setShowConfirmDialog(false);
-      // Clear the file input
-      const fileInput = document.getElementById("file") as HTMLInputElement;
-      if (fileInput) fileInput.value = "";
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   }, [file, source, dateRange, mutation]);
 
@@ -235,6 +237,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
               CSV File
             </Label>
             <Input
+              ref={fileInputRef}
               id="file"
               type="file"
               accept=".csv"
