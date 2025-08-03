@@ -239,19 +239,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          {/* Date Range Picker */}
-          <SplitDateRangePicker
-            value={dateRange}
-            onChange={setDateRange}
-            label="Date Range (Optional)"
-            disabled={disabled || mutation.isPending}
-            showDescription={true}
-            clearButtonText="Clear dates"
-            className="space-y-2"
-          />
-
-          <Separator />
-
           {/* Data Source Selection */}
           <div className="space-y-2">
             <Label htmlFor="source" className="flex items-center gap-2">
@@ -275,6 +262,19 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Date Range Picker */}
+          <SplitDateRangePicker
+            value={dateRange}
+            onChange={setDateRange}
+            label="Date Range (Optional)"
+            disabled={disabled || mutation.isPending}
+            showDescription={true}
+            clearButtonText="Clear dates"
+            className="space-y-2"
+          />
+
+          <Separator />
 
           {/* File Upload */}
           <div className="space-y-2">
