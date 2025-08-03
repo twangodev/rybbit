@@ -26,10 +26,10 @@ export interface RybbitEvent {
   type: string;
   event_name: string;
   props: Record<string, unknown>;
-  lcp: number | null,
-  cls: number | null,
-  inp: number | null,
-  fcp: number | null,
-  ttfb: number | null,
-  import_id: string | null,
+  lcp: number | null;
+  cls: number | null;
+  inp: number | null;
+  fcp: number | null;
+  ttfb: number | null;
+  import_id: string | null;
 }
