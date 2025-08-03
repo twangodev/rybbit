@@ -140,10 +140,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     }
   };
 
-  const clearDateRange = () => {
-    setDateRange({});
-  };
-
   const getStatusInfo = (status: string) => {
     switch (status.toLowerCase()) {
       case "completed":
@@ -180,7 +176,9 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   };
 
   const sortedImports = useMemo(() => {
-    if (!data?.data) return [];
+    if (!data?.data) {
+      return [];
+    }
 
     return [...data.data].sort((a, b) => {
       const aTime = new Date(a.startedAt).getTime();
@@ -190,7 +188,9 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   }, [data?.data]);
 
   const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return "0 B";
+    if (bytes === 0) {
+      return "0 B";
+    }
     const k = 1024;
     const sizes = ["B", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
