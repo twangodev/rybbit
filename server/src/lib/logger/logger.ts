@@ -29,8 +29,9 @@ export const createLogger = (name: string): FastifyBaseLogger => {
             level: process.env.LOG_LEVEL || "info",
             options: {
               colorize: true,
-              translateTime: "SYS:standard",
-              ignore: "pid,hostname",
+              singleLine: true,
+              translateTime: "HH:MM:ss",
+              ignore: "pid,hostname,name",
               destination: 1, // stdout
             },
           },
@@ -48,8 +49,9 @@ export const createLogger = (name: string): FastifyBaseLogger => {
         target: "pino-pretty",
         options: {
           colorize: true,
-          translateTime: "SYS:standard",
-          ignore: "pid,hostname",
+          singleLine: true,
+          translateTime: "HH:MM:ss",
+          ignore: "pid,hostname,name",
         },
       },
     }) as FastifyBaseLogger;

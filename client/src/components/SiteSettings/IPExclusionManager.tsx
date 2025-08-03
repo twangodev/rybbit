@@ -33,7 +33,6 @@ export function IPExclusionManager({ siteId, disabled = false }: IPExclusionMana
     }
   }, [excludedIPsData, isLoading]);
 
-
   const addIPField = () => {
     setIpList([...ipList, ""]);
     setHasUnsavedChanges(true);
@@ -56,11 +55,11 @@ export function IPExclusionManager({ siteId, disabled = false }: IPExclusionMana
 
   const handleSave = async () => {
     // Filter out empty entries and validate
-    const filteredIPs = ipList.filter(ip => ip.trim() !== "");
+    const filteredIPs = ipList.filter((ip) => ip.trim() !== "");
     const invalidIPs: string[] = [];
     const validationErrors: string[] = [];
 
-    filteredIPs.forEach(ip => {
+    filteredIPs.forEach((ip) => {
       const validation = validateIPPattern(ip);
       if (!validation.valid) {
         invalidIPs.push(ip);
@@ -71,9 +70,10 @@ export function IPExclusionManager({ siteId, disabled = false }: IPExclusionMana
     });
 
     if (invalidIPs.length > 0) {
-      const errorMessage = validationErrors.length > 0 
-        ? `Invalid IP patterns:\n${validationErrors.join('\n')}`
-        : `Invalid IP patterns: ${invalidIPs.join(", ")}`;
+      const errorMessage =
+        validationErrors.length > 0
+          ? `Invalid IP patterns:\n${validationErrors.join("\n")}`
+          : `Invalid IP patterns: ${invalidIPs.join(", ")}`;
       toast.error(errorMessage);
       return;
     }
@@ -105,12 +105,10 @@ export function IPExclusionManager({ siteId, disabled = false }: IPExclusionMana
   return (
     <div className="space-y-4">
       <div>
-        <Label className="text-sm font-medium text-foreground block">
-          IP Exclusions
-        </Label>
+        <Label className="text-sm font-medium text-foreground block">IP Exclusions</Label>
         <p className="text-xs text-muted-foreground mt-1">
-          Exclude traffic from specific IP addresses or ranges. Supports single IPs (192.168.1.1), 
-          CIDR notation (192.168.1.0/24), and ranges (192.168.1.1-192.168.1.10).
+          Exclude traffic from specific IP addresses or ranges. Supports single IPs (192.168.1.1), CIDR notation
+          (192.168.1.0/24), and ranges (192.168.1.1-192.168.1.10).
         </p>
       </div>
 
@@ -152,21 +150,15 @@ export function IPExclusionManager({ siteId, disabled = false }: IPExclusionMana
           <Plus className="h-4 w-4" />
           <span>Add IP</span>
         </Button>
-        
+
         {ipList.length >= 100 && (
-          <span className="text-xs text-muted-foreground">
-            Maximum 100 IP exclusions allowed
-          </span>
+          <span className="text-xs text-muted-foreground">Maximum 100 IP exclusions allowed</span>
         )}
       </div>
 
       {hasUnsavedChanges && (
-        <div className="flex items-center space-x-2 pt-2 border-t">
-          <Button
-            onClick={handleSave}
-            disabled={disabled || updateExcludedIPsMutation.isPending}
-            size="sm"
-          >
+        <div className="flex items-center space-x-2 pt-2">
+          <Button onClick={handleSave} disabled={disabled || updateExcludedIPsMutation.isPending} size="sm">
             {updateExcludedIPsMutation.isPending ? "Saving..." : "Save Changes"}
           </Button>
           <Button

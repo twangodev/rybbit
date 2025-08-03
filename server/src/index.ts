@@ -117,8 +117,9 @@ const server = Fastify({
                 level: process.env.LOG_LEVEL || "info",
                 options: {
                   colorize: true,
-                  translateTime: "SYS:standard",
-                  ignore: "pid,hostname",
+                  singleLine: true,
+                  translateTime: "HH:MM:ss",
+                  ignore: "pid,hostname,name",
                   destination: 1, // stdout
                 },
               },
@@ -129,8 +130,9 @@ const server = Fastify({
               target: "pino-pretty",
               options: {
                 colorize: true,
-                translateTime: "SYS:standard",
-                ignore: "pid,hostname",
+                singleLine: true,
+                translateTime: "HH:MM:ss",
+                ignore: "pid,hostname,name",
               },
             }
           : undefined, // Production without Axiom - plain JSON to stdout
@@ -157,7 +159,7 @@ const server = Fastify({
 });
 
 server.register(cors, {
-  origin: (origin, callback) => {
+  origin: (_origin, callback) => {
     callback(null, true);
 
     // if (!origin || allowList.includes(normalizeOrigin(origin))) {
@@ -417,15 +419,15 @@ const start = async () => {
     }
 
     // Initialize uptime monitoring service in the background (non-blocking)
-    uptimeService
-      .initialize()
-      .then(() => {
-        server.log.info("Uptime monitoring service initialized successfully");
-      })
-      .catch((error) => {
-        server.log.error("Failed to initialize uptime service:", error);
-        // Continue running without uptime monitoring
-      });
+    // uptimeService
+    //   .initialize()
+    //   .then(() => {
+    //     server.log.info("Uptime monitoring service initialized successfully");
+    //   })
+    //   .catch((error) => {
+    //     server.log.error("Failed to initialize uptime service:", error);
+    //     // Continue running without uptime monitoring
+    //   });
   } catch (err) {
     server.log.error(err);
     process.exit(1);

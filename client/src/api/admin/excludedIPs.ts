@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { authedFetch } from "../utils";
 
 export interface ExcludedIPsResponse {
   success: boolean;
@@ -22,53 +23,22 @@ export interface UpdateExcludedIPsResponse {
 
 // Fetch excluded IPs for a site
 export const fetchExcludedIPs = async (siteId: string): Promise<ExcludedIPsResponse> => {
-  const response = await fetch(`/api/site/${siteId}/excluded-ips`, {
-    credentials: "include",
-  });
-
-  if (!response.ok) {
-    let errorMessage = "Failed to fetch excluded IPs";
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.error || errorMessage;
-    } catch {
-      // If JSON parsing fails, use the default error message
-    }
-    throw new Error(errorMessage);
-  }
-
-  return response.json();
+  return await authedFetch<ExcludedIPsResponse>(`/site/${siteId}/excluded-ips`);
 };
 
 // Update excluded IPs for a site
-export const updateExcludedIPs = async (
-  siteId: number,
-  excludedIPs: string[]
-): Promise<UpdateExcludedIPsResponse> => {
-  const response = await fetch(`/api/site/${siteId}/excluded-ips`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    credentials: "include",
-    body: JSON.stringify({
-      siteId: siteId.toString(),
-      excludedIPs,
-    }),
-  });
-
-  if (!response.ok) {
-    let errorMessage = "Failed to update excluded IPs";
-    try {
-      const errorData = await response.json();
-      errorMessage = errorData.error || errorMessage;
-    } catch {
-      // If JSON parsing fails, use the default error message
+export const updateExcludedIPs = async (siteId: number, excludedIPs: string[]): Promise<UpdateExcludedIPsResponse> => {
+  return await authedFetch<UpdateExcludedIPsResponse>(
+    `/site/${siteId}/excluded-ips`,
+    undefined,
+    {
+      method: "POST",
+      data: {
+        siteId: siteId.toString(),
+        excludedIPs,
+      },
     }
-    throw new Error(errorMessage);
-  }
-
-  return response.json();
+  );
 };
 
 // Hook to fetch excluded IPs
@@ -85,8 +55,7 @@ export const useUpdateExcludedIPs = () => {
   const queryClient = useQueryClient();
 
   return useMutation<UpdateExcludedIPsResponse, Error, UpdateExcludedIPsRequest>({
-    mutationFn: ({ siteId, excludedIPs }: UpdateExcludedIPsRequest) =>
-      updateExcludedIPs(siteId, excludedIPs),
+    mutationFn: ({ siteId, excludedIPs }: UpdateExcludedIPsRequest) => updateExcludedIPs(siteId, excludedIPs),
     onSuccess: (_: UpdateExcludedIPsResponse, variables: UpdateExcludedIPsRequest) => {
       toast.success("Excluded IPs updated successfully");
       // Invalidate and refetch excluded IPs data
