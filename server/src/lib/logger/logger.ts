@@ -6,11 +6,10 @@ const isProduction = process.env.NODE_ENV === "production";
 const hasAxiom = !!(process.env.AXIOM_DATASET && process.env.AXIOM_TOKEN);
 
 export const createLogger = (name: string): FastifyBaseLogger => {
-  // For testing Axiom in development
-  if (isDevelopment && hasAxiom) {
+  if (isProduction && hasAxiom) {
     return pino({
       name,
-      level: process.env.LOG_LEVEL || "debug",
+      level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
       transport: {
         target: "@axiomhq/pino",
         options: {
@@ -21,26 +20,17 @@ export const createLogger = (name: string): FastifyBaseLogger => {
     }) as FastifyBaseLogger;
   }
 
-  // Regular development with pretty printing
-  if (isDevelopment) {
-    return pino({
-      name,
-      level: process.env.LOG_LEVEL || "debug",
-      transport: {
-        target: "pino-pretty",
-        options: {
-          colorize: true,
-          translateTime: "SYS:standard",
-          ignore: "pid,hostname",
-        },
-      },
-    }) as FastifyBaseLogger;
-  }
-
-  // Production - no transport, will be piped to Axiom via stdout
   return pino({
     name,
-    level: process.env.LOG_LEVEL || "info",
+    level: process.env.LOG_LEVEL || "debug",
+    transport: {
+      target: "pino-pretty",
+      options: {
+        colorize: true,
+        translateTime: "SYS:standard",
+        ignore: "pid,hostname",
+      },
+    },
   }) as FastifyBaseLogger;
 };
 

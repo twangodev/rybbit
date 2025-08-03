@@ -98,7 +98,7 @@ const hasAxiom = !!(process.env.AXIOM_DATASET && process.env.AXIOM_TOKEN);
 const server = Fastify({
   logger: {
     level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
-    transport: isDevelopment && hasAxiom
+    transport: isProduction
       ? {
           target: "@axiomhq/pino",
           options: {
@@ -106,20 +106,14 @@ const server = Fastify({
             token: process.env.AXIOM_TOKEN,
           },
         }
-      : isDevelopment
-      ? {
+      : {
           target: "pino-pretty",
           options: {
             colorize: true,
             translateTime: "SYS:standard",
             ignore: "pid,hostname",
           },
-        }
-      : isProduction
-      ? {
-          target: "@fastify/one-line-logger",
-        }
-      : undefined,
+        },
     serializers: {
       req(request) {
         return {
@@ -394,7 +388,7 @@ const start = async () => {
     // Start the server first
     await server.listen({ port: 3001, host: "0.0.0.0" });
     server.log.info("Server is listening on http://0.0.0.0:3001");
-    
+
     // Test Axiom logging
     if (hasAxiom) {
       server.log.info({ axiom: true, dataset: process.env.AXIOM_DATASET }, "Axiom logging is configured");
