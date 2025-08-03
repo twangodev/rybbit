@@ -88,11 +88,11 @@ import { trackEvent } from "./services/tracker/trackEvent.js";
 import { telemetryService } from "./services/telemetryService.js";
 import { uptimeService } from "./services/uptime/uptimeService.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
+import { getSiteImports } from "./api/sites/getSiteImports.js";
 import { importSiteData } from "./api/sites/importSiteData.js";
 import boss from "./db/postgres/boss.js";
 import { registerCsvParseWorker } from "./services/import/workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./services/import/workers/dataInsertWorker.js";
-import { getSiteImports } from "./api/sites/getSiteImports.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
