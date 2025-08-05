@@ -95,6 +95,7 @@ import { importSiteData } from "./api/sites/importSiteData.js";
 import boss from "./db/postgres/boss.js";
 import { registerCsvParseWorker } from "./services/import/workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./services/import/workers/dataInsertWorker.js";
+import { createJobQueues } from "./services/import/workers/queues.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -427,6 +428,7 @@ const start = async () => {
     telemetryService.startTelemetryCron();
 
     await boss.start();
+    await createJobQueues();
     await registerCsvParseWorker();
     await registerDataInsertWorker();
 
