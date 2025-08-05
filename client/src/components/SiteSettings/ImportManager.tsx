@@ -42,7 +42,6 @@ import {
   Loader2,
   Database,
 } from "lucide-react";
-import { DateTime } from "luxon";
 import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
 import { SplitDateRangePicker, DateRange } from "@/components/SplitDateRangePicker";
 
@@ -369,8 +368,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
                     <TableHead>Source</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Events</TableHead>
-                    <TableHead>Started</TableHead>
-                    <TableHead>Completed</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -412,26 +409,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
                         </TableCell>
                         <TableCell className="text-right">
                           {imp.importedEvents.toLocaleString()}
-                        </TableCell>
-                        <TableCell>
-                          <time
-                            dateTime={imp.startedAt}
-                            title={DateTime.fromISO(imp.startedAt).toLocaleString(DateTime.DATETIME_FULL)}
-                          >
-                            {DateTime.fromISO(imp.startedAt).toRelative()}
-                          </time>
-                        </TableCell>
-                        <TableCell>
-                          {imp.completedAt ? (
-                            <time
-                              dateTime={imp.completedAt}
-                              title={DateTime.fromISO(imp.completedAt).toLocaleString(DateTime.DATETIME_FULL)}
-                            >
-                              {DateTime.fromISO(imp.completedAt).toRelative()}
-                            </time>
-                          ) : (
-                            "-"
-                          )}
                         </TableCell>
                       </TableRow>
                     );

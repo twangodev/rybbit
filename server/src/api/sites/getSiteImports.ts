@@ -42,8 +42,6 @@ export async function getSiteImports(
         status: imp.status,
         importedEvents: imp.importedEvents,
         errorMessage: imp.errorMessage,
-        startedAt: imp.startedAt,
-        completedAt: imp.completedAt,
         fileName: imp.fileName,
       }))
     });
