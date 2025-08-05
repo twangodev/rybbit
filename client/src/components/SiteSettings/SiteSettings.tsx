@@ -96,18 +96,19 @@ function SiteSettingsInner({
             <ApiKeyManager siteId={siteMetadata.siteId} disabled={disabled} />
           </TabsContent>
 
+          <TabsContent
+            value="import"
+            className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto"
+          >
+            <ImportManager siteId={siteMetadata.siteId} disabled={disabled} />
+          </TabsContent>
+
           <TabsContent value="settings">
             <SiteConfiguration
               siteMetadata={siteMetadata}
               disabled={disabled}
               onClose={() => setDialogOpen(false)}
             />
-          </TabsContent>
-          <TabsContent
-            value="import"
-            className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto"
-          >
-            <ImportManager siteId={siteMetadata.siteId} disabled={disabled} />
           </TabsContent>
         </Tabs>
 
