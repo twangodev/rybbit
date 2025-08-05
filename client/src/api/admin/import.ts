@@ -8,6 +8,7 @@ interface GetSiteImportsResponse {
   status: "pending" | "processing" | "completed" | "failed";
   importedEvents: number;
   errorMessage: string | null;
+  startedAt: string;
   fileName: string;
 }
 
