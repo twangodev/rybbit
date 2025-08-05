@@ -83,10 +83,6 @@ export async function importSiteData(
       return reply.status(400).send({ error: "No file uploaded." });
     }
 
-    if (fileData.file.truncated) {
-      return reply.status(400).send({ error: "File too large. Max size is 100MB." });
-    }
-
     if (fileData.mimetype !== "text/csv" || !fileData.filename.endsWith(".csv")) {
       return reply.status(400).send({ error: "Invalid file type. Only .csv files are accepted." });
     }
