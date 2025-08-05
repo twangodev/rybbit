@@ -1,5 +1,5 @@
-import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import Image from 'next/image';
+import type { BaseLayoutProps } from "fumadocs-ui/layouts/shared";
+import Image from "next/image";
 
 /**
  * Shared layout configurations
@@ -12,31 +12,24 @@ export const baseOptions: BaseLayoutProps = {
   nav: {
     title: (
       <>
-        <Image 
-          src="/rybbit.svg" 
-          alt="Rybbit" 
-          width={24} 
-          height={24}
-          className="mr-2"
-        />
-        <span className="font-semibold">Rybbit Analytics</span>
+        <Image src="/rybbit-text.svg" alt="Rybbit" width={150} height={27} className="mr-2" />
       </>
     ),
   },
   // see https://fumadocs.dev/docs/ui/navigation/links
   links: [
     {
-      text: 'Pricing',
-      url: '/pricing',
+      text: "Pricing",
+      url: "/pricing",
     },
     {
-      text: 'Demo',
-      url: 'https://demo.rybbit.io/21',
+      text: "Demo",
+      url: "https://demo.rybbit.io/21",
       external: true,
     },
     {
-      text: 'GitHub',
-      url: 'https://github.com/rybbit-io/rybbit',
+      text: "GitHub",
+      url: "https://github.com/rybbit-io/rybbit",
       external: true,
     },
   ],
