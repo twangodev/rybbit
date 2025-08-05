@@ -110,7 +110,6 @@ export async function importSiteData(
       source,
       status: "pending",
       fileName: data.filename,
-      fileSize: data.file.readableLength || 0,
     });
 
     let storageLocation: string;

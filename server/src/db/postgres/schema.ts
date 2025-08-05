@@ -11,7 +11,6 @@ import {
   real,
   check,
   index,
-  bigint,
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { sql } from "drizzle-orm";
@@ -609,7 +608,6 @@ export const importStatus = pgTable(
     startedAt: timestamp("started_at", { mode: "string" }).notNull().defaultNow(),
     completedAt: timestamp("completed_at", { mode: "string" }),
     fileName: text("file_name").notNull(),
-    fileSize: bigint("file_size", { mode: "number" }).notNull(),
   },
   (table) => [
     foreignKey({
