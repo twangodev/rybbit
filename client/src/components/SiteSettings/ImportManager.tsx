@@ -308,20 +308,24 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
           {/* Import Error */}
           {mutation.isError && (
             <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                {mutation.error.message || "Failed to import file. Please try again."}
-              </AlertDescription>
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {mutation.error.message || "Failed to import file. Please try again."}
+                </AlertDescription>
+              </div>
             </Alert>
           )}
 
           {/* Success Message */}
           {mutation.isSuccess && (
             <Alert className="border-green-200 bg-green-50">
-              <CheckCircle2 className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                File uploaded successfully and is being processed.
-              </AlertDescription>
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription>
+                  File uploaded successfully and is being processed.
+                </AlertDescription>
+              </div>
             </Alert>
           )}
         </CardContent>
