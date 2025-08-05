@@ -55,7 +55,7 @@ interface FileValidationError {
   message: string;
 }
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 100MB
+const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB
 const ALLOWED_FILE_TYPES = ["text/csv"];
 const ALLOWED_EXTENSIONS = [".csv"];
 const DATA_SOURCES = [
@@ -76,7 +76,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
 
   const resetFileInput = () => {
     setFile(null);
-    // setFileError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -153,6 +152,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       });
 
       resetFileInput();
+      setFileError(null);
       setSource("");
       setDateRange({});
       setShowConfirmDialog(false);
