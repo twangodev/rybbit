@@ -206,12 +206,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
     });
   }, [data?.data]);
 
-  const hasActiveImports = useMemo(() => {
-    return data?.data.some(imp =>
-      imp.status === "processing" || imp.status === "pending"
-    ) ?? false;
-  }, [data?.data]);
-
   const isImportDisabled = !file || !source || mutation.isPending || disabled || !!fileError;
 
   return (
@@ -224,7 +218,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
             Import Data
           </CardTitle>
           <CardDescription>
-            Import site data from other analytics platforms. Supports CSV files up to 100MB.
+            Import data from other analytics platforms. Supports CSV files up to 100MB.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -337,7 +331,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
           <CardTitle>Import History</CardTitle>
           <CardDescription>
             Track the status of your data imports
-            {hasActiveImports && " - Updates automatically every 5 seconds"}
           </CardDescription>
         </CardHeader>
         <CardContent>
