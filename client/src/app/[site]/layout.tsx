@@ -36,7 +36,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   }
 
   return (
-    <div className="flex flex-row h-screen">
+    <div className="flex flex-row h-dvh">
       <AppSidebar />
       <div className="flex flex-1 overflow-hidden">
         <div className="hidden md:flex">

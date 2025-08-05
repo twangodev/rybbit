@@ -1,20 +1,22 @@
 "use client";
 
-import { BarChart, SquareActivity, User } from "lucide-react";
+import { BarChart, ShieldUser, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { useAdminPermission } from "../app/admin/hooks/useAdminPermission";
 import { cn } from "../lib/utils";
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { isAdmin } = useAdminPermission();
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
     <div
       className={cn(
-        "flex flex-col items-start justify-between h-screen p-2 py-3 bg-neutral-900 border-r border-neutral-850 gap-3 transition-all duration-1s00",
+        "flex flex-col items-start justify-between h-dvh p-2 py-3 bg-neutral-900 border-r border-neutral-850 gap-3 transition-all duration-1s00",
         isExpanded ? "w-44" : "w-[45px]"
       )}
       onMouseEnter={() => setIsExpanded(true)}
@@ -38,6 +40,15 @@ export function AppSidebar() {
           active={pathname.startsWith("/uptime")}
           expanded={isExpanded}
         /> */}
+        {isAdmin && (
+          <SidebarLink
+            href="/admin"
+            icon={<ShieldUser className="w-5 h-5" />}
+            label="Admin"
+            active={pathname.startsWith("/admin")}
+            expanded={isExpanded}
+          />
+        )}
       </div>
       <SidebarLink
         href="/settings/account"

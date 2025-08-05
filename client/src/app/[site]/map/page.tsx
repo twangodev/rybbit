@@ -16,7 +16,7 @@ export default function MapPage() {
 
   return (
     <DisabledOverlay message="Map" featurePath="map">
-      <div className="relative w-full h-screen">
+      <div className="relative w-full h-dvh">
         <div className="p-2 md:p-4 relative z-50">
           <SubHeader />
         </div>

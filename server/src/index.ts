@@ -52,10 +52,12 @@ import { changeSiteSalt } from "./api/sites/changeSiteSalt.js";
 import { deleteSite } from "./api/sites/deleteSite.js";
 import { getSite } from "./api/sites/getSite.js";
 import { getSiteApiConfig } from "./api/sites/getSiteApiConfig.js";
+import { getSiteExcludedIPs } from "./api/sites/getSiteExcludedIPs.js";
 import { getSiteHasData } from "./api/sites/getSiteHasData.js";
 import { getSiteIsPublic } from "./api/sites/getSiteIsPublic.js";
 import { getSitesFromOrg } from "./api/sites/getSitesFromOrg.js";
 import { updateSiteApiConfig } from "./api/sites/updateSiteApiConfig.js";
+import { updateSiteExcludedIPs } from "./api/sites/updateSiteExcludedIPs.js";
 import { createCheckoutSession } from "./api/stripe/createCheckoutSession.js";
 import { createPortalSession } from "./api/stripe/createPortalSession.js";
 import { getSubscription } from "./api/stripe/getSubscription.js";
@@ -97,24 +99,49 @@ import { registerDataInsertWorker } from "./services/import/workers/dataInsertWo
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const isDevelopment = process.env.NODE_ENV === "development";
-const isProduction = process.env.NODE_ENV === "production";
+const hasAxiom = !!(process.env.AXIOM_DATASET && process.env.AXIOM_TOKEN);
 
 const server = Fastify({
   logger: {
-    level: process.env.LOG_LEVEL || (isDevelopment ? "debug" : "info"),
-    transport: isProduction
-      ? {
-          target: "@fastify/one-line-logger",
-        }
-      : {
-          target: "pino-pretty",
-          options: {
-            colorize: true,
-            translateTime: "SYS:standard",
-            ignore: "pid,hostname",
-          },
-        },
+    level: process.env.LOG_LEVEL || (process.env.NODE_ENV === "development" ? "debug" : "info"),
+    transport:
+      process.env.NODE_ENV === "production" && IS_CLOUD && hasAxiom
+        ? {
+            targets: [
+              // Send to Axiom
+              {
+                target: "@axiomhq/pino",
+                level: process.env.LOG_LEVEL || "info",
+                options: {
+                  dataset: process.env.AXIOM_DATASET,
+                  token: process.env.AXIOM_TOKEN,
+                },
+              },
+              // Pretty print to stdout for Docker logs
+              {
+                target: "pino-pretty",
+                level: process.env.LOG_LEVEL || "info",
+                options: {
+                  colorize: true,
+                  singleLine: true,
+                  translateTime: "HH:MM:ss",
+                  ignore: "pid,hostname,name",
+                  destination: 1, // stdout
+                },
+              },
+            ],
+          }
+        : process.env.NODE_ENV === "development"
+          ? {
+              target: "pino-pretty",
+              options: {
+                colorize: true,
+                singleLine: true,
+                translateTime: "HH:MM:ss",
+                ignore: "pid,hostname,name",
+              },
+            }
+          : undefined, // Production without Axiom - plain JSON to stdout
     serializers: {
       req(request) {
         return {
@@ -138,7 +165,7 @@ const server = Fastify({
 });
 
 server.register(cors, {
-  origin: (origin, callback) => {
+  origin: (_origin, callback) => {
     callback(null, true);
 
     // if (!origin || allowList.includes(normalizeOrigin(origin))) {
@@ -347,6 +374,8 @@ server.get("/api/get-sites-from-org/:organizationId", getSitesFromOrg);
 server.get("/api/get-site/:id", getSite);
 server.get("/api/site/:siteId/api-config", getSiteApiConfig);
 server.post("/api/site/:siteId/api-config", updateSiteApiConfig);
+server.get("/api/site/:siteId/excluded-ips", getSiteExcludedIPs);
+server.post("/api/site/:siteId/excluded-ips", updateSiteExcludedIPs);
 server.get("/api/list-organization-members/:organizationId", listOrganizationMembers);
 server.get("/api/user/organizations", getUserOrganizations);
 server.post("/api/add-user-to-organization", addUserToOrganization);
@@ -404,6 +433,11 @@ const start = async () => {
     // Start the server first
     await server.listen({ port: 3001, host: "0.0.0.0" });
     server.log.info("Server is listening on http://0.0.0.0:3001");
+
+    // Test Axiom logging
+    if (hasAxiom) {
+      server.log.info({ axiom: true, dataset: process.env.AXIOM_DATASET }, "Axiom logging is configured");
+    }
 
     // Initialize uptime monitoring service in the background (non-blocking)
     uptimeService

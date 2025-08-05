@@ -44,7 +44,7 @@ export function Sidebar() {
   };
 
   return (
-    <div className="w-56 bg-neutral-900 border-r border-neutral-850 flex flex-col h-screen">
+    <div className="w-56 bg-neutral-900 border-r border-neutral-850 flex flex-col h-dvh">
       <div className="flex flex-col p-3 border-b border-neutral-800">
         <SiteSelector />
       </div>
