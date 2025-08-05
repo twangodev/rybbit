@@ -360,7 +360,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
               <p className="text-sm">Upload a CSV file to get started</p>
             </div>
           ) : (
-            <div className="rounded-md border">
+            <div className="rounded-md">
               <Table>
                 <TableHeader>
                   <TableRow>
@@ -390,7 +390,6 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
                         <TableCell>
                           <div className="space-y-1">
                             <Badge
-                              variant="outline"
                               className={`${statusInfo.color} flex items-center gap-1 w-fit`}
                             >
                               <StatusIcon
