@@ -78,8 +78,8 @@ function SiteSettingsInner({
           <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="script">Tracking Script</TabsTrigger>
             <TabsTrigger value="apikey">API Key</TabsTrigger>
-            <TabsTrigger value="settings">Site Settings</TabsTrigger>
             <TabsTrigger value="import">Import</TabsTrigger>
+            <TabsTrigger value="settings">Site Settings</TabsTrigger>
           </TabsList>
 
           <TabsContent
