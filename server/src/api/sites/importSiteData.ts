@@ -78,20 +78,20 @@ export async function importSiteData(
       return reply.status(429).send({ error: concurrentImportLimitResult.reason });
     }
 
-    const fileData = await request.file();
-    if (!fileData) {
+    const data = await request.file();
+    if (!data) {
       return reply.status(400).send({ error: "No file uploaded." });
     }
 
-    if (fileData.mimetype !== "text/csv" || !fileData.filename.endsWith(".csv")) {
+    if (data.mimetype !== "text/csv" || !data.filename.endsWith(".csv")) {
       return reply.status(400).send({ error: "Invalid file type. Only .csv files are accepted." });
     }
 
     const parsedFields = importDataFieldsSchema.safeParse({
       fields: {
-        source: (fileData.fields.source as any)?.value,
-        startDate: (fileData.fields.startDate as any)?.value,
-        endDate: (fileData.fields.endDate as any)?.value,
+        source: (data.fields.source as any)?.value,
+        startDate: (data.fields.startDate as any)?.value,
+        endDate: (data.fields.endDate as any)?.value,
       },
     });
 
@@ -109,17 +109,17 @@ export async function importSiteData(
       organizationId: organization,
       source,
       status: "pending",
-      fileName: fileData.filename,
-      fileSize: fileData.file.readableLength || 0,
+      fileName: data.filename,
+      fileSize: data.file.readableLength || 0,
     });
 
     let storageLocation: string;
 
     try {
       if (IS_CLOUD && r2Storage.isEnabled()) {
-        const r2Key = `imports/${importId}/${fileData.filename}`;
+        const r2Key = `imports/${importId}/${data.filename}`;
 
-        await r2Storage.storeImportFile(r2Key, fileData.file);
+        await r2Storage.storeImportFile(r2Key, data.file);
         storageLocation = r2Key;
 
         console.log(`[Import] File streamed to R2: ${r2Key}`);
@@ -129,7 +129,7 @@ export async function importSiteData(
         const tempFilePath = path.join(importDir, savedFileName);
 
         await fs.promises.mkdir(importDir, { recursive: true });
-        await pipeline(fileData.file, fs.createWriteStream(tempFilePath));
+        await pipeline(data.file, fs.createWriteStream(tempFilePath));
         storageLocation = tempFilePath;
 
         console.log(`[Import] File stored locally: ${tempFilePath}`);
