@@ -21,34 +21,36 @@ const isValidDate = (date: string) => {
 
 const parseDate = (date: string) => DateTime.fromFormat(date, "yyyy-MM-dd", { zone: "utc" });
 
-const importDataRequestSchema = z.object({
-  params: z.object({
-    site: z.string().min(1),
-  }),
-  body: z.object({
+const importDataFieldsSchema = z.object({
+  fields: z.object({
     source: z.enum(["umami"]),
     startDate: z.string().refine(isValidDate).optional(),
     endDate: z.string().refine(isValidDate).optional(),
-  }).refine((body) => {
-    if (body.startDate && body.endDate) {
-      const start = parseDate(body.startDate);
-      const end = parseDate(body.endDate);
+  }).refine((fields) => {
+    if (fields.startDate && fields.endDate) {
+      const start = parseDate(fields.startDate);
+      const end = parseDate(fields.endDate);
       return start <= end;
     }
     return true;
-  }).refine((body) => {
-    if (body.startDate) {
+  }).refine((fields) => {
+    if (fields.startDate) {
       const today = DateTime.utc().startOf("day");
-      const start = parseDate(body.startDate);
+      const start = parseDate(fields.startDate);
       return start <= today;
     }
     return true;
   }),
 }).strict();
 
+const importDataRequestSchema = z.object({
+  params: z.object({
+    site: z.string().min(1),
+  }),
+}).strict();
+
 type ImportDataRequest = {
   Params: z.infer<typeof importDataRequestSchema.shape.params>;
-  Body: z.infer<typeof importDataRequestSchema.shape.body>;
 };
 
 export async function importSiteData(
@@ -56,17 +58,15 @@ export async function importSiteData(
   reply: FastifyReply,
 ) {
   try {
-    const parsed = importDataRequestSchema.safeParse({
+    const parsedParams = importDataRequestSchema.safeParse({
       params: request.params,
-      body: request.body,
     });
 
-    if (!parsed.success) {
+    if (!parsedParams.success) {
       return reply.status(400).send({ error: "Validation error" });
     }
 
-    const { site } = parsed.data.params;
-    const { source, startDate, endDate } = parsed.data.body;
+    const { site } = parsedParams.data.params;
 
     const userHasAccess = await getUserHasAdminAccessToSite(request, site);
     if (!userHasAccess) {
@@ -87,6 +87,19 @@ export async function importSiteData(
       return reply.status(400).send({ error: "Invalid file type. Only .csv files are accepted." });
     }
 
+    const parsedFields = importDataFieldsSchema.safeParse({
+      fields: {
+        source: (fileData.fields.source as any)?.value,
+        startDate: (fileData.fields.startDate as any)?.value,
+        endDate: (fileData.fields.endDate as any)?.value,
+      },
+    });
+
+    if (!parsedFields.success) {
+      return reply.status(400).send({ error: "Validation error" });
+    }
+
+    const { source, startDate, endDate } = parsedFields.data.fields;
     const organization = concurrentImportLimitResult.organizationId;
     const importId = crypto.randomUUID();
 
