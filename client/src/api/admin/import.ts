@@ -46,15 +46,14 @@ export function useImportSiteData(site: number) {
     mutationFn: async (params: ImportSiteDataParams) => {
       const formData = new FormData();
 
-      formData.append("file", params.file);
       formData.append("source", params.source);
-
       if (params.startDate) {
         formData.append("startDate", params.startDate);
       }
       if (params.endDate) {
         formData.append("endDate", params.endDate);
       }
+      formData.append("file", params.file);
 
       return await authedFetch<APIResponse<ImportSiteDataResponse>>(`/import-site-data/${site}`, undefined, {
         method: "POST",
