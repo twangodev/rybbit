@@ -48,6 +48,9 @@ export async function registerCsvParseWorker() {
         }));
       } else {
         console.log(`[CSV Parser] Reading from local disk: ${storageLocation}`);
+        if (!fs.existsSync(storageLocation)) {
+          throw new Error(`Import file not found at path: ${storageLocation}`);
+        }
         stream = fs.createReadStream(storageLocation).pipe(parse({
           headers: getImportDataHeaders(source),
           renameHeaders: true,
