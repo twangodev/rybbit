@@ -1,4 +1,4 @@
-import fs from "fs";
+import { unlink } from "node:fs/promises";
 import { r2Storage } from "../storage/r2StorageService.js";
 
 export const deleteImportFile = async (storageLocation: string, isR2Storage: boolean) => {
@@ -7,7 +7,7 @@ export const deleteImportFile = async (storageLocation: string, isR2Storage: boo
       await r2Storage.deleteImportFile(storageLocation);
       console.log(`Deleted R2 import file: ${storageLocation}`);
     } else {
-      await fs.promises.unlink(storageLocation);
+      await unlink(storageLocation);
       console.log(`Deleted local import file: ${storageLocation}`);
     }
   } catch (error) {

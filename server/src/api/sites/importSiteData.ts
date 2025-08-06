@@ -1,18 +1,19 @@
+import { createWriteStream } from "node:fs";
+import { mkdir } from "node:fs/promises";
+import { randomUUID } from "node:crypto";
+import path from "node:path";
+import { pipeline } from "node:stream/promises";
 import { FastifyRequest, FastifyReply } from "fastify";
-import { pipeline } from "stream/promises";
-import fs from "fs";
-import path from "path";
-import { z } from "zod";
-import crypto from "crypto";
-import boss from "../../db/postgres/boss.js";
-import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
-import { CSV_PARSE_QUEUE } from "../../services/import/workers/jobs.js";
-import { ImportStatusManager } from "../../services/import/importStatusManager.js";
-import { ImportLimiter } from "../../services/import/importLimiter.js";
-import { r2Storage } from "../../services/storage/r2StorageService.js";
-import { IS_CLOUD } from "../../lib/const.js";
 import { DateTime } from "luxon";
+import { z } from "zod";
+import { IS_CLOUD } from "../../lib/const.js";
+import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
+import boss from "../../db/postgres/boss.js";
+import { ImportLimiter } from "../../services/import/importLimiter.js";
+import { ImportStatusManager } from "../../services/import/importStatusManager.js";
 import { deleteImportFile } from "../../services/import/utils.js";
+import { CSV_PARSE_QUEUE } from "../../services/import/workers/jobs.js";
+import { r2Storage } from "../../services/storage/r2StorageService.js";
 
 const isValidDate = (date: string) => {
   const dt = DateTime.fromFormat(date, "yyyy-MM-dd", { zone: "utc" });
@@ -101,7 +102,7 @@ export async function importSiteData(
 
     const { source, startDate, endDate } = parsedFields.data.fields;
     const organization = concurrentImportLimitResult.organizationId;
-    const importId = crypto.randomUUID();
+    const importId = randomUUID();
 
     await ImportStatusManager.createImportStatus({
       importId,
@@ -127,8 +128,8 @@ export async function importSiteData(
         const savedFileName = `${importId}.csv`;
         const tempFilePath = path.join(importDir, savedFileName);
 
-        await fs.promises.mkdir(importDir, { recursive: true });
-        await pipeline(data.file, fs.createWriteStream(tempFilePath));
+        await mkdir(importDir, { recursive: true });
+        await pipeline(data.file, createWriteStream(tempFilePath));
         storageLocation = tempFilePath;
 
         console.log(`[Import] File stored locally: ${tempFilePath}`);
