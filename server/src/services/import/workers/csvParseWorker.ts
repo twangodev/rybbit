@@ -1,14 +1,15 @@
-import fs from "fs";
-import { parse } from "@fast-csv/parse";
+import { access, constants } from "node:fs/promises";
+import { createReadStream } from "node:fs";
 import { Readable } from "stream";
-import boss from "../../../db/postgres/boss.js";
-import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE } from "./jobs.js";
+import { parse } from "@fast-csv/parse";
+import { DateTime } from "luxon";
 import { Job } from "pg-boss";
+import boss from "../../../db/postgres/boss.js";
+import { r2Storage } from "../../storage/r2StorageService.js";
+import { CSV_PARSE_QUEUE, CsvParseJob, DATA_INSERT_QUEUE } from "./jobs.js";
 import { UmamiEvent, umamiHeaders } from "../mappings/umami.js";
 import { ImportStatusManager } from "../importStatusManager.js";
 import { ImportLimiter } from "../importLimiter.js";
-import { r2Storage } from "../../storage/r2StorageService.js";
-import { DateTime } from "luxon";
 import { deleteImportFile } from "../utils.js";
 
 const getImportDataHeaders = (source: string) => {
@@ -48,10 +49,8 @@ export async function registerCsvParseWorker() {
         }));
       } else {
         console.log(`[CSV Parser] Reading from local disk: ${storageLocation}`);
-        if (!fs.existsSync(storageLocation)) {
-          throw new Error(`Import file not found at path: ${storageLocation}`);
-        }
-        stream = fs.createReadStream(storageLocation).pipe(parse({
+        await access(storageLocation, constants.F_OK | constants.R_OK);
+        stream = createReadStream(storageLocation).pipe(parse({
           headers: getImportDataHeaders(source),
           renameHeaders: true,
           ignoreEmpty: true,
