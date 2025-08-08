@@ -94,16 +94,16 @@ services:
       - BASE_URL=${BASE_URL}
       - DISABLE_SIGNUP=${DISABLE_SIGNUP}
       - DISABLE_TELEMETRY=${DISABLE_TELEMETRY}
-      # Redis configuration
-      - REDIS_HOST=redis
-      - REDIS_PORT=6379
+      # # Redis configuration
+      # - REDIS_HOST=redis
+      # - REDIS_PORT=6379
     depends_on:
       clickhouse:
         condition: service_healthy
       postgres:
         condition: service_started
-      redis:
-        condition: service_started
+      # redis:
+      #   condition: service_started
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:3001/api/health"]
       interval: 3s
