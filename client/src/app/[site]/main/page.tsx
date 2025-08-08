@@ -1,5 +1,4 @@
 "use client";
-import { useGetSite } from "../../../api/admin/sites";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { useStore } from "../../../lib/store";
 import { SubHeader } from "../components/SubHeader/SubHeader";
@@ -7,7 +6,6 @@ import { MainSection } from "./components/MainSection/MainSection";
 import { Countries } from "./components/sections/Countries";
 import { Devices } from "./components/sections/Devices";
 import { Events } from "./components/sections/Events";
-import { OutboundLinks } from "./components/sections/OutboundLinks";
 import { Pages } from "./components/sections/Pages";
 import { Referrers } from "./components/sections/Referrers";
 import { Weekdays } from "./components/sections/Weekdays";
@@ -35,7 +33,6 @@ function MainPageContent() {
         <Referrers />
         <Countries />
         <Events />
-        <OutboundLinks />
         <Weekdays />
       </div>
     </div>
