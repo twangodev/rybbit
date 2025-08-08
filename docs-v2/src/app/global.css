@@ -45,3 +45,11 @@ code, pre {
     transform: translateY(calc(-100% - var(--gap)));
   }
 }
+
+.animate-marquee {
+  animation: marquee var(--duration) linear infinite;
+}
+
+.animate-marquee-vertical {
+  animation: marquee-vertical var(--duration) linear infinite;
+}
