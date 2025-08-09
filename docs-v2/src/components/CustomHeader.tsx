@@ -21,17 +21,17 @@ export function CustomHeader() {
         {/* Desktop Navigation */}
         <div className="hidden md:flex md:flex-1 md:justify-center">
           <div className="flex items-center gap-x-6">
-            <Link href="/pricing" className="text-sm font-medium text-neutral-300 hover:text-white transition-colors">
+            <Link href="/pricing" className="text-sm font-base text-neutral-400 hover:text-white transition-colors">
               Pricing
             </Link>
-            <Link href="/docs" className="text-sm font-medium text-neutral-300 hover:text-white transition-colors">
+            <Link href="/docs" className="text-sm font-base text-neutral-400 hover:text-white transition-colors">
               Docs
             </Link>
             <a
               href="https://demo.rybbit.io/21"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm font-medium text-neutral-300 hover:text-white transition-colors"
+              className="text-sm font-base text-neutral-400 hover:text-white transition-colors"
             >
               Demo
             </a>
