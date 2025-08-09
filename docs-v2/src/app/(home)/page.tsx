@@ -331,9 +331,10 @@ export default function HomePage() {
                     Is Rybbit GDPR and CCPA compliant?
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4 text-neutral-300">
-                    Yes, Rybbit is fully compliant with GDPR, CCPA, and other privacy regulations. We don&apos;t use cookies
-                    or collect any personal data that could identify your users. We salt user IDs daily to ensure users
-                    are not fingerprinted. You will not need to display a cookie consent banner to your users.
+                    Yes, Rybbit is fully compliant with GDPR, CCPA, and other privacy regulations. We don&apos;t use
+                    cookies or collect any personal data that could identify your users. We salt user IDs daily to
+                    ensure users are not fingerprinted. You will not need to display a cookie consent banner to your
+                    users.
                   </AccordionContent>
                 </AccordionItem>
 
@@ -344,8 +345,8 @@ export default function HomePage() {
                   <AccordionContent className="px-6 pb-4 text-neutral-300">
                     <p>
                       Google Analytics is free because Google uses it as a funnel into their ecosystem and to sell ads.
-                      Rybbit&apos;s only goal is to provide you with high quality analytics. No more confusing dashboards
-                      pushing random AI features nobody wants.
+                      Rybbit&apos;s only goal is to provide you with high quality analytics. No more confusing
+                      dashboards pushing random AI features nobody wants.
                     </p>
                     <br />
                     <p>
@@ -424,9 +425,9 @@ export default function HomePage() {
                     What platforms does Rybbit support?
                   </AccordionTrigger>
                   <AccordionContent className="px-6 pb-4 text-neutral-300">
-                    Rybbit works with virtually any website platform. Whether you&apos;re using WordPress, Shopify, Next.js,
-                    React, Vue, or any other framework, our simple tracking snippet integrates seamlessly. You can also
-                    use @rybbit/js, our web SDK you can install from npm.
+                    Rybbit works with virtually any website platform. Whether you&apos;re using WordPress, Shopify,
+                    Next.js, React, Vue, or any other framework, our simple tracking snippet integrates seamlessly. You
+                    can also use @rybbit/js, our web SDK you can install from npm.
                   </AccordionContent>
                 </AccordionItem>
                 <AccordionItem value="item-8">

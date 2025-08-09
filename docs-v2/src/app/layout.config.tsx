@@ -12,7 +12,7 @@ export const baseOptions: BaseLayoutProps = {
   nav: {
     title: (
       <>
-        <Image src="/rybbit-text.svg" alt="Rybbit" width={150} height={27} className="mr-2" />
+        <Image src="/rybbit-text.svg" alt="Rybbit" width={110} height={26} className="mr-2" />
       </>
     ),
   },
@@ -21,6 +21,10 @@ export const baseOptions: BaseLayoutProps = {
     {
       text: "Pricing",
       url: "/pricing",
+    },
+    {
+      text: "Docs",
+      url: "/docs",
     },
     {
       text: "Demo",

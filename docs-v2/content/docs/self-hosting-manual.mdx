@@ -85,7 +85,7 @@ This will:
 If you have your own reverse proxy (Nginx, Traefik, Coolify, etc.), you need to exclude Caddy and expose the ports:
 
 1. **Option B1: Modify the .env file**
-   ```env
+   ```bash
    # Add these lines to expose ports
    HOST_BACKEND_PORT="3001:3001"
    HOST_CLIENT_PORT="3002:3002"
@@ -228,7 +228,7 @@ Rybbit consists of these services:
 
 If you need different host ports (e.g., if 3001/3002 are already in use):
 
-```env
+```bash
 HOST_BACKEND_PORT="8080:3001"
 HOST_CLIENT_PORT="8081:3002"
 ```
@@ -243,7 +243,7 @@ In Coolify, you can:
 ### Using with Nginx Proxy Manager
 
 1. Set up port exposure in your .env:
-   ```env
+   ```bash
    HOST_BACKEND_PORT="3001:3001"
    HOST_CLIENT_PORT="3002:3002"
    ```

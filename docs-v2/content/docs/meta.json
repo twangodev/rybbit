@@ -6,18 +6,12 @@
     "track-events",
     "api",
     "definitions",
-    {
-      "title": "Guides",
-      "pages": ["guides"]
-    },
-    {
-      "title": "SDKs",
-      "pages": ["sdks"]
-    },
-    {
-      "title": "Self-Hosting",
-      "pages": ["self-hosting", "self-hosting-manual", "self-hosting-advanced", "self-hosting-guides"]
-    },
+    "guides",
+    "sdks",
+    "self-hosting",
+    "self-hosting-manual",
+    "self-hosting-advanced",
+    "self-hosting-guides",
     "hiding-own-traffic",
     "inviting-users",
     "localhost-tracking",
