@@ -1,11 +1,19 @@
 import type { ReactNode } from 'react';
-import { baseOptions } from '@/app/layout.config';
-import { HomeLayout } from 'fumadocs-ui/layouts/home';
+import { CustomHeader } from '@/components/CustomHeader';
+import { Footer } from '@/components/Footer';
 
 export default function PricingLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return <HomeLayout {...baseOptions}>{children}</HomeLayout>;
+  return (
+    <>
+      <CustomHeader />
+      <main className="flex-1">
+        {children}
+      </main>
+      <Footer />
+    </>
+  );
 }
