@@ -30,7 +30,8 @@
       "Bash(tsc)",
       "Bash(touch:*)",
       "Bash(npm init:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(-print)"
     ]
   },
   "enableAllProjectMcpServers": false

@@ -1,6 +1,6 @@
 ---
 title: Next.js
-description: Integrate Rybbit Analytics with your Next.js application
+description: Integrate Rybbit with your Next.js application for analytics tracking
 ---
 
 import { Steps, Step } from 'fumadocs-ui/components/steps';
@@ -13,19 +13,14 @@ Next.js is a popular React framework that enables features like server-side rend
 ## How to Add Rybbit to Next.js
 
 <Steps>
-<Step>
 ### Retrieve Your Tracking Script
 
 Navigate to your Rybbit dashboard to obtain your site ID. You'll need this for the `data-site-id` attribute.
-</Step>
 
-<Step>
 ### Install the Script Using Next.js Script Component
 
 Next.js provides a built-in [Script component](https://nextjs.org/docs/app/building-your-application/optimizing/scripts) that handles script loading efficiently. This is the recommended approach.
-</Step>
 
-<Step>
 ### Add to Your Layout File
 
 Create or modify your layout file depending on your Next.js version:
@@ -74,7 +69,6 @@ function MyApp({ Component, pageProps }) {
 
 export default MyApp
 ```
-</Step>
 </Steps>
 
 ### (optional) 4. Rewrite the script serving to bypass ad blockers
@@ -129,7 +123,7 @@ Note that this rewrite will consume the bandwidth of your server, as all trackin
 
 
 <Callout type="info">
-  **Page View Tracking in Next.js**: Rybbit's tracking script is designed to automatically detect route changes when using Next.js's `<Link>` component or `router.push()` and track them as page views. If you encounter a rare scenario where page views are not being tracked correctly after client-side navigation, you might need to manually trigger page views using `window.rybbit.trackPageview()`. However, test the default behavior first, as manual tracking is typically not necessary.
+  **Page View Tracking in Next.js**: Rybbit's tracking script is designed to automatically detect route changes when using Next.js's `&lt;Link&gt;` component or `router.push()` and track them as page views. If you encounter a rare scenario where page views are not being tracked correctly after client-side navigation, you might need to manually trigger page views using `window.rybbit.trackPageview()`. However, test the default behavior first, as manual tracking is typically not necessary.
 </Callout>
 
 ## Custom Event Tracking
