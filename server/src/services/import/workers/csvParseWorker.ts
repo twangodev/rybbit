@@ -40,6 +40,29 @@ const createLocalFileStream = async (storageLocation: string, source: string) =>
   }));
 };
 
+const isDateInRange = (dateStr: string, startDate?: string, endDate?: string) => {
+  const createdAt = DateTime.fromFormat(dateStr, "yyyy-MM-dd HH:mm:ss", { zone: "utc" });
+  if (!createdAt.isValid) {
+    return false;
+  }
+
+  if (startDate) {
+    const start = DateTime.fromFormat(startDate, "yyyy-MM-dd", { zone: "utc" });
+    if (!start.isValid || createdAt < start.startOf("day")) {
+      return false;
+    }
+  }
+
+  if (endDate) {
+    const end = DateTime.fromFormat(endDate, "yyyy-MM-dd", { zone: "utc" });
+    if (!end.isValid || createdAt > end.endOf("day")) {
+      return false;
+    }
+  }
+
+  return true;
+}
+
 export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
     const { site, importId, source, storageLocation, isR2Storage, organization, startDate, endDate } = job.data;
@@ -63,25 +86,8 @@ export async function registerCsvParseWorker() {
       await ImportStatusManager.updateStatus(importId, "processing");
 
       for await (const data of stream) {
-        if (!data.created_at) {
+        if (!data.created_at || !isDateInRange(data.created_at, startDate, endDate)) {
           continue;
-        }
-        const createdAt = DateTime.fromFormat(data.created_at, "yyyy-MM-dd HH:mm:ss", { zone: "utc" });
-        if (!createdAt.isValid) {
-          continue;
-        }
-
-        if (startDate) {
-          const start = DateTime.fromFormat(startDate, "yyyy-MM-dd", { zone: "utc" });
-          if (!start.isValid || createdAt < start.startOf("day")) {
-            continue;
-          }
-        }
-        if (endDate) {
-          const end = DateTime.fromFormat(endDate, "yyyy-MM-dd", { zone: "utc" });
-          if (!end.isValid || createdAt > end.endOf("day")) {
-            continue;
-          }
         }
 
         if (rowsProcessed >= importableEvents) {
