@@ -61,7 +61,7 @@ const isDateInRange = (dateStr: string, startDate?: string, endDate?: string) =>
   }
 
   return true;
-}
+};
 
 export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
