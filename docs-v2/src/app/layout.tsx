@@ -10,9 +10,17 @@ const inter = Inter({
 
 export default function Layout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className="dark">
       <body className={`flex flex-col min-h-screen ${inter.variable} font-sans`}>
-        <RootProvider>{children}</RootProvider>
+        <RootProvider 
+          theme={{
+            forcedTheme: "dark",
+            defaultTheme: "dark",
+            enabled: false
+          }}
+        >
+          {children}
+        </RootProvider>
       </body>
     </html>
   );
