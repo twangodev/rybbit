@@ -31,7 +31,8 @@
       "Bash(touch:*)",
       "Bash(npm init:*)",
       "Bash(cp:*)",
-      "Bash(-print)"
+      "Bash(-print)",
+      "Bash(python3:*)"
     ]
   },
   "enableAllProjectMcpServers": false
