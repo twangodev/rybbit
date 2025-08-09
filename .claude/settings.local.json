@@ -28,7 +28,11 @@
       "Bash(source .env)",
       "Bash(POSTGRES_PASSWORD=carbink node src/test-pgboss.js)",
       "Bash(tsc)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(npm init:*)",
+      "Bash(cp:*)",
+      "Bash(-print)",
+      "Bash(python3:*)"
     ]
   },
   "enableAllProjectMcpServers": false

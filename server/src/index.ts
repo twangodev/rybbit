@@ -11,6 +11,7 @@ import { getAdminSites } from "./api/admin/getAdminSites.js";
 import { getEventNames } from "./api/analytics/events/getEventNames.js";
 import { getEventProperties } from "./api/analytics/events/getEventProperties.js";
 import { getEvents } from "./api/analytics/events/getEvents.js";
+import { getOutboundLinks } from "./api/analytics/events/getOutboundLinks.js";
 import { createFunnel } from "./api/analytics/funnels/createFunnel.js";
 import { deleteFunnel } from "./api/analytics/funnels/deleteFunnel.js";
 import { getFunnel } from "./api/analytics/funnels/getFunnel.js";
@@ -261,6 +262,7 @@ const ANALYTICS_ROUTES = [
   "/api/analytics/events/names/",
   "/api/analytics/events/properties/",
   "/api/events/",
+  "/api/events/outbound/",
   "/api/get-site",
   "/api/performance/overview/",
   "/api/performance/time-series/",
@@ -347,6 +349,7 @@ server.delete("/api/goal/:goalId", deleteGoal);
 server.put("/api/goal/update", updateGoal);
 server.get("/api/events/names/:site", getEventNames);
 server.get("/api/events/properties/:site", getEventProperties);
+server.get("/api/events/outbound/:site", getOutboundLinks);
 server.get("/api/org-event-count/:organizationId", getOrgEventCount);
 
 // Performance Analytics
@@ -441,16 +444,18 @@ const start = async () => {
       server.log.info({ axiom: true, dataset: process.env.AXIOM_DATASET }, "Axiom logging is configured");
     }
 
-    // Initialize uptime monitoring service in the background (non-blocking)
-    uptimeService
-      .initialize()
-      .then(() => {
-        server.log.info("Uptime monitoring service initialized successfully");
-      })
-      .catch((error) => {
-        server.log.error("Failed to initialize uptime service:", error);
-        // Continue running without uptime monitoring
-      });
+    if (process.env.NODE_ENV === "production") {
+      // Initialize uptime monitoring service in the background (non-blocking)
+      uptimeService
+        .initialize()
+        .then(() => {
+          server.log.info("Uptime monitoring service initialized successfully");
+        })
+        .catch((error) => {
+          server.log.error("Failed to initialize uptime service:", error);
+          // Continue running without uptime monitoring
+        });
+    }
   } catch (err) {
     await boss.stop();
     server.log.error(err);

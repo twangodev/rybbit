@@ -252,7 +252,7 @@ export function PerformanceChart() {
             <ResponsiveLine
               data={data}
               theme={nivoTheme}
-              margin={{ top: 10, right: 20, bottom: 25, left: 40 }}
+              margin={{ top: 10, right: 20, bottom: 30, left: 40 }}
               xScale={{
                 type: "time",
                 format: "%Y-%m-%d %H:%M:%S",
@@ -265,20 +265,20 @@ export function PerformanceChart() {
                 stacked: false,
                 reverse: false,
               }}
-              enableGridX={false}
+              enableGridX={true}
               enableGridY={true}
               gridYValues={5}
               axisTop={null}
               axisRight={null}
               axisBottom={{
-                tickSize: 0,
+                tickSize: 5,
                 tickPadding: 10,
                 tickRotation: 0,
                 truncateTickAt: 0,
                 format: formatXAxisValue,
               }}
               axisLeft={{
-                tickSize: 0,
+                tickSize: 5,
                 tickPadding: 10,
                 tickRotation: 0,
                 truncateTickAt: 0,
