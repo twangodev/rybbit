@@ -1,6 +1,5 @@
 import { access, constants } from "node:fs/promises";
 import { createReadStream } from "node:fs";
-import { Readable } from "stream";
 import { parse } from "@fast-csv/parse";
 import { DateTime } from "luxon";
 import { Job } from "pg-boss";
@@ -19,7 +18,27 @@ const getImportDataHeaders = (source: string) => {
     default:
       throw new Error(`Unsupported import source: ${source}`);
   }
-}
+};
+
+const createR2FileStream = async (storageLocation: string, source: string) => {
+  console.log(`[CSV Parser] Reading from R2: ${storageLocation}`);
+  const fileStream = await r2Storage.getImportFileStream(storageLocation);
+  return fileStream.pipe(parse({
+    headers: getImportDataHeaders(source),
+    renameHeaders: true,
+    ignoreEmpty: true,
+  }));
+};
+
+const createLocalFileStream = async (storageLocation: string, source: string) => {
+  console.log(`[CSV Parser] Reading from local disk: ${storageLocation}`);
+  await access(storageLocation, constants.F_OK | constants.R_OK);
+  return createReadStream(storageLocation).pipe(parse({
+    headers: getImportDataHeaders(source),
+    renameHeaders: true,
+    ignoreEmpty: true,
+  }));
+};
 
 export async function registerCsvParseWorker() {
   await boss.work(CSV_PARSE_QUEUE, { batchSize: 1, pollingIntervalSeconds: 10 }, async ([ job ]: Job<CsvParseJob>[]) => {
@@ -37,25 +56,9 @@ export async function registerCsvParseWorker() {
       let chunk: UmamiEvent[] = [];
       let rowsProcessed = 0;
 
-      let stream: Readable;
-
-      if (isR2Storage) {
-        console.log(`[CSV Parser] Reading from R2: ${storageLocation}`);
-        const fileStream = await r2Storage.getImportFileStream(storageLocation);
-        stream = fileStream.pipe(parse({
-          headers: getImportDataHeaders(source),
-          renameHeaders: true,
-          ignoreEmpty: true,
-        }));
-      } else {
-        console.log(`[CSV Parser] Reading from local disk: ${storageLocation}`);
-        await access(storageLocation, constants.F_OK | constants.R_OK);
-        stream = createReadStream(storageLocation).pipe(parse({
-          headers: getImportDataHeaders(source),
-          renameHeaders: true,
-          ignoreEmpty: true,
-        }));
-      }
+      const stream = isR2Storage
+        ? await createR2FileStream(storageLocation, source)
+        : await createLocalFileStream(storageLocation, source);
 
       await ImportStatusManager.updateStatus(importId, "processing");
 
