@@ -100,7 +100,7 @@ export default function HomePage() {
         >
           The Open Source Google Analytics Replacement
         </h1>
-        <h2 className="text-lg md:text-2xl pt-4 md:pt-6 px-4 tracking-tight max-w-4xl text-center text-neutral-300">
+        <h2 className="text-base md:text-xl pt-4 md:pt-6 px-4 tracking-tight max-w-4xl text-center text-neutral-300 font-light">
           Next-gen, open source, lightweight, cookieless web & product analytics for everyone.
         </h2>
 
@@ -251,7 +251,7 @@ export default function HomePage() {
             </div>
 
             <h2 className="text-3xl md:text-5xl font-bold tracking-tight">Features</h2>
-            <p className="mt-4 text-base md:text-xl text-neutral-300 max-w-2xl mx-auto">
+            <p className="mt-4 text-base md:text-xl text-neutral-300 max-w-2xl mx-auto font-light">
               Everything you need to understand your audience and grow your business, without the complexity.
             </p>
           </div>
@@ -283,7 +283,7 @@ export default function HomePage() {
                 User Testimonials
               </div>
               <h2 className="text-3xl md:text-5xl font-bold tracking-tight">People love Rybbit</h2>
-              <p className="mt-4 text-base md:text-xl text-neutral-300 max-w-2xl mx-auto">
+              <p className="mt-4 text-base md:text-xl text-neutral-300 max-w-2xl mx-auto font-light">
                 See what others think about Rybbit Analytics
               </p>
             </div>
@@ -319,7 +319,7 @@ export default function HomePage() {
                 Common Questions
               </div>
               <h2 className="text-3xl md:text-4xl font-bold">Frequently Asked Questions</h2>
-              <p className="mt-4 text-neutral-300 max-w-2xl mx-auto">
+              <p className="mt-4 text-neutral-300 max-w-2xl mx-auto font-light">
                 Everything you need to know about Rybbit Analytics
               </p>
             </div>
@@ -466,7 +466,7 @@ export default function HomePage() {
               <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6">
                 It&apos;s time to switch to analytics that&apos;s made for you
               </h2>
-              <p className="text-base md:text-xl text-neutral-300 mb-6 md:mb-10 max-w-3xl mx-auto">
+              <p className="text-base md:text-xl text-neutral-300 mb-6 md:mb-10 max-w-3xl mx-auto font-light">
                 The first 10,000 events a month are free
               </p>
 

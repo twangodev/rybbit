@@ -79,7 +79,7 @@ export function PricingSection() {
             Simple Pricing
           </div>
           <h2 className="text-3xl md:text-4xl font-bold">Transparent Pricing</h2>
-          <p className="mt-4 text-neutral-300 max-w-2xl mx-auto">
+          <p className="mt-4 text-neutral-300 max-w-2xl mx-auto font-light">
             Privacy-friendly analytics with all the features you need to grow
           </p>
         </div>
@@ -189,7 +189,12 @@ export function PricingSection() {
                         ) : (
                           <>
                             <span className="text-3xl font-bold">
-                              ${isAnnual && 'annual' in prices ? Math.round(prices.annual / 12) : 'monthly' in prices ? prices.monthly : 0}
+                              $
+                              {isAnnual && "annual" in prices
+                                ? Math.round(prices?.annual ?? 0 / 12)
+                                : "monthly" in prices
+                                ? prices.monthly
+                                : 0}
                             </span>
                             <span className="ml-1 text-neutral-400">/month</span>
                           </>

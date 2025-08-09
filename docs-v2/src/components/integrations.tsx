@@ -43,13 +43,7 @@ const PlatformLogo = ({ name, logo, path }: { name: string; logo: string; path: 
           "cursor-pointer hover:scale-105 transition-transform"
         )}
       >
-        <Image
-          src={logo}
-          alt={name}
-          width={60}
-          height={60}
-          className="object-contain max-h-10"
-        />
+        <Image src={logo} alt={name} width={60} height={60} className="object-contain max-h-10" />
       </div>
     </Link>
   );
@@ -66,12 +60,8 @@ export function Integrations() {
         <div className="inline-block bg-emerald-900/30 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium mb-4">
           Seamless Integration
         </div>
-        <h2 className="text-4xl font-bold mb-3">
-          Works with all your favorite platforms
-        </h2>
-        <p className="text-xl text-neutral-300">
-          Integrate Rybbit with any platform in minutes
-        </p>
+        <h2 className="text-4xl font-bold mb-3">Works with all your favorite platforms</h2>
+        <p className="text-xl text-neutral-300 font-light">Integrate Rybbit with any platform in minutes</p>
       </div>
 
       <div className="relative flex w-full flex-col items-center justify-center overflow-hidden gap-8">
