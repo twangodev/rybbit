@@ -1,14 +1,11 @@
 import { notFound } from 'next/navigation';
 import { blogSource } from '@/lib/blog-source';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ChevronLeft } from 'lucide-react';
 import type { Metadata } from 'next';
-
-interface BlogPostPageProps {
-  params: {
-    slug: string[];
-  };
-}
+import defaultMdxComponents from 'fumadocs-ui/mdx';
+import { Pre } from 'fumadocs-ui/components/codeblock';
 
 export function generateStaticParams() {
   return blogSource.getPages().map((page) => ({
@@ -96,15 +93,33 @@ export default async function BlogPostPage(props: { params: Promise<{ slug: stri
       </header>
 
       {page.data.image && (
-        <img 
+        <Image 
           src={page.data.image} 
           alt={page.data.title}
+          width={1200}
+          height={400}
           className="w-full h-96 object-cover rounded-lg mb-8"
         />
       )}
 
-      <div className="prose prose-invert prose-lg max-w-none">
-        <MDXContent />
+      <div className="prose prose-invert prose-lg max-w-none 
+        prose-code:before:content-none prose-code:after:content-none
+        [&_pre]:my-4 [&_pre]:overflow-x-auto">
+        <MDXContent components={{
+          ...defaultMdxComponents,
+          pre: (props: React.ComponentPropsWithoutRef<'pre'>) => (
+            <Pre {...props} className="bg-neutral-900 border border-neutral-800 rounded-lg" />
+          ),
+          code: ({ className, ...props }: React.ComponentPropsWithoutRef<'code'>) => {
+            // Check if this code is inside a pre tag (code block)
+            const isCodeBlock = className?.includes('language-');
+            if (isCodeBlock) {
+              return <code className={className} {...props} />;
+            }
+            // Inline code
+            return <code className="bg-neutral-900 px-1.5 py-0.5 rounded text-sm" {...props} />;
+          },
+        }} />
       </div>
     </article>
   );
