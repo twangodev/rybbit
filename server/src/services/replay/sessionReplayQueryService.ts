@@ -129,6 +129,7 @@ export class SessionReplayQueryService {
 
     const metadataResults = await processResults<any>(metadataResult);
     const metadata = metadataResults[0];
+    console.log(metadata);
 
     if (!metadata) {
       throw new Error("Session replay not found");
@@ -161,6 +162,8 @@ export class SessionReplayQueryService {
     };
 
     const eventsResults = await processResults<EventRow>(eventsResult);
+
+    console.log(eventsResults);
 
     // Group events by batch key for efficient R2 retrieval
     const eventsByBatch = new Map<string | null, EventRow[]>();
