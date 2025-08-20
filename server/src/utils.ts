@@ -99,20 +99,26 @@ const embeddedOS = new Set(["Windows IoT", "Contiki", "Raspbian", "Morph OS", "P
 export function getDeviceType(screenWidth: number, screenHeight: number, ua: UAParser.IResult): string {
   if (ua.os.name) {
     if (desktopOS.has(ua.os.name)) {
+      console.info("Desktop: ", ua.os.name);
       return "Desktop";
     } else if (mobileOS.has(ua.os.name)) {
+      console.info("Mobile: ", ua.os.name);
       return "Mobile";
     } else if (tvOS.has(ua.os.name)) {
+      console.info("TV: ", ua.os.name);
       return "TV";
     } else if (gamingOS.has(ua.os.name)) {
+      console.info("Console: ", ua.os.name);
       return "Console";
     } else if (embeddedOS.has(ua.os.name)) {
+      console.info("Embedded: ", ua.os.name);
       return "Embedded";
     }
   }
 
   const largerDimension = Math.max(screenWidth, screenHeight);
   const smallerDimension = Math.min(screenWidth, screenHeight);
+  console.info("no os name: ", largerDimension);
   if (largerDimension > 1024) {
     return "Desktop";
   } else if (largerDimension > 768 && smallerDimension > 1024) {
