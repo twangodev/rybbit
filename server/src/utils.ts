@@ -97,28 +97,28 @@ const gamingOS = new Set(["PlayStation", "Xbox", "Nintendo"]);
 const embeddedOS = new Set(["Windows IoT", "Contiki", "Raspbian", "Morph OS", "Pico", "NetRange"]);
 
 export function getDeviceType(screenWidth: number, screenHeight: number, ua: UAParser.IResult): string {
+  const largerDimension = Math.max(screenWidth, screenHeight);
+  const smallerDimension = Math.min(screenWidth, screenHeight);
   if (ua.os.name) {
     if (desktopOS.has(ua.os.name)) {
-      console.info("Desktop: ", ua.os.name);
+      console.info("[BUH] Desktop: ", ua.os.name, `${largerDimension}x${smallerDimension}`);
       return "Desktop";
     } else if (mobileOS.has(ua.os.name)) {
-      console.info("Mobile: ", ua.os.name);
+      console.info("[BUH] Mobile: ", ua.os.name, `${largerDimension}x${smallerDimension}`);
       return "Mobile";
     } else if (tvOS.has(ua.os.name)) {
-      console.info("TV: ", ua.os.name);
+      console.info("[BUH] TV: ", ua.os.name, `${largerDimension}x${smallerDimension}`);
       return "TV";
     } else if (gamingOS.has(ua.os.name)) {
-      console.info("Console: ", ua.os.name);
+      console.info("Console: ", ua.os.name, `${largerDimension}x${smallerDimension}`);
       return "Console";
     } else if (embeddedOS.has(ua.os.name)) {
-      console.info("Embedded: ", ua.os.name);
+      console.info("Embedded: ", ua.os.name, `${largerDimension}x${smallerDimension}`);
       return "Embedded";
     }
   }
 
-  const largerDimension = Math.max(screenWidth, screenHeight);
-  const smallerDimension = Math.min(screenWidth, screenHeight);
-  console.info("no os name: ", largerDimension);
+  console.info("[BUH] no os name: ", largerDimension);
   if (largerDimension > 1024) {
     return "Desktop";
   } else if (largerDimension > 768 && smallerDimension > 1024) {
