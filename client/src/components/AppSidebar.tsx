@@ -4,14 +4,19 @@ import { BarChart, ShieldUser, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { useAdminPermission } from "../app/admin/hooks/useAdminPermission";
 import { cn } from "../lib/utils";
+import { useEmbedablePage } from "../app/[site]/utils";
+import { IS_CLOUD } from "../lib/const";
 
-export function AppSidebar() {
+function AppSidebarContent() {
   const pathname = usePathname();
   const { isAdmin } = useAdminPermission();
   const [isExpanded, setIsExpanded] = useState(false);
+  const embed = useEmbedablePage();
+
+  if (embed) return null;
 
   return (
     <div
@@ -40,7 +45,7 @@ export function AppSidebar() {
           active={pathname.startsWith("/uptime")}
           expanded={isExpanded}
         /> */}
-        {isAdmin && (
+        {isAdmin && IS_CLOUD && (
           <SidebarLink
             href="/admin"
             icon={<ShieldUser className="w-5 h-5" />}
@@ -58,6 +63,14 @@ export function AppSidebar() {
         expanded={isExpanded}
       />
     </div>
+  );
+}
+
+export function AppSidebar() {
+  return (
+    <Suspense fallback={null}>
+      <AppSidebarContent />
+    </Suspense>
   );
 }
 

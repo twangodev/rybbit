@@ -10,10 +10,15 @@ import { Menu } from "lucide-react";
 import { VisuallyHidden } from "radix-ui";
 import { Favicon } from "../../../../components/Favicon";
 import { AppSidebar } from "../../../../components/AppSidebar";
+import { useEmbedablePage } from "../../utils";
+import { Suspense } from "react";
 
-export function MobileSidebar() {
+function MobileSidebarContent() {
   const pathname = usePathname();
   const { data: site } = useGetSite(Number(pathname.split("/")[1]));
+
+  const embed = useEmbedablePage();
+  if (embed) return null;
 
   return (
     <div className="md:hidden flex items-center gap-2">
@@ -35,5 +40,13 @@ export function MobileSidebar() {
       </Sheet>
       {site && <Favicon domain={site.domain} className="w-6 h-6" />}
     </div>
+  );
+}
+
+export function MobileSidebar() {
+  return (
+    <Suspense fallback={null}>
+      <MobileSidebarContent />
+    </Suspense>
   );
 }

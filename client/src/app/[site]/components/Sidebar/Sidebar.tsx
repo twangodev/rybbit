@@ -25,16 +25,19 @@ import { SiteSettings } from "../../../../components/SiteSettings/SiteSettings";
 import { authClient } from "../../../../lib/auth";
 import { IS_CLOUD } from "../../../../lib/const";
 import { SiteSelector } from "./SiteSelector";
+import { useEmbedablePage } from "../../utils";
+import { Suspense } from "react";
 
-export function Sidebar() {
+function SidebarContent() {
   const session = authClient.useSession();
   const pathname = usePathname();
+  const embed = useEmbedablePage();
 
   const { data: site } = useGetSite(Number(pathname.split("/")[1]));
 
   // Check which tab is active based on the current path
   const getTabPath = (tabName: string) => {
-    return `/${pathname.split("/")[1]}/${tabName.toLowerCase()}`;
+    return `/${pathname.split("/")[1]}/${tabName.toLowerCase()}${embed ? "?embed=true" : ""}`;
   };
 
   const isActiveTab = (tabName: string) => {
@@ -155,7 +158,7 @@ export function Sidebar() {
           href={getTabPath("reports")}
           icon={<ChartBarDecreasing className="w-4 h-4" />}
           /> */}
-        {session.data && (
+        {session.data && !embed && (
           <>
             <SidebarComponents.SectionHeader>Settings</SidebarComponents.SectionHeader>
             <SiteSettings
@@ -173,5 +176,13 @@ export function Sidebar() {
         )}
       </div>
     </div>
+  );
+}
+
+export function Sidebar() {
+  return (
+    <Suspense fallback={null}>
+      <SidebarContent />
+    </Suspense>
   );
 }
