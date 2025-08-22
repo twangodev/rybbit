@@ -104,6 +104,7 @@ export async function addSite(
         newSite[0].blockBots === undefined ? true : newSite[0].blockBots,
       excludedIPs: Array.isArray(newSite[0].excludedIPs) ? newSite[0].excludedIPs : [],
       apiKey: newSite[0].apiKey,
+      searchConsoleApiKey: newSite[0].searchConsoleApiKey,
     });
 
     return reply.status(201).send(newSite[0]);

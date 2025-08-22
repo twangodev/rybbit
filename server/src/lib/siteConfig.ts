@@ -11,6 +11,7 @@ interface SiteConfigData {
   blockBots: boolean;
   excludedIPs: string[];
   apiKey?: string | null;
+  searchConsoleApiKey?: string | null;
 }
 
 class SiteConfig {
@@ -28,6 +29,7 @@ class SiteConfig {
           blockBots: sites.blockBots,
           excludedIPs: sites.excludedIPs,
           apiKey: sites.apiKey,
+          searchConsoleApiKey: sites.searchConsoleApiKey,
         })
         .from(sites);
 
@@ -43,6 +45,7 @@ class SiteConfig {
           blockBots: site.blockBots === undefined ? true : site.blockBots,
           excludedIPs: Array.isArray(site.excludedIPs) ? site.excludedIPs : [],
           apiKey: site.apiKey,
+          searchConsoleApiKey: site.searchConsoleApiKey,
         });
       }
 
@@ -153,6 +156,17 @@ class SiteConfig {
     const config = this.siteConfigMap.get(siteId);
     if (config) {
       config.apiKey = apiKey;
+      this.siteConfigMap.set(siteId, config);
+    }
+  }
+
+  /**
+   * Update the Search Console API key of a site in the cache
+   */
+  updateSiteSearchConsoleApiKey(siteId: number, searchConsoleApiKey: string | null): void {
+    const config = this.siteConfigMap.get(siteId);
+    if (config) {
+      config.searchConsoleApiKey = searchConsoleApiKey;
       this.siteConfigMap.set(siteId, config);
     }
   }

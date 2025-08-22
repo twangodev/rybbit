@@ -24,7 +24,7 @@ import { resetStore, useStore } from "../../lib/store";
 import { useRouter } from "next/navigation";
 import { isValidDomain, normalizeDomain } from "../../lib/utils";
 
-export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disabled?: boolean }) {
+export function AddSite({ trigger, disabled, prefilledDomain }: { trigger?: React.ReactNode; disabled?: boolean; prefilledDomain?: string }) {
   const { setSite } = useStore();
   const router = useRouter();
 
@@ -76,7 +76,7 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
   };
 
   const resetForm = () => {
-    setDomain("");
+    setDomain(prefilledDomain || "");
     setError("");
     setIsPublic(false);
     setSaltUserIds(false);
@@ -109,6 +109,7 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
             resetForm();
           }
         }}
+        open={open}
       >
         <DialogTrigger asChild>
           {trigger || (

@@ -65,6 +65,10 @@ export const sites = pgTable(
     blockBots: boolean().default(true).notNull(),
     excludedIPs: jsonb("excluded_ips").default([]), // Array of IP addresses/ranges to exclude
     apiKey: text("api_key"), // Format: rb_{32_hex_chars} = 35 chars total
+    searchConsoleApiKey: text("search_console_api_key"), // Google Search Console API key (deprecated - use OAuth2)
+    searchConsoleAccessToken: text("search_console_access_token"), // Google OAuth2 access token for Search Console
+    searchConsoleRefreshToken: text("search_console_refresh_token"), // Google OAuth2 refresh token for Search Console
+    searchConsoleTokenExpiry: timestamp("search_console_token_expiry"), // Token expiry timestamp
   },
   (table) => [
     foreignKey({

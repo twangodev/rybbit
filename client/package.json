@@ -3,7 +3,7 @@
   "version": "1.5.1",
   "private": true,
   "scripts": {
-    "dev": "next dev -p 3002 --turbopack",
+    "dev": "next dev -p 3002",
     "build": "next build",
     "start": "next start -p 3002",
     "lint": "next lint",
@@ -53,6 +53,7 @@
     "date-fns": "^4.1.0",
     "framer-motion": "12.11.0",
     "geojson": "0.5.0",
+    "googleapis": "^155.0.0",
     "ip-address": "^10.0.1",
     "jotai": "2.12.4",
     "ldrs": "1.1.7",

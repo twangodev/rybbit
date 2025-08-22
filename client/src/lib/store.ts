@@ -100,6 +100,24 @@ export const GOALS_PAGE_FILTERS: FilterParameter[] = [
   "exit_page",
 ];
 
+export const SEARCH_CONSOLE_PAGE_FILTERS: FilterParameter[] = [
+  "hostname",
+  "browser",
+  "browser_version",
+  "operating_system",
+  "operating_system_version",
+  "language",
+  "country",
+  "region",
+  "city",
+  "device_type",
+  "referrer",
+  "event_name",
+  "channel",
+  "entry_page",
+  "exit_page",
+];
+
 export const USER_PAGE_FILTERS: FilterParameter[] = [
   "hostname",
   "browser",

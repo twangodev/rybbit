@@ -16,6 +16,7 @@ import {
   User,
   Video,
   Funnel,
+  Search,
 } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useGetSite } from "../../../../api/admin/sites";
@@ -89,6 +90,12 @@ export function Sidebar() {
           active={isActiveTab("goals")}
           href={getTabPath("goals")}
           icon={<Target className="w-4 h-4" />}
+        />
+        <SidebarComponents.Item
+          label="Search Console"
+          active={isActiveTab("search-console")}
+          href={getTabPath("search-console")}
+          icon={<Search className="w-4 h-4" />}
         />
         <SidebarComponents.SectionHeader>Product Analytics</SidebarComponents.SectionHeader>
         <div className="hidden md:block">
