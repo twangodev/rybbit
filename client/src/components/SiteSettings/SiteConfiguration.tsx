@@ -39,11 +39,7 @@ interface SiteConfigurationProps {
   onClose?: () => void;
 }
 
-export function SiteConfiguration({
-  siteMetadata,
-  disabled = false,
-  onClose,
-}: SiteConfigurationProps) {
+export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: SiteConfigurationProps) {
   const { refetch } = useGetSitesFromOrg(siteMetadata?.organizationId ?? "");
   const router = useRouter();
 
@@ -53,9 +49,7 @@ export function SiteConfiguration({
   const [isChangingPublic, setIsChangingPublic] = useState(false);
   const [isSalting, setIsSalting] = useState(siteMetadata.saltUserIds || false);
   const [isChangingSalt, setIsChangingSalt] = useState(false);
-  const [isBlockingBots, setIsBlockingBots] = useState(
-    siteMetadata.blockBots || false
-  );
+  const [isBlockingBots, setIsBlockingBots] = useState(siteMetadata.blockBots || false);
   const [isChangingBlockBots, setIsChangingBlockBots] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -101,9 +95,7 @@ export function SiteConfiguration({
       setIsChangingPublic(true);
       await changeSitePublic(siteMetadata.siteId, checked);
       setIsPublic(checked);
-      toast.success(
-        checked ? "Site analytics made public" : "Site analytics made private"
-      );
+      toast.success(checked ? "Site analytics made public" : "Site analytics made private");
       refetch();
     } catch (error) {
       console.error("Error changing public status:", error);
@@ -119,9 +111,7 @@ export function SiteConfiguration({
       setIsChangingSalt(true);
       await changeSiteSalt(siteMetadata.siteId, checked);
       setIsSalting(checked);
-      toast.success(
-        checked ? "User ID salting enabled" : "User ID salting disabled"
-      );
+      toast.success(checked ? "User ID salting enabled" : "User ID salting disabled");
       refetch();
     } catch (error) {
       console.error("Error changing salt setting:", error);
@@ -153,10 +143,7 @@ export function SiteConfiguration({
       {/* Public Analytics Section */}
       <div className="flex items-center justify-between">
         <div>
-          <Label
-            htmlFor="publicAnalytics"
-            className="text-sm font-medium text-foreground block"
-          >
+          <Label htmlFor="publicAnalytics" className="text-sm font-medium text-foreground block">
             Public Analytics
           </Label>
           <p className="text-xs text-muted-foreground mt-1">
@@ -174,15 +161,11 @@ export function SiteConfiguration({
       {/* User ID Salting Section */}
       <div className="flex items-center justify-between">
         <div>
-          <Label
-            htmlFor="saltUserIds"
-            className="text-sm font-medium text-foreground block"
-          >
+          <Label htmlFor="saltUserIds" className="text-sm font-medium text-foreground block">
             Enable User ID Salting
           </Label>
           <p className="text-xs text-muted-foreground mt-1">
-            When enabled, user IDs will be salted with a daily rotating key for
-            enhanced privacy
+            When enabled, user IDs will be salted with a daily rotating key for enhanced privacy
           </p>
         </div>
         <Switch
@@ -196,15 +179,11 @@ export function SiteConfiguration({
       {/* Bot Blocking Section */}
       <div className="flex items-center justify-between">
         <div>
-          <Label
-            htmlFor="blockBots"
-            className="text-sm font-medium text-foreground block"
-          >
+          <Label htmlFor="blockBots" className="text-sm font-medium text-foreground block">
             Block Bot Traffic
           </Label>
           <p className="text-xs text-muted-foreground mt-1">
-            When enabled, traffic from known bots and crawlers will not be
-            tracked
+            When enabled, traffic from known bots and crawlers will not be tracked
           </p>
         </div>
         <Switch
@@ -221,25 +200,19 @@ export function SiteConfiguration({
       {/* Domain Settings Section */}
       <div className="space-y-3">
         <div>
-          <h4 className="text-sm font-semibold text-foreground">
-            Change Domain
-          </h4>
-          <p className="text-xs text-muted-foreground">
-            Update the domain for this site
-          </p>
+          <h4 className="text-sm font-semibold text-foreground">Change Domain</h4>
+          <p className="text-xs text-muted-foreground">Update the domain for this site</p>
         </div>
         <div className="flex space-x-2">
           <Input
             value={newDomain}
-            onChange={(e) => setNewDomain(e.target.value.toLowerCase())}
+            onChange={e => setNewDomain(e.target.value.toLowerCase())}
             placeholder="example.com"
           />
           <Button
             variant="outline"
             onClick={handleDomainChange}
-            disabled={
-              isChangingDomain || newDomain === siteMetadata.domain || disabled
-            }
+            disabled={isChangingDomain || newDomain === siteMetadata.domain || disabled}
           >
             {isChangingDomain ? "Updating..." : "Update"}
           </Button>
@@ -251,11 +224,7 @@ export function SiteConfiguration({
         <h4 className="text-sm font-semibold text-destructive">Danger Zone</h4>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button
-              variant="destructive"
-              className="w-full"
-              disabled={disabled}
-            >
+            <Button variant="destructive" className="w-full" disabled={disabled}>
               <AlertTriangle className="h-4 w-4 mr-2" />
               Delete Site
             </Button>
@@ -264,18 +233,13 @@ export function SiteConfiguration({
             <AlertDialogHeader>
               <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
               <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the
-                site &quot;{siteMetadata.name}&quot; and all of its analytics
-                data.
+                This action cannot be undone. This will permanently delete the site &quot;{siteMetadata.name}&quot; and
+                all of its analytics data.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>
               <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                disabled={isDeleting}
-                variant="destructive"
-              >
+              <AlertDialogAction onClick={handleDelete} disabled={isDeleting} variant="destructive">
                 {isDeleting ? "Deleting..." : "Yes, delete site"}
               </AlertDialogAction>
             </AlertDialogFooter>

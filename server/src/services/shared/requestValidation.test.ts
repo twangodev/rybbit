@@ -187,7 +187,7 @@ describe("validateOrigin", () => {
 
     expect(result).toEqual({ success: true });
     expect(consoleSpy).toHaveBeenCalledWith(
-      "[Validation] Origin check disabled. Allowing request for site 1 from origin: https://example.com",
+      "[Validation] Origin check disabled. Allowing request for site 1 from origin: https://example.com"
     );
 
     consoleSpy.mockRestore();

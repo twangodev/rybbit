@@ -115,7 +115,7 @@ export function Invitations({ organizationId, isOwner }: InvitationsProps) {
             ) : (
               <>
                 {invitations?.length && invitations.length > 0 ? (
-                  invitations.map((invitation) => (
+                  invitations.map(invitation => (
                     <TableRow key={invitation.id}>
                       <TableCell>{invitation.email}</TableCell>
                       <TableCell className="capitalize">{invitation.role}</TableCell>

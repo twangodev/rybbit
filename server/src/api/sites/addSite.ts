@@ -18,22 +18,13 @@ export async function addSite(
   }>,
   reply: FastifyReply
 ) {
-  const {
-    domain,
-    name,
-    organizationId,
-    public: isPublic,
-    saltUserIds,
-    blockBots,
-  } = request.body;
+  const { domain, name, organizationId, public: isPublic, saltUserIds, blockBots } = request.body;
 
   // Validate domain format using regex
-  const domainRegex =
-    /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
+  const domainRegex = /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/;
   if (!domainRegex.test(domain)) {
     return reply.status(400).send({
-      error:
-        "Invalid domain format. Must be a valid domain like example.com or sub.example.com",
+      error: "Invalid domain format. Must be a valid domain like example.com or sub.example.com",
     });
   }
 
@@ -58,10 +49,7 @@ export async function addSite(
     // First, get the user's role in the organization
     const member = await db.query.member.findFirst({
       where: (member, { and, eq }) =>
-        and(
-          eq(member.userId, session.user.id),
-          eq(member.organizationId, organizationId)
-        ),
+        and(eq(member.userId, session.user.id), eq(member.organizationId, organizationId)),
     });
 
     if (!member) {
@@ -73,8 +61,7 @@ export async function addSite(
     // Check if the user's role is admin or owner
     if (member.role !== "admin" && member.role !== "owner") {
       return reply.status(403).send({
-        error:
-          "You must be an admin or owner to add sites to this organization",
+        error: "You must be an admin or owner to add sites to this organization",
       });
     }
 
@@ -100,8 +87,7 @@ export async function addSite(
       public: newSite[0].public || false,
       saltUserIds: newSite[0].saltUserIds || false,
       domain: newSite[0].domain,
-      blockBots:
-        newSite[0].blockBots === undefined ? true : newSite[0].blockBots,
+      blockBots: newSite[0].blockBots === undefined ? true : newSite[0].blockBots,
       excludedIPs: Array.isArray(newSite[0].excludedIPs) ? newSite[0].excludedIPs : [],
       apiKey: newSite[0].apiKey,
     });

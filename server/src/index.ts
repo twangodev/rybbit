@@ -168,7 +168,7 @@ server.register(fastifyStatic, {
 
 server.register(
   async (fastify, options) => {
-    await fastify.register((fastify) => {
+    await fastify.register(fastify => {
       const authHandler = toNodeHandler(options.auth);
 
       fastify.addContentTypeParser(
@@ -176,7 +176,7 @@ server.register(
         /* c8 ignore next 3 */
         (_request, _payload, done) => {
           done(null, null);
-        },
+        }
       );
 
       fastify.all("/api/auth/*", async (request, reply: any) => {
@@ -189,7 +189,7 @@ server.register(
       });
     });
   },
-  { auth: auth! },
+  { auth: auth! }
 );
 
 const PUBLIC_ROUTES: string[] = [
@@ -254,12 +254,12 @@ server.addHook("onRequest", async (request, reply) => {
   let processedUrl = url;
 
   // Bypass auth for public routes (now including the prepended /api)
-  if (PUBLIC_ROUTES.some((route) => processedUrl.includes(route))) {
+  if (PUBLIC_ROUTES.some(route => processedUrl.includes(route))) {
     return;
   }
 
   // Check if it's an analytics route and get site ID (now including the prepended /api)
-  if (ANALYTICS_ROUTES.some((route) => processedUrl.startsWith(route))) {
+  if (ANALYTICS_ROUTES.some(route => processedUrl.startsWith(route))) {
     const siteId = extractSiteId(processedUrl);
 
     if (siteId && (await isSitePublic(siteId))) {
@@ -381,10 +381,10 @@ if (IS_CLOUD) {
   server.get("/api/uptime/monitors/:monitorId/uptime", getMonitorUptime);
   server.get("/api/uptime/monitors/:monitorId/buckets", getMonitorUptimeBuckets);
   server.get("/api/uptime/regions", getRegions);
-  
+
   // Register incidents routes
   server.register(incidentsRoutes);
-  
+
   // Register notification routes
   server.register(notificationRoutes);
 }

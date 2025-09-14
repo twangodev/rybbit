@@ -35,7 +35,7 @@ export const user = pgTable(
     overMonthlyLimit: boolean().default(false),
     monthlyEventCount: integer().default(0),
   },
-  (table) => [unique("user_username_unique").on(table.username), unique("user_email_unique").on(table.email)],
+  table => [unique("user_username_unique").on(table.username), unique("user_email_unique").on(table.email)]
 );
 
 export const verification = pgTable("verification", {
@@ -66,7 +66,7 @@ export const sites = pgTable(
     excludedIPs: jsonb("excluded_ips").default([]), // Array of IP addresses/ranges to exclude
     apiKey: text("api_key"), // Format: rb_{32_hex_chars} = 35 chars total
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.createdBy],
       foreignColumns: [user.id],
@@ -77,7 +77,7 @@ export const sites = pgTable(
       foreignColumns: [organization.id],
       name: "sites_organization_id_organization_id_fk",
     }),
-  ],
+  ]
 );
 
 // Active sessions table
@@ -99,7 +99,7 @@ export const funnels = pgTable(
     createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.siteId],
       foreignColumns: [sites.siteId],
@@ -110,7 +110,7 @@ export const funnels = pgTable(
       foreignColumns: [user.id],
       name: "funnels_user_id_user_id_fk",
     }),
-  ],
+  ]
 );
 
 export const account = pgTable(
@@ -130,13 +130,13 @@ export const account = pgTable(
     createdAt: timestamp({ mode: "string" }).notNull(),
     updatedAt: timestamp({ mode: "string" }).notNull(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
       name: "account_userId_user_id_fk",
     }),
-  ],
+  ]
 );
 
 export const organization = pgTable(
@@ -152,7 +152,7 @@ export const organization = pgTable(
     monthlyEventCount: integer().default(0),
     overMonthlyLimit: boolean().default(false),
   },
-  (table) => [unique("organization_slug_unique").on(table.slug)],
+  table => [unique("organization_slug_unique").on(table.slug)]
 );
 
 export const member = pgTable(
@@ -164,7 +164,7 @@ export const member = pgTable(
     role: text().notNull(),
     createdAt: timestamp({ mode: "string" }).notNull(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.organizationId],
       foreignColumns: [organization.id],
@@ -175,7 +175,7 @@ export const member = pgTable(
       foreignColumns: [user.id],
       name: "member_userId_user_id_fk",
     }),
-  ],
+  ]
 );
 
 export const invitation = pgTable(
@@ -189,7 +189,7 @@ export const invitation = pgTable(
     status: text().notNull(),
     expiresAt: timestamp({ mode: "string" }).notNull(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.inviterId],
       foreignColumns: [user.id],
@@ -200,7 +200,7 @@ export const invitation = pgTable(
       foreignColumns: [organization.id],
       name: "invitation_organizationId_organization_id_fk",
     }),
-  ],
+  ]
 );
 
 export const session = pgTable(
@@ -217,14 +217,14 @@ export const session = pgTable(
     impersonatedBy: text(),
     activeOrganizationId: text(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.userId],
       foreignColumns: [user.id],
       name: "session_userId_user_id_fk",
     }),
     unique("session_token_unique").on(table.token),
-  ],
+  ]
 );
 
 // Goals table for tracking conversion goals
@@ -246,13 +246,13 @@ export const goals = pgTable(
     }>(),
     createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.siteId],
       foreignColumns: [sites.siteId],
       name: "goals_site_id_sites_site_id_fk",
     }),
-  ],
+  ]
 );
 
 // Telemetry table for tracking self-hosted instances

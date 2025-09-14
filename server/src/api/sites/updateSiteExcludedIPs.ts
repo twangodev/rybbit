@@ -63,7 +63,7 @@ export async function updateSiteExcludedIPs(request: FastifyRequest, reply: Fast
     }
 
     // Update the database and cache atomically
-    await db.transaction(async (tx) => {
+    await db.transaction(async tx => {
       // Update the database
       await tx
         .update(sites)

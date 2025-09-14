@@ -28,24 +28,19 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
   const [maskPatternsText, setMaskPatternsText] = useState("");
 
   // Handle pattern text area changes
-  const handleSkipPatternsChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  const handleSkipPatternsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setSkipPatternsText(e.target.value);
     try {
       // Try to parse as JSON if it starts with [ and ends with ]
-      if (
-        e.target.value.trim().startsWith("[") &&
-        e.target.value.trim().endsWith("]")
-      ) {
+      if (e.target.value.trim().startsWith("[") && e.target.value.trim().endsWith("]")) {
         setSkipPatterns(JSON.parse(e.target.value.trim()));
       } else {
         // Otherwise treat as line-separated values
         setSkipPatterns(
           e.target.value
             .split("\n")
-            .map((line) => line.trim())
-            .filter((line) => line.length > 0)
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
         );
       }
     } catch (err) {
@@ -53,30 +48,25 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
       setSkipPatterns(
         e.target.value
           .split("\n")
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0)
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
       );
     }
   };
 
-  const handleMaskPatternsChange = (
-    e: React.ChangeEvent<HTMLTextAreaElement>
-  ) => {
+  const handleMaskPatternsChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setMaskPatternsText(e.target.value);
     try {
       // Try to parse as JSON if it starts with [ and ends with ]
-      if (
-        e.target.value.trim().startsWith("[") &&
-        e.target.value.trim().endsWith("]")
-      ) {
+      if (e.target.value.trim().startsWith("[") && e.target.value.trim().endsWith("]")) {
         setMaskPatterns(JSON.parse(e.target.value.trim()));
       } else {
         // Otherwise treat as line-separated values
         setMaskPatterns(
           e.target.value
             .split("\n")
-            .map((line) => line.trim())
-            .filter((line) => line.length > 0)
+            .map(line => line.trim())
+            .filter(line => line.length > 0)
         );
       }
     } catch (err) {
@@ -84,8 +74,8 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
       setMaskPatterns(
         e.target.value
           .split("\n")
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0)
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
       );
     }
   };
@@ -94,51 +84,51 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
   const trackingScript = `<script
     src="${globalThis.location.origin}/api/script.js"
     data-site-id="${siteId}"${
-    debounceValue !== 500
-      ? `
+      debounceValue !== 500
+        ? `
     data-debounce="${debounceValue}"`
-      : ""
-  }${
-    !autoTrackPageview
-      ? `
+        : ""
+    }${
+      !autoTrackPageview
+        ? `
   data-auto-track-pageview="false"`
-      : ""
-  }${
-    !autoTrack
-      ? `
+        : ""
+    }${
+      !autoTrack
+        ? `
   data-track-spa="false"`
-      : ""
-  }${!trackQuery ? `data-track-query="false"` : ""}${
-    !trackOutbound
-      ? `
+        : ""
+    }${!trackQuery ? `data-track-query="false"` : ""}${
+      !trackOutbound
+        ? `
     data-track-outbound="false"`
-      : ""
-  }${
-    trackErrors
-      ? `
+        : ""
+    }${
+      trackErrors
+        ? `
     data-track-errors="true"`
-      : ""
-  }${
-    sessionReplay
-      ? `
+        : ""
+    }${
+      sessionReplay
+        ? `
     data-session-replay="true"`
-      : ""
-  }${
-    skipPatterns.length > 0
-      ? `
+        : ""
+    }${
+      skipPatterns.length > 0
+        ? `
     data-skip-patterns='${JSON.stringify(skipPatterns)}'`
-      : ""
-  }${
-    maskPatterns.length > 0
-      ? `
+        : ""
+    }${
+      maskPatterns.length > 0
+        ? `
     data-mask-patterns='${JSON.stringify(maskPatterns)}'`
-      : ""
-  }${
-    webVitals
-      ? `
+        : ""
+    }${
+      webVitals
+        ? `
     data-web-vitals="true"`
-      : ""
-  }
+        : ""
+    }
     defer
 ></script>`;
 
@@ -146,9 +136,7 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
     <div className="space-y-6">
       <div className="space-y-3">
         <div>
-          <h4 className="text-sm font-semibold text-foreground">
-            Tracking Script
-          </h4>
+          <h4 className="text-sm font-semibold text-foreground">Tracking Script</h4>
           <p className="text-xs text-muted-foreground">
             Add this script to the <code>&lt;head&gt;</code> of your website
           </p>
@@ -161,21 +149,12 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="autoTrackPageview"
-                  className="text-sm font-medium text-foreground block"
-                >
+                <Label htmlFor="autoTrackPageview" className="text-sm font-medium text-foreground block">
                   Automatically track initial pageview
                 </Label>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Track the first pageview when the script loads
-                </p>
+                <p className="text-xs text-muted-foreground mt-1">Track the first pageview when the script loads</p>
               </div>
-              <Switch
-                id="autoTrackPageview"
-                checked={autoTrackPageview}
-                onCheckedChange={setAutoTrackPageview}
-              />
+              <Switch id="autoTrackPageview" checked={autoTrackPageview} onCheckedChange={setAutoTrackPageview} />
             </div>
           </div>
 
@@ -183,22 +162,14 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="autoTrack"
-                  className="text-sm font-medium text-foreground block"
-                >
+                <Label htmlFor="autoTrack" className="text-sm font-medium text-foreground block">
                   Automatically track SPA navigation
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  For SPAs: track page views when URL changes (using History
-                  API)
+                  For SPAs: track page views when URL changes (using History API)
                 </p>
               </div>
-              <Switch
-                id="autoTrack"
-                checked={autoTrack}
-                onCheckedChange={setAutoTrack}
-              />
+              <Switch id="autoTrack" checked={autoTrack} onCheckedChange={setAutoTrack} />
             </div>
           </div>
 
@@ -206,22 +177,14 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="trackQuery"
-                  className="text-sm font-medium text-foreground block"
-                >
+                <Label htmlFor="trackQuery" className="text-sm font-medium text-foreground block">
                   Track URL query parameters
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Include query parameters in tracked URLs (may contain
-                  sensitive data)
+                  Include query parameters in tracked URLs (may contain sensitive data)
                 </p>
               </div>
-              <Switch
-                id="trackQuery"
-                checked={trackQuery}
-                onCheckedChange={setTrackQuery}
-              />
+              <Switch id="trackQuery" checked={trackQuery} onCheckedChange={setTrackQuery} />
             </div>
           </div>
 
@@ -229,22 +192,14 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="sessionReplay"
-                  className="text-sm font-medium text-foreground block"
-                >
+                <Label htmlFor="sessionReplay" className="text-sm font-medium text-foreground block">
                   Enable session replay
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Record user interactions and DOM changes for debugging and UX
-                  analysis
+                  Record user interactions and DOM changes for debugging and UX analysis
                 </p>
               </div>
-              <Switch
-                id="sessionReplay"
-                checked={sessionReplay}
-                onCheckedChange={setSessionReplay}
-              />
+              <Switch id="sessionReplay" checked={sessionReplay} onCheckedChange={setSessionReplay} />
             </div>
           </div>
 
@@ -275,22 +230,14 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <div>
-                  <Label
-                    htmlFor="webVitals"
-                    className="text-sm font-medium text-foreground block"
-                  >
+                  <Label htmlFor="webVitals" className="text-sm font-medium text-foreground block">
                     Enable Web Vitals performance metrics
                   </Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Collect Core Web Vitals (LCP, CLS, INP) and additional
-                    metrics (FCP, TTFB)
+                    Collect Core Web Vitals (LCP, CLS, INP) and additional metrics (FCP, TTFB)
                   </p>
                 </div>
-                <Switch
-                  id="webVitals"
-                  checked={webVitals}
-                  onCheckedChange={setWebVitals}
-                />
+                <Switch id="webVitals" checked={webVitals} onCheckedChange={setWebVitals} />
               </div>
             </div>
           )}
@@ -299,39 +246,26 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="trackErrors"
-                  className="text-sm font-medium text-foreground block"
-                >
+                <Label htmlFor="trackErrors" className="text-sm font-medium text-foreground block">
                   Track JavaScript errors
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
                   Automatically capture and track JavaScript errors on your site
                 </p>
               </div>
-              <Switch
-                id="trackErrors"
-                checked={trackErrors}
-                onCheckedChange={setTrackErrors}
-              />
+              <Switch id="trackErrors" checked={trackErrors} onCheckedChange={setTrackErrors} />
             </div>
           </div>
 
           {/* Skip Patterns Option */}
           <div className="space-y-2">
             <div>
-              <Label
-                htmlFor="skipPatterns"
-                className="text-sm font-medium text-foreground block"
-              >
+              <Label htmlFor="skipPatterns" className="text-sm font-medium text-foreground block">
                 Skip Patterns
               </Label>
+              <p className="text-xs text-muted-foreground mt-1">URL patterns to exclude from tracking (one per line)</p>
               <p className="text-xs text-muted-foreground mt-1">
-                URL patterns to exclude from tracking (one per line)
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Use <code>*</code> for single segment wildcard, <code>**</code>{" "}
-                for multi-segment wildcard
+                Use <code>*</code> for single segment wildcard, <code>**</code> for multi-segment wildcard
               </p>
               <Textarea
                 id="skipPatterns"
@@ -346,18 +280,14 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           {/* Mask Patterns Option */}
           <div className="space-y-2">
             <div>
-              <Label
-                htmlFor="maskPatterns"
-                className="text-sm font-medium text-foreground block"
-              >
+              <Label htmlFor="maskPatterns" className="text-sm font-medium text-foreground block">
                 Mask Patterns
               </Label>
               <p className="text-xs text-muted-foreground mt-1">
                 URL patterns to anonymize in analytics (one per line)
               </p>
               <p className="text-xs text-muted-foreground mt-1">
-                E.g. <code>/users/*/profile</code> will hide usernames,{" "}
-                <code>/orders/**</code> will hide order details
+                E.g. <code>/users/*/profile</code> will hide usernames, <code>/orders/**</code> will hide order details
               </p>
               <Textarea
                 id="maskPatterns"
@@ -372,10 +302,7 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           {/* Debounce Option */}
           <div className="space-y-2">
             <div className="flex flex-col gap-1.5">
-              <Label
-                htmlFor="debounce"
-                className="text-sm font-medium text-foreground"
-              >
+              <Label htmlFor="debounce" className="text-sm font-medium text-foreground">
                 Debounce Duration (ms)
               </Label>
               <div className="flex items-center gap-2">
@@ -385,19 +312,13 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
                   min="0"
                   max="5000"
                   value={debounceValue}
-                  onChange={(e) =>
-                    setDebounceValue(parseInt(e.target.value) || 0)
-                  }
+                  onChange={e => setDebounceValue(parseInt(e.target.value) || 0)}
                   className="max-w-[120px]"
                 />
-                <span className="text-xs text-muted-foreground">
-                  Default: 500ms
-                </span>
+                <span className="text-xs text-muted-foreground">Default: 500ms</span>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Time to wait before tracking a pageview after URL changes
-            </p>
+            <p className="text-xs text-muted-foreground">Time to wait before tracking a pageview after URL changes</p>
           </div>
         </div>
       </div>

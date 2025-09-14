@@ -22,13 +22,13 @@ const pluginList = [
     allowUserToCreateOrganization: true,
     // Set the creator role to owner
     creatorRole: "owner",
-    sendInvitationEmail: async (invitation) => {
+    sendInvitationEmail: async invitation => {
       const inviteLink = `${process.env.BASE_URL}/invitation?invitationId=${invitation.invitation.id}&organization=${invitation.organization.name}&inviterEmail=${invitation.inviter.user.email}`;
       await sendInvitationEmail(
         invitation.email,
         invitation.inviter.user.email,
         invitation.organization.name,
-        inviteLink,
+        inviteLink
       );
     },
   }),
@@ -194,7 +194,7 @@ export function initAuth(allowedOrigins: string[]) {
         enabled: true,
         // Add a hook to run before deleting a user
         // i dont think this works
-        beforeDelete: async (user) => {
+        beforeDelete: async user => {
           // Delete all memberships for this user first
           console.log(`Cleaning up memberships for user ${user.id} before deletion`);
           try {

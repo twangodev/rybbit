@@ -38,9 +38,9 @@ export default function EventsPage() {
             </CardHeader>
             <CardContent className="lg:flex-1 lg:min-h-0 overflow-hidden p-0">
               <div className="h-auto lg:h-full lg:min-h-0 p-4 pt-0">
-                <OutboundLinksList 
-                  outboundLinks={outboundLinksData || []} 
-                  isLoading={isLoadingOutboundLinks} 
+                <OutboundLinksList
+                  outboundLinks={outboundLinksData || []}
+                  isLoading={isLoadingOutboundLinks}
                   size="large"
                 />
               </div>

@@ -45,19 +45,12 @@ function OutboundLinks({ expanded, close }: { expanded: boolean; close: () => vo
       <div className="relative">
         <div className="flex flex-row gap-2 justify-between pr-1 text-xs text-neutral-400 mb-2">
           <div>Outbound Links</div>
-          <div className="flex items-center gap-2"> 
+          <div className="flex items-center gap-2">
             <div>Clicks</div>
           </div>
         </div>
-        <OutboundLinksList
-          outboundLinks={(outboundLinksData || []).slice(0, 10)}
-          isLoading={isLoadingOutboundLinks}
-        />
-        <OutboundLinksDialog
-          outboundLinks={outboundLinksData || []}
-          expanded={expanded}
-          close={close}
-        />
+        <OutboundLinksList outboundLinks={(outboundLinksData || []).slice(0, 10)} isLoading={isLoadingOutboundLinks} />
+        <OutboundLinksDialog outboundLinks={outboundLinksData || []} expanded={expanded} close={close} />
       </div>
     </>
   );
@@ -70,7 +63,7 @@ export function Events() {
   return (
     <Card>
       <CardContent className="mt-2">
-        <Tabs defaultValue="events" value={tab} onValueChange={(value) => setTab(value as Tab)}>
+        <Tabs defaultValue="events" value={tab} onValueChange={value => setTab(value as Tab)}>
           <div className="flex flex-row gap-2 justify-between items-center">
             <div className="overflow-x-auto">
               <TabsList>

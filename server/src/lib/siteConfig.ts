@@ -250,7 +250,6 @@ class SiteConfig {
       return false;
     }
   }
-
 }
 
 // Singleton instance

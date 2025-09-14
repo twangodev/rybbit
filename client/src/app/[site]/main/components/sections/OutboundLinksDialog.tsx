@@ -32,10 +32,10 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
 
   // Prepare data with percentage and filter
   const filteredAll = useMemo(() => {
-    const base = outboundLinks.map((l) => ({ ...l, percentage: totalCount ? (l.count / totalCount) * 100 : 0 }));
+    const base = outboundLinks.map(l => ({ ...l, percentage: totalCount ? (l.count / totalCount) * 100 : 0 }));
     if (!debouncedSearchTerm) return base;
     const q = debouncedSearchTerm.toLowerCase();
-    return base.filter((l) => l.url.toLowerCase().includes(q));
+    return base.filter(l => l.url.toLowerCase().includes(q));
   }, [outboundLinks, totalCount, debouncedSearchTerm]);
 
   // Reset visible rows when filter changes
@@ -48,7 +48,7 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
   const hasMore = visibleCount < filteredAll.length;
   useEffect(() => {
     if (entry?.isIntersecting && hasMore) {
-      setVisibleCount((c) => Math.min(c + BATCH_SIZE, filteredAll.length));
+      setVisibleCount(c => Math.min(c + BATCH_SIZE, filteredAll.length));
     }
   }, [entry?.isIntersecting, hasMore, filteredAll.length]);
 
@@ -77,7 +77,7 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
-      setSortDesc((d) => !d);
+      setSortDesc(d => !d);
     } else {
       setSortKey(key);
       setSortDesc(key === "count" || key === "percentage" || key === "lastClicked");
@@ -97,7 +97,7 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
             placeholder={`Filter ${outboundLinks.length} links...`}
             className="pl-9 bg-neutral-900 border-neutral-700 text-xs"
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={e => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex flex-col gap-2 overflow-x-auto">
@@ -111,7 +111,8 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
                   >
                     <div className="flex items-center gap-1">
                       Outbound Link
-                      {sortKey === "url" && (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+                      {sortKey === "url" &&
+                        (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
                     </div>
                   </th>
                   <th
@@ -120,7 +121,8 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
                   >
                     <div className="flex items-center gap-1 justify-end">
                       Clicks
-                      {sortKey === "count" && (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+                      {sortKey === "count" &&
+                        (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
                     </div>
                   </th>
                   <th
@@ -129,7 +131,8 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
                   >
                     <div className="flex items-center gap-1 justify-end">
                       Click %
-                      {sortKey === "percentage" && (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+                      {sortKey === "percentage" &&
+                        (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
                     </div>
                   </th>
                   <th
@@ -138,7 +141,8 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
                   >
                     <div className="flex items-center gap-1 justify-end">
                       Last Clicked
-                      {sortKey === "lastClicked" && (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
+                      {sortKey === "lastClicked" &&
+                        (sortDesc ? <ChevronDown className="h-3 w-3" /> : <ChevronUp className="h-3 w-3" />)}
                     </div>
                   </th>
                 </tr>
@@ -163,8 +167,11 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
                         >
                           {row.url}
                         </a>
-                        <a href={row.url} target="_blank" rel="noopener noreferrer" onClick={(e) => e.stopPropagation()}>
-                          <SquareArrowOutUpRight className="ml-0.5 w-3.5 h-3.5 text-neutral-300 hover:text-neutral-100" strokeWidth={3} />
+                        <a href={row.url} target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()}>
+                          <SquareArrowOutUpRight
+                            className="ml-0.5 w-3.5 h-3.5 text-neutral-300 hover:text-neutral-100"
+                            strokeWidth={3}
+                          />
                         </a>
                       </div>
                     </td>
@@ -192,9 +199,7 @@ export function OutboundLinksDialog({ outboundLinks, expanded, close }: Outbound
                 </div>
               </div>
             )}
-            {!hasMore && (
-              <div className="py-4 text-center text-neutral-500 text-xs">All items loaded</div>
-            )}
+            {!hasMore && <div className="py-4 text-center text-neutral-500 text-xs">All items loaded</div>}
           </div>
         </div>
       </DialogContent>

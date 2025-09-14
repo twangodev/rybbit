@@ -15,7 +15,7 @@ const recordSessionReplaySchema = z.object({
       type: z.union([z.string(), z.number()]),
       data: z.any(),
       timestamp: z.number(),
-    }),
+    })
   ),
   metadata: z
     .object({
@@ -33,7 +33,7 @@ export async function recordSessionReplay(
     Params: { site: string };
     Body: RecordSessionReplayRequest;
   }>,
-  reply: FastifyReply,
+  reply: FastifyReply
 ) {
   try {
     const siteId = Number(request.params.site);

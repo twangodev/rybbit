@@ -28,17 +28,13 @@ export const fetchExcludedIPs = async (siteId: string): Promise<ExcludedIPsRespo
 
 // Update excluded IPs for a site
 export const updateExcludedIPs = async (siteId: number, excludedIPs: string[]): Promise<UpdateExcludedIPsResponse> => {
-  return await authedFetch<UpdateExcludedIPsResponse>(
-    `/site/${siteId}/excluded-ips`,
-    undefined,
-    {
-      method: "POST",
-      data: {
-        siteId: siteId.toString(),
-        excludedIPs,
-      },
-    }
-  );
+  return await authedFetch<UpdateExcludedIPsResponse>(`/site/${siteId}/excluded-ips`, undefined, {
+    method: "POST",
+    data: {
+      siteId: siteId.toString(),
+      excludedIPs,
+    },
+  });
 };
 
 // Hook to fetch excluded IPs

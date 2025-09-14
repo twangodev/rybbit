@@ -7,16 +7,10 @@ import { loadAllowedDomains } from "../../lib/allowedDomains.js";
 import { getUserHasAdminAccessToSite } from "../../lib/auth-utils.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 
-export async function deleteSite(
-  request: FastifyRequest<{ Params: { id: string } }>,
-  reply: FastifyReply
-) {
+export async function deleteSite(request: FastifyRequest<{ Params: { id: string } }>, reply: FastifyReply) {
   const { id } = request.params;
 
-  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(
-    request,
-    id
-  );
+  const userHasAdminAccessToSite = await getUserHasAdminAccessToSite(request, id);
   if (!userHasAdminAccessToSite) {
     return reply.status(403).send({ error: "Forbidden" });
   }

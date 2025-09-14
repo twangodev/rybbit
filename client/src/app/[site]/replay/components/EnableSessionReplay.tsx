@@ -2,20 +2,12 @@
 
 import { PlayCircle, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "../../../../components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "../../../../components/ui/alert";
 import { Button } from "../../../../components/ui/button";
 import { useGetSessionReplays } from "../../../../api/analytics/sessionReplay/useGetSessionReplays";
 
 export function EnableSessionReplay() {
-  const {
-    data: replayData,
-    isLoading,
-    isError,
-  } = useGetSessionReplays({ limit: 1, minDuration: 0 });
+  const { data: replayData, isLoading, isError } = useGetSessionReplays({ limit: 1, minDuration: 0 });
 
   // Don't show banner while loading or if there's an error
   if (isLoading || isError) return null;
@@ -38,8 +30,7 @@ export function EnableSessionReplay() {
             <code className="bg-amber-100/70 dark:bg-amber-800/50 px-1 py-0.5 rounded text-xs">
               data-session-replay="true"
             </code>{" "}
-            to your script tag to record user sessions for debugging and
-            analysis.
+            to your script tag to record user sessions for debugging and analysis.
           </AlertDescription>
 
           <div className="space-y-2">
@@ -50,10 +41,7 @@ export function EnableSessionReplay() {
                 size="sm"
                 className="border-amber-300/70 text-amber-700/90 hover:bg-amber-100/70 dark:border-amber-600/70 dark:text-amber-400/90 dark:hover:bg-amber-800/50"
               >
-                <Link
-                  href="https://rybbit.io/docs/script#session-replay"
-                  target="_blank"
-                >
+                <Link href="https://rybbit.io/docs/script#session-replay" target="_blank">
                   View Documentation <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </Button>
