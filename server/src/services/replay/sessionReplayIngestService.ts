@@ -38,12 +38,16 @@ export class SessionReplayIngestService {
     const userId =
       clientUserId && clientUserId.trim()
         ? clientUserId.trim()
-        : await userIdService.generateUserId(requestMeta?.ipAddress || "", requestMeta?.userAgent || "", String(siteId));
+        : await userIdService.generateUserId(
+            requestMeta?.ipAddress || "",
+            requestMeta?.userAgent || "",
+            String(siteId)
+          );
 
     // Get or create a session ID from the sessions service
     const { sessionId } = await sessionsService.updateSession({
       userId,
-      site_id: siteId,
+      siteId,
     });
 
     // Check if R2 storage is enabled for cloud deployments

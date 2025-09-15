@@ -299,7 +299,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Update session (use numeric siteId)
     const { sessionId } = await sessionsService.updateSession({
       userId: payload.userId,
-      site_id: siteConfiguration.siteId,
+      siteId: siteConfiguration.siteId,
     });
 
     // Add to queue for processing (payload already has numeric siteId)
