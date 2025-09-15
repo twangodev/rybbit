@@ -73,19 +73,6 @@ export async function recordSessionReplay(
     //   }
     // }
 
-    // If no valid API key, validate origin - disabled for now
-    // if (!apiKeyValidation.success) {
-    //   const originValidation = await validateOrigin(siteId, request.headers.origin as string);
-
-    //   if (!originValidation.success) {
-    //     logger.warn(`[SessionReplay] Request rejected for site ${siteId}: ${originValidation.error}`);
-    //     return reply.status(403).send({
-    //       success: false,
-    //       error: originValidation.error,
-    //     });
-    //   }
-    // }
-
     // Check if the IP should be excluded from tracking
     const requestIP = getIpAddress(request);
 

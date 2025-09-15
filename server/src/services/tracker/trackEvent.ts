@@ -4,7 +4,7 @@ import { z, ZodError } from "zod";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { sessionsService } from "../sessions/sessionsService.js";
-import { checkApiKeyRateLimit, validateApiKey, validateOrigin } from "../shared/requestValidation.js";
+import { checkApiKeyRateLimit, validateApiKey } from "../shared/requestValidation.js";
 import { usageService } from "../usageService.js";
 import { pageviewQueue } from "./pageviewQueue.js";
 import { createBasePayload } from "./utils.js";
@@ -242,22 +242,6 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
         });
       }
     }
-
-    // If no valid API key, validate origin - disabled for now
-    // if (!apiKeyValidation.success) {
-    //   const originValidation = await validateOrigin(validatedPayload.site_id, request.headers.origin as string);
-
-    //   if (!originValidation.success) {
-    //     logger.warn(
-    //       { siteId: validatedPayload.site_id, error: originValidation.error },
-    //       "Request rejected - origin validation failed"
-    //     );
-    //     return reply.status(403).send({
-    //       success: false,
-    //       error: originValidation.error,
-    //     });
-    //   }
-    // }
 
     // Get the site configuration to get the numeric siteId
     const siteConfiguration = await siteConfig.getSiteConfig(validatedPayload.site_id);
