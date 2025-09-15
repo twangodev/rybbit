@@ -1,7 +1,9 @@
 import { sql } from "drizzle-orm";
 import {
   boolean,
+  check,
   foreignKey,
+  index,
   integer,
   jsonb,
   pgTable,
@@ -49,9 +51,7 @@ export const verification = pgTable("verification", {
 export const sites = pgTable(
   "sites",
   {
-    id: text("id")
-      .notNull()
-      .$defaultFn(() => sql`encode(gen_random_bytes(6), 'hex')`),
+    id: text("id").$defaultFn(() => sql`encode(gen_random_bytes(6), 'hex')`),
     // deprecated - keeping as primary key for backwards compatibility
     siteId: serial("site_id").primaryKey().notNull(),
     name: text("name").notNull(),
@@ -358,7 +358,7 @@ export const uptimeMonitors = pgTable(
       .notNull()
       .references(() => user.id),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.organizationId],
       foreignColumns: [organization.id],
@@ -369,7 +369,7 @@ export const uptimeMonitors = pgTable(
       foreignColumns: [user.id],
       name: "uptime_monitors_created_by_user_id_fk",
     }),
-  ],
+  ]
 );
 
 // Monitor status tracking
@@ -391,7 +391,7 @@ export const uptimeMonitorStatus = pgTable(
     averageResponseTime24h: real("average_response_time_24h"),
     updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.monitorId],
       foreignColumns: [uptimeMonitors.id],
@@ -402,7 +402,7 @@ export const uptimeMonitorStatus = pgTable(
     check("uptime_monitor_status_uptime_7d_check", sql`uptime_percentage_7d >= 0 AND uptime_percentage_7d <= 100`),
     check("uptime_monitor_status_uptime_30d_check", sql`uptime_percentage_30d >= 0 AND uptime_percentage_30d <= 100`),
     index("uptime_monitor_status_updated_at_idx").on(table.updatedAt),
-  ],
+  ]
 );
 
 // Alert configuration (scaffolding)
@@ -423,13 +423,13 @@ export const uptimeAlerts = pgTable(
     enabled: boolean("enabled").default(true),
     createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.monitorId],
       foreignColumns: [uptimeMonitors.id],
       name: "uptime_alerts_monitor_id_uptime_monitors_id_fk",
     }),
-  ],
+  ]
 );
 
 // Alert history (scaffolding)
@@ -447,7 +447,7 @@ export const uptimeAlertHistory = pgTable(
     resolvedAt: timestamp("resolved_at", { mode: "string" }),
     alertData: jsonb("alert_data"), // Context about what triggered the alert
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.alertId],
       foreignColumns: [uptimeAlerts.id],
@@ -458,7 +458,7 @@ export const uptimeAlertHistory = pgTable(
       foreignColumns: [uptimeMonitors.id],
       name: "uptime_alert_history_monitor_id_uptime_monitors_id_fk",
     }),
-  ],
+  ]
 );
 
 // Agent regions for VPS-based monitoring
@@ -506,7 +506,7 @@ export const uptimeIncidents = pgTable(
     createdAt: timestamp("created_at", { mode: "string" }).defaultNow(),
     updatedAt: timestamp("updated_at", { mode: "string" }).defaultNow(),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.organizationId],
       foreignColumns: [organization.id],
@@ -527,7 +527,7 @@ export const uptimeIncidents = pgTable(
       foreignColumns: [user.id],
       name: "uptime_incidents_resolved_by_user_id_fk",
     }),
-  ],
+  ]
 );
 
 // Notification channels table
@@ -571,7 +571,7 @@ export const notificationChannels = pgTable(
       .notNull()
       .references(() => user.id),
   },
-  (table) => [
+  table => [
     foreignKey({
       columns: [table.organizationId],
       foreignColumns: [organization.id],
@@ -582,5 +582,5 @@ export const notificationChannels = pgTable(
       foreignColumns: [user.id],
       name: "notification_channels_created_by_user_id_fk",
     }),
-  ],
+  ]
 );

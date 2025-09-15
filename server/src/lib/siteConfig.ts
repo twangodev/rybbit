@@ -6,7 +6,7 @@ import { matchesCIDR, matchesRange } from "./ipUtils.js";
 
 // Site configuration interface
 interface SiteConfigData {
-  id: string;
+  id: string | null;
   siteId: number;
   public: boolean;
   saltUserIds: boolean;
@@ -30,7 +30,7 @@ class SiteConfig {
   private async getSiteByAnyId(siteIdOrId: string | number): Promise<SiteConfigData | undefined> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
+
       const site = await db
         .select({
           id: sites.id,
@@ -43,11 +43,7 @@ class SiteConfig {
           apiKey: sites.apiKey,
         })
         .from(sites)
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        )
+        .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)))
         .limit(1);
 
       if (!site[0]) {
@@ -121,15 +117,11 @@ class SiteConfig {
   async updateSitePublicStatus(siteIdOrId: number | string, isPublic: boolean): Promise<void> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
+
       await db
         .update(sites)
         .set({ public: isPublic })
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        );
+        .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)));
     } catch (error) {
       logger.error(error as Error, `Error updating public status for site ${siteIdOrId}`);
     }
@@ -141,15 +133,11 @@ class SiteConfig {
   async updateSiteSaltSetting(siteIdOrId: number | string, saltUserIds: boolean): Promise<void> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
+
       await db
         .update(sites)
         .set({ saltUserIds })
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        );
+        .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)));
     } catch (error) {
       logger.error(error as Error, `Error updating salt setting for site ${siteIdOrId}`);
     }
@@ -161,15 +149,11 @@ class SiteConfig {
   async updateSiteBlockBotsSetting(siteIdOrId: number | string, blockBots: boolean): Promise<void> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
+
       await db
         .update(sites)
         .set({ blockBots })
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        );
+        .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)));
     } catch (error) {
       logger.error(error as Error, `Error updating block bots setting for site ${siteIdOrId}`);
     }
@@ -181,15 +165,11 @@ class SiteConfig {
   async updateSiteDomain(siteIdOrId: number | string, domain: string): Promise<void> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
+
       await db
         .update(sites)
         .set({ domain })
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        );
+        .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)));
     } catch (error) {
       logger.error(error as Error, `Error updating domain for site ${siteIdOrId}`);
     }
@@ -201,15 +181,11 @@ class SiteConfig {
   async updateSiteApiKey(siteIdOrId: number | string, apiKey: string | null): Promise<void> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
+
       await db
         .update(sites)
         .set({ apiKey })
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        );
+        .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)));
     } catch (error) {
       logger.error(error as Error, `Error updating API key for site ${siteIdOrId}`);
     }
@@ -230,15 +206,11 @@ class SiteConfig {
   async updateSiteExcludedIPs(siteIdOrId: number | string, excludedIPs: string[]): Promise<void> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
+
       await db
         .update(sites)
         .set({ excludedIPs })
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        );
+        .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)));
     } catch (error) {
       logger.error(error as Error, `Error updating excluded IPs for site ${siteIdOrId}`);
     }
@@ -271,14 +243,8 @@ class SiteConfig {
   async removeSite(siteIdOrId: number | string): Promise<void> {
     try {
       const isNumeric = this.isNumericId(siteIdOrId);
-      
-      await db
-        .delete(sites)
-        .where(
-          isNumeric
-            ? eq(sites.siteId, Number(siteIdOrId))
-            : eq(sites.id, String(siteIdOrId))
-        );
+
+      await db.delete(sites).where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)));
     } catch (error) {
       logger.error(error as Error, `Error removing site ${siteIdOrId}`);
     }

@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+import { randomBytes } from "crypto";
 import { db } from "../../db/postgres/postgres.js";
 import { sites } from "../../db/postgres/schema.js";
 import { loadAllowedDomains } from "../../lib/allowedDomains.js";
@@ -65,10 +66,14 @@ export async function addSite(
       });
     }
 
+    // Generate a random 12-character hex ID
+    const id = randomBytes(6).toString('hex');
+
     // Create the new site
     const newSite = await db
       .insert(sites)
       .values({
+        id,
         domain,
         name,
         createdBy: session.user.id,

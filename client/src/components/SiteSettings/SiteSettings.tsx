@@ -65,7 +65,7 @@ function SiteSettingsInner({ siteMetadata, trigger }: { siteMetadata: SiteRespon
           </TabsList>
 
           <TabsContent value="script" className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto">
-            <ScriptBuilder siteId={siteMetadata.siteId} />
+            <ScriptBuilder siteId={siteMetadata.id ?? String(siteMetadata.siteId)} />
           </TabsContent>
 
           <TabsContent value="apikey" className="pt-4 space-y-4 max-h-[70vh] overflow-y-auto">
