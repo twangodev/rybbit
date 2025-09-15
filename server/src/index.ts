@@ -72,13 +72,13 @@ import { loadAllowedDomains } from "./lib/allowedDomains.js";
 import { getSessionFromReq, mapHeaders } from "./lib/auth-utils.js";
 import { auth } from "./lib/auth.js";
 import { IS_CLOUD } from "./lib/const.js";
-import { siteConfig } from "./lib/siteConfig.js";
 import { trackEvent } from "./services/tracker/trackEvent.js";
 // need to import telemetry service here to start it
 import { telemetryService } from "./services/telemetryService.js";
 import { extractSiteId, isSitePublic } from "./utils.js";
 import { getSiteImports } from "./api/sites/getSiteImports.js";
 import { importSiteData } from "./api/sites/importSiteData.js";
+import { deleteSiteImport } from "./api/sites/deleteSiteImport.js";
 import boss from "./db/postgres/boss.js";
 import { registerCsvParseWorker } from "./services/import/workers/csvParseWorker.js";
 import { registerDataInsertWorker } from "./services/import/workers/dataInsertWorker.js";
@@ -351,6 +351,7 @@ server.get("/api/session-replay/:sessionId/:site", getSessionReplayEvents);
 // Imports
 server.post("/api/import-site-data/:site", importSiteData);
 server.get("/api/get-site-imports/:site", getSiteImports);
+server.delete("/api/delete-site-import/:site/:importId", deleteSiteImport);
 
 // Administrative
 server.get("/api/config", getConfig);

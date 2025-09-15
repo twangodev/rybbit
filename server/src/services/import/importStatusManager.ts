@@ -63,4 +63,24 @@ export class ImportStatusManager {
       throw new Error(`Failed to get imports for site: ${error instanceof Error ? error.message : "Unknown error"}`);
     }
   }
+
+  static async deleteImport(importId: string): Promise<void> {
+    try {
+      await db.delete(importStatus).where(eq(importStatus.importId, importId));
+    } catch (error) {
+      console.error(`Failed to delete import ${importId}:`, error);
+      throw new Error(`Failed to delete import: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  }
+
+  static async getImportById(importId: string): Promise<SelectImportStatus | undefined> {
+    try {
+      return await db.query.importStatus.findFirst({
+        where: eq(importStatus.importId, importId),
+      });
+    } catch (error) {
+      console.error(`Failed to get import ${importId}:`, error);
+      throw new Error(`Failed to get import: ${error instanceof Error ? error.message : "Unknown error"}`);
+    }
+  }
 }

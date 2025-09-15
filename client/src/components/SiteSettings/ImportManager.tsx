@@ -41,8 +41,9 @@ import {
   Clock,
   Loader2,
   Database,
+  Trash2,
 } from "lucide-react";
-import { useGetSiteImports, useImportSiteData } from "@/api/admin/import";
+import { useGetSiteImports, useImportSiteData, useDeleteSiteImport } from "@/api/admin/import";
 import { SplitDateRangePicker, DateRange } from "@/components/SplitDateRangePicker";
 
 interface ImportManagerProps {
@@ -68,11 +69,14 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
   const [dateRange, setDateRange] = useState<DateRange>({});
   const [fileError, setFileError] = useState<FileValidationError | null>(null);
   const [showConfirmDialog, setShowConfirmDialog] = useState<boolean>(false);
+  const [deleteImportId, setDeleteImportId] = useState<string | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState<boolean>(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { data, isLoading, error } = useGetSiteImports(siteId);
   const mutation = useImportSiteData(siteId);
+  const deleteMutation = useDeleteSiteImport(siteId);
 
   const resetFileInput = () => {
     setFile(null);
@@ -156,6 +160,19 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
       setSource("");
       setDateRange({});
       setShowConfirmDialog(false);
+    }
+  };
+
+  const handleDeleteClick = (importId: string) => {
+    setDeleteImportId(importId);
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = () => {
+    if (deleteImportId) {
+      deleteMutation.mutate(deleteImportId);
+      setDeleteImportId(null);
+      setShowDeleteDialog(false);
     }
   };
 
@@ -328,6 +345,30 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
               </div>
             </Alert>
           )}
+
+          {/* Delete Success Message */}
+          {deleteMutation.isSuccess && (
+            <Alert className="border-green-200 bg-green-50">
+              <div className="flex items-center gap-2">
+                <CheckCircle2 className="h-4 w-4 text-green-600" />
+                <AlertDescription>
+                  Import deleted successfully.
+                </AlertDescription>
+              </div>
+            </Alert>
+          )}
+
+          {/* Delete Error Message */}
+          {deleteMutation.isError && (
+            <Alert variant="destructive">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <AlertDescription>
+                  {deleteMutation.error.message || "Failed to delete import. Please try again."}
+                </AlertDescription>
+              </div>
+            </Alert>
+          )}
         </CardContent>
       </Card>
 
@@ -367,6 +408,7 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
                     <TableHead>Source</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead className="text-right">Events</TableHead>
+                    <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -408,6 +450,23 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
                         <TableCell className="text-right">
                           {imp.importedEvents.toLocaleString()}
                         </TableCell>
+                        <TableCell className="text-right">
+                          {(imp.status === "completed" || imp.status === "failed") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleDeleteClick(imp.importId)}
+                              disabled={disabled || deleteMutation.isPending}
+                              className="h-8 w-8 p-0"
+                            >
+                              {deleteMutation.isPending && deleteMutation.variables === imp.importId ? (
+                                <Loader2 className="h-4 w-4 animate-spin" />
+                              ) : (
+                                <Trash2 className="h-4 w-4" />
+                              )}
+                            </Button>
+                          )}
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -432,6 +491,25 @@ export function ImportManager({ siteId, disabled }: ImportManagerProps) {
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction onClick={handleImport}>
               Yes, Import File
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Import</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete this import? This action cannot be undone.
+              The import data and associated files will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteConfirm} className="bg-red-600 hover:bg-red-700">
+              Delete Import
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

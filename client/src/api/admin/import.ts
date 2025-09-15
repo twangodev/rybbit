@@ -23,6 +23,10 @@ interface ImportSiteDataResponse {
   message: string;
 }
 
+interface DeleteImportResponse {
+  message: string;
+}
+
 export function useGetSiteImports(site: number) {
   return useQuery({
     queryKey: ["get-site-imports", site],
@@ -57,6 +61,24 @@ export function useImportSiteData(site: number) {
       return await authedFetch<APIResponse<ImportSiteDataResponse>>(`/import-site-data/${site}`, undefined, {
         method: "POST",
         data: formData,
+      });
+    },
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({
+        queryKey: ["get-site-imports", site]
+      });
+    },
+    retry: false,
+  });
+}
+
+export function useDeleteSiteImport(site: number) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (importId: string) => {
+      return await authedFetch<APIResponse<DeleteImportResponse>>(`/delete-site-import/${site}/${importId}`, undefined, {
+        method: "DELETE",
       });
     },
     onSuccess: async () => {
