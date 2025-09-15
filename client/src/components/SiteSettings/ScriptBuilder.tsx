@@ -9,7 +9,7 @@ import { useState } from "react";
 import { IS_CLOUD } from "../../lib/const";
 
 interface ScriptBuilderProps {
-  siteId: number;
+  siteId: string;
 }
 
 export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
@@ -204,26 +204,19 @@ export function ScriptBuilder({ siteId }: ScriptBuilderProps) {
           </div>
 
           {/* Track Outbound Links Option */}
-          {/* <div className="space-y-2">
+          <div className="space-y-2">
             <div className="flex items-center justify-between">
               <div>
-                <Label
-                  htmlFor="trackOutbound"
-                  className="text-sm font-medium text-foreground block"
-                >
+                <Label htmlFor="trackOutbound" className="text-sm font-medium text-foreground block">
                   Track outbound link clicks
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
                   Automatically track when users click links to external sites
                 </p>
               </div>
-              <Switch
-                id="trackOutbound"
-                checked={trackOutbound}
-                onCheckedChange={setTrackOutbound}
-              />
+              <Switch id="trackOutbound" checked={trackOutbound} onCheckedChange={setTrackOutbound} />
             </div>
-          </div> */}
+          </div>
 
           {/* Web Vitals Option */}
           {IS_CLOUD && (

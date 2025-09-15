@@ -124,11 +124,8 @@ export function getDeviceType(screenWidth: number, screenHeight: number, ua: UAP
 // Check if a site is public
 export const isSitePublic = async (siteId: string | number) => {
   try {
-    // Ensure the siteConfig cache is initialized
-    await siteConfig.ensureInitialized();
-
     // Use the cached value
-    return siteConfig.isSitePublic(siteId);
+    return await siteConfig.isSitePublic(siteId);
   } catch (err) {
     console.error("Error checking if site is public:", err);
     return false;

@@ -34,6 +34,7 @@ export async function getSite(request: FastifyRequest<GetSiteParams>, reply: Fas
     }
 
     return reply.status(200).send({
+      id: site.id,
       siteId: site.siteId,
       name: site.name,
       domain: site.domain,

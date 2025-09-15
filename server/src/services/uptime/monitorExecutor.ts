@@ -2,7 +2,7 @@ import { Worker, Job } from "bullmq";
 import { eq, and, inArray } from "drizzle-orm";
 import { DateTime } from "luxon";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, uptimeMonitorStatus, agentRegions, uptimeIncidents } from "../../db/postgres/uptimeSchema.js";
+import { uptimeMonitors, uptimeMonitorStatus, agentRegions, uptimeIncidents } from "../../db/postgres/schema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { MonitorCheckJob, HttpCheckResult, TcpCheckResult, MonitorEvent } from "./types.js";
 import { performHttpCheck } from "./checks/httpCheck.js";

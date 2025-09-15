@@ -6,6 +6,7 @@ import { parseTrackingData } from "./trackingUtils.js";
 import { sessionsService } from "../sessions/sessionsService.js";
 import { userIdService } from "../userId/userIdService.js";
 import { r2Storage } from "../storage/r2StorageService.js";
+import { siteConfig } from "../../lib/siteConfig.js";
 
 export interface RequestMetadata {
   userAgent: string;
@@ -30,12 +31,12 @@ export class SessionReplayIngestService {
     const userId =
       clientUserId && clientUserId.trim()
         ? clientUserId.trim()
-        : userIdService.generateUserId(requestMeta?.ipAddress || "", requestMeta?.userAgent || "", siteId);
+        : await userIdService.generateUserId(requestMeta?.ipAddress || "", requestMeta?.userAgent || "", siteId);
 
     // Get or create a session ID from the sessions service
     const { sessionId } = await sessionsService.updateSession({
       userId,
-      site_id: siteId.toString(),
+      siteId,
     });
 
     // Check if R2 storage is enabled for cloud deployments

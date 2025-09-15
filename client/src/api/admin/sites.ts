@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { authClient } from "../../lib/auth";
 
 export type SiteResponse = {
+  id: string | null;
   siteId: number;
   name: string;
   domain: string;
@@ -17,22 +18,6 @@ export type SiteResponse = {
   blockBots: boolean;
   isOwner: boolean;
 };
-
-export type GetSitesResponse = {
-  siteId: number;
-  name: string;
-  domain: string;
-  createdAt: string;
-  updatedAt: string;
-  createdBy: string;
-  public: boolean;
-  saltUserIds: boolean;
-  blockBots: boolean;
-  overMonthlyLimit?: boolean;
-  monthlyEventCount?: number;
-  eventLimit?: number;
-  isOwner?: boolean;
-}[];
 
 export type GetSitesFromOrgResponse = {
   organization: {
@@ -47,6 +32,7 @@ export type GetSitesFromOrgResponse = {
     overMonthlyLimit: boolean | null;
   } | null;
   sites: Array<{
+    id: string | null;
     siteId: number;
     name: string;
     domain: string;
