@@ -1,8 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
-import { member } from "../../db/postgres/schema.js";
-import { uptimeMonitors } from "../../db/postgres/uptimeSchema.js";
+import { uptimeMonitors, member } from "../../db/postgres/schema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils.js";

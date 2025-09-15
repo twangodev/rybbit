@@ -3,7 +3,7 @@ import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { DateTime } from "luxon";
 import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
-import { notificationChannels } from "../../db/postgres/uptimeSchema.js";
+import { notificationChannels } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { NotificationService } from "../../services/uptime/notificationService.js";
 import { getUserOrganizations } from "./utils.js";

@@ -1,7 +1,7 @@
 import { Queue, QueueEvents } from "bullmq";
 import { eq } from "drizzle-orm";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors } from "../../db/postgres/uptimeSchema.js";
+import { uptimeMonitors } from "../../db/postgres/schema.js";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 import { MonitorCheckJob } from "./types.js";
 

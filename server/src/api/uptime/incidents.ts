@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeIncidents, uptimeMonitors } from "../../db/postgres/uptimeSchema.js";
+import { uptimeIncidents, uptimeMonitors } from "../../db/postgres/schema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { getUserOrganizations } from "./utils.js";
 

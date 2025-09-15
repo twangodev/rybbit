@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db/postgres/postgres.js";
-import { agentRegions } from "../../db/postgres/uptimeSchema.js";
+import { agentRegions } from "../../db/postgres/schema.js";
 import { createServiceLogger } from "../../lib/logger/logger.js";
 
 export class RegionHealthChecker {
