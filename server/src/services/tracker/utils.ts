@@ -96,7 +96,7 @@ export async function createBasePayload(
   // Use custom user ID if provided, otherwise generate one
   const userId = validatedBody.user_id
     ? validatedBody.user_id.trim()
-    : await userIdService.generateUserId(ipAddress, userAgent, String(numericSiteId));
+    : await userIdService.generateUserId(ipAddress, userAgent, numericSiteId);
 
   return {
     ...validatedBody,

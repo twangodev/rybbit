@@ -31,11 +31,7 @@ export class SessionReplayIngestService {
     const userId =
       clientUserId && clientUserId.trim()
         ? clientUserId.trim()
-        : await userIdService.generateUserId(
-            requestMeta?.ipAddress || "",
-            requestMeta?.userAgent || "",
-            String(siteId)
-          );
+        : await userIdService.generateUserId(requestMeta?.ipAddress || "", requestMeta?.userAgent || "", siteId);
 
     // Get or create a session ID from the sessions service
     const { sessionId } = await sessionsService.updateSession({
