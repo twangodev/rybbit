@@ -1,4 +1,4 @@
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../db/postgres/postgres.js";
 import { sites } from "../db/postgres/schema.js";
 import { logger } from "./logger/logger.js";
@@ -219,23 +219,23 @@ class SiteConfig {
   /**
    * Add a new site
    */
-  async addSite(config: Omit<SiteConfigData, "siteId">): Promise<void> {
-    try {
-      await db.insert(sites).values({
-        id: config.id,
-        name: "", // This would need to be provided
-        domain: config.domain,
-        public: config.public,
-        saltUserIds: config.saltUserIds,
-        blockBots: config.blockBots,
-        excludedIPs: config.excludedIPs,
-        apiKey: config.apiKey,
-        createdBy: "", // This would need to be provided
-      });
-    } catch (error) {
-      logger.error(error as Error, `Error adding site`);
-    }
-  }
+  // async addSite(config: Omit<SiteConfigData, "siteId">): Promise<void> {
+  //   try {
+  //     await db.insert(sites).values({
+  //       id: config.id,
+  //       name: "", // This would need to be provided
+  //       domain: config.domain,
+  //       public: config.public,
+  //       saltUserIds: config.saltUserIds,
+  //       blockBots: config.blockBots,
+  //       excludedIPs: config.excludedIPs,
+  //       apiKey: config.apiKey,
+  //       createdBy: "", // This would need to be provided
+  //     });
+  //   } catch (error) {
+  //     logger.error(error as Error, `Error adding site`);
+  //   }
+  // }
 
   /**
    * Remove a site
