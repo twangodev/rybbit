@@ -85,21 +85,22 @@ export function clearSelfReferrer(referrer: string, hostname: string): string {
 export async function createBasePayload(
   request: FastifyRequest,
   eventType: "pageview" | "custom_event" | "performance" | "error" | "outbound" = "pageview",
-  validatedBody: ValidatedTrackingPayload
+  validatedBody: ValidatedTrackingPayload,
+  numericSiteId: number
 ): Promise<TotalTrackingPayload> {
   // Use custom user agent if provided, otherwise fall back to header
   const userAgent = validatedBody.user_agent || request.headers["user-agent"] || "";
   // Override IP if provided in payload
   const ipAddress = validatedBody.ip_address || getIpAddress(request);
-  const siteId = validatedBody.site_id;
 
   // Use custom user ID if provided, otherwise generate one
   const userId = validatedBody.user_id
     ? validatedBody.user_id.trim()
-    : await userIdService.generateUserId(ipAddress, userAgent, siteId);
+    : await userIdService.generateUserId(ipAddress, userAgent, String(numericSiteId));
 
   return {
     ...validatedBody,
+    site_id: numericSiteId, // Use the numeric site ID
     hostname: validatedBody.hostname || "",
     pathname: validatedBody.pathname || "",
     querystring: validatedBody.querystring || "",

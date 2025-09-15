@@ -35,7 +35,7 @@ export class SessionReplayIngestService {
     // Get or create a session ID from the sessions service
     const { sessionId } = await sessionsService.updateSession({
       userId,
-      site_id: siteId.toString(),
+      site_id: siteId,
     });
 
     // Check if R2 storage is enabled for cloud deployments

@@ -25,19 +25,17 @@ class SessionsService {
 
     this.logger.info("Session cleanup cron initialized (runs every minute)");
   }
-  async getExistingSession(userId: string, siteId: string) {
-    const siteIdNumber = parseInt(siteId, 10);
-
+  async getExistingSession(userId: string, siteId: number) {
     const [existingSession] = await db
       .select()
       .from(activeSessions)
-      .where(and(eq(activeSessions.userId, userId), eq(activeSessions.siteId, siteIdNumber)))
+      .where(and(eq(activeSessions.userId, userId), eq(activeSessions.siteId, siteId)))
       .limit(1);
 
     return existingSession || null;
   }
 
-  async updateSession(payload: { userId: string; site_id: string }): Promise<{ sessionId: string }> {
+  async updateSession(payload: { userId: string; site_id: number }): Promise<{ sessionId: string }> {
     const existingSession = await this.getExistingSession(payload.userId, payload.site_id);
 
     if (existingSession) {
