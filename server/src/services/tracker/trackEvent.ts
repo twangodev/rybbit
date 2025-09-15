@@ -243,28 +243,25 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       }
     }
 
-    // If no valid API key, validate origin
-    if (!apiKeyValidation.success) {
-      const originValidation = await validateOrigin(validatedPayload.site_id, request.headers.origin as string);
+    // If no valid API key, validate origin - disabled for now
+    // if (!apiKeyValidation.success) {
+    //   const originValidation = await validateOrigin(validatedPayload.site_id, request.headers.origin as string);
 
-      if (!originValidation.success) {
-        logger.warn(
-          { siteId: validatedPayload.site_id, error: originValidation.error },
-          "Request rejected - origin validation failed"
-        );
-        return reply.status(403).send({
-          success: false,
-          error: originValidation.error,
-        });
-      }
-    }
-
-    // Make sure the site config is loaded
-    await siteConfig.ensureInitialized();
+    //   if (!originValidation.success) {
+    //     logger.warn(
+    //       { siteId: validatedPayload.site_id, error: originValidation.error },
+    //       "Request rejected - origin validation failed"
+    //     );
+    //     return reply.status(403).send({
+    //       success: false,
+    //       error: originValidation.error,
+    //     });
+    //   }
+    // }
 
     // Check if bot blocking is enabled for this site and if the request is from a bot
     // Skip bot check for API key authenticated requests
-    if (!validatedPayload.api_key && siteConfig.shouldBlockBots(validatedPayload.site_id)) {
+    if (!validatedPayload.api_key && (await siteConfig.shouldBlockBots(validatedPayload.site_id))) {
       // Use custom user agent if provided, otherwise fall back to header
       const userAgent = validatedPayload.user_agent || (request.headers["user-agent"] as string);
       if (userAgent && isbot(userAgent)) {
@@ -286,7 +283,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     // Use custom IP if provided in payload, otherwise get from request
     const requestIP = validatedPayload.ip_address || request.ip || "";
 
-    if (siteConfig.isIPExcluded(requestIP, validatedPayload.site_id)) {
+    if (await siteConfig.isIPExcluded(requestIP, validatedPayload.site_id)) {
       logger.info({ siteId: validatedPayload.site_id, ip: requestIP }, "IP excluded from tracking");
       return reply.status(200).send({
         success: true,
@@ -295,7 +292,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     }
 
     // Create base payload for the event using validated data
-    const payload = createBasePayload(
+    const payload = await createBasePayload(
       request, // Pass request for IP/UA
       validatedPayload.type,
       validatedPayload // Add validated payload back

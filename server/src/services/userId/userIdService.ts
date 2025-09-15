@@ -47,9 +47,9 @@ class UserIdService {
    * @param siteId The site ID to check for salting configuration
    * @returns A sha256 hash to identify the user
    */
-  generateUserId(ip: string, userAgent: string, siteId?: string | number): string {
+  async generateUserId(ip: string, userAgent: string, siteId?: string | number): Promise<string> {
     // Only apply salt if the site has salting enabled
-    if (siteId && siteConfig.shouldSaltUserIds(siteId)) {
+    if (await siteConfig.shouldSaltUserIds(siteId)) {
       const dailySalt = this.getDailySalt(); // Get the salt for the current day
       return crypto
         .createHash("sha256")

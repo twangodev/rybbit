@@ -82,11 +82,11 @@ export function clearSelfReferrer(referrer: string, hostname: string): string {
 }
 
 // Create base tracking payload from request
-export function createBasePayload(
+export async function createBasePayload(
   request: FastifyRequest,
   eventType: "pageview" | "custom_event" | "performance" | "error" | "outbound" = "pageview",
   validatedBody: ValidatedTrackingPayload
-): TotalTrackingPayload {
+): Promise<TotalTrackingPayload> {
   // Use custom user agent if provided, otherwise fall back to header
   const userAgent = validatedBody.user_agent || request.headers["user-agent"] || "";
   // Override IP if provided in payload
@@ -96,7 +96,7 @@ export function createBasePayload(
   // Use custom user ID if provided, otherwise generate one
   const userId = validatedBody.user_id
     ? validatedBody.user_id.trim()
-    : userIdService.generateUserId(ipAddress, userAgent, siteId);
+    : await userIdService.generateUserId(ipAddress, userAgent, siteId);
 
   return {
     ...validatedBody,

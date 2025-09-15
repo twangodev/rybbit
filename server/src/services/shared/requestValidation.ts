@@ -34,7 +34,6 @@ export async function validateApiKey(siteId: string | number, apiKey?: string): 
   }
 
   try {
-    await siteConfig.ensureInitialized();
     const numericSiteId = typeof siteId === "string" ? parseInt(siteId, 10) : siteId;
     const site = await siteConfig.getSiteConfig(numericSiteId);
 
@@ -67,9 +66,6 @@ export async function validateOrigin(siteId: string | number, requestOrigin?: st
       logger.info({ siteId, origin: requestOrigin || "none" }, "Origin check disabled, allowing request");
       return { success: true };
     }
-
-    // Ensure site config is initialized
-    await siteConfig.ensureInitialized();
 
     // Convert siteId to number
     const numericSiteId = typeof siteId === "string" ? parseInt(siteId, 10) : siteId;

@@ -82,15 +82,7 @@ export async function addSite(
     // Update allowed domains
     await loadAllowedDomains();
 
-    // Update siteConfig cache with the new site
-    siteConfig.addSite(newSite[0].siteId, {
-      public: newSite[0].public || false,
-      saltUserIds: newSite[0].saltUserIds || false,
-      domain: newSite[0].domain,
-      blockBots: newSite[0].blockBots === undefined ? true : newSite[0].blockBots,
-      excludedIPs: Array.isArray(newSite[0].excludedIPs) ? newSite[0].excludedIPs : [],
-      apiKey: newSite[0].apiKey,
-    });
+    // No need to update cache as we're querying directly now
 
     return reply.status(201).send(newSite[0]);
   } catch (error) {

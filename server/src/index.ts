@@ -412,7 +412,7 @@ server.get("/api/health", { logLevel: "silent" }, (_, reply) => reply.send("OK")
 const start = async () => {
   try {
     console.info("Starting server...");
-    await Promise.all([initializeClickhouse(), loadAllowedDomains(), siteConfig.loadSiteConfigs(), initPostgres()]);
+    await Promise.all([initializeClickhouse(), loadAllowedDomains(), initPostgres()]);
 
     telemetryService.startTelemetryCron();
 

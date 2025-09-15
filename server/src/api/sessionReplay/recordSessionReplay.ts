@@ -2,7 +2,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { siteConfig } from "../../lib/siteConfig.js";
 import { SessionReplayIngestService } from "../../services/replay/sessionReplayIngestService.js";
-import { validateApiKey, validateOrigin } from "../../services/shared/requestValidation.js";
+import { validateApiKey } from "../../services/shared/requestValidation.js";
 import { usageService } from "../../services/usageService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
 import { getIpAddress } from "../../utils.js";
@@ -73,26 +73,23 @@ export async function recordSessionReplay(
     //   }
     // }
 
-    // If no valid API key, validate origin
-    if (!apiKeyValidation.success) {
-      const originValidation = await validateOrigin(siteId, request.headers.origin as string);
+    // If no valid API key, validate origin - disabled for now
+    // if (!apiKeyValidation.success) {
+    //   const originValidation = await validateOrigin(siteId, request.headers.origin as string);
 
-      if (!originValidation.success) {
-        logger.warn(`[SessionReplay] Request rejected for site ${siteId}: ${originValidation.error}`);
-        return reply.status(403).send({
-          success: false,
-          error: originValidation.error,
-        });
-      }
-    }
-
-    // Make sure the site config is loaded
-    await siteConfig.ensureInitialized();
+    //   if (!originValidation.success) {
+    //     logger.warn(`[SessionReplay] Request rejected for site ${siteId}: ${originValidation.error}`);
+    //     return reply.status(403).send({
+    //       success: false,
+    //       error: originValidation.error,
+    //     });
+    //   }
+    // }
 
     // Check if the IP should be excluded from tracking
     const requestIP = getIpAddress(request);
 
-    if (siteConfig.isIPExcluded(requestIP, siteId)) {
+    if (await siteConfig.isIPExcluded(requestIP, siteId)) {
       logger.info(`[SessionReplay] IP ${requestIP} excluded from tracking for site ${siteId}`);
       return reply.status(200).send({
         success: true,

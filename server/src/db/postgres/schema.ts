@@ -1,18 +1,16 @@
+import { sql } from "drizzle-orm";
 import {
   boolean,
+  foreignKey,
   integer,
   jsonb,
   pgTable,
+  real,
   serial,
   text,
   timestamp,
-  foreignKey,
   unique,
-  real,
-  check,
-  index,
 } from "drizzle-orm/pg-core";
-import { sql } from "drizzle-orm";
 
 // User table
 export const user = pgTable(
@@ -51,6 +49,10 @@ export const verification = pgTable("verification", {
 export const sites = pgTable(
   "sites",
   {
+    id: text("id")
+      .notNull()
+      .$defaultFn(() => sql`encode(gen_random_bytes(6), 'hex')`),
+    // deprecated - keeping as primary key for backwards compatibility
     siteId: serial("site_id").primaryKey().notNull(),
     name: text("name").notNull(),
     domain: text("domain").notNull(),
