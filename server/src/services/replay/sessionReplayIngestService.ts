@@ -6,6 +6,7 @@ import { parseTrackingData } from "./trackingUtils.js";
 import { sessionsService } from "../sessions/sessionsService.js";
 import { userIdService } from "../userId/userIdService.js";
 import { r2Storage } from "../storage/r2StorageService.js";
+import { siteConfig } from "../../lib/siteConfig.js";
 
 export interface RequestMetadata {
   userAgent: string;
@@ -20,17 +21,24 @@ export interface RequestMetadata {
  */
 export class SessionReplayIngestService {
   async recordEvents(
-    siteId: number,
+    siteIdOrId: number | string,
     request: RecordSessionReplayRequest,
     requestMeta?: RequestMetadata
   ): Promise<void> {
     const { userId: clientUserId, events, metadata } = request;
 
+    // Get the site configuration to get the numeric siteId
+    const siteConfiguration = await siteConfig.getSiteConfig(siteIdOrId);
+    if (!siteConfiguration) {
+      throw new Error(`Site not found: ${siteIdOrId}`);
+    }
+    const siteId = siteConfiguration.siteId;
+
     // Generate user ID server-side if not provided by client
     const userId =
       clientUserId && clientUserId.trim()
         ? clientUserId.trim()
-        : await userIdService.generateUserId(requestMeta?.ipAddress || "", requestMeta?.userAgent || "", siteId);
+        : await userIdService.generateUserId(requestMeta?.ipAddress || "", requestMeta?.userAgent || "", String(siteId));
 
     // Get or create a session ID from the sessions service
     const { sessionId } = await sessionsService.updateSession({
