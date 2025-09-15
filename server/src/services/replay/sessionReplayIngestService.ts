@@ -21,18 +21,11 @@ export interface RequestMetadata {
  */
 export class SessionReplayIngestService {
   async recordEvents(
-    siteIdOrId: number | string,
+    siteId: number,
     request: RecordSessionReplayRequest,
     requestMeta?: RequestMetadata
   ): Promise<void> {
     const { userId: clientUserId, events, metadata } = request;
-
-    // Get the site configuration to get the numeric siteId
-    const siteConfiguration = await siteConfig.getSiteConfig(siteIdOrId);
-    if (!siteConfiguration) {
-      throw new Error(`Site not found: ${siteIdOrId}`);
-    }
-    const siteId = siteConfiguration.siteId;
 
     // Generate user ID server-side if not provided by client
     const userId =

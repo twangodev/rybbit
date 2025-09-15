@@ -36,7 +36,11 @@ export async function recordSessionReplay(
   reply: FastifyReply
 ) {
   try {
-    const siteId = Number(request.params.site);
+    // Get the site configuration to get the numeric siteId
+    const siteId = (await siteConfig.getSiteConfig(request.params.site))?.siteId;
+    if (!siteId) {
+      throw new Error(`Site not found: ${request.params.site}`);
+    }
 
     // Check if the site has exceeded its monthly limit
     if (usageService.isSiteOverLimit(Number(siteId))) {
@@ -104,6 +108,6 @@ export async function recordSessionReplay(
       return reply.status(400).send({ error: error.errors });
     }
     logger.error(error as Error, "Error recording session replay");
-    return reply.status(500).send({ error: "Internal server error" });
+    return reply.status(500).send({ error });
   }
 }
