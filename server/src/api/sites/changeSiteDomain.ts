@@ -13,7 +13,7 @@ export async function changeSiteDomain(
       newDomain: string;
     };
   }>,
-  reply: FastifyReply,
+  reply: FastifyReply
 ) {
   const { siteId, newDomain } = request.body;
 

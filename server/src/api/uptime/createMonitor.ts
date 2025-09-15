@@ -1,7 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, uptimeMonitorStatus, member } from "../../db/postgres/schema.js";
+import { member } from "../../db/postgres/schema.js";
+import { uptimeMonitors, uptimeMonitorStatus } from "../../db/postgres/uptimeSchema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { uptimeService } from "../../services/uptime/uptimeService.js";
 import { createMonitorSchema, type CreateMonitorInput } from "./schemas.js";

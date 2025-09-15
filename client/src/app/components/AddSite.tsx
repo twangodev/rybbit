@@ -103,7 +103,7 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
     <div>
       <Dialog
         open={open}
-        onOpenChange={(isOpen) => {
+        onOpenChange={isOpen => {
           setOpen(isOpen);
           if (isOpen) {
             resetForm();
@@ -135,7 +135,7 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
               <Input
                 id="domain"
                 value={domain}
-                onChange={(e) => setDomain(e.target.value.toLowerCase())}
+                onChange={e => setDomain(e.target.value.toLowerCase())}
                 placeholder="example.com or sub.example.com"
               />
             </div>

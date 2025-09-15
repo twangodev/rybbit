@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import * as schema from "./schema.js";
+import * as uptimeSchema from "./uptimeSchema.js";
 
 dotenv.config();
 
@@ -17,7 +18,7 @@ const client = postgres({
 });
 
 // Create drizzle ORM instance
-export const db = drizzle(client, { schema });
+export const db = drizzle(client, { schema: { ...schema, ...uptimeSchema } });
 
 // For compatibility with raw SQL if needed
 export const sql = client;

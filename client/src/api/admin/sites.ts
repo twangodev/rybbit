@@ -145,9 +145,7 @@ export function useSiteHasData(siteId: string) {
       if (!siteId) {
         return Promise.resolve(false);
       }
-      return authedFetch<{ hasData: boolean }>(`/site-has-data/${siteId}`).then(
-        (data) => data.hasData
-      );
+      return authedFetch<{ hasData: boolean }>(`/site-has-data/${siteId}`).then(data => data.hasData);
     },
     refetchInterval: 5000,
     staleTime: Infinity,
@@ -210,9 +208,7 @@ export function useGetSiteIsPublic(siteId?: string | number) {
       }
 
       try {
-        const data = await authedFetch<{ isPublic: boolean }>(
-          `/site-is-public/${siteId}`
-        );
+        const data = await authedFetch<{ isPublic: boolean }>(`/site-is-public/${siteId}`);
         return !!data.isPublic;
       } catch (error) {
         console.error("Error checking if site is public:", error);
@@ -230,9 +226,7 @@ export const useCurrentSite = () => {
   const pathname = usePathname();
 
   return {
-    site: sites?.sites.find(
-      (site) => site.siteId === Number(pathname.split("/")[1])
-    ),
+    site: sites?.sites.find(site => site.siteId === Number(pathname.split("/")[1])),
     subscription: sites?.subscription,
   };
 };

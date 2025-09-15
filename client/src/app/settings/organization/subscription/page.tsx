@@ -20,7 +20,7 @@ export default function OrganizationSubscriptionPage() {
   const { data: session } = authClient.useSession();
 
   // Check if the current user is an owner by looking at the members in the active organization
-  const currentUserMember = activeOrg?.members?.find((member) => member.userId === session?.user?.id);
+  const currentUserMember = activeOrg?.members?.find(member => member.userId === session?.user?.id);
   const isOwner = currentUserMember?.role === "owner";
 
   const isLoading = isLoadingSubscription || isPending;

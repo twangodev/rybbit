@@ -1,7 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, uptimeMonitorStatus, member } from "../../db/postgres/schema.js";
+import { member } from "../../db/postgres/schema.js";
+import { uptimeMonitors, uptimeMonitorStatus } from "../../db/postgres/uptimeSchema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 
 interface GetMonitorParams {
@@ -10,10 +11,7 @@ interface GetMonitorParams {
   };
 }
 
-export async function getMonitor(
-  request: FastifyRequest<GetMonitorParams>,
-  reply: FastifyReply
-) {
+export async function getMonitor(request: FastifyRequest<GetMonitorParams>, reply: FastifyReply) {
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
@@ -34,10 +32,7 @@ export async function getMonitor(
 
     // Check if user has access to the monitor's organization
     const userHasAccess = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, userId),
-        eq(member.organizationId, monitor.organizationId)
-      ),
+      where: and(eq(member.userId, userId), eq(member.organizationId, monitor.organizationId)),
     });
 
     if (!userHasAccess) {

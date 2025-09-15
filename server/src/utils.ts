@@ -217,7 +217,7 @@ export const getIpAddress = (request: FastifyRequest): string => {
   if (forwardedFor && typeof forwardedFor === "string") {
     const ips = forwardedFor
       .split(",")
-      .map((ip) => ip.trim())
+      .map(ip => ip.trim())
       .filter(Boolean);
     if (ips.length > 0) {
       // Always use the first IP - the original client

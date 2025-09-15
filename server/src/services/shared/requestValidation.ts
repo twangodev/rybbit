@@ -28,10 +28,7 @@ export interface OriginValidationResult {
  * @param apiKey The API key from the payload
  * @returns An object with success status and optional error message
  */
-export async function validateApiKey(
-  siteId: string | number,
-  apiKey?: string
-): Promise<ApiKeyValidationResult> {
+export async function validateApiKey(siteId: string | number, apiKey?: string): Promise<ApiKeyValidationResult> {
   if (!apiKey) {
     return { success: false };
   }
@@ -57,24 +54,17 @@ export async function validateApiKey(
   }
 }
 
-
 /**
  * Validates if the request's origin matches the registered domain for the site
  * @param siteId The site ID from the tracking payload
  * @param requestOrigin The origin header from the request
  * @returns An object with success status and optional error message
  */
-export async function validateOrigin(
-  siteId: string | number,
-  requestOrigin?: string,
-): Promise<OriginValidationResult> {
+export async function validateOrigin(siteId: string | number, requestOrigin?: string): Promise<OriginValidationResult> {
   try {
     // If origin checking is disabled, return success
     if (DISABLE_ORIGIN_CHECK) {
-      logger.info(
-        { siteId, origin: requestOrigin || "none" },
-        "Origin check disabled, allowing request"
-      );
+      logger.info({ siteId, origin: requestOrigin || "none" }, "Origin check disabled, allowing request");
       return { success: true };
     }
 

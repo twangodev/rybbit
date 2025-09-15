@@ -85,7 +85,7 @@ export function InviteMemberDialog({ organizationId, onSuccess }: InviteMemberDi
           </div>
           <div className="grid gap-2">
             <Label htmlFor="role">Role</Label>
-            <Select value={role} onValueChange={(value) => setRole(value as "admin" | "member")}>
+            <Select value={role} onValueChange={value => setRole(value as "admin" | "member")}>
               <SelectTrigger>
                 <SelectValue placeholder="Select a role" />
               </SelectTrigger>

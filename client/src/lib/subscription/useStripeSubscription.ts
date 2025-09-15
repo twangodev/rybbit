@@ -25,16 +25,13 @@ export function useStripeSubscription() {
       return null;
     }
 
-    const response = await fetch(
-      `${BACKEND_URL}/stripe/subscription?organizationId=${activeOrg.id}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-      }
-    );
+    const response = await fetch(`${BACKEND_URL}/stripe/subscription?organizationId=${activeOrg.id}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+    });
 
     if (!response.ok) {
       if (response.status === 401) {

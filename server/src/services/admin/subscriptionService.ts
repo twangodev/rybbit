@@ -17,7 +17,7 @@ export interface SubscriptionData {
 function findPlanDetails(priceId: string): StripePlan | undefined {
   return getStripePrices().find(
     (plan: StripePlan) =>
-      plan.priceId === priceId || (plan.annualDiscountPriceId && plan.annualDiscountPriceId === priceId),
+      plan.priceId === priceId || (plan.annualDiscountPriceId && plan.annualDiscountPriceId === priceId)
   );
 }
 
@@ -29,7 +29,7 @@ function findPlanDetails(priceId: string): StripePlan | undefined {
  */
 async function fetchSubscriptionsForCustomers(
   stripeCustomerIds: Set<string>,
-  includeFullDetails = false,
+  includeFullDetails = false
 ): Promise<Map<string, SubscriptionData>> {
   const subscriptionMap = new Map<string, SubscriptionData>();
 
@@ -85,7 +85,7 @@ async function fetchSubscriptionsForCustomers(
 
       // Rate limiting: wait 50ms between requests (20 req/s)
       if (hasMore) {
-        await new Promise((resolve) => setTimeout(resolve, 50));
+        await new Promise(resolve => setTimeout(resolve, 50));
       }
     }
   } catch (error) {
@@ -103,12 +103,12 @@ async function fetchSubscriptionsForCustomers(
  */
 export async function getOrganizationSubscriptions(
   organizations: Array<{ id: string; stripeCustomerId?: string | null }>,
-  includeFullDetails = false,
+  includeFullDetails = false
 ): Promise<
   Map<string, SubscriptionData & { planName: string; status: string; eventLimit: number; currentPeriodEnd: Date }>
 > {
-  const orgsWithStripe = organizations.filter((org) => org.stripeCustomerId);
-  const stripeCustomerIds = new Set(orgsWithStripe.map((org) => org.stripeCustomerId!));
+  const orgsWithStripe = organizations.filter(org => org.stripeCustomerId);
+  const stripeCustomerIds = new Set(orgsWithStripe.map(org => org.stripeCustomerId!));
 
   const subscriptionMap = await fetchSubscriptionsForCustomers(stripeCustomerIds, includeFullDetails);
 

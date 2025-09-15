@@ -1,8 +1,4 @@
-import {
-  ScriptConfig,
-  SessionReplayEvent,
-  SessionReplayBatch,
-} from "./types.js";
+import { ScriptConfig, SessionReplayEvent, SessionReplayBatch } from "./types.js";
 
 // rrweb types (simplified for our use case)
 declare global {
@@ -32,11 +28,7 @@ export class SessionReplayRecorder {
   private batchTimer?: number;
   private sendBatch: (batch: SessionReplayBatch) => Promise<void>;
 
-  constructor(
-    config: ScriptConfig,
-    userId: string,
-    sendBatch: (batch: SessionReplayBatch) => Promise<void>
-  ) {
+  constructor(config: ScriptConfig, userId: string, sendBatch: (batch: SessionReplayBatch) => Promise<void>) {
     this.config = config;
     this.userId = userId;
     this.sendBatch = sendBatch;
@@ -78,7 +70,7 @@ export class SessionReplayRecorder {
 
     try {
       this.stopRecordingFn = window.rrweb.record({
-        emit: (event) => {
+        emit: event => {
           this.addEvent({
             type: event.type,
             data: event.data,

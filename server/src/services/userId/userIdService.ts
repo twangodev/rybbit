@@ -17,7 +17,7 @@ class UserIdService {
   private getDailySalt(): string {
     if (!SECRET) {
       console.error(
-        "FATAL: BETTER_AUTH_SECRET environment variable is not set. User ID generation will be insecure or fail.",
+        "FATAL: BETTER_AUTH_SECRET environment variable is not set. User ID generation will be insecure or fail."
       );
       throw new Error("BETTER_AUTH_SECRET environment variable is missing.");
     }

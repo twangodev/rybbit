@@ -10,10 +10,7 @@ interface GetSiteParams {
   };
 }
 
-export async function getSite(
-  request: FastifyRequest<GetSiteParams>,
-  reply: FastifyReply
-) {
+export async function getSite(request: FastifyRequest<GetSiteParams>, reply: FastifyReply) {
   const { id } = request.params;
   const userId = request.user?.id;
 
@@ -31,10 +28,7 @@ export async function getSite(
     const isOwner = site.createdBy === userId;
 
     // Check user access to site
-    const userHasAccessToSite = await getUserHasAccessToSitePublic(
-      request,
-      site.siteId
-    );
+    const userHasAccessToSite = await getUserHasAccessToSitePublic(request, site.siteId);
     if (!userHasAccessToSite) {
       return reply.status(403).send({ error: "Forbidden" });
     }

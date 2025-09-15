@@ -2,7 +2,7 @@ import { and, desc, eq, inArray, sql } from "drizzle-orm";
 import { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeIncidents, uptimeMonitors } from "../../db/postgres/schema.js";
+import { uptimeIncidents, uptimeMonitors } from "../../db/postgres/uptimeSchema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { getUserOrganizations } from "./utils.js";
 
@@ -83,7 +83,9 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
               ELSE 'Unknown Monitor'
             END
           `,
-          affectedRegions: sql<string[]>`ARRAY_REMOVE(ARRAY_AGG(DISTINCT ${uptimeIncidents.region} ORDER BY ${uptimeIncidents.region}), NULL)`,
+          affectedRegions: sql<
+            string[]
+          >`ARRAY_REMOVE(ARRAY_AGG(DISTINCT ${uptimeIncidents.region} ORDER BY ${uptimeIncidents.region}), NULL)`,
           startTime: sql<string>`MIN(${uptimeIncidents.startTime})`,
           endTime: sql<string>`MAX(${uptimeIncidents.endTime})`,
           status: uptimeIncidents.status,
@@ -278,4 +280,3 @@ export const incidentsRoutes = async (server: FastifyInstance) => {
     },
   });
 };
-

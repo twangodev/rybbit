@@ -1,7 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, member } from "../../db/postgres/schema.js";
+import { member } from "../../db/postgres/schema.js";
+import { uptimeMonitors } from "../../db/postgres/uptimeSchema.js";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { processResults } from "../analytics/utils.js";
@@ -12,10 +13,7 @@ interface GetMonitorUptimeRequest {
   };
 }
 
-export async function getMonitorUptime(
-  request: FastifyRequest<GetMonitorUptimeRequest>,
-  reply: FastifyReply
-) {
+export async function getMonitorUptime(request: FastifyRequest<GetMonitorUptimeRequest>, reply: FastifyReply) {
   const session = await getSessionFromReq(request);
   const userId = session?.user?.id;
   const { monitorId } = request.params;
@@ -36,10 +34,7 @@ export async function getMonitorUptime(
 
     // Check if user has access to the monitor's organization
     const userHasAccess = await db.query.member.findFirst({
-      where: and(
-        eq(member.userId, userId),
-        eq(member.organizationId, monitor.organizationId)
-      ),
+      where: and(eq(member.userId, userId), eq(member.organizationId, monitor.organizationId)),
     });
 
     if (!userHasAccess) {
@@ -171,12 +166,14 @@ export async function getMonitorUptime(
       totalUptimeSeconds: estimatedTotalUptimeSeconds,
       currentUptimeSeconds,
       totalMonitoringSeconds,
-      lastDowntime: lastDowntime ? {
-        timestamp: lastDowntime.downtime_start,
-        error: lastDowntime.error_message,
-        errorType: lastDowntime.error_type,
-        status: lastDowntime.status,
-      } : null,
+      lastDowntime: lastDowntime
+        ? {
+            timestamp: lastDowntime.downtime_start,
+            error: lastDowntime.error_message,
+            errorType: lastDowntime.error_type,
+            status: lastDowntime.status,
+          }
+        : null,
       monitoringSince: first_check,
       lastCheck: last_check,
       uptimePercentage: 100 - stats.downtime_percentage,

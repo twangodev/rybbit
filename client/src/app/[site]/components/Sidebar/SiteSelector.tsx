@@ -41,7 +41,7 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
               siteId: 1,
               domain: "tomato.gg",
             },
-          ].map((site) => {
+          ].map(site => {
             const isSelected = site.siteId === currentSiteId;
             return (
               <div
@@ -85,7 +85,7 @@ function SiteSelectorContent({ onSiteSelect }: { onSiteSelect: () => void }) {
     <PopoverContent align="start" className="w-80 p-2">
       <div className="max-h-96 overflow-y-auto">
         {sites?.sites
-          ? sites.sites.map((site) => {
+          ? sites.sites.map(site => {
               const isSelected = site.siteId === currentSiteId;
               return (
                 <div

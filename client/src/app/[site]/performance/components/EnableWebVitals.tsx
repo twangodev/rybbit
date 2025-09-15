@@ -2,11 +2,7 @@
 
 import { BarChart3, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "../../../../components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "../../../../components/ui/alert";
 import { Button } from "../../../../components/ui/button";
 import { useGetPerformanceOverview } from "../../../../api/analytics/performance/useGetPerformanceOverview";
 import { useStore } from "../../../../lib/store";
@@ -16,11 +12,7 @@ export function EnableWebVitals() {
   const { site } = useStore();
   const { selectedPercentile } = usePerformanceStore();
 
-  const {
-    data: overviewData,
-    isLoading,
-    isError,
-  } = useGetPerformanceOverview({ site });
+  const { data: overviewData, isLoading, isError } = useGetPerformanceOverview({ site });
 
   // Don't show banner while loading or if there's an error
   if (isLoading || isError) return null;
@@ -57,8 +49,7 @@ export function EnableWebVitals() {
             <code className="bg-amber-100/70 dark:bg-amber-800/50 px-1 py-0.5 rounded text-xs">
               data-web-vitals="true"
             </code>{" "}
-            to your script tag. <strong>Note:</strong> Enabling Web Vitals will
-            increase your event usage.
+            to your script tag. <strong>Note:</strong> Enabling Web Vitals will increase your event usage.
           </AlertDescription>
 
           <div className="space-y-2">
@@ -69,10 +60,7 @@ export function EnableWebVitals() {
                 size="sm"
                 className="border-amber-300/70 text-amber-700/90 hover:bg-amber-100/70 dark:border-amber-600/70 dark:text-amber-400/90 dark:hover:bg-amber-800/50"
               >
-                <Link
-                  href="https://rybbit.io/docs/script#web-vitals-performance-metrics"
-                  target="_blank"
-                >
+                <Link href="https://rybbit.io/docs/script#web-vitals-performance-metrics" target="_blank">
                   View Documentation <ArrowRight className="ml-1 h-3 w-3" />
                 </Link>
               </Button>

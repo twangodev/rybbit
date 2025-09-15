@@ -1,7 +1,8 @@
 import { and, eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { db } from "../../db/postgres/postgres.js";
-import { uptimeMonitors, uptimeMonitorStatus, member } from "../../db/postgres/schema.js";
+import { member } from "../../db/postgres/schema.js";
+import { uptimeMonitors, uptimeMonitorStatus } from "../../db/postgres/uptimeSchema.js";
 import { getSessionFromReq } from "../../lib/auth-utils.js";
 import { uptimeService } from "../../services/uptime/uptimeService.js";
 
@@ -43,7 +44,7 @@ export async function deleteMonitor(request: FastifyRequest<DeleteMonitorParams>
     await uptimeService.onMonitorDeleted(Number(monitorId));
 
     // Delete monitor and related records in a transaction
-    await db.transaction(async (tx) => {
+    await db.transaction(async tx => {
       // Delete monitor status first
       await tx.delete(uptimeMonitorStatus).where(eq(uptimeMonitorStatus.monitorId, Number(monitorId)));
 

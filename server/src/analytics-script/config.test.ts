@@ -15,10 +15,7 @@ describe("parseScriptConfig", () => {
   });
 
   it("should parse valid configuration", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
 
     const config = parseScriptConfig(mockScriptTag);
@@ -52,38 +49,25 @@ describe("parseScriptConfig", () => {
     mockScriptTag.setAttribute("src", "/script.js"); // No host part
     const config = parseScriptConfig(mockScriptTag);
     expect(config).toBeNull();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Please provide a valid analytics host"
-    );
+    expect(consoleSpy).toHaveBeenCalledWith("Please provide a valid analytics host");
   });
 
   it("should handle missing site ID", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     const config = parseScriptConfig(mockScriptTag);
     expect(config).toBeNull();
-    expect(consoleSpy).toHaveBeenCalledWith(
-      "Please provide a valid site ID using the data-site-id attribute"
-    );
+    expect(consoleSpy).toHaveBeenCalledWith("Please provide a valid site ID using the data-site-id attribute");
   });
 
   it("should handle invalid site ID", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "not-a-number");
     const config = parseScriptConfig(mockScriptTag);
     expect(config).toBeNull();
   });
 
   it("should parse custom debounce duration", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
     mockScriptTag.setAttribute("data-debounce", "1000");
 
@@ -92,10 +76,7 @@ describe("parseScriptConfig", () => {
   });
 
   it("should handle negative debounce duration", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
     mockScriptTag.setAttribute("data-debounce", "-100");
 
@@ -104,10 +85,7 @@ describe("parseScriptConfig", () => {
   });
 
   it("should parse boolean flags correctly", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
     mockScriptTag.setAttribute("data-auto-track-pageview", "false");
     mockScriptTag.setAttribute("data-track-spa", "false");
@@ -122,40 +100,25 @@ describe("parseScriptConfig", () => {
   });
 
   it("should parse skip patterns", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
-    mockScriptTag.setAttribute(
-      "data-skip-patterns",
-      '["/admin/**", "/api/**"]'
-    );
+    mockScriptTag.setAttribute("data-skip-patterns", '["/admin/**", "/api/**"]');
 
     const config = parseScriptConfig(mockScriptTag);
     expect(config?.skipPatterns).toEqual(["/admin/**", "/api/**"]);
   });
 
   it("should parse mask patterns", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
-    mockScriptTag.setAttribute(
-      "data-mask-patterns",
-      '["/user/*/profile", "/post/*"]'
-    );
+    mockScriptTag.setAttribute("data-mask-patterns", '["/user/*/profile", "/post/*"]');
 
     const config = parseScriptConfig(mockScriptTag);
     expect(config?.maskPatterns).toEqual(["/user/*/profile", "/post/*"]);
   });
 
   it("should handle invalid JSON in patterns gracefully", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
     mockScriptTag.setAttribute("data-skip-patterns", "invalid-json");
 
@@ -164,10 +127,7 @@ describe("parseScriptConfig", () => {
   });
 
   it("should support legacy site-id attribute", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("site-id", "456");
 
     const config = parseScriptConfig(mockScriptTag);
@@ -175,10 +135,7 @@ describe("parseScriptConfig", () => {
   });
 
   it("should enable web vitals when data-web-vitals is true", () => {
-    mockScriptTag.setAttribute(
-      "src",
-      "https://analytics.example.com/script.js"
-    );
+    mockScriptTag.setAttribute("src", "https://analytics.example.com/script.js");
     mockScriptTag.setAttribute("data-site-id", "123");
     mockScriptTag.setAttribute("data-web-vitals", "true");
 

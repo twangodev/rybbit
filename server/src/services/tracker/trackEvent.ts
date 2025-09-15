@@ -48,7 +48,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
         .string()
         .max(2048)
         .refine(
-          (val) => {
+          val => {
             try {
               JSON.parse(val);
               return true;
@@ -56,7 +56,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
               return false;
             }
           },
-          { message: "Properties must be a valid JSON string" },
+          { message: "Properties must be a valid JSON string" }
         )
         .optional(), // Optional but must be valid JSON if present
       user_id: z.string().max(255).optional(),
@@ -108,27 +108,29 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
         .string()
         .max(2048)
         .refine(
-          (val) => {
+          val => {
             try {
               const parsed = JSON.parse(val);
               // Validate outbound-specific properties
               if (typeof parsed.url !== "string" || parsed.url.length === 0) return false;
               if (parsed.text && typeof parsed.text !== "string") return false;
               if (parsed.target && typeof parsed.target !== "string") return false;
-              
+
               // Validate URL format
               try {
                 new URL(parsed.url);
               } catch {
                 return false;
               }
-              
+
               return true;
             } catch (e) {
               return false;
             }
           },
-          { message: "Properties must be valid JSON with outbound link fields (url required, text and target optional)" },
+          {
+            message: "Properties must be valid JSON with outbound link fields (url required, text and target optional)",
+          }
         ),
       user_id: z.string().max(255).optional(),
       api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
@@ -153,7 +155,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
         .string()
         .max(4096) // Larger limit for error details
         .refine(
-          (val) => {
+          val => {
             try {
               const parsed = JSON.parse(val);
               // Validate error-specific properties
@@ -183,7 +185,7 @@ export const trackingPayloadSchema = z.discriminatedUnion("type", [
           {
             message:
               "Properties must be valid JSON with error fields (message, stack, fileName, lineNumber, columnNumber)",
-          },
+          }
         ),
       user_id: z.string().max(255).optional(),
       api_key: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
@@ -219,7 +221,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     if (apiKeyValidation.error) {
       logger.warn(
         { siteId: validatedPayload.site_id, error: apiKeyValidation.error },
-        "Request rejected - API key validation failed",
+        "Request rejected - API key validation failed"
       );
       return reply.status(403).send({
         success: false,
@@ -232,7 +234,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       if (!checkApiKeyRateLimit(validatedPayload.api_key)) {
         logger.warn(
           { apiKey: validatedPayload.api_key, siteId: validatedPayload.site_id },
-          "Rate limit exceeded for API key",
+          "Rate limit exceeded for API key"
         );
         return reply.status(429).send({
           success: false,
@@ -248,7 +250,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       if (!originValidation.success) {
         logger.warn(
           { siteId: validatedPayload.site_id, error: originValidation.error },
-          "Request rejected - origin validation failed",
+          "Request rejected - origin validation failed"
         );
         return reply.status(403).send({
           success: false,
@@ -296,7 +298,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
     const payload = createBasePayload(
       request, // Pass request for IP/UA
       validatedPayload.type,
-      validatedPayload, // Add validated payload back
+      validatedPayload // Add validated payload back
     );
     // Update session
     const { sessionId } = await sessionsService.updateSession({
