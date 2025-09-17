@@ -63,14 +63,14 @@ export async function parseScriptConfig(scriptTag: HTMLScriptElement): Promise<S
 
   try {
     // Fetch configuration from API
-    const configUrl = `${analyticsHost}/api/site/${siteId}/tracking-config`;
+    const configUrl = `${analyticsHost}/site/${siteId}/tracking-config`;
     const response = await fetch(configUrl, {
-      method: 'GET',
+      method: "GET",
       headers: {
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       // Include credentials if needed for authentication
-      credentials: 'omit',
+      credentials: "omit",
     });
 
     if (response.ok) {
@@ -90,12 +90,12 @@ export async function parseScriptConfig(scriptTag: HTMLScriptElement): Promise<S
       };
     } else {
       // If API call fails, log warning and use defaults
-      console.warn('Failed to fetch tracking config from API, using defaults');
+      console.warn("Failed to fetch tracking config from API, using defaults");
       return defaultConfig;
     }
   } catch (error) {
     // If network error, log and use defaults
-    console.warn('Error fetching tracking config:', error);
+    console.warn("Error fetching tracking config:", error);
     return defaultConfig;
   }
 }

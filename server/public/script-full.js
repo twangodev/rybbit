@@ -100,7 +100,7 @@
       enableSessionReplay: false
     };
     try {
-      const configUrl = `${analyticsHost}/api/site/${siteId}/tracking-config`;
+      const configUrl = `${analyticsHost}/site/${siteId}/tracking-config`;
       const response = await fetch(configUrl, {
         method: "GET",
         headers: {
