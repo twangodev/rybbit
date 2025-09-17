@@ -59,7 +59,7 @@
   }
 
   // config.ts
-  function parseScriptConfig(scriptTag) {
+  async function parseScriptConfig(scriptTag) {
     const src = scriptTag.getAttribute("src");
     if (!src) {
       console.error("Script src attribute is missing");
@@ -75,29 +75,61 @@
       console.error("Please provide a valid site ID using the data-site-id attribute");
       return null;
     }
-    const debounceDuration = scriptTag.getAttribute("data-debounce") ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce"))) : 500;
     const skipPatterns = parseJsonSafely(scriptTag.getAttribute("data-skip-patterns"), []);
     const maskPatterns = parseJsonSafely(scriptTag.getAttribute("data-mask-patterns"), []);
     const apiKey = scriptTag.getAttribute("data-api-key") || void 0;
+    const debounceDuration = scriptTag.getAttribute("data-debounce") ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce"))) : 500;
     const sessionReplayBatchSize = scriptTag.getAttribute("data-replay-batch-size") ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 250;
     const sessionReplayBatchInterval = scriptTag.getAttribute("data-replay-batch-interval") ? Math.max(1e3, parseInt(scriptTag.getAttribute("data-replay-batch-interval"))) : 5e3;
-    return {
+    const defaultConfig = {
       analyticsHost,
       siteId,
       debounceDuration,
-      autoTrackPageview: scriptTag.getAttribute("data-auto-track-pageview") !== "false",
-      autoTrackSpa: scriptTag.getAttribute("data-track-spa") !== "false",
-      trackQuerystring: scriptTag.getAttribute("data-track-query") !== "false",
-      trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
-      enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
-      trackErrors: scriptTag.getAttribute("data-track-errors") === "true",
-      enableSessionReplay: scriptTag.getAttribute("data-session-replay") === "true",
       sessionReplayBatchSize,
       sessionReplayBatchInterval,
       skipPatterns,
       maskPatterns,
-      apiKey
+      apiKey,
+      // Default all tracking to true initially (will be updated from API)
+      autoTrackPageview: true,
+      autoTrackSpa: true,
+      trackQuerystring: true,
+      trackOutbound: true,
+      enableWebVitals: false,
+      trackErrors: false,
+      enableSessionReplay: false
     };
+    try {
+      const configUrl = `${analyticsHost}/api/site/${siteId}/tracking-config`;
+      const response = await fetch(configUrl, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        // Include credentials if needed for authentication
+        credentials: "omit"
+      });
+      if (response.ok) {
+        const apiConfig = await response.json();
+        return {
+          ...defaultConfig,
+          // Map API field names to script config field names
+          autoTrackPageview: apiConfig.trackInitialPageView ?? defaultConfig.autoTrackPageview,
+          autoTrackSpa: apiConfig.trackSpaNavigation ?? defaultConfig.autoTrackSpa,
+          trackQuerystring: apiConfig.trackUrlParams ?? defaultConfig.trackQuerystring,
+          trackOutbound: apiConfig.trackOutbound ?? defaultConfig.trackOutbound,
+          enableWebVitals: apiConfig.webVitals ?? defaultConfig.enableWebVitals,
+          trackErrors: apiConfig.trackErrors ?? defaultConfig.trackErrors,
+          enableSessionReplay: apiConfig.sessionReplay ?? defaultConfig.enableSessionReplay
+        };
+      } else {
+        console.warn("Failed to fetch tracking config from API, using defaults");
+        return defaultConfig;
+      }
+    } catch (error) {
+      console.warn("Error fetching tracking config:", error);
+      return defaultConfig;
+    }
   }
 
   // sessionReplay.ts
@@ -791,7 +823,7 @@
   };
 
   // index.ts
-  (function() {
+  (async function() {
     const scriptTag = document.currentScript;
     if (!scriptTag) {
       console.error("Could not find current script tag");
@@ -820,7 +852,7 @@
       };
       return;
     }
-    const config = parseScriptConfig(scriptTag);
+    const config = await parseScriptConfig(scriptTag);
     if (!config) {
       return;
     }
