@@ -7,13 +7,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { authClient } from "../lib/auth";
 import { Button } from "./ui/button";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "./ui/dropdown-menu";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { Skeleton } from "./ui/skeleton";
+import { IS_CLOUD } from "../lib/const";
 
 export function TopBar() {
   const { data: session, isPending } = authClient.useSession();
@@ -25,12 +21,7 @@ export function TopBar() {
       <div className="flex items-center justify-between flex-1">
         <div className="flex items-center space-x-4">
           <Link href={session ? "/" : "https://rybbit.io"}>
-            <Image
-              src="/rybbit-text.svg"
-              alt="Rybbit"
-              width={100}
-              height={22}
-            />
+            <Image src="/rybbit-text.svg" alt="Rybbit" width={100} height={22} />
           </Link>
         </div>
         {session ? (
@@ -60,7 +51,7 @@ export function TopBar() {
               >
                 Sign out
               </DropdownMenuItem>
-              {session?.user.role === "admin" && (
+              {session?.user.role === "admin" && IS_CLOUD && (
                 <Link href="/admin" passHref>
                   <DropdownMenuItem>Admin</DropdownMenuItem>
                 </Link>
@@ -72,8 +63,7 @@ export function TopBar() {
         ) : (
           <Link
             href={
-              typeof window !== "undefined" &&
-              globalThis.location.hostname === "demo.rybbit.io"
+              typeof window !== "undefined" && globalThis.location.hostname === "demo.rybbit.io"
                 ? "https://app.rybbit.io/signup"
                 : "/signup"
             }

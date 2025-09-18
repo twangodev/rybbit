@@ -137,4 +137,19 @@ sudo ufw status     # Check the status
 Ensure you allow SSH access (typically port 22) before enabling the firewall, otherwise you might lock yourself out of your VPS!
 </Callout> */}
 
+## Anonymous Usage Telemetry
+
+To help us improve Rybbit, self-hosted instances automatically send anonymous usage statistics to our cloud service. This includes:
+
+- Number of rows in each ClickHouse table
+- Total database size
+- Your Rybbit version
+- A hashed instance identifier
+
+No personal data, website content, or visitor information is ever collected.
+
+<Callout type="info">
+You can completely disable telemetry by adding `DISABLE_TELEMETRY=true` to your `.env` file and restarting your services.
+</Callout>
+
 If you run into any issues or need help, feel free to join our Discord community!

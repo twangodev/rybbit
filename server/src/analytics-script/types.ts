@@ -13,7 +13,6 @@ export interface ScriptConfig {
   sessionReplayBatchInterval: number;
   skipPatterns: string[];
   maskPatterns: string[];
-  apiKey?: string;
 }
 
 export interface BasePayload {
@@ -27,7 +26,6 @@ export interface BasePayload {
   page_title: string;
   referrer: string;
   user_id?: string;
-  api_key?: string;
 }
 
 export interface TrackingPayload extends BasePayload {
@@ -50,9 +48,17 @@ export interface WebVitalsData {
   ttfb: number | null;
 }
 
+export interface ErrorProperties {
+  filename?: string;
+  lineno?: number | string;
+  colno?: number | string;
+  [key: string]: any;
+}
+
 export interface RybbitAPI {
   pageview: () => void;
   event: (name: string, properties?: Record<string, any>) => void;
+  error: (error: Error, properties?: ErrorProperties) => void;
   trackOutbound: (url: string, text?: string, target?: string) => void;
   identify: (userId: string) => void;
   clearUserId: () => void;

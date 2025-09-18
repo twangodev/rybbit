@@ -1,14 +1,7 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import {
   createColumnHelper,
   flexRender,
@@ -36,11 +29,7 @@ import { Pagination } from "../../../../components/pagination";
 import { FilterParameter } from "@rybbit/shared";
 import { useStore, addFilter, removeFilter } from "../../../../lib/store";
 import { PerformanceMetric, usePerformanceStore } from "../performanceStore";
-import {
-  formatMetricValue,
-  getMetricColor,
-  getMetricUnit,
-} from "../utils/performanceUtils";
+import { formatMetricValue, getMetricColor, getMetricUnit } from "../utils/performanceUtils";
 import { CountryFlag } from "../../components/shared/icons/CountryFlag";
 import { Browser } from "../../components/shared/icons/Browser";
 import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
@@ -64,9 +53,7 @@ const MetricCell = ({
   return (
     <span className={getMetricColor(metric, value)}>
       {formatMetricValue(metric, value)}
-      <span className="text-xs ml-1 text-neutral-400">
-        {getMetricUnit(metric, value)}
-      </span>
+      <span className="text-xs ml-1 text-neutral-400">{getMetricUnit(metric, value)}</span>
     </span>
   );
 };
@@ -80,13 +67,11 @@ interface PerformanceTableProps {
 
 // Custom hook for filter handling logic
 const useFilterToggle = () => {
-  const filters = useStore((state) => state.filters);
+  const filters = useStore(state => state.filters);
 
   const toggleFilter = useCallback(
     (parameter: FilterParameter, value: string) => {
-      const foundFilter = filters.find(
-        (f) => f.parameter === parameter && f.value.some((v) => v === value)
-      );
+      const foundFilter = filters.find(f => f.parameter === parameter && f.value.some(v => v === value));
       if (foundFilter) {
         removeFilter(foundFilter);
       } else {
@@ -113,9 +98,7 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
     pageSize: 25,
   });
 
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "event_count", desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "event_count", desc: true }]);
 
   const {
     data: performanceData,
@@ -142,18 +125,17 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
           dimension === "pathname"
             ? "Path"
             : dimension === "country"
-            ? "Country"
-            : dimension === "device_type"
-            ? "Device Type"
-            : dimension === "browser"
-            ? "Browser"
-            : dimension === "operating_system"
-            ? "Operating System"
-            : dimension.charAt(0).toUpperCase() + dimension.slice(1),
-        cell: (info) => {
+              ? "Country"
+              : dimension === "device_type"
+                ? "Device Type"
+                : dimension === "browser"
+                  ? "Browser"
+                  : dimension === "operating_system"
+                    ? "Operating System"
+                    : dimension.charAt(0).toUpperCase() + dimension.slice(1),
+        cell: info => {
           const value = info.getValue();
-          const displayValue =
-            value || (dimension === "pathname" ? "/" : "Unknown");
+          const displayValue = value || (dimension === "pathname" ? "/" : "Unknown");
 
           const handleClick = () => {
             if (value) {
@@ -199,10 +181,10 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
                     <a
                       href={`https://${siteMetadata?.domain}${value}`}
                       target="_blank"
-                      onClick={(e) => e.stopPropagation()}
+                      onClick={e => e.stopPropagation()}
                     >
                       <SquareArrowOutUpRight
-                        className="w-3 h-3 text-neutral-300 hover:text-neutral-100"
+                        className="ml-0.5 w-3.5 h-3.5 text-neutral-300 hover:text-neutral-100"
                         strokeWidth={3}
                       />
                     </a>
@@ -220,13 +202,9 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
             <MetricTooltip metric="lcp" />
           </div>
         ),
-        cell: (info) => (
+        cell: info => (
           <div className="text-center">
-            <MetricCell
-              metric="lcp"
-              value={info.getValue() as number}
-              percentile={selectedPercentile}
-            />
+            <MetricCell metric="lcp" value={info.getValue() as number} percentile={selectedPercentile} />
           </div>
         ),
       }),
@@ -237,13 +215,9 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
             <MetricTooltip metric="cls" />
           </div>
         ),
-        cell: (info) => (
+        cell: info => (
           <div className="text-center">
-            <MetricCell
-              metric="cls"
-              value={info.getValue() as number}
-              percentile={selectedPercentile}
-            />
+            <MetricCell metric="cls" value={info.getValue() as number} percentile={selectedPercentile} />
           </div>
         ),
       }),
@@ -254,13 +228,9 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
             <MetricTooltip metric="inp" />
           </div>
         ),
-        cell: (info) => (
+        cell: info => (
           <div className="text-center">
-            <MetricCell
-              metric="inp"
-              value={info.getValue() as number}
-              percentile={selectedPercentile}
-            />
+            <MetricCell metric="inp" value={info.getValue() as number} percentile={selectedPercentile} />
           </div>
         ),
       }),
@@ -271,13 +241,9 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
             <MetricTooltip metric="fcp" />
           </div>
         ),
-        cell: (info) => (
+        cell: info => (
           <div className="text-center">
-            <MetricCell
-              metric="fcp"
-              value={info.getValue() as number}
-              percentile={selectedPercentile}
-            />
+            <MetricCell metric="fcp" value={info.getValue() as number} percentile={selectedPercentile} />
           </div>
         ),
       }),
@@ -288,23 +254,15 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
             <MetricTooltip metric="ttfb" />
           </div>
         ),
-        cell: (info) => (
+        cell: info => (
           <div className="text-center">
-            <MetricCell
-              metric="ttfb"
-              value={info.getValue() as number}
-              percentile={selectedPercentile}
-            />
+            <MetricCell metric="ttfb" value={info.getValue() as number} percentile={selectedPercentile} />
           </div>
         ),
       }),
       columnHelper.accessor("event_count", {
         header: "Events",
-        cell: (info) => (
-          <div className="text-center text-neutral-300">
-            {info.getValue()?.toLocaleString() ?? 0}
-          </div>
-        ),
+        cell: info => <div className="text-center text-neutral-300">{info.getValue()?.toLocaleString() ?? 0}</div>,
       }),
     ],
     [selectedPercentile]
@@ -315,10 +273,10 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    onSortingChange: (updater) => {
+    onSortingChange: updater => {
       setSorting(updater);
       // Reset to first page when sorting changes
-      setPagination((prev) => ({ ...prev, pageIndex: 0 }));
+      setPagination(prev => ({ ...prev, pageIndex: 0 }));
     },
     state: {
       sorting,
@@ -334,15 +292,14 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
     getCanPreviousPage: () => pagination.pageIndex > 0,
     getCanNextPage: () => pagination.pageIndex < totalPages - 1,
     getPageCount: () => totalPages,
-    setPageIndex: (index: number) =>
-      setPagination((prev) => ({ ...prev, pageIndex: index })),
+    setPageIndex: (index: number) => setPagination(prev => ({ ...prev, pageIndex: index })),
     previousPage: () =>
-      setPagination((prev) => ({
+      setPagination(prev => ({
         ...prev,
         pageIndex: Math.max(0, prev.pageIndex - 1),
       })),
     nextPage: () =>
-      setPagination((prev) => ({
+      setPagination(prev => ({
         ...prev,
         pageIndex: Math.min(totalPages - 1, prev.pageIndex + 1),
       })),
@@ -435,9 +392,9 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
         <>
           <Table>
             <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
+              {table.getHeaderGroups().map(headerGroup => (
                 <TableRow key={headerGroup.id} className="border-neutral-800">
-                  {headerGroup.headers.map((header) => (
+                  {headerGroup.headers.map(header => (
                     <TableHead
                       key={header.id}
                       className={`text-neutral-300 ${
@@ -448,10 +405,7 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
                       onClick={header.column.getToggleSortingHandler()}
                     >
                       <div className="flex items-center justify-center gap-1">
-                        {flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                        {flexRender(header.column.columnDef.header, header.getContext())}
                         {header.column.getCanSort() && (
                           <div className="flex flex-col">
                             {header.column.getIsSorted() === "asc" ? (
@@ -472,26 +426,15 @@ export function PerformanceTable({ dimension, title }: PerformanceTableProps) {
             <TableBody>
               {table.getRowModel().rows.length === 0 ? (
                 <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="text-center text-neutral-500 py-8"
-                  >
+                  <TableCell colSpan={columns.length} className="text-center text-neutral-500 py-8">
                     No performance data available
                   </TableCell>
                 </TableRow>
               ) : (
-                table.getRowModel().rows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    className="border-neutral-800 hover:bg-neutral-900/50"
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
+                table.getRowModel().rows.map(row => (
+                  <TableRow key={row.id} className="border-neutral-800 hover:bg-neutral-900/50">
+                    {row.getVisibleCells().map(cell => (
+                      <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                     ))}
                   </TableRow>
                 ))

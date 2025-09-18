@@ -68,6 +68,8 @@ export const initializeClickhouse = async () => {
         timestamp DateTime64(3),
         event_type LowCardinality(String),
         event_data String,
+        event_data_key Nullable(String), -- R2 storage key for cloud deployments
+        batch_index Nullable(UInt16), -- Index within the R2 batch
         sequence_number UInt32,
         event_size_bytes UInt32,
         viewport_width Nullable(UInt16),
@@ -78,6 +80,14 @@ export const initializeClickhouse = async () => {
       PARTITION BY toYYYYMM(timestamp)
       ORDER BY (site_id, session_id, sequence_number)
       TTL toDateTime(timestamp) + INTERVAL 30 DAY
+      `,
+  });
+
+  await clickhouse.exec({
+    query: `
+      ALTER TABLE session_replay_events
+        ADD COLUMN IF NOT EXISTS event_data_key Nullable(String), -- R2 storage key for cloud deployments
+        ADD COLUMN IF NOT EXISTS batch_index Nullable(UInt16) -- Index within the R2 batch
       `,
   });
 
@@ -117,6 +127,53 @@ export const initializeClickhouse = async () => {
       ORDER BY (site_id, session_id)
       TTL start_time + INTERVAL 30 DAY
       `,
+  });
+
+  // Create uptime monitor events table
+  await clickhouse.exec({
+    query: `
+      CREATE TABLE IF NOT EXISTS monitor_events (
+        monitor_id UInt32,
+        organization_id String,
+        timestamp DateTime,
+        
+        -- Monitor metadata
+        monitor_type LowCardinality(String), -- 'http', 'tcp'
+        monitor_url String,
+        monitor_name String,
+        region LowCardinality(String) DEFAULT 'local',
+        
+        -- Response data
+        status LowCardinality(String), -- 'success', 'failure', 'timeout'
+        status_code Nullable(UInt16), -- HTTP status code
+        response_time_ms UInt32,
+        
+        -- HTTP timing breakdown (all in milliseconds)
+        dns_time_ms Nullable(UInt32),
+        tcp_time_ms Nullable(UInt32),
+        tls_time_ms Nullable(UInt32),
+        ttfb_ms Nullable(UInt32), -- Time to first byte
+        transfer_time_ms Nullable(UInt32),
+        
+        -- Validation results
+        validation_errors Array(String), -- Array of failed validation rules
+        
+        -- Response metadata (for HTTP)
+        response_headers Map(String, String),
+        response_size_bytes Nullable(UInt32),
+        
+        -- TCP specific
+        port Nullable(UInt16),
+        
+        -- Error information
+        error_message Nullable(String),
+        error_type Nullable(String) -- 'dns_failure', 'connection_timeout', 'ssl_error', etc.
+      )
+      ENGINE = MergeTree()
+      PARTITION BY toYYYYMM(timestamp)
+      ORDER BY (organization_id, monitor_id, timestamp)
+      SETTINGS ttl_only_drop_parts = 1
+    `,
   });
 
   if (IS_CLOUD) {

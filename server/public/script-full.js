@@ -59,7 +59,7 @@
   }
 
   // config.ts
-  function parseScriptConfig(scriptTag) {
+  async function parseScriptConfig(scriptTag) {
     const src = scriptTag.getAttribute("src");
     if (!src) {
       console.error("Script src attribute is missing");
@@ -71,49 +71,60 @@
       return null;
     }
     const siteId = scriptTag.getAttribute("data-site-id") || scriptTag.getAttribute("site-id");
-    if (!siteId || isNaN(Number(siteId))) {
-      console.error(
-        "Please provide a valid site ID using the data-site-id attribute"
-      );
+    if (!siteId) {
+      console.error("Please provide a valid site ID using the data-site-id attribute");
       return null;
     }
+    const skipPatterns = parseJsonSafely(scriptTag.getAttribute("data-skip-patterns"), []);
+    const maskPatterns = parseJsonSafely(scriptTag.getAttribute("data-mask-patterns"), []);
     const debounceDuration = scriptTag.getAttribute("data-debounce") ? Math.max(0, parseInt(scriptTag.getAttribute("data-debounce"))) : 500;
-    const skipPatterns = parseJsonSafely(
-      scriptTag.getAttribute("data-skip-patterns"),
-      []
-    );
-    const maskPatterns = parseJsonSafely(
-      scriptTag.getAttribute("data-mask-patterns"),
-      []
-    );
-    const apiKey = scriptTag.getAttribute("data-api-key") || void 0;
-    const sessionReplayBatchSize = scriptTag.getAttribute(
-      "data-replay-batch-size"
-    ) ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 3;
-    const sessionReplayBatchInterval = scriptTag.getAttribute(
-      "data-replay-batch-interval"
-    ) ? Math.max(
-      1e3,
-      parseInt(scriptTag.getAttribute("data-replay-batch-interval"))
-    ) : 2e3;
-    console.info(scriptTag);
-    return {
+    const sessionReplayBatchSize = scriptTag.getAttribute("data-replay-batch-size") ? Math.max(1, parseInt(scriptTag.getAttribute("data-replay-batch-size"))) : 250;
+    const sessionReplayBatchInterval = scriptTag.getAttribute("data-replay-batch-interval") ? Math.max(1e3, parseInt(scriptTag.getAttribute("data-replay-batch-interval"))) : 5e3;
+    const defaultConfig = {
       analyticsHost,
       siteId,
       debounceDuration,
-      autoTrackPageview: scriptTag.getAttribute("data-auto-track-pageview") !== "false",
-      autoTrackSpa: scriptTag.getAttribute("data-track-spa") !== "false",
-      trackQuerystring: scriptTag.getAttribute("data-track-query") !== "false",
-      trackOutbound: scriptTag.getAttribute("data-track-outbound") !== "false",
-      enableWebVitals: scriptTag.getAttribute("data-web-vitals") === "true",
-      trackErrors: scriptTag.getAttribute("data-track-errors") === "true",
-      enableSessionReplay: scriptTag.getAttribute("data-session-replay") === "true",
       sessionReplayBatchSize,
       sessionReplayBatchInterval,
       skipPatterns,
       maskPatterns,
-      apiKey
+      // Default all tracking to true initially (will be updated from API)
+      autoTrackPageview: true,
+      autoTrackSpa: true,
+      trackQuerystring: true,
+      trackOutbound: true,
+      enableWebVitals: false,
+      trackErrors: false,
+      enableSessionReplay: false
     };
+    try {
+      const configUrl = `${analyticsHost}/site/${siteId}/tracking-config`;
+      const response = await fetch(configUrl, {
+        method: "GET",
+        // Include credentials if needed for authentication
+        credentials: "omit"
+      });
+      if (response.ok) {
+        const apiConfig = await response.json();
+        return {
+          ...defaultConfig,
+          // Map API field names to script config field names
+          autoTrackPageview: apiConfig.trackInitialPageView ?? defaultConfig.autoTrackPageview,
+          autoTrackSpa: apiConfig.trackSpaNavigation ?? defaultConfig.autoTrackSpa,
+          trackQuerystring: apiConfig.trackUrlParams ?? defaultConfig.trackQuerystring,
+          trackOutbound: apiConfig.trackOutbound ?? defaultConfig.trackOutbound,
+          enableWebVitals: apiConfig.webVitals ?? defaultConfig.enableWebVitals,
+          trackErrors: apiConfig.trackErrors ?? defaultConfig.trackErrors,
+          enableSessionReplay: apiConfig.sessionReplay ?? defaultConfig.enableSessionReplay
+        };
+      } else {
+        console.warn("Failed to fetch tracking config from API, using defaults");
+        return defaultConfig;
+      }
+    } catch (error) {
+      console.warn("Error fetching tracking config:", error);
+      return defaultConfig;
+    }
   }
 
   // sessionReplay.ts
@@ -161,14 +172,14 @@
               timestamp: event.timestamp || Date.now()
             });
           },
-          recordCanvas: true,
-          // Record canvas elements
+          recordCanvas: false,
+          // Disable canvas recording to reduce data
           collectFonts: true,
-          // Collect font info for better replay
-          checkoutEveryNms: 3e4,
-          // Checkout every 30 seconds
-          checkoutEveryNth: 200,
-          // Checkout every 200 events
+          // Disable font collection to reduce data
+          checkoutEveryNms: 6e4,
+          // Checkout every 60 seconds (was 30)
+          checkoutEveryNth: 500,
+          // Checkout every 500 events (was 200)
           maskAllInputs: true,
           // Mask all input values for privacy
           maskInputOptions: {
@@ -188,14 +199,27 @@
             headMetaVerification: true
           },
           sampling: {
-            // Optional: reduce recording frequency to save bandwidth
+            // Aggressive sampling to reduce data volume
             mousemove: false,
-            // Don't record every mouse move
-            mouseInteraction: true,
-            scroll: 150,
-            // Sample scroll events every 150ms
-            input: "last"
+            // Don't record mouse moves at all
+            mouseInteraction: {
+              MouseUp: false,
+              MouseDown: false,
+              Click: true,
+              // Only record clicks
+              ContextMenu: false,
+              DblClick: true,
+              Focus: true,
+              Blur: true,
+              TouchStart: false,
+              TouchEnd: false
+            },
+            scroll: 500,
+            // Sample scroll events every 500ms (was 150)
+            input: "last",
             // Only record the final input value
+            media: 800
+            // Sample media interactions less frequently
           }
         });
         this.isRecording = true;
@@ -310,19 +334,16 @@
     }
     async sendSessionReplayBatch(batch) {
       try {
-        await fetch(
-          `${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json"
-            },
-            body: JSON.stringify(batch),
-            mode: "cors",
-            keepalive: false
-            // Disable keepalive for large session replay requests
-          }
-        );
+        await fetch(`${this.config.analyticsHost}/session-replay/record/${this.config.siteId}`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify(batch),
+          mode: "cors",
+          keepalive: false
+          // Disable keepalive for large session replay requests
+        });
       } catch (error) {
         console.error("Failed to send session replay batch:", error);
         throw error;
@@ -355,9 +376,6 @@
       if (this.customUserId) {
         payload.user_id = this.customUserId;
       }
-      if (this.config.apiKey) {
-        payload.api_key = this.config.apiKey;
-      }
       return payload;
     }
     async sendTrackingData(payload) {
@@ -377,9 +395,7 @@
     }
     track(eventType, eventName = "", properties = {}) {
       if (eventType === "custom_event" && (!eventName || typeof eventName !== "string")) {
-        console.error(
-          "Event name is required and must be a string for custom events"
-        );
+        console.error("Event name is required and must be a string for custom events");
         return;
       }
       const basePayload = this.createBasePayload();
@@ -787,9 +803,7 @@
       if (this.sent) return;
       const metricName = metric.name.toLowerCase();
       this.data[metricName] = metric.value;
-      const allCollected = Object.values(this.data).every(
-        (value) => value !== null
-      );
+      const allCollected = Object.values(this.data).every((value) => value !== null);
       if (allCollected) {
         this.sendData();
       }
@@ -811,7 +825,7 @@
   };
 
   // index.ts
-  (function() {
+  (async function() {
     const scriptTag = document.currentScript;
     if (!scriptTag) {
       console.error("Could not find current script tag");
@@ -822,6 +836,8 @@
         pageview: () => {
         },
         event: () => {
+        },
+        error: () => {
         },
         trackOutbound: () => {
         },
@@ -838,17 +854,15 @@
       };
       return;
     }
-    const config = parseScriptConfig(scriptTag);
+    const config = await parseScriptConfig(scriptTag);
     if (!config) {
       return;
     }
     const tracker = new Tracker(config);
     if (config.enableWebVitals) {
-      const webVitalsCollector = new WebVitalsCollector(
-        (vitals) => {
-          tracker.trackWebVitals(vitals);
-        }
-      );
+      const webVitalsCollector = new WebVitalsCollector((vitals) => {
+        tracker.trackWebVitals(vitals);
+      });
       webVitalsCollector.initialize();
     }
     if (config.trackErrors) {
@@ -889,15 +903,9 @@
           target = target.parentElement;
         }
         if (config.trackOutbound) {
-          const link = e2.target.closest(
-            "a"
-          );
+          const link = e2.target.closest("a");
           if (link?.href && isOutboundLink(link.href)) {
-            tracker.trackOutbound(
-              link.href,
-              link.innerText || link.textContent || "",
-              link.target || "_self"
-            );
+            tracker.trackOutbound(link.href, link.innerText || link.textContent || "", link.target || "_self");
           }
         }
       });
@@ -927,6 +935,7 @@
     window.rybbit = {
       pageview: () => tracker.trackPageview(),
       event: (name, properties = {}) => tracker.trackEvent(name, properties),
+      error: (error, properties = {}) => tracker.trackError(error, properties),
       trackOutbound: (url, text = "", target = "_self") => tracker.trackOutbound(url, text, target),
       identify: (userId) => tracker.identify(userId),
       clearUserId: () => tracker.clearUserId(),

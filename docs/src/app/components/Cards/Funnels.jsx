@@ -1,8 +1,11 @@
+import { Card } from "./Card";
+
 export function Funnels() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">Funnels</h3>
-      <p className="text-neutral-300 mb-4">Visualize and analyze the path users take through your site to convert them.</p>
+    <Card 
+      title="Funnels" 
+      description="Visualize and analyze the path users take through your site to convert them."
+    >
       
       <div className="mt-4 bg-neutral-900 p-4 rounded-md">
         <div className="flex justify-between items-center mb-4">
@@ -65,6 +68,6 @@ export function Funnels() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 } 

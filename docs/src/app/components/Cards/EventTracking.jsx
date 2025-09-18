@@ -1,10 +1,12 @@
 import { MousePointerClick } from "lucide-react";
+import { Card } from "./Card";
 
 export function EventTracking() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">Event Tracking</h3>
-      <p className="text-neutral-300">Monitor user interactions with your site including clicks, form submissions, and custom events.</p>
+    <Card 
+      title="Event Tracking" 
+      description="Monitor user interactions with your site including clicks, form submissions, and custom events."
+    >
       
       <div className="mt-4 bg-neutral-900 p-4 rounded-md">
         <div className="flex items-center mb-3">
@@ -31,6 +33,6 @@ export function EventTracking() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 } 

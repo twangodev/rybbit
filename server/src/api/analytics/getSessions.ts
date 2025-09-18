@@ -1,10 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
-import {
-  getFilterStatement,
-  getTimeStatement,
-  processResults,
-} from "./utils.js";
+import { getFilterStatement, getTimeStatement, processResults } from "./utils.js";
 import { getUserHasAccessToSitePublic } from "../../lib/auth-utils.js";
 import { FilterParams } from "@rybbit/shared";
 
@@ -36,6 +32,8 @@ export type GetSessionsResponse = {
   exit_page: string;
   pageviews: number;
   events: number;
+  errors: number;
+  outbound: number;
 }[];
 
 export interface GetSessionsRequest {
@@ -48,10 +46,7 @@ export interface GetSessionsRequest {
   }>;
 }
 
-export async function getSessions(
-  req: FastifyRequest<GetSessionsRequest>,
-  res: FastifyReply
-) {
+export async function getSessions(req: FastifyRequest<GetSessionsRequest>, res: FastifyReply) {
   const { filters, page, userId } = req.query;
   const site = req.params.site;
   const userHasAccessToSite = await getUserHasAccessToSitePublic(req, site);
@@ -92,7 +87,9 @@ export async function getSessions(
           argMinIf(pathname, timestamp, type = 'pageview') AS entry_page,
           argMaxIf(pathname, timestamp, type = 'pageview') AS exit_page,
           countIf(type = 'pageview') AS pageviews,
-          countIf(type = 'custom_event') AS events
+          countIf(type = 'custom_event') AS events,
+          countIf(type = 'error') AS errors,
+          countIf(type = 'outbound') AS outbound
       FROM events
       WHERE
           site_id = {siteId:Int32}

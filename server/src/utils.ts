@@ -1,4 +1,4 @@
-import { siteConfig } from "./lib/siteConfig.js";
+import { FastifyRequest } from "fastify";
 import * as psl from "psl";
 
 const desktopOS = new Set([
@@ -93,20 +93,9 @@ const tvOS = new Set([
 
 const gamingOS = new Set(["PlayStation", "Xbox", "Nintendo"]);
 
-const embeddedOS = new Set([
-  "Windows IoT",
-  "Contiki",
-  "Raspbian",
-  "Morph OS",
-  "Pico",
-  "NetRange",
-]);
+const embeddedOS = new Set(["Windows IoT", "Contiki", "Raspbian", "Morph OS", "Pico", "NetRange"]);
 
-export function getDeviceType(
-  screenWidth: number,
-  screenHeight: number,
-  ua: UAParser.IResult
-): string {
+export function getDeviceType(screenWidth: number, screenHeight: number, ua: UAParser.IResult): string {
   if (ua.os.name) {
     if (desktopOS.has(ua.os.name)) {
       return "Desktop";
@@ -130,20 +119,6 @@ export function getDeviceType(
   }
   return "Mobile";
 }
-
-// Check if a site is public
-export const isSitePublic = async (siteId: string | number) => {
-  try {
-    // Ensure the siteConfig cache is initialized
-    await siteConfig.ensureInitialized();
-
-    // Use the cached value
-    return siteConfig.isSitePublic(siteId);
-  } catch (err) {
-    console.error("Error checking if site is public:", err);
-    return false;
-  }
-};
 
 // Extract site ID from path
 export const extractSiteId = (path: string) => {
@@ -212,4 +187,28 @@ export const normalizeOrigin = (input: string): string => {
       return input;
     }
   }
+};
+
+// Helper function to get IP address
+export const getIpAddress = (request: FastifyRequest): string => {
+  // Priority 1: Cloudflare header (already validated by CF)
+  const cfConnectingIp = request.headers["cf-connecting-ip"];
+  if (cfConnectingIp && typeof cfConnectingIp === "string") {
+    return cfConnectingIp.trim();
+  }
+
+  // Priority 2: X-Forwarded-For - just use the first IP
+  const forwardedFor = request.headers["x-forwarded-for"];
+  if (forwardedFor && typeof forwardedFor === "string") {
+    const ips = forwardedFor
+      .split(",")
+      .map(ip => ip.trim())
+      .filter(Boolean);
+    if (ips.length > 0) {
+      // Always use the first IP - the original client
+      return ips[0];
+    }
+  }
+
+  return request.ip;
 };

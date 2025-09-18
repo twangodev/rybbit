@@ -2,14 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useAdminSites, AdminSiteData } from "@/api/admin/getAdminSites";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDistanceToNow } from "date-fns";
@@ -27,14 +20,14 @@ import { SortableHeader } from "../shared/SortableHeader";
 import { SearchInput } from "../shared/SearchInput";
 import { ErrorAlert } from "../shared/ErrorAlert";
 import { AdminLayout } from "../shared/AdminLayout";
+import { GrowthChart } from "../shared/GrowthChart";
 import Link from "next/link";
+import { Favicon } from "../../../../components/Favicon";
 
 export function Sites() {
   const { data: sites, isLoading, isError } = useAdminSites();
   const [searchQuery, setSearchQuery] = useState("");
-  const [sorting, setSorting] = useState<SortingState>([
-    { id: "eventsLast24Hours", desc: true },
-  ]);
+  const [sorting, setSorting] = useState<SortingState>([{ id: "eventsLast24Hours", desc: true }]);
   const [pagination, setPagination] = useState({
     pageIndex: 0,
     pageSize: 50,
@@ -44,12 +37,11 @@ export function Sites() {
   const filteredSites = useMemo(() => {
     if (!sites) return [];
 
-    return sites.filter((site) => {
+    return sites.filter(site => {
       const lowerSearchQuery = searchQuery.toLowerCase();
       return (
         site.domain.toLowerCase().includes(lowerSearchQuery) ||
-        (site.organizationOwnerEmail &&
-          site.organizationOwnerEmail.toLowerCase().includes(lowerSearchQuery))
+        site.organizationOwnerEmail?.toLowerCase().includes(lowerSearchQuery)
       );
     });
   }, [sites, searchQuery]);
@@ -59,16 +51,10 @@ export function Sites() {
     () => [
       {
         accessorKey: "siteId",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Site ID</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Site ID</SortableHeader>,
         cell: ({ row }) => (
           <div>
-            <Link
-              href={`/${row.getValue("siteId")}`}
-              target="_blank"
-              className="hover:underline"
-            >
+            <Link href={`/${row.getValue("siteId")}`} target="_blank" className="hover:underline">
               {row.getValue("siteId")}
             </Link>
           </div>
@@ -76,16 +62,11 @@ export function Sites() {
       },
       {
         accessorKey: "domain",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Domain</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Domain</SortableHeader>,
         cell: ({ row }) => (
-          <div className="font-medium">
-            <Link
-              href={`https://${row.original.domain}`}
-              target="_blank"
-              className="hover:underline"
-            >
+          <div className="font-medium flex items-center gap-2">
+            <Favicon domain={row.original.domain} className="w-5 h-5 flex-shrink-0" />
+            <Link href={`https://${row.original.domain}`} target="_blank" className="hover:underline">
               {row.getValue("domain")}
             </Link>
           </div>
@@ -93,12 +74,10 @@ export function Sites() {
       },
       {
         accessorKey: "createdAt",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Created</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Created</SortableHeader>,
         cell: ({ row }) => (
           <div>
-            {formatDistanceToNow(new Date(row.getValue("createdAt")), {
+            {formatDistanceToNow(row.getValue("createdAt"), {
               addSuffix: true,
             })}
           </div>
@@ -106,38 +85,40 @@ export function Sites() {
       },
       {
         accessorKey: "public",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Public</SortableHeader>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Public</SortableHeader>,
         cell: ({ row }) => (
-          <div>
-            {row.getValue("public") ? (
-              <Badge>Public</Badge>
-            ) : (
-              <Badge variant="outline">Private</Badge>
-            )}
-          </div>
+          <div>{row.getValue("public") ? <Badge>Public</Badge> : <Badge variant="outline">Private</Badge>}</div>
         ),
       },
       {
         accessorKey: "eventsLast24Hours",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Events (24h)</SortableHeader>
-        ),
-        cell: ({ row }) => (
-          <div>
-            {Number(row.getValue("eventsLast24Hours")).toLocaleString()}
-          </div>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Events (24h)</SortableHeader>,
+        cell: ({ row }) => <div>{Number(row.getValue("eventsLast24Hours")).toLocaleString()}</div>,
+      },
+      {
+        accessorKey: "eventsLast30Days",
+        header: ({ column }) => <SortableHeader column={column}>Events (30d)</SortableHeader>,
+        cell: ({ row }) => <div>{Number(row.getValue("eventsLast30Days")).toLocaleString()}</div>,
+      },
+      {
+        id: "subscription",
+        header: ({ column }) => <SortableHeader column={column}>Subscription</SortableHeader>,
+        accessorFn: row => row.subscription.planName,
+        cell: ({ row }) => {
+          const subscription = row.original.subscription;
+          const statusColor =
+            subscription.status === "active"
+              ? "default"
+              : subscription.status === "canceled"
+                ? "destructive"
+                : "secondary";
+          return <Badge variant={statusColor}>{subscription.planName}</Badge>;
+        },
       },
       {
         accessorKey: "organizationOwnerEmail",
-        header: ({ column }) => (
-          <SortableHeader column={column}>Owner Email</SortableHeader>
-        ),
-        cell: ({ row }) => (
-          <div>{row.getValue("organizationOwnerEmail") || "-"}</div>
-        ),
+        header: ({ column }) => <SortableHeader column={column}>Owner Email</SortableHeader>,
+        cell: ({ row }) => <div>{row.getValue("organizationOwnerEmail") || "-"}</div>,
       },
     ],
     []
@@ -169,27 +150,20 @@ export function Sites() {
 
   return (
     <AdminLayout title="Sites">
+      <GrowthChart data={sites || []} title="Sites" color="#10b981" />
+
       <div className="mb-4">
-        <SearchInput
-          placeholder="Search by domain or owner email..."
-          value={searchQuery}
-          onChange={setSearchQuery}
-        />
+        <SearchInput placeholder="Search by domain or owner email..." value={searchQuery} onChange={setSearchQuery} />
       </div>
 
       <div className="rounded-md border border-neutral-700">
         <Table>
           <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
+            {table.getHeaderGroups().map(headerGroup => (
               <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
+                {headerGroup.headers.map(header => (
                   <TableHead key={header.id}>
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
-                        )}
+                    {header.isPlaceholder ? null : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -217,31 +191,27 @@ export function Sites() {
                       <Skeleton className="h-5 w-16" />
                     </TableCell>
                     <TableCell>
+                      <Skeleton className="h-5 w-16" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-5 w-20" />
+                    </TableCell>
+                    <TableCell>
                       <Skeleton className="h-5 w-40" />
                     </TableCell>
                   </TableRow>
                 ))
             ) : table.getRowModel().rows.length === 0 ? (
               <TableRow>
-                <TableCell
-                  colSpan={columns.length}
-                  className="text-center py-6 text-muted-foreground"
-                >
-                  {searchQuery
-                    ? "No sites match your search"
-                    : "No sites found"}
+                <TableCell colSpan={columns.length} className="text-center py-6 text-muted-foreground">
+                  {searchQuery ? "No sites match your search" : "No sites found"}
                 </TableCell>
               </TableRow>
             ) : (
-              table.getRowModel().rows.map((row) => (
+              table.getRowModel().rows.map(row => (
                 <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
-                    </TableCell>
+                  {row.getVisibleCells().map(cell => (
+                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
                   ))}
                 </TableRow>
               ))
@@ -253,11 +223,7 @@ export function Sites() {
       <div className="mt-4">
         <AdminTablePagination
           table={table}
-          data={
-            filteredSites
-              ? { items: filteredSites, total: filteredSites.length }
-              : undefined
-          }
+          data={filteredSites ? { items: filteredSites, total: filteredSites.length } : undefined}
           pagination={pagination}
           setPagination={setPagination}
           isLoading={isLoading}

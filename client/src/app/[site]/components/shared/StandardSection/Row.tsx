@@ -9,13 +9,11 @@ import { addFilter, removeFilter, useStore } from "../../../../../lib/store";
 
 // Custom hook for filter handling logic
 const useFilterToggle = () => {
-  const filters = useStore((state) => state.filters);
+  const filters = useStore(state => state.filters);
 
   const toggleFilter = useCallback(
     (parameter: FilterParameter, value: string) => {
-      const foundFilter = filters.find(
-        (f) => f.parameter === parameter && f.value.some((v) => v === value)
-      );
+      const foundFilter = filters.find(f => f.parameter === parameter && f.value.some(v => v === value));
       if (foundFilter) {
         removeFilter(foundFilter);
       } else {
@@ -69,27 +67,17 @@ const RowItem = ({
           {leftContent}
           {getLabel(item)}
           {getLink && (
-            <a
-              href={getLink(item)}
-              target="_blank"
-              onClick={(e) => e.stopPropagation()}
-            >
+            <a href={getLink(item)} target="_blank" onClick={e => e.stopPropagation()}>
               <SquareArrowOutUpRight
-                className="w-3 h-3 text-neutral-300 hover:text-neutral-100"
+                className="ml-0.5 w-3.5 h-3.5 text-neutral-300 hover:text-neutral-100"
                 strokeWidth={3}
               />
             </a>
           )}
         </div>
         <div className="text-xs flex gap-2">
-          <div className="hidden group-hover:block text-neutral-400">
-            {round(item.percentage, 1)}%
-          </div>
-          <NumberFlow
-            respectMotionPreference={false}
-            value={item.count}
-            format={{ notation: "compact" }}
-          />
+          <div className="hidden group-hover:block text-neutral-400">{round(item.percentage, 1)}%</div>
+          <NumberFlow respectMotionPreference={false} value={item.count} format={{ notation: "compact" }} />
         </div>
       </div>
     </div>
@@ -129,9 +117,7 @@ const Subrows = ({
 
   const itemsForDisplay = data?.data;
 
-  const ratio = itemsForDisplay?.[0]?.percentage
-    ? 100 / itemsForDisplay[0].percentage
-    : 1;
+  const ratio = itemsForDisplay?.[0]?.percentage ? 100 / itemsForDisplay[0].percentage : 1;
 
   if (isLoading || isFetching) {
     return null;
@@ -139,7 +125,7 @@ const Subrows = ({
 
   return (
     <div className="flex flex-col gap-2 pl-5 pt-2">
-      {itemsForDisplay?.map((e) => (
+      {itemsForDisplay?.map(e => (
         <RowItem
           key={getKey(e)}
           item={e}
@@ -186,9 +172,9 @@ export const Row = ({
     <Icon
       className="w-4 h-4 text-neutral-400 hover:text-neutral-100"
       strokeWidth={3}
-      onClick={(e) => {
+      onClick={e => {
         e.stopPropagation();
-        setExpanded((prev) => !prev);
+        setExpanded(prev => !prev);
       }}
     />
   ) : null;

@@ -148,7 +148,7 @@ export const getStripePrices = () => {
   if (process.env.NEXT_PUBLIC_BACKEND_URL?.includes("app.rybbit.io")) {
     return STRIPE_PRICES;
   }
-  return STRIPE_PRICES.map((price) => ({
+  return STRIPE_PRICES.map(price => ({
     ...price,
     priceId: TEST_TO_PRICE_ID[price.name as keyof typeof TEST_TO_PRICE_ID],
   }));

@@ -1,7 +1,12 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import { siteConfig } from "../../lib/siteConfig.js";
 import { SessionReplayIngestService } from "../../services/replay/sessionReplayIngestService.js";
+import { validateApiKey } from "../../services/shared/requestValidation.js";
+import { usageService } from "../../services/usageService.js";
 import { RecordSessionReplayRequest } from "../../types/sessionReplay.js";
+import { getIpAddress } from "../../utils.js";
+import { logger } from "../../lib/logger/logger.js";
 
 const recordSessionReplaySchema = z.object({
   userId: z.string(),
@@ -20,6 +25,7 @@ const recordSessionReplaySchema = z.object({
       language: z.string().optional(),
     })
     .optional(),
+  apiKey: z.string().max(35).optional(), // rb_ prefix + 32 hex chars
 });
 
 export async function recordSessionReplay(
@@ -30,10 +36,63 @@ export async function recordSessionReplay(
   reply: FastifyReply
 ) {
   try {
-    const siteId = Number(request.params.site);
-    const body = recordSessionReplaySchema.parse(
-      request.body
-    ) as RecordSessionReplayRequest;
+    // Get the site configuration to get the numeric siteId
+    const { siteId, excludedIPs, sessionReplay } = (await siteConfig.getConfig(request.params.site)) ?? {};
+
+    if (!sessionReplay) {
+      logger.info(`[SessionReplay] Skipping event for site ${siteId} - session replay not enabled`);
+      return reply.status(200).send({ success: true, message: "Session replay not enabled" });
+    }
+
+    if (!siteId) {
+      throw new Error(`Site not found: ${request.params.site}`);
+    }
+
+    // Check if the site has exceeded its monthly limit
+    if (usageService.isSiteOverLimit(Number(siteId))) {
+      logger.info(`[SessionReplay] Skipping event for site ${siteId} - over monthly limit`);
+      return reply.status(200).send("Site over monthly limit, event not tracked");
+    }
+
+    const body = recordSessionReplaySchema.parse(request.body) as RecordSessionReplayRequest;
+
+    // First check if API key is provided and valid
+    const apiKeyValidation = await validateApiKey(siteId, body.apiKey);
+
+    // If API key validation failed with an error, reject the request
+    if (apiKeyValidation.error) {
+      logger.warn(`[SessionReplay] Request rejected for site ${siteId}: ${apiKeyValidation.error}`);
+      return reply.status(403).send({
+        success: false,
+        error: apiKeyValidation.error,
+      });
+    }
+
+    // Check rate limit for API key authenticated requests
+    // ratelimit for session replays doesn't really work right now
+
+    // if (apiKeyValidation.success && body.apiKey) {
+    //   if (!checkApiKeyRateLimit(body.apiKey)) {
+    //     console.warn(
+    //       `[SessionReplay] Rate limit exceeded for API key ${body.apiKey} on site ${siteId}`,
+    //     );
+    //     return reply.status(429).send({
+    //       success: false,
+    //       error: "Rate limit exceeded. Maximum 20 requests per second per API key.",
+    //     });
+    //   }
+    // }
+
+    // Check if the IP should be excluded from tracking
+    const requestIP = getIpAddress(request);
+
+    if (excludedIPs && excludedIPs.includes(requestIP)) {
+      logger.info(`[SessionReplay] IP ${requestIP} excluded from tracking for site ${siteId}`);
+      return reply.status(200).send({
+        success: true,
+        message: "Session replay not recorded - IP excluded",
+      });
+    }
 
     // Extract request metadata for tracking
     const userAgent = request.headers["user-agent"] || "";
@@ -54,28 +113,7 @@ export async function recordSessionReplay(
     if (error instanceof z.ZodError) {
       return reply.status(400).send({ error: error.errors });
     }
-    console.error("Error recording session replay:", error);
-    return reply.status(500).send({ error: "Internal server error" });
+    logger.error(error as Error, "Error recording session replay");
+    return reply.status(500).send({ error });
   }
 }
-
-// Helper function to get IP address
-const getIpAddress = (request: FastifyRequest): string => {
-  const cfConnectingIp = request.headers["cf-connecting-ip"];
-  if (cfConnectingIp && typeof cfConnectingIp === "string") {
-    return cfConnectingIp.trim();
-  }
-
-  const forwardedFor = request.headers["x-forwarded-for"];
-  if (forwardedFor && typeof forwardedFor === "string") {
-    const ips = forwardedFor
-      .split(",")
-      .map((ip) => ip.trim())
-      .filter(Boolean);
-    if (ips.length > 0) {
-      return ips[ips.length - 1];
-    }
-  }
-
-  return request.ip;
-};

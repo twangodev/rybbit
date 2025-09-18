@@ -4,12 +4,14 @@ dotenv.config();
 
 export const IS_CLOUD = process.env.CLOUD === "true";
 export const DISABLE_SIGNUP = process.env.DISABLE_SIGNUP === "true";
+export const DISABLE_TELEMETRY = process.env.DISABLE_TELEMETRY === "true";
+export const SECRET = process.env.BETTER_AUTH_SECRET;
 
 // Trial constants (commented out as we're replacing with free tier)
 // export const TRIAL_DURATION_DAYS = 14;
 // export const TRIAL_EVENT_LIMIT = 100000;
 
-export const DEFAULT_EVENT_LIMIT = 3_000;
+export const DEFAULT_EVENT_LIMIT = 10_000;
 
 // Define a type for the plan objects
 export interface StripePlan {
@@ -173,7 +175,7 @@ export const getStripePrices = () => {
   if (process.env.STRIPE_SECRET_KEY?.startsWith("sk_live")) {
     return STRIPE_PRICES;
   }
-  return STRIPE_PRICES.map((price) => ({
+  return STRIPE_PRICES.map(price => ({
     ...price,
     priceId: TEST_TO_PRICE_ID[price.name as keyof typeof TEST_TO_PRICE_ID],
   }));

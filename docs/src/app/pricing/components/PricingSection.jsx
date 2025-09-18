@@ -7,25 +7,16 @@ import { useState } from "react";
 import { cn } from "../../../lib/utils";
 
 // Available event tiers for the slider
-const EVENT_TIERS = [
-  100_000,
-  250_000,
-  500_000,
-  1_000_000,
-  2_000_000,
-  5_000_000,
-  10_000_000,
-  "Custom",
-];
+const EVENT_TIERS = [100_000, 250_000, 500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000, "Custom"];
 
 // Define plan features
 const PRO_FEATURES = [
   "Unlimited websites",
   "Unlimited team members",
   "Real-time analytics",
+  "Session replays",
   "Web vitals",
   "Custom events",
-  "Sessions",
   "Funnels",
   "Goals",
   "Journeys",
@@ -88,9 +79,7 @@ export function PricingSection() {
           <div className="inline-block bg-emerald-900/30 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium mb-4">
             Simple Pricing
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold">
-            Transparent Pricing
-          </h2>
+          <h2 className="text-3xl md:text-4xl font-bold">Transparent Pricing</h2>
           <p className="mt-4 text-neutral-300 max-w-2xl mx-auto">
             Privacy-friendly analytics with all the features you need to grow
           </p>
@@ -106,9 +95,7 @@ export function PricingSection() {
                   <div className="flex justify-between mb-3 items-center">
                     <div>
                       <h3 className="font-semibold mb-2">Free</h3>
-                      <div className="text-3xl font-semibold text-neutral-200">
-                        3,000
-                      </div>
+                      <div className="text-3xl font-semibold text-neutral-200">10,000</div>
                       <p className="text-neutral-400 text-sm">events/month</p>
                     </div>
                     {/* <div className="flex flex-col items-end">
@@ -120,10 +107,7 @@ export function PricingSection() {
                   </div>
                 </div>
 
-                <Link
-                  href="https://app.rybbit.io/signup"
-                  className="w-full block"
-                >
+                <Link href="https://app.rybbit.io/signup" className="w-full block">
                   <button
                     data-rybbit-event="signup"
                     data-rybbit-prop-location="free"
@@ -140,13 +124,7 @@ export function PricingSection() {
                       ) : (
                         <X className="h-4 w-4 text-neutral-500 mr-3 shrink-0" />
                       )}
-                      <span
-                        className={cn(
-                          item.included ? "text-white" : "text-neutral-500"
-                        )}
-                      >
-                        {item.feature}
-                      </span>
+                      <span className={cn(item.included ? "text-white" : "text-neutral-500")}>{item.feature}</span>
                     </div>
                   ))}
                 </div>
@@ -209,9 +187,7 @@ export function PricingSection() {
                           )}
                         >
                           Annual
-                          <span className="ml-1 text-xs text-emerald-500">
-                            -17%
-                          </span>
+                          <span className="ml-1 text-xs text-emerald-500">-17%</span>
                         </button>
                       </div>
                       <div className="text-right h-10">
@@ -220,14 +196,9 @@ export function PricingSection() {
                         ) : (
                           <>
                             <span className="text-3xl font-bold">
-                              $
-                              {isAnnual
-                                ? Math.round(prices.annual / 12)
-                                : prices.monthly}
+                              ${isAnnual ? Math.round(prices.annual / 12) : prices.monthly}
                             </span>
-                            <span className="ml-1 text-neutral-400">
-                              /month
-                            </span>
+                            <span className="ml-1 text-neutral-400">/month</span>
                           </>
                         )}
                       </div>
@@ -245,13 +216,7 @@ export function PricingSection() {
 
                   <div className="flex justify-between text-xs text-neutral-400">
                     {EVENT_TIERS.map((tier, index) => (
-                      <span
-                        key={index}
-                        className={cn(
-                          eventLimitIndex === index &&
-                            "font-bold text-emerald-400"
-                        )}
-                      >
+                      <span key={index} className={cn(eventLimitIndex === index && "font-bold text-emerald-400")}>
                         {index === EVENT_TIERS.length - 1
                           ? "10M+"
                           : tier >= 1_000_000
@@ -263,19 +228,13 @@ export function PricingSection() {
                 </div>
 
                 {prices.custom ? (
-                  <Link
-                    href="https://www.rybbit.io/contact"
-                    className="w-full block"
-                  >
+                  <Link href="https://www.rybbit.io/contact" className="w-full block">
                     <button className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer">
                       Contact us
                     </button>
                   </Link>
                 ) : (
-                  <Link
-                    href="https://app.rybbit.io/signup"
-                    className="w-full block"
-                  >
+                  <Link href="https://app.rybbit.io/signup" className="w-full block">
                     <button
                       data-rybbit-event="signup"
                       data-rybbit-prop-location="pro"

@@ -1,9 +1,6 @@
 "use client";
 
-import {
-  PageTitleItem,
-  useGetPageTitlesPaginated,
-} from "@/api/analytics/useGetPageTitles";
+import { PageTitleItem, useGetPageTitlesPaginated } from "@/api/analytics/useGetPageTitles";
 import { Pagination } from "@/components/pagination";
 import { useSetPageTitle } from "@/hooks/useSetPageTitle";
 import { useStore } from "@/lib/store";
@@ -61,37 +58,23 @@ export default function Pages() {
       return (pagination.pageIndex + 1) * pagination.pageSize < totalCount;
     },
     getPageCount: () => totalPages,
-    setPageIndex: (index: number) =>
-      setPagination({ ...pagination, pageIndex: index }),
-    previousPage: () =>
-      setPagination({ ...pagination, pageIndex: pagination.pageIndex - 1 }),
-    nextPage: () =>
-      setPagination({ ...pagination, pageIndex: pagination.pageIndex + 1 }),
+    setPageIndex: (index: number) => setPagination({ ...pagination, pageIndex: index }),
+    previousPage: () => setPagination({ ...pagination, pageIndex: pagination.pageIndex - 1 }),
+    nextPage: () => setPagination({ ...pagination, pageIndex: pagination.pageIndex + 1 }),
   };
 
   useEffect(() => {
     if (!isLoadingPages && !isPlaceholderData && !isFetching) {
       if (totalCount !== undefined) {
         setTotalPages(Math.ceil(totalCount / pagination.pageSize));
-      } else if (
-        pagesDataArray &&
-        pagesDataArray.length === 0 &&
-        pagination.pageIndex === 0
-      ) {
+      } else if (pagesDataArray && pagesDataArray.length === 0 && pagination.pageIndex === 0) {
         // Fallback if totalCount is somehow undefined but we have an empty array on page 1
         setTotalPages(0);
-      } else if (
-        pagesDataArray &&
-        pagesDataArray.length < pagination.pageSize
-      ) {
+      } else if (pagesDataArray && pagesDataArray.length < pagination.pageSize) {
         // Fallback: if less than a full page is returned, assume it's the last
         setTotalPages(pagination.pageIndex + 1);
       }
-    } else if (
-      pagination.pageIndex === 0 &&
-      isLoadingPages &&
-      !pagesDataArray
-    ) {
+    } else if (pagination.pageIndex === 0 && isLoadingPages && !pagesDataArray) {
       // Initial load, no data yet
       setTotalPages(0);
     }
@@ -111,7 +94,7 @@ export default function Pages() {
   }
 
   return (
-    <DisabledOverlay message="pages">
+    <DisabledOverlay message="pages" featurePath="pages">
       <div className="p-2 md:p-4 max-w-[1100px] mx-auto space-y-3">
         <SubHeader />
 

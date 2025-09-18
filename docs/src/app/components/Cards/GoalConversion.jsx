@@ -1,8 +1,11 @@
+import { Card } from "./Card";
+
 export function GoalConversion() {
   return (
-    <div className="bg-neutral-800/50 p-6 rounded-xl border border-neutral-700">
-      <h3 className="text-xl font-semibold mb-3">Goal Conversion</h3>
-      <p className="text-neutral-300">Set up and track conversion goals to measure the success of your key objectives.</p>
+    <Card 
+      title="Goal Conversion" 
+      description="Set up and track conversion goals to measure the success of your key objectives."
+    >
       
       <div className="mt-4 bg-neutral-900 p-4 rounded-md">
         <div className="space-y-4">
@@ -47,6 +50,6 @@ export function GoalConversion() {
           </div>
         </div>
       </div>
-    </div>
+    </Card>
   );
 } 

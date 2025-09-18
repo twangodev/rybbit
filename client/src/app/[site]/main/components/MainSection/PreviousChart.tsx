@@ -46,7 +46,7 @@ export function PreviousChart({
 
   const size = (data?.data.length ?? 0 / 2) + 1;
   const formattedData = data?.data
-    ?.map((e) => {
+    ?.map(e => {
       const timestamp = DateTime.fromSQL(e.time).toUTC();
       return {
         x: timestamp.toFormat("yyyy-MM-dd HH:mm:ss"),
@@ -58,11 +58,7 @@ export function PreviousChart({
   const min = getMin(time, bucket);
   const maxPastMinutes =
     time.mode === "past-minutes" && bucket === "hour"
-      ? DateTime.now()
-          .setZone("UTC")
-          .minus({ minutes: time.pastMinutesStart })
-          .startOf("hour")
-          .toJSDate()
+      ? DateTime.now().setZone("UTC").minus({ minutes: time.pastMinutesStart }).startOf("hour").toJSDate()
       : undefined;
 
   return (
@@ -74,7 +70,7 @@ export function PreviousChart({
         },
       ]}
       theme={nivoTheme}
-      margin={{ top: 10, right: 15, bottom: 25, left: 35 }}
+      margin={{ top: 10, right: 15, bottom: 30, left: 40 }}
       xScale={{
         type: "time",
         format: "%Y-%m-%d %H:%M:%S",
@@ -96,18 +92,15 @@ export function PreviousChart({
       axisTop={null}
       axisRight={null}
       axisBottom={{
-        tickSize: 0,
+        tickSize: 5,
         tickPadding: 10,
         tickRotation: 0,
         truncateTickAt: 0,
         tickValues: 0,
-        format: (value) => {
+        format: value => {
           const localTime = DateTime.fromJSDate(value).toLocal();
 
-          if (
-            (time.mode === "past-minutes" && time.pastMinutesStart >= 1440) ||
-            time.mode === "day"
-          ) {
+          if ((time.mode === "past-minutes" && time.pastMinutesStart >= 1440) || time.mode === "day") {
             return localTime.toFormat("ha");
           } else if (time.mode === "range") {
             return localTime.toFormat("MMM d");
@@ -120,7 +113,7 @@ export function PreviousChart({
         },
       }}
       axisLeft={{
-        tickSize: 0,
+        tickSize: 5,
         tickPadding: 10,
         tickRotation: 0,
         truncateTickAt: 0,

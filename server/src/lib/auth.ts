@@ -1,13 +1,15 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { admin, organization, emailOTP } from "better-auth/plugins";
+import { admin, emailOTP, organization } from "better-auth/plugins";
 import dotenv from "dotenv";
-import { eq } from "drizzle-orm";
+import { asc, eq } from "drizzle-orm";
 import pg from "pg";
+
 import { db } from "../db/postgres/postgres.js";
 import * as schema from "../db/postgres/schema.js";
+import { user } from "../db/postgres/schema.js";
 import { DISABLE_SIGNUP } from "./const.js";
-import { sendInvitationEmail, sendEmail } from "./resend.js";
+import { sendEmail, sendInvitationEmail } from "./resend.js";
 
 dotenv.config();
 
@@ -20,7 +22,7 @@ const pluginList = [
     allowUserToCreateOrganization: true,
     // Set the creator role to owner
     creatorRole: "owner",
-    sendInvitationEmail: async (invitation) => {
+    sendInvitationEmail: async invitation => {
       const inviteLink = `${process.env.BASE_URL}/invitation?invitationId=${invitation.invitation.id}&organization=${invitation.organization.name}&inviterEmail=${invitation.inviter.user.email}`;
       await sendInvitationEmail(
         invitation.email,
@@ -93,6 +95,8 @@ export let auth: AuthType | null = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    // Disable email verification for now
+    requireEmailVerification: false,
     disableSignUp: DISABLE_SIGNUP,
   },
   socialProviders: {
@@ -120,6 +124,20 @@ export let auth: AuthType | null = betterAuth({
     defaultCookieAttributes: {
       sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       path: "/",
+    },
+  },
+  databaseHooks: {
+    user: {
+      create: {
+        after: async () => {
+          const users = await db.select().from(schema.user).orderBy(asc(user.createdAt));
+
+          // If this is the first user, make them an admin
+          if (users.length === 1) {
+            await db.update(user).set({ role: "admin" }).where(eq(user.id, users[0].id));
+          }
+        },
+      },
     },
   },
 });
@@ -176,23 +194,16 @@ export function initAuth(allowedOrigins: string[]) {
         enabled: true,
         // Add a hook to run before deleting a user
         // i dont think this works
-        beforeDelete: async (user) => {
+        beforeDelete: async user => {
           // Delete all memberships for this user first
-          console.log(
-            `Cleaning up memberships for user ${user.id} before deletion`
-          );
+          console.log(`Cleaning up memberships for user ${user.id} before deletion`);
           try {
             // Delete member records for this user
-            await db
-              .delete(schema.member)
-              .where(eq(schema.member.userId, user.id));
+            await db.delete(schema.member).where(eq(schema.member.userId, user.id));
 
             console.log(`Successfully removed memberships for user ${user.id}`);
           } catch (error) {
-            console.error(
-              `Error removing memberships for user ${user.id}:`,
-              error
-            );
+            console.error(`Error removing memberships for user ${user.id}:`, error);
             throw error; // Re-throw to prevent user deletion if cleanup fails
           }
         },
@@ -208,6 +219,20 @@ export function initAuth(allowedOrigins: string[]) {
       defaultCookieAttributes: {
         sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
         path: "/",
+      },
+    },
+    databaseHooks: {
+      user: {
+        create: {
+          after: async () => {
+            const users = await db.select().from(schema.user).orderBy(asc(user.createdAt));
+
+            // If this is the first user, make them an admin
+            if (users.length === 1) {
+              await db.update(user).set({ role: "admin" }).where(eq(user.id, users[0].id));
+            }
+          },
+        },
       },
     },
   });

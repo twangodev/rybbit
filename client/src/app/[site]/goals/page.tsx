@@ -10,6 +10,7 @@ import { GOALS_PAGE_FILTERS, useStore } from "../../../lib/store";
 import { SubHeader } from "../components/SubHeader/SubHeader";
 import CreateGoalButton from "./components/CreateGoalButton";
 import GoalsList from "./components/GoalsList";
+import { Target } from "lucide-react";
 
 export default function GoalsPage() {
   useSetPageTitle("Rybbit · Goals");
@@ -35,7 +36,7 @@ export default function GoalsPage() {
     },
     getPageCount: () => goalsData?.meta?.totalPages || 1,
     setPageIndex: (index: number) => {
-      setPagination((prev) => ({ ...prev, pageIndex: index }));
+      setPagination(prev => ({ ...prev, pageIndex: index }));
       // Scroll to top of page when changing pages
       window.scrollTo({
         top: 0,
@@ -44,16 +45,13 @@ export default function GoalsPage() {
     },
     previousPage: () => {
       if (pagination.pageIndex > 0) {
-        setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex - 1 }));
+        setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex - 1 }));
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
     nextPage: () => {
-      if (
-        goalsData?.meta &&
-        pagination.pageIndex + 1 < goalsData.meta.totalPages
-      ) {
-        setPagination((prev) => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
+      if (goalsData?.meta && pagination.pageIndex + 1 < goalsData.meta.totalPages) {
+        setPagination(prev => ({ ...prev, pageIndex: prev.pageIndex + 1 }));
         window.scrollTo({ top: 0, behavior: "smooth" });
       }
     },
@@ -108,7 +106,7 @@ export default function GoalsPage() {
   );
 
   return (
-    <DisabledOverlay message="Goals">
+    <DisabledOverlay message="Goals" featurePath="goals">
       <div className="p-2 md:p-4 max-w-[1400px] mx-auto space-y-3">
         <SubHeader availableFilters={GOALS_PAGE_FILTERS} />
         <div className="flex items-center justify-between">
@@ -126,10 +124,9 @@ export default function GoalsPage() {
           </div>
         ) : !goalsData || goalsData.data.length === 0 ? (
           <NothingFound
+            icon={<Target className="w-10 h-10" />}
             title={"No goals found"}
-            description={
-              "Create your first conversion goal to start tracking important user actions."
-            }
+            description={"Create your first conversion goal to start tracking important user actions."}
             action={<CreateGoalButton siteId={Number(site)} />}
           />
         ) : (

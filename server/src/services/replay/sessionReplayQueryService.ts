@@ -4,12 +4,9 @@ import {
   SessionReplayListItem,
   GetSessionReplayEventsResponse,
 } from "../../types/sessionReplay.js";
-import {
-  processResults,
-  getTimeStatement,
-  getFilterStatement,
-} from "../../api/analytics/utils.js";
+import { processResults, getTimeStatement, getFilterStatement } from "../../api/analytics/utils.js";
 import { FilterParams } from "@rybbit/shared";
+import { r2Storage } from "../storage/r2StorageService.js";
 
 /**
  * Service responsible for querying/retrieving session replay data
@@ -23,22 +20,11 @@ export class SessionReplayQueryService {
       offset?: number;
       userId?: string;
       minDuration?: number;
-    } & Pick<
-      FilterParams,
-      | "startDate"
-      | "endDate"
-      | "timeZone"
-      | "pastMinutesStart"
-      | "pastMinutesEnd"
-      | "filters"
-    >
+    } & Pick<FilterParams, "startDate" | "endDate" | "timeZone" | "pastMinutesStart" | "pastMinutesEnd" | "filters">
   ): Promise<SessionReplayListItem[]> {
     const { limit = 50, offset = 0, userId, minDuration } = options;
 
-    const timeStatement = getTimeStatement(options).replace(
-      /timestamp/g,
-      "start_time"
-    );
+    const timeStatement = getTimeStatement(options).replace(/timestamp/g, "start_time");
 
     const filterStatement = getFilterStatement(options.filters || "");
 
@@ -126,10 +112,7 @@ export class SessionReplayQueryService {
     return finalResults;
   }
 
-  async getSessionReplayEvents(
-    siteId: number,
-    sessionId: string
-  ): Promise<GetSessionReplayEventsResponse> {
+  async getSessionReplayEvents(siteId: number, sessionId: string): Promise<GetSessionReplayEventsResponse> {
     // Get metadata
     const metadataResult = await clickhouse.query({
       query: `
@@ -157,7 +140,9 @@ export class SessionReplayQueryService {
         SELECT 
           toUnixTimestamp64Milli(timestamp) as timestamp,
           event_type as type,
-          event_data as data
+          event_data as data,
+          event_data_key,
+          batch_index
         FROM session_replay_events
         WHERE site_id = {siteId:UInt16} 
           AND session_id = {sessionId:String}
@@ -171,20 +156,86 @@ export class SessionReplayQueryService {
       timestamp: number;
       type: string;
       data: string;
+      event_data_key: string | null;
+      batch_index: number | null;
     };
 
     const eventsResults = await processResults<EventRow>(eventsResult);
 
-    const events = eventsResults.map((event) => {
-      // Timestamp is already in milliseconds from the SQL query
-      const timestamp = event.timestamp;
-
-      return {
-        timestamp,
-        type: event.type, // Keep as string for now to match interface
-        data: JSON.parse(event.data),
-      };
+    // Group events by batch key for efficient R2 retrieval
+    const eventsByBatch = new Map<string | null, EventRow[]>();
+    eventsResults.forEach(event => {
+      const key = event.event_data_key;
+      if (!eventsByBatch.has(key)) {
+        eventsByBatch.set(key, []);
+      }
+      eventsByBatch.get(key)!.push(event);
     });
+
+    // Process batches and reconstruct events
+    const events = [];
+
+    // Separate R2 and ClickHouse batches
+    const r2Batches: Array<[string, EventRow[]]> = [];
+    const clickhouseBatches: Array<[string | null, EventRow[]]> = [];
+
+    for (const [batchKey, batchEvents] of eventsByBatch) {
+      if (batchKey && r2Storage.isEnabled()) {
+        r2Batches.push([batchKey, batchEvents]);
+      } else {
+        clickhouseBatches.push([batchKey, batchEvents]);
+      }
+    }
+
+    // Process ClickHouse batches immediately
+    for (const [_, batchEvents] of clickhouseBatches) {
+      for (const event of batchEvents) {
+        events.push({
+          timestamp: event.timestamp,
+          type: event.type,
+          data: JSON.parse(event.data),
+        });
+      }
+    }
+
+    // Fetch R2 batches in parallel (with increased concurrency for better throughput)
+    const PARALLEL_BATCH_SIZE = 50;
+    const r2Results: Array<{ batchKey: string; batchEvents: EventRow[]; data: any[] | null }> = [];
+
+    for (let i = 0; i < r2Batches.length; i += PARALLEL_BATCH_SIZE) {
+      const batchSlice = r2Batches.slice(i, i + PARALLEL_BATCH_SIZE);
+
+      const promises = batchSlice.map(async ([batchKey, batchEvents]) => {
+        try {
+          const eventDataArray = await r2Storage.getBatch(batchKey);
+          return { batchKey, batchEvents, data: eventDataArray };
+        } catch (error) {
+          console.error(`Failed to fetch R2 batch ${batchKey}:`, error);
+          return { batchKey, batchEvents, data: null };
+        }
+      });
+
+      const results = await Promise.all(promises);
+      r2Results.push(...results);
+    }
+
+    // Process R2 results
+    for (const { batchEvents, data } of r2Results) {
+      if (data) {
+        for (const event of batchEvents) {
+          if (event.batch_index !== null && data[event.batch_index]) {
+            events.push({
+              timestamp: event.timestamp,
+              type: event.type,
+              data: data[event.batch_index],
+            });
+          }
+        }
+      }
+    }
+
+    // Sort events by timestamp (in case batches were processed out of order)
+    events.sort((a, b) => a.timestamp - b.timestamp);
 
     return {
       events,
@@ -192,10 +243,7 @@ export class SessionReplayQueryService {
     };
   }
 
-  async getSessionReplayMetadata(
-    siteId: number,
-    sessionId: string
-  ): Promise<SessionReplayMetadata | null> {
+  async getSessionReplayMetadata(siteId: number, sessionId: string): Promise<SessionReplayMetadata | null> {
     const result = await clickhouse.query({
       query: `
         SELECT *
