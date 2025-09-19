@@ -91,6 +91,8 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
 
   const disabled = requiredPlan === "pro" ? !subscription?.isPro : subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
 
+  console.info(subscription, disabled);
+
   if (!disabled || data?.user?.role === "admin") {
     return <>{children}</>;
   }
