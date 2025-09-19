@@ -22,7 +22,6 @@ export interface StripePlan {
     events: number;
     replays: number;
   };
-  annualDiscountPriceId?: string; // Make this optional
 }
 
 const STRIPE_PRICES: StripePlan[] = [

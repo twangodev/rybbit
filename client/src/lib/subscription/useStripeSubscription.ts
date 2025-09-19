@@ -15,6 +15,7 @@ interface SubscriptionData {
   isTrial?: boolean;
   trialDaysRemaining?: number;
   message?: string; // For expired trial message
+  isPro?: boolean;
 }
 
 export function useStripeSubscription() {

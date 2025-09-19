@@ -13,7 +13,7 @@ import { useStripeSubscription } from "../../lib/subscription/useStripeSubscript
 import { UsageChart } from "../UsageChart";
 import { authClient } from "@/lib/auth";
 
-export function ProPlan() {
+export function PaidPlan() {
   const { data: activeSubscription, isLoading, error: subscriptionError, refetch } = useStripeSubscription();
 
   const { data: activeOrg } = authClient.useActiveOrganization();

@@ -14,16 +14,19 @@ interface DisabledOverlayProps {
   borderRadius?: number;
   showMessage?: boolean;
   style?: React.CSSProperties;
+  requiredPlan?: "pro" | "standard";
 }
 
-function ownerMessage(message: string, featurePath?: string) {
+function ownerMessage(message: string, featurePath?: string, requiredPlan?: "pro" | "standard") {
   return (
     <div className="bg-neutral-900 rounded-lg  border border-neutral-700 shadow-xl flex flex-col gap-3 p-4">
       <div className="flex gap-3">
         <Crown className="h-5 w-5 text-amber-500 flex-shrink-0" />
         <div className="flex-1 space-y-1">
           <p className="text-sm text-muted-foreground">
-            Upgrade to <span className="font-medium text-foreground">Pro</span> to unlock {message}
+            Upgrade to{" "}
+            <span className="font-medium text-foreground">{requiredPlan === "pro" ? "Pro" : "Standard"}</span> to unlock{" "}
+            {message}
           </p>
           {featurePath && (
             <Link
@@ -46,7 +49,7 @@ function ownerMessage(message: string, featurePath?: string) {
   );
 }
 
-function userMessage(message: string, featurePath?: string) {
+function userMessage(message: string, featurePath?: string, requiredPlan?: "pro" | "standard") {
   return (
     <div className="bg-neutral-900 rounded-lg  border border-neutral-700 shadow-xl flex flex-col gap-3 p-4">
       <div className="flex gap-3">
@@ -80,6 +83,7 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
   borderRadius = 0,
   showMessage = true,
   style,
+  requiredPlan = "standard",
 }) => {
   const { subscription, site } = useCurrentSite();
 
@@ -101,7 +105,9 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
       <div className="absolute inset-0 flex items-center justify-center z-10" style={borderRadiusStyle}>
         {showMessage && (
           <div className="flex items-center justify-center">
-            {site?.isOwner ? ownerMessage(message, featurePath) : userMessage(message, featurePath)}
+            {site?.isOwner
+              ? ownerMessage(message, featurePath, requiredPlan)
+              : userMessage(message, featurePath, requiredPlan)}
           </div>
         )}
       </div>
