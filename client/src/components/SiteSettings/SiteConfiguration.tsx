@@ -184,7 +184,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       enabledMessage: "Session replay enabled",
       disabledMessage: "Session replay disabled",
       disabled: sessionReplayDisabled,
-      badge: <Badge variant="green">Pro</Badge>,
+      badge: <Badge variant="success">Pro</Badge>,
     },
     {
       id: "webVitals",
@@ -195,7 +195,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       enabledMessage: "Web Vitals enabled",
       disabledMessage: "Web Vitals disabled",
       disabled: webVitalsDisabled,
-      badge: <Badge variant="green">Standard</Badge>,
+      badge: <Badge variant="success">Standard</Badge>,
     },
     {
       id: "trackErrors",
@@ -206,7 +206,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       enabledMessage: "Error tracking enabled",
       disabledMessage: "Error tracking disabled",
       disabled: trackErrorsDisabled,
-      badge: <Badge variant="green">Standard</Badge>,
+      badge: <Badge variant="success">Standard</Badge>,
     },
     {
       id: "trackOutbound",

@@ -2,16 +2,17 @@ import { Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DateTime } from "luxon";
-import { Alert } from "../ui/alert";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
-import { Progress } from "../ui/progress";
-import { BACKEND_URL } from "../../lib/const";
-import { getStripePrices } from "../../lib/stripe";
-import { formatDate } from "../../lib/subscription/planUtils";
-import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
-import { UsageChart } from "../UsageChart";
+import { Alert } from "../../ui/alert";
+import { Button } from "../../ui/button";
+import { Card, CardContent } from "../../ui/card";
+import { Progress } from "../../ui/progress";
+import { BACKEND_URL } from "../../../lib/const";
+import { getStripePrices } from "../../../lib/stripe";
+import { formatDate } from "../../../lib/subscription/planUtils";
+import { useStripeSubscription } from "../../../lib/subscription/useStripeSubscription";
+import { UsageChart } from "../../UsageChart";
 import { authClient } from "@/lib/auth";
+import { PlanDialog } from "./PlanDialog";
 
 export function PaidPlan() {
   const { data: activeSubscription, isLoading, error: subscriptionError, refetch } = useStripeSubscription();
@@ -27,6 +28,7 @@ export function PaidPlan() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
 
   const eventLimit = activeSubscription?.eventLimit || 0;
   const currentUsage = activeSubscription?.monthlyEventCount || 0;
@@ -102,7 +104,7 @@ export function PaidPlan() {
     }
   };
 
-  const handleChangePlan = () => createPortalSession("subscription_update");
+  const handleChangePlan = () => setShowPlanDialog(true);
   const handleViewSubscription = () => createPortalSession();
   const handleCancelSubscription = () => createPortalSession("subscription_cancel");
 
@@ -131,6 +133,11 @@ export function PaidPlan() {
   return (
     <div className="space-y-6">
       {actionError && <Alert variant="destructive">{actionError}</Alert>}
+      <PlanDialog
+        open={showPlanDialog}
+        onOpenChange={setShowPlanDialog}
+        currentPlanName={activeSubscription?.planName}
+      />
       <Card>
         <CardContent>
           <div className="space-y-6 mt-3 p-2">
@@ -146,8 +153,8 @@ export function PaidPlan() {
                 <p className="text-neutral-400 text-sm">{formatRenewalDate()}</p>
               </div>
               <div className="space-x-2">
-                <Button variant="success" onClick={handleChangePlan} disabled={isProcessing}>
-                  {isProcessing ? "Processing..." : "Change Plan"}
+                <Button variant="success" onClick={handleChangePlan}>
+                  Change Plan
                 </Button>
                 <Button variant="outline" onClick={handleViewSubscription} disabled={isProcessing}>
                   View Details
@@ -174,7 +181,7 @@ export function PaidPlan() {
                       <p className="text-sm text-amber-700 dark:text-amber-300">
                         <strong>Usage limit reached!</strong> You've exceeded your plan's event limit.
                       </p>
-                      <Button variant="success" size="sm" onClick={handleChangePlan} disabled={isProcessing}>
+                      <Button variant="success" size="sm" onClick={handleChangePlan}>
                         Upgrade Plan
                       </Button>
                     </div>

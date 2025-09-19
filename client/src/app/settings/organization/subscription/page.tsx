@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { PaidPlan } from "../../../../components/subscription/PaidPlan";
+import { PaidPlan } from "../../../../components/subscription/PaidPlain/PaidPlan";
 import { useStripeSubscription } from "../../../../lib/subscription/useStripeSubscription";
 import { NoOrganization } from "../../../../components/NoOrganization";
 import { TrialPlan } from "../../../../components/subscription/TrialPlan";
