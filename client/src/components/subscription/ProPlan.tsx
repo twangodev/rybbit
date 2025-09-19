@@ -46,11 +46,11 @@ export function ProPlan() {
         description: isPro ? "Premium features for professional teams" : "Advanced analytics for growing projects",
         features: isPro
           ? [
-              "Unlimited data retention",
+              "5+ year data retention",
+              "Session replays",
+              "Unlimited team members",
+              "Unlimited websites",
               "Priority support",
-              "Advanced integrations",
-              "Custom dashboards",
-              "Team collaboration",
             ]
           : ["1 year data retention", "Standard support", "Core analytics features"],
         color: isPro

@@ -13,11 +13,9 @@ export interface StripePrice {
 export const EVENT_TIERS = [100_000, 250_000, 500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000, "Custom"];
 
 export const STANDARD_FEATURES = [
-  "10 websites",
-  "3 team members",
-  "Real-time analytics",
+  "Up to 10 websites",
+  "Up to 3 team members",
   "Web vitals",
-  "Custom events",
   "Funnels",
   "Goals",
   "Error tracking",
@@ -32,7 +30,6 @@ export const PRO_FEATURES = [
   "Everything in Standard",
   "Unlimited websites",
   "Unlimited team members",
-  "Unlimited data retention",
   "Session replays",
   "5+ year data retention",
   "Priority support",
