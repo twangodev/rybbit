@@ -95,7 +95,7 @@ export async function previewSubscriptionUpdate(
     });
 
     // 6. Calculate proration details
-    const prorationItems = upcomingInvoice.lines.data.filter((item: any) => {
+    const prorationItems = upcomingInvoice.lines.data.filter(item => {
       // Proration flag is nested in parent.subscription_item_details
       return item.parent?.subscription_item_details?.proration === true;
     });
@@ -103,7 +103,7 @@ export async function previewSubscriptionUpdate(
     let proratedCredit = 0;
     let proratedCharge = 0;
 
-    prorationItems.forEach((item: any) => {
+    prorationItems.forEach(item => {
       if (item.amount < 0) {
         proratedCredit += Math.abs(item.amount);
       } else {
