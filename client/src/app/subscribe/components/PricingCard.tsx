@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { BACKEND_URL } from "@/lib/const";
 import { authClient } from "@/lib/auth";
-import { EVENT_TIERS, STANDARD_FEATURES, PRO_FEATURES, findPriceForTier, formatEventTier } from "./utils";
+import { EVENT_TIERS, STANDARD_FEATURES, PRO_FEATURES, FREE_FEATURES, findPriceForTier, formatEventTier } from "./utils";
 import { getStripePrices } from "../../../lib/stripe";
 
 export function PricingCard({ isLoggedIn }: { isLoggedIn: boolean }) {
@@ -95,7 +95,7 @@ export function PricingCard({ isLoggedIn }: { isLoggedIn: boolean }) {
   const isCustomTier = eventLimit === "Custom";
 
   return (
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-6xl mx-auto">
       {/* Shared controls section */}
       <div className="max-w-xl mx-auto mb-8">
         {/* Events per month and billing toggle */}
@@ -156,7 +156,43 @@ export function PricingCard({ isLoggedIn }: { isLoggedIn: boolean }) {
       </div>
 
       {/* Cards section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-6xl mx-auto">
+        {/* Free Plan Card */}
+        <div className="bg-neutral-800/15 rounded-xl border border-neutral-700/60 overflow-hidden text-neutral-300">
+          <div className="p-6">
+            <div className="mb-4">
+              <h3 className="text-xl font-bold mb-2">Free</h3>
+              <p className="text-sm text-neutral-400">Perfect for getting started</p>
+            </div>
+
+            {/* Price display */}
+            <div className="mb-6">
+              <div>
+                <span className="text-3xl font-bold">10,000</span>
+                <span className="ml-1 text-neutral-400">/month events</span>
+              </div>
+            </div>
+
+            {/* Current plan button */}
+            <button
+              disabled
+              className="w-full bg-neutral-700/50 text-neutral-400 font-medium px-5 py-3 rounded-xl border border-neutral-600/50 cursor-not-allowed opacity-50"
+            >
+              Current Plan
+            </button>
+
+            {/* Features */}
+            <div className="space-y-4 mt-6">
+              {FREE_FEATURES.map((feature, i) => (
+                <div key={i} className="flex items-center">
+                  <Check className="h-4 w-4 text-emerald-400 mr-3 shrink-0" />
+                  <span className="text-sm">{feature}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {/* Standard Plan Card */}
         <div className="bg-neutral-800/50 rounded-xl border border-neutral-700 overflow-hidden">
           <div className="p-6">

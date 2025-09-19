@@ -35,6 +35,15 @@ export const PRO_FEATURES = [
   "Priority support",
 ];
 
+export const FREE_FEATURES = [
+  "1 user",
+  "Up to 3 websites",
+  "Cookieless tracking",
+  "Web analytics dashboard",
+  "Custom events",
+  "6 month data retention",
+];
+
 // Find the appropriate price for a tier at current event limit
 export function findPriceForTier(
   eventLimit: number | string,
