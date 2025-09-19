@@ -63,6 +63,7 @@ export async function getSubscriptionInner(organizationId: string) {
           id: subscription.id,
           planName: "Unknown Plan", // Indicate missing details
           status: subscription.status,
+          createdAt: new Date(subscription.created * 1000),
           currentPeriodStart: new Date(subscriptionItem.current_period_start * 1000),
           currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
@@ -78,6 +79,7 @@ export async function getSubscriptionInner(organizationId: string) {
         planName: planDetails.name,
         isPro: planDetails.name.includes("pro"),
         status: subscription.status,
+        createdAt: new Date(subscription.created * 1000),
         currentPeriodStart: new Date(subscriptionItem.current_period_start * 1000),
         currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,

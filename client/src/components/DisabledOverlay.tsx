@@ -89,7 +89,7 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
 
   const { data } = authClient.useSession();
 
-  const disabled = subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
+  const disabled = requiredPlan === "pro" ? !subscription?.isPro : subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
 
   if (!disabled || data?.user?.role === "admin") {
     return <>{children}</>;

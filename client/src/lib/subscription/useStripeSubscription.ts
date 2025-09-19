@@ -8,6 +8,7 @@ interface SubscriptionData {
   status: "expired" | "active" | "trialing" | "free";
   currentPeriodEnd: string;
   currentPeriodStart: string;
+  createdAt: string;
   monthlyEventCount: number;
   eventLimit: number;
   interval: string;

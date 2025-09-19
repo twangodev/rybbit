@@ -104,6 +104,7 @@ export async function getSitesFromOrg(
         overMonthlyLimit: monthlyEventCount > eventLimit,
         planName: subscription?.planName || "free",
         status: subscription?.status || "free",
+        isPro: subscription?.planName.includes("pro") || false,
       },
     });
   } catch (err) {
