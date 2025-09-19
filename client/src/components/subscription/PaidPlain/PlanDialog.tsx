@@ -12,6 +12,7 @@ interface PlanDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   currentPlanName?: string;
+  hasActiveSubscription?: boolean;
 }
 
 const EVENT_TIERS = [
@@ -24,7 +25,7 @@ const EVENT_TIERS = [
   { events: 10_000_000, label: "10M" },
 ];
 
-export function PlanDialog({ open, onOpenChange, currentPlanName }: PlanDialogProps) {
+export function PlanDialog({ open, onOpenChange, currentPlanName, hasActiveSubscription }: PlanDialogProps) {
   const [isAnnual, setIsAnnual] = useState(false);
   const [loadingPriceId, setLoadingPriceId] = useState<string | null>(null);
   const stripePrices = getStripePrices();
@@ -36,39 +37,75 @@ export function PlanDialog({ open, onOpenChange, currentPlanName }: PlanDialogPr
       return;
     }
 
+    // Don't allow selecting the current plan
+    if (isCurrentPlan(planName)) {
+      return;
+    }
+
     setLoadingPriceId(priceId);
     try {
       const baseUrl = window.location.origin;
-      const successUrl = `${baseUrl}/settings/organization/subscription?session_id={CHECKOUT_SESSION_ID}`;
-      const cancelUrl = `${baseUrl}/settings/organization/subscription`;
 
-      const response = await fetch(`${BACKEND_URL}/stripe/create-checkout-session`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
-        body: JSON.stringify({
-          priceId,
-          successUrl,
-          cancelUrl,
-          organizationId: activeOrg.id,
-        }),
-      });
+      if (hasActiveSubscription) {
+        const returnUrl = `${baseUrl}/settings/organization/subscription`;
 
-      const data = await response.json();
+        const response = await fetch(`${BACKEND_URL}/stripe/create-portal-session`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            returnUrl,
+            organizationId: activeOrg.id,
+            flowType: "subscription_update",
+          }),
+        });
 
-      if (!response.ok) {
-        throw new Error(data.error || "Failed to create checkout session.");
-      }
+        const data = await response.json();
 
-      if (data.checkoutUrl) {
-        window.location.href = data.checkoutUrl;
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to create portal session.");
+        }
+
+        if (data.portalUrl) {
+          window.location.href = data.portalUrl;
+        } else {
+          throw new Error("Portal URL not received.");
+        }
       } else {
-        throw new Error("Checkout URL not received.");
+        // For new subscriptions, create a checkout session
+        const successUrl = `${baseUrl}/settings/organization/subscription?session_id={CHECKOUT_SESSION_ID}`;
+        const cancelUrl = `${baseUrl}/settings/organization/subscription`;
+
+        const response = await fetch(`${BACKEND_URL}/stripe/create-checkout-session`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            priceId,
+            successUrl,
+            cancelUrl,
+            organizationId: activeOrg.id,
+          }),
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to create checkout session.");
+        }
+
+        if (data.checkoutUrl) {
+          window.location.href = data.checkoutUrl;
+        } else {
+          throw new Error("Checkout URL not received.");
+        }
       }
     } catch (error: any) {
-      toast.error(`Checkout failed: ${error.message}`);
+      toast.error(`${hasActiveSubscription ? "Update" : "Checkout"} failed: ${error.message}`);
       setLoadingPriceId(null);
     }
   };

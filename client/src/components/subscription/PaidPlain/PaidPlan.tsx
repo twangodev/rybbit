@@ -137,6 +137,7 @@ export function PaidPlan() {
         open={showPlanDialog}
         onOpenChange={setShowPlanDialog}
         currentPlanName={activeSubscription?.planName}
+        hasActiveSubscription={!!activeSubscription}
       />
       <Card>
         <CardContent>
