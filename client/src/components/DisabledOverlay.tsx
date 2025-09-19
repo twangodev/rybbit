@@ -1,11 +1,12 @@
 import { ArrowRight, Crown, ExternalLink } from "lucide-react";
 import Link from "next/link";
-import React, { ReactNode } from "react";
+import React, { ReactNode, useMemo } from "react";
 import { useCurrentSite } from "../api/admin/sites";
 import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
 import { Button } from "./ui/button";
 import { authClient } from "../lib/auth";
 import { DEMO_HOSTNAME } from "../lib/const";
+import { DateTime } from "luxon";
 
 interface DisabledOverlayProps {
   children: ReactNode;
@@ -90,7 +91,17 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
 
   const { data } = authClient.useSession();
 
-  const disabled = requiredPlan === "pro" ? !subscription?.isPro : subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
+  const { data: organization } = authClient.useActiveOrganization();
+
+  const disabled = useMemo(() => {
+    if (requiredPlan === "pro") {
+      if (organization?.createdAt && DateTime.fromJSDate(organization?.createdAt) < DateTime.fromISO("2025-09-19")) {
+        return false;
+      }
+      return !subscription?.isPro;
+    }
+    return subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
+  }, [subscription, requiredPlan]);
 
   if (!disabled || data?.user?.role === "admin" || globalThis.location.hostname === DEMO_HOSTNAME) {
     return <>{children}</>;
