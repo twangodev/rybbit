@@ -26,10 +26,6 @@ interface PreviewSubscriptionResponse {
       immediatePayment: number;
       nextBillingDate: string | null;
     };
-    summary: {
-      isUpgrade: boolean;
-      immediatePaymentRequired: boolean;
-    };
   };
 }
 

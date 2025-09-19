@@ -59,7 +59,7 @@ export async function previewSubscriptionUpdate(
     }
 
     // 3. Get the active subscription
-    const subscriptions = await (stripe as Stripe).subscriptions.list({
+    const subscriptions = await stripe!.subscriptions.list({
       customer: org.stripeCustomerId,
       status: "active",
       limit: 1,
@@ -71,12 +71,12 @@ export async function previewSubscriptionUpdate(
 
     const subscription = subscriptions.data[0];
     const currentItem = subscription.items.data[0];
-    const currentPeriodEnd = (currentItem as any).current_period_end;
+    const currentPeriodEnd = currentItem.current_period_end;
 
     // 4. Get price details for both current and new prices
     const [currentPrice, newPrice] = await Promise.all([
-      (stripe as Stripe).prices.retrieve(currentItem.price.id),
-      (stripe as Stripe).prices.retrieve(newPriceId),
+      stripe!.prices.retrieve(currentItem.price.id),
+      stripe!.prices.retrieve(newPriceId),
     ]);
 
     // 5. Create a preview of the upcoming invoice with proration
@@ -95,7 +95,10 @@ export async function previewSubscriptionUpdate(
     });
 
     // 6. Calculate proration details
-    const prorationItems = upcomingInvoice.lines.data.filter((item: any) => item.proration);
+    const prorationItems = upcomingInvoice.lines.data.filter((item: any) => {
+      // Proration flag is nested in parent.subscription_item_details
+      return item.parent?.subscription_item_details?.proration === true;
+    });
 
     let proratedCredit = 0;
     let proratedCharge = 0;
@@ -108,7 +111,7 @@ export async function previewSubscriptionUpdate(
       }
     });
 
-    const immediateCharge = (upcomingInvoice as any).amount_due;
+    const immediateCharge = upcomingInvoice.amount_due;
 
     // 7. Return preview information
     return reply.send({
@@ -129,11 +132,6 @@ export async function previewSubscriptionUpdate(
           charge: proratedCharge / 100,
           immediatePayment: immediateCharge / 100,
           nextBillingDate: currentPeriodEnd ? new Date(currentPeriodEnd * 1000).toISOString() : null,
-        },
-        // Add a human-readable summary
-        summary: {
-          isUpgrade: (newPrice.unit_amount || 0) > (currentPrice.unit_amount || 0),
-          immediatePaymentRequired: immediateCharge > 0,
         },
       },
     });
