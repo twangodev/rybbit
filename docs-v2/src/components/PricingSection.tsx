@@ -36,6 +36,7 @@ const PRO_FEATURES = [
 
 // Define free plan features
 const FREE_FEATURES = [
+  { feature: "1 user", included: true },
   { feature: "Up to 3 websites", included: true },
   { feature: "Cookieless tracking", included: true },
   { feature: "Web analytics dashboard", included: true },
@@ -102,14 +103,11 @@ export function PricingSection() {
   return (
     <section className="py-16 md:py-24 w-full">
       <div className="max-w-7xl mx-auto px-4">
-        <div className="text-center mb-12">
-          <div className="inline-block bg-emerald-900/30 text-emerald-400 px-3 py-1 rounded-full text-sm font-medium mb-4">
-            Simple Pricing
-          </div>
-          <h2 className="text-3xl md:text-4xl font-bold">Transparent Pricing</h2>
-          <p className="mt-4 text-neutral-300 max-w-2xl mx-auto font-light">
-            Privacy-friendly analytics with all the features you need to grow
-          </p>
+        <div className="mb-12 text-center max-w-3xl mx-auto">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight pb-4 text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-200 to-gray-400">
+            Simple, Transparent Pricing
+          </h2>
+          <p className="text-lg text-neutral-300">Privacy-friendly analytics with all the features you need to grow</p>
         </div>
 
         {/* Shared controls section */}
@@ -180,8 +178,8 @@ export function PricingSection() {
         {/* Three card layout */}
         <div className="flex flex-col lg:flex-row gap-6 max-w-6xl mx-auto justify-center items-stretch">
           {/* Free Plan Card */}
-          <div className="w-full lg:w-96 flex-shrink-0">
-            <div className="bg-neutral-800/50 rounded-xl border border-neutral-700 overflow-hidden backdrop-blur-sm shadow-xl h-full">
+          <div className="w-full lg:w-96 flex-shrink-0 text-neutral-300">
+            <div className="bg-neutral-800/15 rounded-xl border border-neutral-700/60 overflow-hidden backdrop-blur-sm shadow-xl h-full">
               <div className="p-6">
                 <div className="mb-4">
                   <h3 className="text-xl font-bold mb-2">Free</h3>
