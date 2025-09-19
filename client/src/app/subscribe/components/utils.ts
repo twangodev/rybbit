@@ -12,26 +12,38 @@ export interface StripePrice {
 
 export const EVENT_TIERS = [100_000, 250_000, 500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000, "Custom"];
 
-export const PRO_FEATURES = [
-  "Unlimited websites",
-  "Unlimited team members",
-  "Session replays",
+export const STANDARD_FEATURES = [
+  "10 websites",
+  "3 team members",
   "Real-time analytics",
   "Web vitals",
   "Custom events",
   "Funnels",
   "Goals",
+  "Error tracking",
   "Journeys",
   "User profiles",
   "Retention",
-  "All features",
+  "2 year data retention",
+  "Standard support",
+];
+
+export const PRO_FEATURES = [
+  "Everything in Standard",
+  "Unlimited websites",
+  "Unlimited team members",
+  "Unlimited data retention",
+  "Session replays",
+  "5+ year data retention",
+  "Priority support",
 ];
 
 // Find the appropriate price for a tier at current event limit
 export function findPriceForTier(
   eventLimit: number | string,
   interval: "month" | "year",
-  stripePrices: StripePrice[]
+  stripePrices: StripePrice[],
+  planType: "standard" | "pro" = "standard"
 ): StripePrice | null {
   // Check if we have a custom tier
   if (eventLimit === "Custom") {
@@ -48,8 +60,8 @@ export function findPriceForTier(
   const plans = stripePrices.filter(
     plan =>
       (isAnnual
-        ? plan.name.startsWith("pro") && plan.name.includes("-annual")
-        : plan.name.startsWith("pro") && !plan.name.includes("-annual")) && plan.interval === interval
+        ? plan.name.startsWith(planType) && plan.name.includes("-annual")
+        : plan.name.startsWith(planType) && !plan.name.includes("-annual")) && plan.interval === interval
   );
 
   // Find a plan that matches or exceeds the event limit

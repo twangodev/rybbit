@@ -35,15 +35,27 @@ export function ProPlan() {
 
   const stripePlan = getStripePrices().find(p => p.name === activeSubscription?.planName);
 
+  const isPro = activeSubscription?.planName?.startsWith("pro");
+
   const currentPlanDetails = activeSubscription
     ? {
-        id: "pro",
-        name: "Pro",
+        id: isPro ? "pro" : "standard",
+        name: isPro ? "Pro" : "Standard",
         price: `$${stripePlan?.price}`,
         interval: stripePlan?.interval,
-        description: "Advanced analytics for growing projects",
-        features: ["5 year data retention", "Priority support"],
-        color: "bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-800 dark:to-emerald-800",
+        description: isPro ? "Premium features for professional teams" : "Advanced analytics for growing projects",
+        features: isPro
+          ? [
+              "Unlimited data retention",
+              "Priority support",
+              "Advanced integrations",
+              "Custom dashboards",
+              "Team collaboration",
+            ]
+          : ["1 year data retention", "Standard support", "Core analytics features"],
+        color: isPro
+          ? "bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-800 dark:to-indigo-800"
+          : "bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-800 dark:to-emerald-800",
         icon: <Shield className="h-5 w-5" />,
       }
     : null;
