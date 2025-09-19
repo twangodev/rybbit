@@ -5,6 +5,7 @@ import { useCurrentSite } from "../api/admin/sites";
 import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
 import { Button } from "./ui/button";
 import { authClient } from "../lib/auth";
+import { useStripeSubscription } from "../lib/subscription/useStripeSubscription";
 
 interface DisabledOverlayProps {
   children: ReactNode;
@@ -85,7 +86,9 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
   style,
   requiredPlan = "standard",
 }) => {
-  const { subscription, site } = useCurrentSite();
+  const { site } = useCurrentSite();
+
+  const { data: subscription } = useStripeSubscription();
 
   const { data } = authClient.useSession();
 
