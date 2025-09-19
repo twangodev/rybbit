@@ -57,6 +57,8 @@ import { updateSiteApiConfig } from "./api/sites/updateSiteApiConfig.js";
 import { createCheckoutSession } from "./api/stripe/createCheckoutSession.js";
 import { createPortalSession } from "./api/stripe/createPortalSession.js";
 import { getSubscription } from "./api/stripe/getSubscription.js";
+import { previewSubscriptionUpdate } from "./api/stripe/previewSubscriptionUpdate.js";
+import { updateSubscription } from "./api/stripe/updateSubscription.js";
 import { handleWebhook } from "./api/stripe/webhook.js";
 import { addUserToOrganization } from "./api/user/addUserToOrganization.js";
 import { getUserOrganizations } from "./api/user/getUserOrganizations.js";
@@ -383,6 +385,8 @@ if (IS_CLOUD) {
   // Stripe Routes
   server.post("/api/stripe/create-checkout-session", createCheckoutSession);
   server.post("/api/stripe/create-portal-session", createPortalSession);
+  server.post("/api/stripe/preview-subscription-update", previewSubscriptionUpdate);
+  server.post("/api/stripe/update-subscription", updateSubscription);
   server.get("/api/stripe/subscription", getSubscription);
   server.post("/api/stripe/webhook", { config: { rawBody: true } }, handleWebhook); // Use rawBody parser config for webhook
 
