@@ -5,7 +5,7 @@ import { useCurrentSite } from "../api/admin/sites";
 import { DEFAULT_EVENT_LIMIT } from "../lib/subscription/constants";
 import { Button } from "./ui/button";
 import { authClient } from "../lib/auth";
-import { useStripeSubscription } from "../lib/subscription/useStripeSubscription";
+import { DEMO_HOSTNAME } from "../lib/const";
 
 interface DisabledOverlayProps {
   children: ReactNode;
@@ -31,7 +31,7 @@ function ownerMessage(message: string, featurePath?: string, requiredPlan?: "pro
           </p>
           {featurePath && (
             <Link
-              href={`https://demo.rybbit.io/21/${featurePath}`}
+              href={`https://${DEMO_HOSTNAME}/21/${featurePath}`}
               target="_blank"
               className="text-sm text-neutral-100 hover:underline flex items-center gap-1"
             >
@@ -62,7 +62,7 @@ function userMessage(message: string, featurePath?: string, requiredPlan?: "pro"
           </p>
           {featurePath && (
             <Link
-              href={`https://demo.rybbit.io/21/${featurePath}`}
+              href={`https://${DEMO_HOSTNAME}/21/${featurePath}`}
               target="_blank"
               className="text-sm text-neutral-100 hover:underline flex items-center gap-1"
             >
@@ -86,17 +86,13 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
   style,
   requiredPlan = "standard",
 }) => {
-  const { site } = useCurrentSite();
-
-  const { data: subscription } = useStripeSubscription();
+  const { subscription, site } = useCurrentSite();
 
   const { data } = authClient.useSession();
 
   const disabled = requiredPlan === "pro" ? !subscription?.isPro : subscription?.eventLimit === DEFAULT_EVENT_LIMIT;
 
-  console.info(subscription, disabled);
-
-  if (!disabled || data?.user?.role === "admin") {
+  if (!disabled || data?.user?.role === "admin" || globalThis.location.hostname === DEMO_HOSTNAME) {
     return <>{children}</>;
   }
 
