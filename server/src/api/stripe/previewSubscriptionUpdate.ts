@@ -110,21 +110,6 @@ export async function previewSubscriptionUpdate(
 
     const immediateCharge = (upcomingInvoice as any).amount_due;
 
-    // Debug logging
-    console.log("Preview Debug:", {
-      currentPrice: currentPrice.unit_amount,
-      newPrice: newPrice.unit_amount,
-      proratedCredit,
-      proratedCharge,
-      immediateCharge,
-      totalLines: upcomingInvoice.lines.data.length,
-      lines: upcomingInvoice.lines.data.map((line: any) => ({
-        description: line.description,
-        amount: line.amount,
-        proration: line.proration,
-      })),
-    });
-
     // 7. Return preview information
     return reply.send({
       success: true,

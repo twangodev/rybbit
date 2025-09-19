@@ -56,15 +56,8 @@ export async function getSitesUserHasAccessTo(req: FastifyRequest, adminOnly = f
   // Check if we have a cached promise
   const cached = sitesAccessCache.get<Promise<any[]>>(cacheKey);
   if (cached) {
-    // console.log(
-    //   `[Cache HIT] getSitesUserHasAccessTo for userId: ${userId}, adminOnly: ${adminOnly}`
-    // );
     return cached;
   }
-
-  // console.log(
-  //   `[Cache MISS] getSitesUserHasAccessTo for userId: ${userId}, adminOnly: ${adminOnly}`
-  // );
 
   // Create new promise and cache it
   const promise = (async () => {
