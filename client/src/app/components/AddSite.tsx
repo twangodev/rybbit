@@ -35,7 +35,7 @@ export function AddSite({ trigger, disabled }: { trigger?: React.ReactNode; disa
   const isOverSiteLimit = useMemo(() => {
     const numberOfSites = sites?.sites?.length || 0;
     if (!IS_CLOUD) {
-      return true;
+      return false;
     }
     if (subscription?.status !== "active" && numberOfSites >= 3) {
       return true;

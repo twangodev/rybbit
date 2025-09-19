@@ -32,21 +32,13 @@ export function InviteMemberDialog({ organizationId, onSuccess, memberCount }: I
   const { data: subscription } = useStripeSubscription();
 
   const isOverMemberLimit = useMemo(() => {
-    if (!IS_CLOUD) {
-      return true;
-    }
-    if (subscription?.status !== "active" && memberCount >= 1) {
-      return true;
-    }
-    if (!subscription?.isPro && memberCount >= 3) {
-      return true;
-    }
-
-    return false;
-  }, [subscription]);
+    if (!IS_CLOUD) return false;
+    const limit = subscription?.status !== "active" ? 1 : subscription?.isPro ? 10 : 3;
+    return memberCount >= limit;
+  }, [subscription, memberCount]);
 
   const [email, setEmail] = useState("");
-  const [role, setRole] = useState<"admin" | "member">("member");
+  const [role, setRole] = useState<"admin" | "member" | "owner">("member");
 
   const [isLoading, setIsLoading] = useState(false);
   const [open, setOpen] = useState(false);

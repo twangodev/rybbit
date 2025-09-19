@@ -2,7 +2,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useCallback } from "react";
+import { useState, useCallback, ReactNode } from "react";
 import { toast } from "sonner";
 
 import {
@@ -43,7 +43,7 @@ interface ToggleConfig {
   enabledMessage?: string;
   disabledMessage?: string;
   disabled?: boolean;
-  badge?: React.ReactNode;
+  badge?: ReactNode;
 }
 
 export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: SiteConfigurationProps) {
