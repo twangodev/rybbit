@@ -18,10 +18,10 @@ export default function Subscribe() {
   const { data: activeOrg } = authClient.useActiveOrganization();
   const router = useRouter();
 
-  // // Redirect if already subscribed
-  // if (subscription?.status === "active") {
-  //   router.push("/settings/organization/subscription");
-  // }
+  // Redirect if already subscribed
+  if (subscription?.status === "active") {
+    router.push("/settings/organization/subscription");
+  }
 
   // Get the active organization ID
   const organizationId = activeOrg?.id;

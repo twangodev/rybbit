@@ -90,14 +90,12 @@ export async function previewSubscriptionUpdate(
             price: newPriceId,
           },
         ],
-        proration_behavior: 'create_prorations',
+        proration_behavior: "always_invoice",
       },
     });
 
     // 6. Calculate proration details
-    const prorationItems = upcomingInvoice.lines.data.filter(
-      (item: any) => item.proration
-    );
+    const prorationItems = upcomingInvoice.lines.data.filter((item: any) => item.proration);
 
     let proratedCredit = 0;
     let proratedCharge = 0;
@@ -119,12 +117,12 @@ export async function previewSubscriptionUpdate(
         currentPlan: {
           priceId: currentItem.price.id,
           amount: currentPrice.unit_amount || 0,
-          interval: currentPrice.recurring?.interval || 'month',
+          interval: currentPrice.recurring?.interval || "month",
         },
         newPlan: {
           priceId: newPriceId,
           amount: newPrice.unit_amount || 0,
-          interval: newPrice.recurring?.interval || 'month',
+          interval: newPrice.recurring?.interval || "month",
         },
         proration: {
           credit: proratedCredit / 100, // Convert from cents to dollars
@@ -136,7 +134,7 @@ export async function previewSubscriptionUpdate(
         summary: {
           isUpgrade: (newPrice.unit_amount || 0) > (currentPrice.unit_amount || 0),
           immediatePaymentRequired: immediateCharge > 0,
-        }
+        },
       },
     });
   } catch (error: any) {
