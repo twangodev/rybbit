@@ -80,7 +80,7 @@ export async function updateSubscription(
     }
 
     // 5. Update the subscription with the new price
-    // This will handle proration automatically based on your Stripe settings
+    // Using always_invoice to charge immediately for the proration
     const updatedSubscription = await (stripe as Stripe).subscriptions.update(subscription.id, {
       items: [
         {
@@ -88,7 +88,7 @@ export async function updateSubscription(
           price: newPriceId,
         },
       ],
-      proration_behavior: "create_prorations", // This ensures proper proration
+      proration_behavior: "always_invoice", // Immediately invoice the proration amount
     });
 
     // Get the updated subscription details
