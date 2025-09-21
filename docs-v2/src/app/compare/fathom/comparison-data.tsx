@@ -8,7 +8,6 @@ export const fathomComparisonData: ComparisonSection[] = [
         name: "Simple dashboard",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Both offer clean, intuitive dashboards",
       },
       {
         name: "Real-time data",
@@ -29,26 +28,9 @@ export const fathomComparisonData: ComparisonSection[] = [
         name: "Custom events",
         rybbitValue: "With attributes",
         competitorValue: "Basic",
-        tooltip: "Rybbit supports rich event attributes",
       },
       {
         name: "Conversion goals",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Geographic data",
-        rybbitValue: "City-level",
-        competitorValue: "Country-level",
-        tooltip: "More detailed location tracking",
-      },
-      {
-        name: "All sites view",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "SPA mode",
         rybbitValue: true,
         competitorValue: true,
       },
@@ -61,52 +43,39 @@ export const fathomComparisonData: ComparisonSection[] = [
         name: "Session Replay",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Watch how users interact with your site",
       },
       {
         name: "Funnels",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Analyze multi-step conversion paths",
       },
       {
         name: "User journeys (Sankey)",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Visualize user flow patterns",
       },
       {
         name: "User profiles",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Detailed profiles with session history",
       },
       {
         name: "Sessions tracking",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "View all sessions with pageviews and events",
       },
       {
         name: "Real-time globe view",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "3D visualization of live visitor activity",
       },
       {
         name: "Web Vitals dashboard",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Core Web Vitals by page and region",
       },
       {
         name: "Error tracking",
-        rybbitValue: true,
-        competitorValue: false,
-        tooltip: "Browser error monitoring",
-      },
-      {
-        name: "Ecommerce analytics",
         rybbitValue: true,
         competitorValue: false,
       },
@@ -134,7 +103,6 @@ export const fathomComparisonData: ComparisonSection[] = [
         name: "Daily rotating salt option",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Enhanced privacy with automatic identifier rotation",
       },
       {
         name: "IP anonymization",
@@ -155,13 +123,11 @@ export const fathomComparisonData: ComparisonSection[] = [
         name: "Open source",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Fathom is closed source",
       },
       {
         name: "Self-hostable",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Full control with self-hosting option",
       },
       {
         name: "Code transparency",
@@ -184,32 +150,12 @@ export const fathomComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "Dark mode",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
         name: "Public dashboards",
         rybbitValue: true,
         competitorValue: true,
       },
       {
         name: "Email reports",
-        rybbitValue: false,
-        competitorValue: true,
-      },
-      {
-        name: "Live demo",
-        rybbitValue: true,
-        competitorValue: false,
-      },
-      {
-        name: "Google Analytics import",
-        rybbitValue: false,
-        competitorValue: true,
-      },
-      {
-        name: "Country/IP blocking",
         rybbitValue: false,
         competitorValue: true,
       },
@@ -222,7 +168,6 @@ export const fathomComparisonData: ComparisonSection[] = [
         name: "Script size",
         rybbitValue: "18KB",
         competitorValue: "2KB",
-        tooltip: "Fathom is lighter, Rybbit includes more features",
       },
       {
         name: "Bot filtering",
@@ -235,24 +180,9 @@ export const fathomComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "Data export",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
         name: "Tech stack",
-        rybbitValue: "Next.js/ClickHouse",
-        competitorValue: "Go/MySQL",
-      },
-      {
-        name: "WordPress plugin",
-        rybbitValue: false,
-        competitorValue: true,
-      },
-      {
-        name: "Multiple domains",
-        rybbitValue: "Unlimited",
-        competitorValue: "50 sites",
+        rybbitValue: "Typescript/ClickHouse",
+        competitorValue: "PHP/Singlestore",
       },
     ],
   },
@@ -263,7 +193,6 @@ export const fathomComparisonData: ComparisonSection[] = [
         name: "Free tier",
         rybbitValue: "10k events",
         competitorValue: false,
-        tooltip: "Fathom has no free tier",
       },
       {
         name: "Entry price",
@@ -271,40 +200,9 @@ export const fathomComparisonData: ComparisonSection[] = [
         competitorValue: "$15/mo",
       },
       {
-        name: "Free trial",
-        rybbitValue: false,
-        competitorValue: "7 days",
-      },
-      {
-        name: "Data retention",
-        rybbitValue: "2-5+ years",
-        competitorValue: "Forever",
-      },
-      {
         name: "Customer support",
         rybbitValue: true,
         competitorValue: true,
-      },
-      {
-        name: "Company type",
-        rybbitValue: "Bootstrapped",
-        competitorValue: "Bootstrapped",
-      },
-      {
-        name: "Team size",
-        rybbitValue: "Small team",
-        competitorValue: "4 people",
-      },
-      {
-        name: "Organization support",
-        rybbitValue: true,
-        competitorValue: false,
-        tooltip: "Multi-organization management",
-      },
-      {
-        name: "Affiliate program",
-        rybbitValue: false,
-        competitorValue: "25% lifetime",
       },
     ],
   },

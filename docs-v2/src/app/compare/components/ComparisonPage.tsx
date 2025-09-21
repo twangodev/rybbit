@@ -15,7 +15,6 @@ export interface ComparisonFeature {
   name: string;
   rybbitValue: string | boolean;
   competitorValue: string | boolean;
-  tooltip?: string;
 }
 
 export interface ComparisonSection {
@@ -176,21 +175,7 @@ export function ComparisonPage({
                         key={`${sectionIndex}-${featureIndex}`}
                         className={featureIndex < section.features.length - 1 ? "border-b border-neutral-800" : ""}
                       >
-                        <td className="px-6 py-4 text-neutral-300 text-sm">
-                          {feature.name}
-                          {feature.tooltip && (
-                            <button className="ml-2 text-neutral-500 hover:text-neutral-400" title={feature.tooltip}>
-                              <svg className="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                            </button>
-                          )}
-                        </td>
+                        <td className="px-6 py-4 text-neutral-300 text-sm">{feature.name}</td>
                         <td className="px-6 py-4 text-center text-sm">
                           <div className="flex justify-center">{renderFeatureValue(feature.rybbitValue)}</div>
                         </td>

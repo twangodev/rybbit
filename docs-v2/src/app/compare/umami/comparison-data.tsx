@@ -8,7 +8,6 @@ export const umamiComparisonData: ComparisonSection[] = [
         name: "Simple dashboard",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Both offer clean, intuitive dashboards",
       },
       {
         name: "Real-time data",
@@ -36,12 +35,6 @@ export const umamiComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "Geographic data",
-        rybbitValue: "City-level",
-        competitorValue: "Country-level",
-        tooltip: "More detailed location data",
-      },
-      {
         name: "UTM tracking",
         rybbitValue: true,
         competitorValue: true,
@@ -50,7 +43,6 @@ export const umamiComparisonData: ComparisonSection[] = [
         name: "Custom events",
         rybbitValue: "With attributes",
         competitorValue: "With properties",
-        tooltip: "Both support rich event data",
       },
       {
         name: "Conversion goals",
@@ -66,67 +58,46 @@ export const umamiComparisonData: ComparisonSection[] = [
         name: "Session Replay",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Watch how users interact with your site",
       },
       {
         name: "Funnels",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Both support funnel analysis",
       },
       {
         name: "User journeys (Sankey)",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Journey reports available in Umami",
       },
       {
         name: "User profiles",
         rybbitValue: true,
-        competitorValue: false,
-        tooltip: "Detailed profiles with session history",
+        competitorValue: true,
       },
       {
         name: "Sessions tracking",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Both track user sessions",
       },
       {
         name: "Real-time globe view",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "3D visualization of live visitor activity",
       },
       {
         name: "Web Vitals dashboard",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Core Web Vitals by page and region",
       },
       {
         name: "Error tracking",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Browser error monitoring",
-      },
-      {
-        name: "Ecommerce tracking",
-        rybbitValue: true,
-        competitorValue: "Via events",
-        tooltip: "Umami can track revenue through custom events",
       },
       {
         name: "Retention reports",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Both track user retention",
-      },
-      {
-        name: "Insights/Segmentation",
-        rybbitValue: true,
-        competitorValue: true,
-        tooltip: "Both offer data segmentation",
       },
     ],
   },
@@ -139,7 +110,7 @@ export const umamiComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "GDPR compliant",
+        name: "GDPR/CCPA compliant",
         rybbitValue: true,
         competitorValue: true,
       },
@@ -157,7 +128,6 @@ export const umamiComparisonData: ComparisonSection[] = [
         name: "Daily rotating salt option",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Enhanced privacy with automatic identifier rotation",
       },
       {
         name: "Open source",
@@ -175,12 +145,6 @@ export const umamiComparisonData: ComparisonSection[] = [
     title: "User Experience",
     features: [
       {
-        name: "Beautiful UI",
-        rybbitValue: true,
-        competitorValue: true,
-        tooltip: "Both have clean, modern interfaces",
-      },
-      {
         name: "No training required",
         rybbitValue: true,
         competitorValue: true,
@@ -191,22 +155,7 @@ export const umamiComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "Email reports",
-        rybbitValue: false,
-        competitorValue: false,
-      },
-      {
-        name: "Slack/Discord integration",
-        rybbitValue: false,
-        competitorValue: false,
-      },
-      {
         name: "Live demo",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Dark mode",
         rybbitValue: true,
         competitorValue: true,
       },
@@ -221,12 +170,6 @@ export const umamiComparisonData: ComparisonSection[] = [
     title: "Performance & Technical",
     features: [
       {
-        name: "Script size",
-        rybbitValue: "18KB",
-        competitorValue: "<2KB",
-        tooltip: "Umami is lighter, Rybbit includes more features",
-      },
-      {
         name: "Real-time updates",
         rybbitValue: true,
         competitorValue: true,
@@ -237,20 +180,14 @@ export const umamiComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "Data export",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Tech stack",
-        rybbitValue: "Next.js/ClickHouse",
-        competitorValue: "Next.js/PostgreSQL",
-      },
-      {
-        name: "Database options",
+        name: "Self-hosted DB options",
         rybbitValue: "ClickHouse",
         competitorValue: "PostgreSQL/MySQL",
-        tooltip: "Umami supports multiple databases",
+      },
+      {
+        name: "Cloud DB options",
+        rybbitValue: "ClickHouse",
+        competitorValue: "ClickHouse",
       },
       {
         name: "Bot filtering",
@@ -271,18 +208,6 @@ export const umamiComparisonData: ComparisonSection[] = [
         name: "Data retention",
         rybbitValue: "2-5+ years",
         competitorValue: "Limited",
-        tooltip: "Umami has retention limitations",
-      },
-      {
-        name: "Data location",
-        rybbitValue: "EU (Hetzner)",
-        competitorValue: "Your choice",
-        tooltip: "Self-hosted gives you full control",
-      },
-      {
-        name: "Uptime SLA",
-        rybbitValue: false,
-        competitorValue: false,
       },
       {
         name: "Team collaboration",
@@ -293,7 +218,6 @@ export const umamiComparisonData: ComparisonSection[] = [
         name: "Organization support",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Multi-organization management",
       },
       {
         name: "Multiple websites",
@@ -304,7 +228,6 @@ export const umamiComparisonData: ComparisonSection[] = [
         name: "Cloud hosting option",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Both offer cloud and self-hosted options",
       },
     ],
   },
@@ -312,42 +235,14 @@ export const umamiComparisonData: ComparisonSection[] = [
     title: "Pricing & Support",
     features: [
       {
-        name: "Free tier",
-        rybbitValue: "10k events",
-        competitorValue: "Self-hosted free",
-        tooltip: "Umami is free when self-hosted",
-      },
-      {
-        name: "Cloud free tier",
-        rybbitValue: "10k events",
-        competitorValue: "Limited",
-        tooltip: "Umami Cloud has a free plan",
-      },
-      {
         name: "Entry price",
         rybbitValue: "$19/mo",
-        competitorValue: "Free or cloud pricing",
+        competitorValue: "$20/mo",
       },
       {
         name: "Pricing model",
         rybbitValue: "Events-based",
-        competitorValue: "Usage-based",
-      },
-      {
-        name: "Customer support",
-        rybbitValue: true,
-        competitorValue: "Community",
-        tooltip: "Umami offers community support",
-      },
-      {
-        name: "Documentation",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Company type",
-        rybbitValue: "Bootstrapped",
-        competitorValue: "Open source project",
+        competitorValue: "Usage-based + $20/mo",
       },
     ],
   },

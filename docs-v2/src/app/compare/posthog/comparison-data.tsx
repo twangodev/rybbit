@@ -13,13 +13,11 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Product analytics",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "Both offer event-based product analytics",
       },
       {
         name: "Simple dashboard",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "PostHog's interface is complex and developer-focused",
       },
       {
         name: "Real-time data",
@@ -60,7 +58,6 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Custom events",
         rybbitValue: "With attributes",
         competitorValue: "With properties",
-        tooltip: "Both support rich event data",
       },
       {
         name: "Conversion goals",
@@ -86,7 +83,6 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "User journeys (Sankey)",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "PostHog calls them Paths",
       },
       {
         name: "User profiles",
@@ -102,7 +98,6 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Real-time globe view",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Beautiful 3D visualization unique to Rybbit",
       },
       {
         name: "Web Vitals dashboard",
@@ -163,7 +158,6 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Cookie-free tracking",
         rybbitValue: true,
         competitorValue: "Optional",
-        tooltip: "PostHog uses cookies by default but can be configured",
       },
       {
         name: "GDPR compliant",
@@ -174,13 +168,11 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "No personal data collection",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "PostHog collects user profiles with PII",
       },
       {
         name: "Daily rotating salt option",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Enhanced privacy with automatic identifier rotation",
       },
       {
         name: "Open source",
@@ -190,13 +182,12 @@ export const posthogComparisonData: ComparisonSection[] = [
       {
         name: "Self-hostable",
         rybbitValue: true,
-        competitorValue: true,
+        competitorValue: "very difficult",
       },
       {
         name: "Privacy-first by default",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "PostHog requires configuration for privacy",
       },
     ],
   },
@@ -207,19 +198,16 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Beautiful UI",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "PostHog has a functional but complex interface",
       },
       {
         name: "No training required",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "PostHog has a steep learning curve",
       },
       {
         name: "Non-technical friendly",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "PostHog is built for developers",
       },
       {
         name: "Public dashboards",
@@ -227,24 +215,9 @@ export const posthogComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "Email reports",
-        rybbitValue: false,
-        competitorValue: true,
-      },
-      {
-        name: "Slack/Discord integration",
-        rybbitValue: false,
-        competitorValue: true,
-      },
-      {
         name: "Live demo",
         rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Dark mode",
-        rybbitValue: true,
-        competitorValue: true,
+        competitorValue: false,
       },
       {
         name: "Mobile app",
@@ -260,7 +233,6 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Script size",
         rybbitValue: "18KB",
         competitorValue: "~60KB",
-        tooltip: "PostHog's script is heavier due to more features",
       },
       {
         name: "Real-time updates",
@@ -273,14 +245,9 @@ export const posthogComparisonData: ComparisonSection[] = [
         competitorValue: true,
       },
       {
-        name: "Data export",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
         name: "Tech stack",
-        rybbitValue: "Next.js/ClickHouse",
-        competitorValue: "Django/ClickHouse",
+        rybbitValue: "TypeScript/ClickHouse",
+        competitorValue: "TypeScript/ClickHouse",
       },
       {
         name: "Bot filtering",
@@ -291,13 +258,11 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Bypasses ad blockers",
         rybbitValue: true,
         competitorValue: "With proxy",
-        tooltip: "PostHog requires reverse proxy setup",
       },
       {
         name: "Autocapture",
         rybbitValue: false,
         competitorValue: true,
-        tooltip: "Automatically captures all interactions",
       },
     ],
   },
@@ -308,17 +273,11 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Data retention",
         rybbitValue: "2-5+ years",
         competitorValue: "7 years",
-        tooltip: "PostHog offers longer retention on paid plans",
       },
       {
         name: "Data location",
-        rybbitValue: "EU (Hetzner)",
+        rybbitValue: "EU",
         competitorValue: "US/EU",
-      },
-      {
-        name: "Uptime SLA",
-        rybbitValue: false,
-        competitorValue: true,
       },
       {
         name: "Team collaboration",
@@ -334,62 +293,6 @@ export const posthogComparisonData: ComparisonSection[] = [
         name: "Multiple websites",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "PostHog calls them projects",
-      },
-      {
-        name: "Data residency options",
-        rybbitValue: false,
-        competitorValue: true,
-      },
-    ],
-  },
-  {
-    title: "Pricing & Support",
-    features: [
-      {
-        name: "Free tier",
-        rybbitValue: "10k events",
-        competitorValue: "1M events",
-        tooltip: "PostHog has a very generous free tier",
-      },
-      {
-        name: "Entry price",
-        rybbitValue: "$19/mo",
-        competitorValue: "$0/mo",
-        tooltip: "PostHog's free tier covers most small projects",
-      },
-      {
-        name: "Pricing model",
-        rybbitValue: "Events-based",
-        competitorValue: "Usage-based",
-        tooltip: "PostHog charges per product per usage",
-      },
-      {
-        name: "Predictable pricing",
-        rybbitValue: true,
-        competitorValue: false,
-        tooltip: "PostHog's multi-product pricing can be complex",
-      },
-      {
-        name: "Customer support",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Documentation",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Community",
-        rybbitValue: "Growing",
-        competitorValue: "Large",
-      },
-      {
-        name: "Company type",
-        rybbitValue: "Bootstrapped",
-        competitorValue: "VC-funded",
-        tooltip: "PostHog raised $27M+",
       },
     ],
   },

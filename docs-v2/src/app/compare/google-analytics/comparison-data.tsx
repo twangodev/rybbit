@@ -8,7 +8,6 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "GDPR compliant without cookie banner",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "No cookies means no consent banners needed",
       },
       {
         name: "CCPA compliant",
@@ -19,7 +18,6 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "No personal data collection",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "We never track personally identifiable information",
       },
       {
         name: "Cookie-free tracking",
@@ -30,13 +28,11 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "100% data ownership",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Your data is never shared or used for advertising",
       },
       {
         name: "Daily rotating salt option",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Enhanced privacy with automatic identifier rotation",
       },
     ],
   },
@@ -52,13 +48,11 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Real-time data",
         rybbitValue: true,
         competitorValue: true,
-        tooltip: "See visitor activity as it happens",
       },
       {
         name: "No data sampling",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Google Analytics samples data on high-traffic sites",
       },
       {
         name: "Bot filtering",
@@ -69,13 +63,11 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Bypasses ad blockers",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Get accurate data from all visitors",
       },
       {
         name: "Data retention",
         rybbitValue: "2-5+ years",
         competitorValue: "2-14 months",
-        tooltip: "Keep your historical data much longer",
       },
     ],
   },
@@ -91,13 +83,11 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Simple, intuitive interface",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Anyone on your team can use it immediately",
       },
       {
         name: "Real-time globe view",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "3D globe showing live visitor activity",
       },
       {
         name: "Web Vitals dashboard",
@@ -123,7 +113,6 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "User journeys (Sankey)",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Visualize user flow through your site",
       },
       {
         name: "UTM tracking",
@@ -134,7 +123,6 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Public dashboards",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Share your stats publicly if you choose",
       },
     ],
   },
@@ -145,25 +133,21 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Session Replay",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Watch how users interact with your site",
       },
       {
         name: "User profiles",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Detailed profiles with session history",
       },
       {
         name: "Sessions page",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "View all sessions with pageviews and events",
       },
       {
         name: "Error tracking",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Browser error tracking (sourcemaps coming soon)",
       },
       {
         name: "Organization support",
@@ -194,7 +178,6 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "No training required",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Works out of the box with minimal configuration",
       },
       {
         name: "One-line installation",
@@ -205,13 +188,11 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Self-hostable",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Open source with self-hosting option",
       },
       {
         name: "Modern tech stack",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Built with Next.js, TypeScript, and ClickHouse",
       },
       {
         name: "Custom dashboards",
@@ -227,7 +208,6 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Human customer support",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Real people, not chatbots",
       },
       {
         name: "Open source (AGPL v3)",
@@ -238,7 +218,6 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         name: "Live demo available",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "Try with real data before signing up",
       },
     ],
   },
