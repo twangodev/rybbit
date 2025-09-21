@@ -1,10 +1,10 @@
-import { CheckCircle, CircleMinus, CircleX } from "lucide-react";
-import { TrackedButton } from "../../../components/TrackedButton";
-import Link from "next/link";
-import Image from "next/image";
-import { cn } from "../../../lib/utils";
+import { CheckCircle, CircleMinus } from "lucide-react";
 import { Tilt_Warp } from "next/font/google";
+import Image from "next/image";
+import Link from "next/link";
 import React from "react";
+import { TrackedButton } from "../../../components/TrackedButton";
+import { cn } from "../../../lib/utils";
 
 const tilt_wrap = Tilt_Warp({
   subsets: ["latin"],

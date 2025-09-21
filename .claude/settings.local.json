@@ -39,7 +39,15 @@
       "WebFetch(domain:usefathom.com)",
       "WebSearch",
       "WebFetch(domain:umami.is)",
-      "WebFetch(domain:posthog.com)"
+      "WebFetch(domain:posthog.com)",
+      "Bash(for dir in fathom plausible simpleanalytics posthog umami matomo)",
+      "Bash(do echo \"Processing $dir\")",
+      "Bash(done)",
+      "Bash(lsof:*)",
+      "Bash(for page in google-analytics cloudflare-analytics fathom plausible simpleanalytics posthog umami matomo)",
+      "Bash(do)",
+      "Bash(echo:*)",
+      "Read(//tmp/**)"
     ]
   },
   "enableAllProjectMcpServers": false
