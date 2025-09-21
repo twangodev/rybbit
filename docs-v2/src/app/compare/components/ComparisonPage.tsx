@@ -53,10 +53,11 @@ export function ComparisonPage({
     <div className="flex flex-col items-center justify-center overflow-x-hidden pt-16 md:pt-24">
       <div
         className={cn(
-          "absolute inset-0 -top-16 md:-top-24",
+          "absolute inset-0 -top-32 md:-top-48",
           "[background-size:40px_40px]",
           "[background-image:linear-gradient(to_right,#262626_1px,transparent_1px),linear-gradient(to_bottom,#262626_1px,transparent_1px)]",
-          "[mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+          "[mask-image:linear-gradient(to_bottom,black,transparent_80%),linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]",
+          "[mask-composite:intersect]"
         )}
       />
       <div className="relative flex flex-col py-8">
