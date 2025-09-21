@@ -87,16 +87,6 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/compare/matomo" className="text-neutral-400 hover:text-white transition-colors">
-                  vs Matomo
-                </Link>
-              </li>
-              <li>
-                <Link href="/compare/posthog" className="text-neutral-400 hover:text-white transition-colors">
-                  vs PostHog
-                </Link>
-              </li>
-              <li>
                 <Link href="/compare/plausible" className="text-neutral-400 hover:text-white transition-colors">
                   vs Plausible
                 </Link>
@@ -107,13 +97,23 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/compare/fathom" className="text-neutral-400 hover:text-white transition-colors">
+                  vs Fathom
+                </Link>
+              </li>
+              <li>
                 <Link href="/compare/simple-analytics" className="text-neutral-400 hover:text-white transition-colors">
                   vs Simple Analytics
                 </Link>
               </li>
               <li>
-                <Link href="/compare/fathom" className="text-neutral-400 hover:text-white transition-colors">
-                  vs Fathom
+                <Link href="/compare/matomo" className="text-neutral-400 hover:text-white transition-colors">
+                  vs Matomo
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare/posthog" className="text-neutral-400 hover:text-white transition-colors">
+                  vs PostHog
                 </Link>
               </li>
             </ul>
