@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs Plausible Analytics',
     description: 'Compare Rybbit with Plausible Analytics. Learn about features, pricing and technical differences.',
-    images: '/compare-og/plausible/image.png',
+    images: '/api/og?page=plausible',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs Plausible Analytics',
     description: 'Compare Rybbit with Plausible Analytics. Learn about features, pricing and technical differences.',
-    images: '/compare-og/plausible/image.png',
+    images: '/api/og?page=plausible',
   },
 };
 

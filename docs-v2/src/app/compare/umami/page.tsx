@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs Umami',
     description: 'Compare Rybbit with Umami Analytics. Discover differences in features, hosting options and pricing.',
-    images: '/compare-og/umami/image.png',
+    images: '/api/og?page=umami',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs Umami',
     description: 'Compare Rybbit with Umami Analytics. Discover differences in features, hosting options and pricing.',
-    images: '/compare-og/umami/image.png',
+    images: '/api/og?page=umami',
   },
 };
 

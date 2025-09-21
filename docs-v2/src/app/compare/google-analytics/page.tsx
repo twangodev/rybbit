@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs Google Analytics',
     description: 'Privacy-first analytics alternative to Google Analytics. See why developers choose Rybbit over GA4.',
-    images: '/compare-og/google-analytics/image.png',
+    images: '/api/og?page=google-analytics',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs Google Analytics',
     description: 'Privacy-first analytics alternative to Google Analytics. See why developers choose Rybbit over GA4.',
-    images: '/compare-og/google-analytics/image.png',
+    images: '/api/og?page=google-analytics',
   },
 };
 

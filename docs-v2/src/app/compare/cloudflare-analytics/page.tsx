@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs Cloudflare Analytics',
     description: 'Compare Rybbit with Cloudflare Analytics. Learn about features, pricing and privacy differences.',
-    images: '/compare-og/cloudflare-analytics/image.png',
+    images: '/api/og?page=cloudflare-analytics',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs Cloudflare Analytics',
     description: 'Compare Rybbit with Cloudflare Analytics. Learn about features, pricing and privacy differences.',
-    images: '/compare-og/cloudflare-analytics/image.png',
+    images: '/api/og?page=cloudflare-analytics',
   },
 };
 

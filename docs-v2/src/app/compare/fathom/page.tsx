@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs Fathom Analytics',
     description: 'Compare Rybbit with Fathom Analytics. Discover the differences in features, pricing and approach.',
-    images: '/compare-og/fathom/image.png',
+    images: '/api/og?page=fathom',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs Fathom Analytics',
     description: 'Compare Rybbit with Fathom Analytics. Discover the differences in features, pricing and approach.',
-    images: '/compare-og/fathom/image.png',
+    images: '/api/og?page=fathom',
   },
 };
 

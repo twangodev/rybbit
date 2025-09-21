@@ -1,7 +1,9 @@
 import { generateOGImage } from 'fumadocs-ui/og';
-import { notFound } from 'next/navigation';
+import { NextRequest } from 'next/server';
 
-const comparisonPages = {
+export const runtime = 'edge';
+
+const comparisonPages: Record<string, { title: string; description: string }> = {
   'google-analytics': {
     title: 'Rybbit vs Google Analytics',
     description: 'Privacy-first analytics alternative to Google Analytics. See why developers choose Rybbit over GA4.',
@@ -36,29 +38,24 @@ const comparisonPages = {
   },
 };
 
-type RouteContext<T extends string> = {
-  params: Promise<{ slug: string[] }>;
-};
+export async function GET(request: NextRequest) {
+  const { searchParams } = request.nextUrl;
+  const page = searchParams.get('page');
 
-export async function GET(
-  _req: Request,
-  { params }: RouteContext<'/compare-og/[...slug]'>,
-) {
-  const { slug } = await params;
-  const pageSlug = slug[0];
+  if (!page || !comparisonPages[page]) {
+    // Return a default OG image
+    return generateOGImage({
+      title: 'Rybbit Analytics',
+      description: 'Privacy-first web analytics platform',
+      site: 'Rybbit',
+    });
+  }
 
-  const pageData = comparisonPages[pageSlug as keyof typeof comparisonPages];
-  if (!pageData) notFound();
+  const pageData = comparisonPages[page];
 
   return generateOGImage({
     title: pageData.title,
     description: pageData.description,
     site: 'Rybbit Analytics',
   });
-}
-
-export function generateStaticParams() {
-  return Object.keys(comparisonPages).map((page) => ({
-    slug: [page, 'image.png'],
-  }));
 }

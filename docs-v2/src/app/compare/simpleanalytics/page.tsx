@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs Simple Analytics',
     description: 'Compare Rybbit with Simple Analytics. See the differences in features, pricing and implementation.',
-    images: '/compare-og/simpleanalytics/image.png',
+    images: '/api/og?page=simpleanalytics',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs Simple Analytics',
     description: 'Compare Rybbit with Simple Analytics. See the differences in features, pricing and implementation.',
-    images: '/compare-og/simpleanalytics/image.png',
+    images: '/api/og?page=simpleanalytics',
   },
 };
 

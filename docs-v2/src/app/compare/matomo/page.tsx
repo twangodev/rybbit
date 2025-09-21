@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs Matomo',
     description: 'Compare Rybbit with Matomo (Piwik). Learn about features, pricing and self-hosting options.',
-    images: '/compare-og/matomo/image.png',
+    images: '/api/og?page=matomo',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs Matomo',
     description: 'Compare Rybbit with Matomo (Piwik). Learn about features, pricing and self-hosting options.',
-    images: '/compare-og/matomo/image.png',
+    images: '/api/og?page=matomo',
   },
 };
 

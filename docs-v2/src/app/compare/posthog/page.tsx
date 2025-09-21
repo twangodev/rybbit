@@ -9,13 +9,13 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Rybbit vs PostHog',
     description: 'Compare Rybbit with PostHog. Privacy-focused analytics vs product analytics platform.',
-    images: '/compare-og/posthog/image.png',
+    images: '/api/og?page=posthog',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'Rybbit vs PostHog',
     description: 'Compare Rybbit with PostHog. Privacy-focused analytics vs product analytics platform.',
-    images: '/compare-og/posthog/image.png',
+    images: '/api/og?page=posthog',
   },
 };
 
