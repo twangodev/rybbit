@@ -32,6 +32,12 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         competitorValue: false,
         tooltip: "Your data is never shared or used for advertising",
       },
+      {
+        name: "Daily rotating salt option",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Enhanced privacy with automatic identifier rotation",
+      },
     ],
   },
   {
@@ -39,14 +45,13 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
     features: [
       {
         name: "Script size",
-        rybbitValue: "<1KB",
-        competitorValue: "~45KB",
-        tooltip: "45x smaller than Google Analytics",
+        rybbitValue: "18KB",
+        competitorValue: "371KB",
       },
       {
         name: "Real-time data",
         rybbitValue: true,
-        competitorValue: "24-48h delay",
+        competitorValue: true,
         tooltip: "See visitor activity as it happens",
       },
       {
@@ -68,44 +73,60 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
       },
       {
         name: "Data retention",
-        rybbitValue: "Forever",
+        rybbitValue: "2-5+ years",
         competitorValue: "2-14 months",
-        tooltip: "Never lose your historical data",
+        tooltip: "Keep your historical data much longer",
       },
     ],
   },
   {
-    title: "Features & Usability",
+    title: "Analytics Features",
     features: [
       {
-        name: "Session Replay",
+        name: "Web analytics dashboard",
         rybbitValue: true,
-        competitorValue: false,
-        tooltip: "Watch how users interact with your site",
+        competitorValue: true,
       },
       {
-        name: "Simple, intuitive dashboard",
-        rybbitValue: true,
-        competitorValue: false,
-      },
-      {
-        name: "No training required",
+        name: "Simple, intuitive interface",
         rybbitValue: true,
         competitorValue: false,
         tooltip: "Anyone on your team can use it immediately",
       },
       {
-        name: "Email reports",
+        name: "Real-time globe view",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "3D globe showing live visitor activity",
+      },
+      {
+        name: "Web Vitals dashboard",
         rybbitValue: true,
         competitorValue: true,
       },
       {
-        name: "Custom events",
+        name: "Custom events with attributes",
         rybbitValue: true,
         competitorValue: true,
       },
       {
-        name: "Conversion tracking",
+        name: "Conversion goals",
+        rybbitValue: true,
+        competitorValue: true,
+      },
+      {
+        name: "Funnels",
+        rybbitValue: true,
+        competitorValue: true,
+      },
+      {
+        name: "User journeys (Sankey)",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Visualize user flow through your site",
+      },
+      {
+        name: "UTM tracking",
         rybbitValue: true,
         competitorValue: true,
       },
@@ -118,7 +139,89 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
     ],
   },
   {
-    title: "Support & Pricing",
+    title: "Advanced Features",
+    features: [
+      {
+        name: "Session Replay",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Watch how users interact with your site",
+      },
+      {
+        name: "User profiles",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Detailed profiles with session history",
+      },
+      {
+        name: "Sessions page",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "View all sessions with pageviews and events",
+      },
+      {
+        name: "Error tracking",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Browser error tracking (sourcemaps coming soon)",
+      },
+      {
+        name: "Organization support",
+        rybbitValue: true,
+        competitorValue: true,
+      },
+      {
+        name: "Team collaboration",
+        rybbitValue: true,
+        competitorValue: true,
+      },
+      {
+        name: "Geolocation (city-level)",
+        rybbitValue: true,
+        competitorValue: true,
+      },
+      {
+        name: "Device & browser tracking",
+        rybbitValue: true,
+        competitorValue: true,
+      },
+    ],
+  },
+  {
+    title: "Setup & Implementation",
+    features: [
+      {
+        name: "No training required",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Works out of the box with minimal configuration",
+      },
+      {
+        name: "One-line installation",
+        rybbitValue: true,
+        competitorValue: false,
+      },
+      {
+        name: "Self-hostable",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Open source with self-hosting option",
+      },
+      {
+        name: "Modern tech stack",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Built with Next.js, TypeScript, and ClickHouse",
+      },
+      {
+        name: "Custom dashboards",
+        rybbitValue: false,
+        competitorValue: true,
+      },
+    ],
+  },
+  {
+    title: "Other",
     features: [
       {
         name: "Human customer support",
@@ -127,24 +230,15 @@ export const googleAnalyticsComparisonData: ComparisonSection[] = [
         tooltip: "Real people, not chatbots",
       },
       {
-        name: "Transparent pricing",
+        name: "Open source (AGPL v3)",
         rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Free tier (10k events/month)",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "No hidden costs",
-        rybbitValue: true,
-        competitorValue: true,
-      },
-      {
-        name: "Open source",
-        rybbitValue: false,
         competitorValue: false,
+      },
+      {
+        name: "Live demo available",
+        rybbitValue: true,
+        competitorValue: false,
+        tooltip: "Try with real data before signing up",
       },
     ],
   },

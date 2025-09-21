@@ -26,8 +26,8 @@ Modern tech stack with full stack typescript (Next.js/fastify) + clickhouse
 ## Pricing
 
 Free - 10k events per month with only main dashboard
-$19/m - $249/m - 100k to 10m event limit with more team members, more websites and almost every other features except for session replay
-$39/m+ - $499/m - 100k to 10m event limit with unlimited team members, websites, and session replay
+$19/m - $249/m - 100k to 10m event limit with more team members, more websites and almost every other features except for session replay. 2 years data retention
+$39/m+ - $499/m - 100k to 10m event limit with unlimited team members, websites, and session replay. 5+ year retention
 
 On the self hosted version, almost everything is available for free
 
@@ -59,3 +59,5 @@ So our target audience is basically is people who would plausible/umami/GA/cloud
 - open source and self-hostable
 - very modern (launched in early 2025)
 - has live demo on real data
+- no email reports yet
+- for cloud version data is stored in EU hetzner server but the actual company is american

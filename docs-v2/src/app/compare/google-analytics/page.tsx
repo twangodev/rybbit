@@ -6,7 +6,6 @@ export default function GoogleAnalytics() {
   return (
     <ComparisonPage
       competitorName="Google Analytics"
-      competitorLogo={<span className="text-white font-bold">GA</span>}
       sections={googleAnalyticsComparisonData}
       comparisonContent={<GoogleAnalyticsComparisonContent />}
     />

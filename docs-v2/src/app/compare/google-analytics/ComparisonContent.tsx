@@ -4,93 +4,96 @@ export function GoogleAnalyticsComparisonContent() {
       <h2 className="text-2xl md:text-3xl font-bold text-white mb-6">Understanding the Key Differences</h2>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">Privacy First, Not Privacy Theater</h3>
+        <h3 className="text-xl text-white font-medium">Privacy First, Not Privacy Theater</h3>
         <p className="leading-relaxed">
           The fundamental difference between Rybbit and Google Analytics lies in our approach to privacy. While Google
           Analytics collects vast amounts of personal data requiring cookie consent banners to comply with GDPR and
           CCPA, Rybbit is built privacy-first. We don't use cookies, don't track personal information, and are compliant
-          by default—meaning you can finally remove those annoying cookie banners while still getting actionable
-          insights. Your visitors' privacy is respected, and you stay on the right side of privacy regulations without
-          any extra work.
+          by default. This means you can finally remove those annoying cookie banners while still getting powerful
+          insights. We identify users with a privacy-friendly hash and offer daily rotating salt for enhanced anonymity.
+          Your visitors' privacy is respected, and you stay compliant without any extra work.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">Simplicity Without Sacrifice</h3>
+        <h3 className="text-xl text-white font-medium">The Sweet Spot Between Simple and Powerful</h3>
         <p className="leading-relaxed">
           Google Analytics 4 has become notoriously complex, often requiring dedicated specialists or extensive training
-          to extract meaningful insights. Its interface is cluttered with hundreds of reports and metrics that most
-          businesses never use. Rybbit takes the opposite approach: we provide a clean, intuitive dashboard that anyone
-          on your team can understand in seconds. You get all the essential metrics—visitors, page views, sources,
-          devices, and conversions—without drowning in complexity. It's analytics that just works, no PhD required.
+          to extract meaningful insights. Meanwhile, simpler alternatives may lack the advanced features you need.
+          Rybbit fills this gap perfectly: we provide comprehensive features including session replay, user profiles,
+          funnels, and journey visualization while maintaining an intuitive interface that anyone can use. Everything
+          works out of the box with minimal configuration. It's the best of both worlds: powerful analytics without the
+          complexity.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">Lightning Fast, Featherweight Impact</h3>
+        <h3 className="text-xl text-white font-medium">Built for Performance</h3>
         <p className="leading-relaxed">
           Website performance directly impacts user experience, SEO rankings, and conversion rates. Google Analytics'
-          tracking script weighs around 45KB and makes multiple network requests, measurably slowing down your site.
-          Rybbit's script is less than 1KB—that's 45 times smaller—ensuring your analytics never compromise your site's
-          performance. Plus, our script loads from a global CDN, making it blazing fast for visitors anywhere in the
-          world. Better performance means happier visitors and better search rankings.
+          tracking script can significantly slow down your site with its large size and multiple network requests.
+          Rybbit's lightweight script loads from a global CDN, ensuring minimal impact on your site's performance while
+          still delivering powerful features like session replay and error tracking. Better performance means happier
+          visitors and improved search rankings.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">See Everything, Forever</h3>
+        <h3 className="text-xl text-white font-medium">Real-Time, Accurate Data That Lasts</h3>
         <p className="leading-relaxed">
           Google Analytics has significant accuracy issues that most users don't realize. It samples data on
           high-traffic sites (showing you only a fraction of actual visits), has 24-48 hour delays in reporting, and
           automatically deletes your data after 2-14 months. Many ad blockers also block Google Analytics, meaning
           you're missing 15-30% of your visitors. Rybbit gives you 100% accurate, real-time data with no sampling ever.
-          We bypass most ad blockers through ethical tracking methods, and your data is retained forever—it's your data,
-          after all.
+          We're less prone to ad blockers, and your data is retained for years. See everything that happens on your
+          site, when it happens.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">Beyond Analytics: Session Replay</h3>
+        <h3 className="text-xl text-white font-medium">Beyond Basic Analytics</h3>
         <p className="leading-relaxed">
-          While Google Analytics tells you what happened on your site through numbers and charts, Rybbit goes further by
-          showing you exactly how users interact with your pages through session replay. Watch real user sessions to
-          understand behavior patterns, identify usability issues, debug problems, and improve conversion rates. It's
-          like having a usability testing lab built into your analytics—something Google Analytics simply doesn't offer.
-          See not just the "what" but the "why" behind user behavior.
+          While Google Analytics shows you what happened through numbers and charts, Rybbit provides a comprehensive
+          suite of advanced features. Watch real user sessions with session replay, track user journeys with Sankey
+          diagrams, analyze conversion funnels, monitor Web Vitals by page and region, track browser errors, and build
+          detailed user profiles with session history. Our real-time globe view adds a visual element to see live
+          visitor activity. Features like public dashboards and organization support make Rybbit perfect for agencies
+          and teams. It's not just analytics but a complete understanding of your users.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">Your Data, Your Rules</h3>
+        <h3 className="text-xl text-white font-medium">Open Source and Self-Hostable</h3>
         <p className="leading-relaxed">
-          With Google Analytics, your website's data becomes part of Google's massive advertising ecosystem. They use
-          machine learning on your data, potentially share insights with advertisers, and you have no control over how
-          it's ultimately used. Rybbit operates on a simple principle: your data belongs to you. We never share it,
-          never use it for advertising, and never analyze it for any purpose other than showing you your own analytics.
-          Our business model is transparent—we charge for our service, not for access to your data.
+          Google Analytics is a closed system where you have no control or visibility into how your data is processed.
+          Rybbit is open source (AGPL v3) with thousands of stars on GitHub, meaning you can inspect our code,
+          contribute improvements, or even self-host for complete control. On the self-hosted version, almost all
+          features are available for free. This transparency and flexibility is impossible with Google Analytics.
+          Whether you choose our cloud service or self-host, you maintain full ownership and control of your analytics
+          infrastructure.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">Real Support from Real People</h3>
+        <h3 className="text-xl text-white font-medium">Transparent Business Model</h3>
         <p className="leading-relaxed">
-          Try getting help with Google Analytics and you'll find yourself lost in forums, outdated documentation, and AI
-          chatbots. As a free product, Google provides no real customer support. With Rybbit, you get responsive support
-          from actual humans who care about your success. Whether you need help with implementation, have questions
-          about your data, or want advice on improving your metrics, we're here to help. You're not just a user; you're
-          a valued customer.
+          Google Analytics is "free" because you're the product. Your data feeds their advertising empire. Rybbit has a
+          transparent, sustainable business model: we charge fair prices for our service. Starting at just $19/month for
+          100k events after a generous free tier (10k events), scaling up to $499/month for 10M events with all features
+          including session replay. No hidden costs, no data mining, no advertising network. We're independently
+          bootstrapped and aligned with your success, not venture capital demands. You know exactly what you're paying
+          for and why.
         </p>
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-xl text-white">Made for Modern Websites</h3>
+        <h3 className="text-xl text-white font-medium">Try Before You Buy</h3>
         <p className="leading-relaxed">
-          Google Analytics was designed in a different era and it shows. Its complex implementation, heavy scripts, and
-          privacy-invasive tracking are increasingly incompatible with modern web standards and user expectations.
-          Rybbit is built for today's web: privacy-conscious, performance-optimized, and user-friendly. If you believe
-          in building a better, more ethical web while still understanding your audience, Rybbit is the clear choice.
-          Join thousands of websites that have already made the switch to analytics that respects both you and your
-          visitors.
+          Unlike Google Analytics where you need to implement tracking before seeing any interface, Rybbit offers a live
+          demo with real data so you can explore all features immediately. See our beautiful UI, test the session
+          replay, and explore the dashboards all before signing up. When you're ready, implementation is just one line
+          of code with no complex configuration needed. Everything works out of the box. Join thousands of websites that
+          have already made the switch to analytics that respects both you and your visitors.
         </p>
       </div>
     </div>

@@ -75,32 +75,45 @@ export function Footer() {
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/compare/google-analytics" className="text-neutral-400 hover:text-white transition-colors">
-                  Google Analytics
+                  vs Google Analytics
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/compare/cloudflare-analytics"
+                  className="text-neutral-400 hover:text-white transition-colors"
+                >
+                  vs Cloudflare Analytics
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare/matomo" className="text-neutral-400 hover:text-white transition-colors">
+                  vs Matomo
                 </Link>
               </li>
               <li>
                 <Link href="/compare/posthog" className="text-neutral-400 hover:text-white transition-colors">
-                  PostHog
+                  vs PostHog
                 </Link>
               </li>
               <li>
                 <Link href="/compare/plausible" className="text-neutral-400 hover:text-white transition-colors">
-                  Plausible
+                  vs Plausible
                 </Link>
               </li>
               <li>
                 <Link href="/compare/umami" className="text-neutral-400 hover:text-white transition-colors">
-                  Umami
+                  vs Umami
                 </Link>
               </li>
               <li>
                 <Link href="/compare/simple-analytics" className="text-neutral-400 hover:text-white transition-colors">
-                  Simple Analytics
+                  vs Simple Analytics
                 </Link>
               </li>
               <li>
                 <Link href="/compare/fathom" className="text-neutral-400 hover:text-white transition-colors">
-                  Fathom
+                  vs Fathom
                 </Link>
               </li>
             </ul>
