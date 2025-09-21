@@ -102,7 +102,7 @@ export function Footer() {
                 </Link>
               </li>
               <li>
-                <Link href="/compare/simple-analytics" className="text-neutral-400 hover:text-white transition-colors">
+                <Link href="/compare/simpleanalytics" className="text-neutral-400 hover:text-white transition-colors">
                   vs Simple Analytics
                 </Link>
               </li>
