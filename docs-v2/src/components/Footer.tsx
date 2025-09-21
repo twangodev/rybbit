@@ -71,7 +71,44 @@ export function Footer() {
 
           {/* Product Links */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white">Product</h3>
+            <h3 className="text-sm font-semibold text-white">Comparisons</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <Link href="/compare/google-analytics" className="text-neutral-400 hover:text-white transition-colors">
+                  Google Analytics
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare/posthog" className="text-neutral-400 hover:text-white transition-colors">
+                  PostHog
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare/plausible" className="text-neutral-400 hover:text-white transition-colors">
+                  Plausible
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare/umami" className="text-neutral-400 hover:text-white transition-colors">
+                  Umami
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare/simple-analytics" className="text-neutral-400 hover:text-white transition-colors">
+                  Simple Analytics
+                </Link>
+              </li>
+              <li>
+                <Link href="/compare/fathom" className="text-neutral-400 hover:text-white transition-colors">
+                  Fathom
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Resources */}
+          <div className="space-y-4">
+            <h3 className="text-sm font-semibold text-white">Resources</h3>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/docs" className="text-neutral-400 hover:text-white transition-colors">
@@ -83,33 +120,6 @@ export function Footer() {
                   Pricing
                 </Link>
               </li>
-              <li>
-                <a
-                  href="https://app.rybbit.io"
-                  className="text-neutral-400 hover:text-white transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Login
-                </a>
-              </li>
-              <li>
-                <a
-                  href="https://app.rybbit.io/signup"
-                  className="text-neutral-400 hover:text-white transition-colors"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  Sign Up
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Resources */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-semibold text-white">Resources</h3>
-            <ul className="space-y-2 text-sm">
               <li>
                 <Link href="/blog" className="text-neutral-400 hover:text-white transition-colors">
                   Blog
