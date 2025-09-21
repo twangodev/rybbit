@@ -51,20 +51,30 @@ export function ComparisonPage({
 
   return (
     <div className="flex flex-col items-center justify-center overflow-x-hidden pt-16 md:pt-24">
-      <div className="flex flex-col py-8">
+      <div
+        className={cn(
+          "absolute inset-0 -top-16 md:-top-24",
+          "[background-size:40px_40px]",
+          "[background-image:linear-gradient(to_right,#262626_1px,transparent_1px),linear-gradient(to_bottom,#262626_1px,transparent_1px)]",
+          "[mask-image:radial-gradient(ellipse_at_center,black,transparent_70%)]"
+        )}
+      />
+      <div className="relative flex flex-col py-8">
+        {/* Grid background with fade */}
+
         <h1
           className={cn(
-            "text-4xl md:text-5xl lg:text-7xl font-medium  px-4 tracking-tight max-w-4xl text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-100 to-gray-400",
+            "relative z-10 text-4xl md:text-5xl lg:text-7xl font-medium  px-4 tracking-tight max-w-4xl text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-gray-100 to-gray-400",
             tilt_wrap.className
           )}
         >
           Rybbit vs. {competitorName}
         </h1>
-        <h2 className="text-base md:text-xl pt-4 md:pt-6 px-4 tracking-tight max-w-4xl text-center text-neutral-300 font-light">
+        <h2 className="relative z-10 text-base md:text-xl pt-4 md:pt-6 px-4 tracking-tight max-w-4xl text-center text-neutral-300 font-light">
           Compare the key features of Rybbit and {competitorName}.
         </h2>
 
-        <div className="flex flex-col items-center my-8 md:my-10">
+        <div className="relative z-10 flex flex-col items-center my-8 md:my-10">
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 text-base md:text-lg px-4">
             <Link
               href="https://app.rybbit.io/signup"
@@ -125,7 +135,7 @@ export function ComparisonPage({
         </div>
       </div> */}
 
-      <div className="w-full max-w-5xl mx-auto mt-12 px-4">
+      <div className="w-full max-w-5xl mx-auto mt-12 px-4 z-10">
         <h2 className="text-2xl md:text-3xl font-semibold mb-4 md:mb-6 text-left">
           Why choose Rybbit over {competitorName}?
         </h2>
