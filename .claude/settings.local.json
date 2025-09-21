@@ -36,7 +36,10 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:plausible.io)",
       "WebFetch(domain:www.simpleanalytics.com)",
-      "WebFetch(domain:usefathom.com)"
+      "WebFetch(domain:usefathom.com)",
+      "WebSearch",
+      "WebFetch(domain:umami.is)",
+      "WebFetch(domain:posthog.com)"
     ]
   },
   "enableAllProjectMcpServers": false

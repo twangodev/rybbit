@@ -209,7 +209,6 @@ export const cloudflareAnalyticsComparisonData: ComparisonSection[] = [
         name: "Open source",
         rybbitValue: true,
         competitorValue: false,
-        tooltip: "AGPL v3 licensed with 8000+ GitHub stars",
       },
     ],
   },
