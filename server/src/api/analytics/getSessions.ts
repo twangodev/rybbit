@@ -34,6 +34,7 @@ export type GetSessionsResponse = {
   events: number;
   errors: number;
   outbound: number;
+  ip: string;
 }[];
 
 export interface GetSessionsRequest {
@@ -89,7 +90,8 @@ export async function getSessions(req: FastifyRequest<GetSessionsRequest>, res: 
           countIf(type = 'pageview') AS pageviews,
           countIf(type = 'custom_event') AS events,
           countIf(type = 'error') AS errors,
-          countIf(type = 'outbound') AS outbound
+          countIf(type = 'outbound') AS outbound,
+          argMax(ip, timestamp) AS ip
       FROM events
       WHERE
           site_id = {siteId:Int32}

@@ -34,6 +34,7 @@ export type GetSessionsResponse = {
   events: number;
   errors: number;
   outbound: number;
+  ip: string;
 }[];
 
 export function useGetSessionsInfinite(userId?: string) {
@@ -103,6 +104,7 @@ export interface SessionDetails {
   pageviews: number;
   entry_page: string;
   exit_page: string;
+  ip: string;
 }
 
 export interface SessionEventProps {
