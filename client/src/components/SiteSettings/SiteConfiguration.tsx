@@ -66,6 +66,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
     trackUrlParams: siteMetadata.trackUrlParams ?? true,
     trackInitialPageView: siteMetadata.trackInitialPageView ?? true,
     trackSpaNavigation: siteMetadata.trackSpaNavigation ?? true,
+    trackIp: siteMetadata.trackIp ?? false,
   });
 
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
@@ -164,6 +165,15 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "blockBots",
       enabledMessage: "Bot blocking enabled",
       disabledMessage: "Bot blocking disabled",
+    },
+    {
+      id: "trackIp",
+      label: "Track IP Address",
+      description: "Track the IP address of the user. This is definitely not GDPR compliant!",
+      value: toggleStates.trackIp,
+      key: "trackIp",
+      enabledMessage: "IP address tracking enabled",
+      disabledMessage: "IP address tracking disabled",
     },
   ];
 

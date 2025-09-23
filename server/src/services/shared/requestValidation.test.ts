@@ -17,6 +17,7 @@ interface SiteConfigData {
   trackUrlParams: boolean;
   trackInitialPageView: boolean;
   trackSpaNavigation: boolean;
+  trackIp: boolean;
 }
 
 // Mock dependencies
@@ -83,6 +84,7 @@ describe("validateApiKey", () => {
       trackUrlParams: true,
       trackInitialPageView: true,
       trackSpaNavigation: true,
+      trackIp: false,
     };
 
     vi.mocked(siteConfig.getConfig).mockResolvedValue(mockSite);
@@ -115,6 +117,7 @@ describe("validateApiKey", () => {
       trackUrlParams: true,
       trackInitialPageView: true,
       trackSpaNavigation: true,
+      trackIp: false,
     };
 
     vi.mocked(siteConfig.getConfig).mockResolvedValue(mockSite);
@@ -141,6 +144,7 @@ describe("validateApiKey", () => {
       trackUrlParams: true,
       trackInitialPageView: true,
       trackSpaNavigation: true,
+      trackIp: false,
     };
 
     vi.mocked(siteConfig.getConfig).mockResolvedValue(mockSite);
@@ -183,6 +187,7 @@ describe("validateApiKey", () => {
       trackUrlParams: true,
       trackInitialPageView: true,
       trackSpaNavigation: true,
+      trackIp: false,
     }; // No apiKey property
 
     vi.mocked(siteConfig.getConfig).mockResolvedValue(mockSite as SiteConfigData);

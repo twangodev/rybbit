@@ -10,13 +10,15 @@ import { validateIPPattern } from "../../lib/ipUtils.js";
 // Schema for the update request - all fields are optional but validated when present
 const updateSiteConfigSchema = z.object({
   siteId: z.union([z.string(), z.number()]).transform(val => {
-    const num = typeof val === 'number' ? val : parseInt(val as string, 10);
+    const num = typeof val === "number" ? val : parseInt(val as string, 10);
     if (isNaN(num) || num <= 0) {
-      throw new z.ZodError([{
-        code: z.ZodIssueCode.custom,
-        message: "Invalid site ID: must be a positive integer",
-        path: ["siteId"]
-      }]);
+      throw new z.ZodError([
+        {
+          code: z.ZodIssueCode.custom,
+          message: "Invalid site ID: must be a positive integer",
+          path: ["siteId"],
+        },
+      ]);
     }
     return num;
   }),
@@ -24,9 +26,12 @@ const updateSiteConfigSchema = z.object({
   public: z.boolean().optional(),
   saltUserIds: z.boolean().optional(),
   blockBots: z.boolean().optional(),
-  domain: z.string()
-    .regex(/^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/,
-           "Invalid domain format. Must be a valid domain like example.com or sub.example.com")
+  domain: z
+    .string()
+    .regex(
+      /^(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}$/,
+      "Invalid domain format. Must be a valid domain like example.com or sub.example.com"
+    )
     .optional(),
   excludedIPs: z.array(z.string().trim().min(1)).max(100).optional(),
 
@@ -38,6 +43,7 @@ const updateSiteConfigSchema = z.object({
   trackUrlParams: z.boolean().optional(),
   trackInitialPageView: z.boolean().optional(),
   trackSpaNavigation: z.boolean().optional(),
+  trackIp: z.boolean().optional(),
 });
 
 type UpdateSiteConfigRequest = z.infer<typeof updateSiteConfigSchema>;
@@ -98,9 +104,19 @@ export async function updateSiteConfig(
 
     // Map the fields that exist in both request and database
     const directMappings = [
-      'public', 'saltUserIds', 'blockBots', 'domain', 'excludedIPs',
-      'sessionReplay', 'webVitals', 'trackErrors', 'trackOutbound',
-      'trackUrlParams', 'trackInitialPageView', 'trackSpaNavigation'
+      "public",
+      "saltUserIds",
+      "blockBots",
+      "domain",
+      "excludedIPs",
+      "sessionReplay",
+      "webVitals",
+      "trackErrors",
+      "trackOutbound",
+      "trackUrlParams",
+      "trackInitialPageView",
+      "trackSpaNavigation",
+      "trackIp",
     ];
 
     for (const field of directMappings) {
@@ -121,10 +137,7 @@ export async function updateSiteConfig(
     dbUpdateData.updatedAt = new Date().toISOString();
 
     // Update the database
-    await db
-      .update(sites)
-      .set(dbUpdateData)
-      .where(eq(sites.siteId, siteId));
+    await db.update(sites).set(dbUpdateData).where(eq(sites.siteId, siteId));
 
     // Update the site config cache
     await siteConfig.updateConfig(siteId, updateData);
@@ -141,16 +154,16 @@ export async function updateSiteConfig(
     console.error("Error updating site configuration:", error);
 
     // Check for unique constraint violation on domain
-    if (String(error).includes('duplicate key value violates unique constraint')) {
+    if (String(error).includes("duplicate key value violates unique constraint")) {
       return reply.status(409).send({
         success: false,
-        error: "Domain already in use"
+        error: "Domain already in use",
       });
     }
 
     return reply.status(500).send({
       success: false,
-      error: "Failed to update site configuration"
+      error: "Failed to update site configuration",
     });
   }
 }

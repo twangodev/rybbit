@@ -102,10 +102,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           "data-api-key": process.env.NEXT_PUBLIC_RYBBIT_API_KEY,
         })}
       />
-      <Script
-        src="https://scripts.simpleanalyticscdn.com/latest.js"
-        strategy="afterInteractive"
-      />
+      <Script src="https://scripts.simpleanalyticscdn.com/latest.js" strategy="afterInteractive" />
       <body className={`flex flex-col min-h-screen ${inter.variable} font-sans`}>
         <noscript>
           <iframe

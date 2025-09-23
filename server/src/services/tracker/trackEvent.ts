@@ -293,7 +293,7 @@ export async function trackEvent(request: FastifyRequest, reply: FastifyReply) {
       request, // Pass request for IP/UA
       validatedPayload.type,
       validatedPayload, // Pass original validated payload
-      siteConfiguration.siteId // Pass numeric siteId separately
+      siteConfiguration
     );
 
     // Update session (use numeric siteId)

@@ -25,6 +25,7 @@ export type SiteResponse = {
   trackUrlParams?: boolean;
   trackInitialPageView?: boolean;
   trackSpaNavigation?: boolean;
+  trackIp?: boolean;
 };
 
 export type GetSitesFromOrgResponse = {
