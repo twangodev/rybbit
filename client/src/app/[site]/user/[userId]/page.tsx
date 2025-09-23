@@ -29,6 +29,7 @@ import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
 import { VisitCalendar } from "./components/Calendar";
 import { Avatar } from "../../../../components/Avatar";
 import { MobileSidebar } from "../../components/Sidebar/MobileSidebar";
+import { Badge } from "../../../../components/ui/badge";
 
 export default function UserPage() {
   useSetPageTitle("Rybbit · User");
@@ -54,12 +55,20 @@ export default function UserPage() {
         Back to Users
       </Button>
       <div className="mb-4">
-        <h1 className="text-2xl font-bold mb-4 flex items-center gap-2">
-          <div>
-            <MobileSidebar />
+        <h1 className="mb-4 flex items-center gap-2 justify-between">
+          <div className="text-2xl font-bold flex items-center gap-2">
+            <div>
+              <MobileSidebar />
+            </div>
+
+            <Avatar size={40} name={userId as string} />
+            {userId?.slice(0, 10)}
           </div>
-          <Avatar size={40} name={userId as string} />
-          {userId?.slice(0, 10)}
+          {data?.ip && (
+            <Badge variant="outline" className="flex gap-1 text-neutral-300">
+              IP: <span className="text-neutral-100">{data?.ip}</span>
+            </Badge>
+          )}
         </h1>
         <div className="bg-neutral-900 p-3 rounded-lg flex flex-col gap-1 border border-neutral-750 text-sm mb-3">
           {isLoading ? (
@@ -124,7 +133,7 @@ export default function UserPage() {
                   {data?.operating_system}
                   {data?.operating_system_version && <span className="ml-1">v{data?.operating_system_version}</span>}
                 </div>
-                <span className="text-neutral-100">Screen Size:</span>
+                <span className="text-neutral-100">Screen:</span>
                 <div className="flex gap-1 text-neutral-300">
                   {data?.screen_width} x {data?.screen_height}
                 </div>
