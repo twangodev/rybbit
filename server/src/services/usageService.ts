@@ -6,9 +6,9 @@ import { processResults } from "../api/analytics/utils.js";
 import { clickhouse } from "../db/clickhouse/clickhouse.js";
 import { db } from "../db/postgres/postgres.js";
 import { organization, sites } from "../db/postgres/schema.js";
-import { getStripePrices, StripePlan, DEFAULT_EVENT_LIMIT, IS_CLOUD } from "../lib/const.js";
-import { stripe } from "../lib/stripe.js";
+import { DEFAULT_EVENT_LIMIT, getStripePrices, IS_CLOUD, StripePlan } from "../lib/const.js";
 import { createServiceLogger } from "../lib/logger/logger.js";
+import { stripe } from "../lib/stripe.js";
 
 class UsageService {
   private sitesOverLimit = new Set<number>();
@@ -122,10 +122,7 @@ class UsageService {
       }
 
       // Find corresponding plan details from constants
-      const planDetails = getStripePrices().find(
-        (plan: StripePlan) =>
-          plan.priceId === priceId || (plan.annualDiscountPriceId && plan.annualDiscountPriceId === priceId)
-      );
+      const planDetails = getStripePrices().find((plan: StripePlan) => plan.priceId === priceId);
 
       // Get the event limit from the plan
       const eventLimit = planDetails

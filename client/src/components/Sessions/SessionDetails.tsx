@@ -512,6 +512,12 @@ export function SessionDetails({ session, userId }: SessionDetailsProps) {
                       </span>
                     </div>
                   ) : null}
+                  {sessionDetails?.ip && (
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="font-medium text-neutral-300 min-w-[80px]">IP:</span>
+                      <span className="text-neutral-400">{sessionDetails.ip}</span>
+                    </div>
+                  )}
                 </div>
               </div>
 

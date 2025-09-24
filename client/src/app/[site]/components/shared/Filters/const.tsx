@@ -22,6 +22,7 @@ import {
   TabletSmartphone,
   Tag,
   Target,
+  User,
 } from "lucide-react";
 import React from "react";
 
@@ -49,6 +50,11 @@ export const FilterOptions: {
     label: "Hostname",
     value: "hostname",
     icon: <Server className="h-4 w-4" />,
+  },
+  {
+    label: "User ID",
+    value: "user_id",
+    icon: <User className="h-4 w-4" />,
   },
   {
     label: "Event Name",

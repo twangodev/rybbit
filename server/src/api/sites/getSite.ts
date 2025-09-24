@@ -45,6 +45,7 @@ export async function getSite(request: FastifyRequest<GetSiteParams>, reply: Fas
       saltUserIds: site.saltUserIds,
       public: site.public,
       blockBots: site.blockBots,
+      trackIp: site.trackIp,
       isOwner: isOwner,
       // Analytics features
       sessionReplay: site.sessionReplay,

@@ -2,7 +2,7 @@
 
 import { AlertTriangle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useCallback } from "react";
+import { useState, useCallback, ReactNode } from "react";
 import { toast } from "sonner";
 
 import {
@@ -24,6 +24,9 @@ import { Switch } from "@/components/ui/switch";
 import { deleteSite, SiteResponse, updateSiteConfig, useGetSitesFromOrg } from "@/api/admin/sites";
 import { normalizeDomain } from "@/lib/utils";
 import { IPExclusionManager } from "./IPExclusionManager";
+import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
+import { Badge } from "../ui/badge";
+import { IS_CLOUD } from "../../lib/const";
 
 interface SiteConfigurationProps {
   siteMetadata: SiteResponse;
@@ -39,6 +42,8 @@ interface ToggleConfig {
   key: keyof SiteResponse;
   enabledMessage?: string;
   disabledMessage?: string;
+  disabled?: boolean;
+  badge?: ReactNode;
 }
 
 export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: SiteConfigurationProps) {
@@ -61,6 +66,7 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
     trackUrlParams: siteMetadata.trackUrlParams ?? true,
     trackInitialPageView: siteMetadata.trackInitialPageView ?? true,
     trackSpaNavigation: siteMetadata.trackSpaNavigation ?? true,
+    trackIp: siteMetadata.trackIp ?? false,
   });
 
   const [loadingStates, setLoadingStates] = useState<Record<string, boolean>>({});
@@ -160,7 +166,22 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       enabledMessage: "Bot blocking enabled",
       disabledMessage: "Bot blocking disabled",
     },
+    {
+      id: "trackIp",
+      label: "Track IP Address",
+      description: "Track the IP address of the user. This is definitely not GDPR compliant!",
+      value: toggleStates.trackIp,
+      key: "trackIp",
+      enabledMessage: "IP address tracking enabled",
+      disabledMessage: "IP address tracking disabled",
+    },
   ];
+
+  const { data: subscription } = useStripeSubscription();
+
+  const sessionReplayDisabled = !subscription?.isPro && IS_CLOUD;
+  const webVitalsDisabled = subscription?.status !== "active" && IS_CLOUD;
+  const trackErrorsDisabled = subscription?.status !== "active" && IS_CLOUD;
 
   // Configuration for analytics feature toggles
   const analyticsToggles: ToggleConfig[] = [
@@ -172,6 +193,8 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "sessionReplay",
       enabledMessage: "Session replay enabled",
       disabledMessage: "Session replay disabled",
+      disabled: sessionReplayDisabled,
+      badge: <Badge variant="success">Pro</Badge>,
     },
     {
       id: "webVitals",
@@ -181,6 +204,8 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "webVitals",
       enabledMessage: "Web Vitals enabled",
       disabledMessage: "Web Vitals disabled",
+      disabled: webVitalsDisabled,
+      badge: <Badge variant="success">Standard</Badge>,
     },
     {
       id: "trackErrors",
@@ -190,6 +215,8 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       key: "trackErrors",
       enabledMessage: "Error tracking enabled",
       disabledMessage: "Error tracking disabled",
+      disabled: trackErrorsDisabled,
+      badge: <Badge variant="success">Standard</Badge>,
     },
     {
       id: "trackOutbound",
@@ -235,15 +262,15 @@ export function SiteConfiguration({ siteMetadata, disabled = false, onClose }: S
       {toggles.map(toggle => (
         <div key={toggle.id} className="flex items-center justify-between">
           <div>
-            <Label htmlFor={toggle.id} className="text-sm font-medium text-foreground block">
-              {toggle.label}
+            <Label htmlFor={toggle.id} className="text-sm font-medium text-foreground flex items-center gap-2">
+              {toggle.label} {toggle.badge && IS_CLOUD && toggle.badge}
             </Label>
             <p className="text-xs text-muted-foreground mt-1">{toggle.description}</p>
           </div>
           <Switch
             id={toggle.id}
             checked={toggle.value}
-            disabled={loadingStates[toggle.key] || disabled}
+            disabled={loadingStates[toggle.key] || disabled || toggle.disabled}
             onCheckedChange={checked =>
               handleToggle(
                 toggle.key as keyof typeof toggleStates,

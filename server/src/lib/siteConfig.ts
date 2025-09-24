@@ -1,11 +1,11 @@
-import { eq, or } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../db/postgres/postgres.js";
 import { sites } from "../db/postgres/schema.js";
-import { logger } from "./logger/logger.js";
 import { matchesCIDR, matchesRange } from "./ipUtils.js";
+import { logger } from "./logger/logger.js";
 
 // Site configuration interface
-interface SiteConfigData {
+export interface SiteConfigData {
   id: string | null;
   siteId: number;
   public: boolean;
@@ -21,6 +21,7 @@ interface SiteConfigData {
   trackUrlParams: boolean;
   trackInitialPageView: boolean;
   trackSpaNavigation: boolean;
+  trackIp: boolean;
 }
 
 class SiteConfig {
@@ -65,6 +66,7 @@ class SiteConfig {
           trackUrlParams: sites.trackUrlParams,
           trackInitialPageView: sites.trackInitialPageView,
           trackSpaNavigation: sites.trackSpaNavigation,
+          trackIp: sites.trackIp,
         })
         .from(sites)
         .where(isNumeric ? eq(sites.siteId, Number(siteIdOrId)) : eq(sites.id, String(siteIdOrId)))
@@ -90,6 +92,7 @@ class SiteConfig {
         trackUrlParams: site.trackUrlParams || true,
         trackInitialPageView: site.trackInitialPageView || true,
         trackSpaNavigation: site.trackSpaNavigation || true,
+        trackIp: site.trackIp || false,
       };
 
       this.cache.set(cacheKey, {

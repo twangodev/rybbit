@@ -49,6 +49,8 @@ export function getParameterNameLabel(parameter: FilterParameter) {
       return "Browser Version";
     case "operating_system_version":
       return "OS Version";
+    case "user_id":
+      return "User ID";
     default:
       return parameter;
   }

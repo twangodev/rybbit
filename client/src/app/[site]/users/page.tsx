@@ -102,7 +102,7 @@ export default function UsersPage() {
         <Link href={`/${site}/user/${info.getValue()}`}>
           <div className=" truncate flex items-center gap-2 text-neutral-250 hover:text-neutral-100 hover:underline">
             <Avatar size={20} name={info.getValue() as string} />
-            {info.getValue().slice(0, 6)}
+            {info.getValue().slice(0, 12)}
           </div>
         </Link>
       ),

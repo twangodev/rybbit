@@ -258,7 +258,7 @@ export function ReplayBreadcrumbs() {
       <div className="rounded-lg border border-neutral-800 bg-neutral-900 flex items-center justify-between gap-2 p-2 text-xs text-neutral-200">
         <div className="flex items-center gap-2">
           <Avatar name={data.metadata.user_id} size={20} />
-          {data.metadata.user_id.slice(0, 20)}
+          {data.metadata.user_id.slice(0, 12)}
         </div>
         <Link href={`/${siteId}/user/${data.metadata.user_id}`} className="flex items-center gap-2">
           <Button size="sm">View User</Button>

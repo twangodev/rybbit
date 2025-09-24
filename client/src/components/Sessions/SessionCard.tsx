@@ -47,9 +47,6 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
   const totalSeconds = Math.floor(end.diff(start).milliseconds / 1000);
   const duration = formatDuration(totalSeconds);
 
-  // Truncate user ID to first 8 characters
-  const truncatedUserId = session.user_id.substring(0, 8);
-
   const handleCardClick = () => {
     if (onClick) {
       onClick();
@@ -63,7 +60,7 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
       <div className="p-3 cursor-pointer" onClick={handleCardClick}>
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs font-mono text-gray-400">{truncatedUserId}</span>
+            <span className="text-xs font-mono text-gray-400">{session.user_id.slice(0, 12)}</span>
           </div>
 
           {/* Icons section */}

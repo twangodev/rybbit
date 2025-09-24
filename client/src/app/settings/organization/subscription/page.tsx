@@ -2,7 +2,7 @@
 
 import { Card, CardContent, CardDescription, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { ProPlan } from "../../../../components/subscription/ProPlan";
+import { PaidPlan } from "../../../../components/subscription/PaidPlain/PaidPlan";
 import { useStripeSubscription } from "../../../../lib/subscription/useStripeSubscription";
 import { NoOrganization } from "../../../../components/NoOrganization";
 import { TrialPlan } from "../../../../components/subscription/TrialPlan";
@@ -63,7 +63,7 @@ export default function OrganizationSubscriptionPage() {
       return <TrialPlan />;
     }
 
-    return <ProPlan />;
+    return <PaidPlan />;
   };
 
   return (

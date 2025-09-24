@@ -190,24 +190,6 @@ export function initAuth(allowedOrigins: string[]) {
           required: false,
         },
       },
-      deleteUser: {
-        enabled: true,
-        // Add a hook to run before deleting a user
-        // i dont think this works
-        beforeDelete: async user => {
-          // Delete all memberships for this user first
-          console.log(`Cleaning up memberships for user ${user.id} before deletion`);
-          try {
-            // Delete member records for this user
-            await db.delete(schema.member).where(eq(schema.member.userId, user.id));
-
-            console.log(`Successfully removed memberships for user ${user.id}`);
-          } catch (error) {
-            console.error(`Error removing memberships for user ${user.id}:`, error);
-            throw error; // Re-throw to prevent user deletion if cleanup fails
-          }
-        },
-      },
       changeEmail: {
         enabled: true,
       },

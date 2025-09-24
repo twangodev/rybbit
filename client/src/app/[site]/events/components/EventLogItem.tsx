@@ -154,7 +154,7 @@ export function EventLogItem({ event }: EventLogItemProps) {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <span className="text-sm font-mono text-neutral-400 hover:text-neutral-300">
-                    {event.user_id.substring(0, 8)}
+                    {event.user_id.substring(0, 12)}
                   </span>
                 </TooltipTrigger>
                 <TooltipContent>

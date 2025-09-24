@@ -4,6 +4,7 @@ import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { GitHubStarButton } from "@/components/GitHubStarButton";
+import { TrackedButton } from "@/components/TrackedButton";
 import { EventTracking } from "@/components/Cards/EventTracking";
 import { GoalConversion } from "@/components/Cards/GoalConversion";
 import { RealTimeAnalytics } from "@/components/Cards/RealTimeAnalytics";
@@ -112,14 +113,22 @@ export default function HomePage() {
               data-rybbit-event="signup"
               data-rybbit-prop-location="hero"
             >
-              <button className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer">
+              <TrackedButton
+                eventName="signup_click"
+                eventData={{ location: "hero", button_text: "Track your site" }}
+                className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer"
+              >
                 Track your site
-              </button>
+              </TrackedButton>
             </Link>
             <Link href="https://demo.rybbit.io/21" className="w-full sm:w-auto" data-rybbit-event="demo">
-              <button className="w-full sm:w-auto bg-neutral-800 hover:bg-neutral-700 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer">
+              <TrackedButton
+                eventName="demo_click"
+                eventData={{ location: "hero", button_text: "See live demo" }}
+                className="w-full sm:w-auto bg-neutral-800 hover:bg-neutral-700 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer"
+              >
                 See live demo
-              </button>
+              </TrackedButton>
             </Link>
           </div>
           <p className="text-neutral-400 text-xs md:text-sm flex items-center justify-center gap-2 mt-6">
@@ -324,9 +333,9 @@ export default function HomePage() {
               </p>
             </div>
 
-            <div className="bg-neutral-800/20 backdrop-blur-sm border border-neutral-700 rounded-xl overflow-hidden">
+            <div className="bg-neutral-800/20 backdrop-blur-sm border border-neutral-800/50 rounded-xl overflow-hidden">
               <Accordion type="single" collapsible className="w-full">
-                <AccordionItem value="item-1" className="border-b border-neutral-700/50">
+                <AccordionItem value="item-1" className="border-b border-neutral-800/50">
                   <AccordionTrigger className="px-6 py-4 text-base md:text-lg font-medium hover:text-emerald-400 transition-colors">
                     Is Rybbit GDPR and CCPA compliant?
                   </AccordionTrigger>
@@ -338,7 +347,7 @@ export default function HomePage() {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-2" className="border-b border-neutral-700/50">
+                <AccordionItem value="item-2" className="border-b border-neutral-800/50">
                   <AccordionTrigger className="px-6 py-4 text-base md:text-lg font-medium hover:text-emerald-400 transition-colors">
                     Rybbit vs. Google Analytics
                   </AccordionTrigger>
@@ -359,7 +368,7 @@ export default function HomePage() {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-3" className="border-b border-neutral-700/50">
+                <AccordionItem value="item-3" className="border-b border-neutral-800/50">
                   <AccordionTrigger className="px-6 py-4 text-base md:text-lg font-medium hover:text-emerald-400 transition-colors">
                     Rybbit vs. Plausible/Umami/Simple Analytics
                   </AccordionTrigger>
@@ -375,7 +384,7 @@ export default function HomePage() {
                     </p>
                   </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="item-4" className="border-b border-neutral-700/50">
+                <AccordionItem value="item-4" className="border-b border-neutral-800/50">
                   <AccordionTrigger className="px-6 py-4 text-base md:text-lg font-medium hover:text-emerald-400 transition-colors">
                     Rybbit vs. Posthog/Mixpanel/Amplitude
                   </AccordionTrigger>
@@ -392,7 +401,7 @@ export default function HomePage() {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-5" className="border-b border-neutral-700/50">
+                <AccordionItem value="item-5" className="border-b border-neutral-800/50">
                   <AccordionTrigger className="px-6 py-4 text-base md:text-lg font-medium hover:text-emerald-400 transition-colors">
                     Can I self-host Rybbit?
                   </AccordionTrigger>
@@ -406,7 +415,7 @@ export default function HomePage() {
                   </AccordionContent>
                 </AccordionItem>
 
-                <AccordionItem value="item-6" className="border-b border-neutral-700/50">
+                <AccordionItem value="item-6" className="border-b border-neutral-800/50">
                   <AccordionTrigger className="px-6 py-4 text-base md:text-lg font-medium hover:text-emerald-400 transition-colors">
                     How easy is it to set up Rybbit?
                   </AccordionTrigger>
@@ -442,7 +451,7 @@ export default function HomePage() {
                     for either personal or business use.
                   </AccordionContent>
                 </AccordionItem>
-                <AccordionItem value="item-9" className="border-t border-neutral-700/50">
+                <AccordionItem value="item-9" className="border-t border-neutral-800/50">
                   <AccordionTrigger className="px-6 py-4 text-base md:text-lg font-medium hover:text-emerald-400 transition-colors">
                     What counts as an event?
                   </AccordionTrigger>
@@ -472,13 +481,13 @@ export default function HomePage() {
 
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 md:gap-6 mb-6 md:mb-8 w-full sm:w-auto">
                 <Link href="https://app.rybbit.io/signup" className="w-full sm:w-auto">
-                  <button
-                    data-rybbit-event="signup"
-                    data-rybbit-prop-location="bottom"
+                  <TrackedButton
+                    eventName="signup_click"
+                    eventData={{ location: "bottom_cta", button_text: "Track your site for free" }}
                     className="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white text-lg font-medium px-6 md:px-8 py-3 md:py-4 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer"
                   >
                     Track your site for free
-                  </button>
+                  </TrackedButton>
                 </Link>
                 {/* <Link href="https://docs.tomato.gg" className="w-full sm:w-auto">
                   <button className="w-full sm:w-auto bg-neutral-800 hover:bg-neutral-700 text-white font-medium px-6 md:px-8 py-3 md:py-4 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 hover:border-neutral-400 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50">

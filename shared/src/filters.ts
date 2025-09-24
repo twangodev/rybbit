@@ -24,7 +24,8 @@ export type FilterParameter =
   | "exit_page"
   | "dimensions"
   | "browser_version"
-  | "operating_system_version";
+  | "operating_system_version"
+  | "user_id";
 
 export interface Filter {
   parameter: FilterParameter;

@@ -25,6 +25,7 @@ export type SiteResponse = {
   trackUrlParams?: boolean;
   trackInitialPageView?: boolean;
   trackSpaNavigation?: boolean;
+  trackIp?: boolean;
 };
 
 export type GetSitesFromOrgResponse = {
@@ -60,6 +61,7 @@ export type GetSitesFromOrgResponse = {
     overMonthlyLimit: boolean;
     planName: string;
     status: string;
+    isPro: boolean;
   };
 };
 
@@ -136,7 +138,6 @@ export function updateSiteConfig(
   });
 }
 
-
 export function useSiteHasData(siteId: string) {
   return useQuery({
     queryKey: ["site-has-data", siteId],
@@ -171,7 +172,6 @@ export function useGetSite(siteId?: string | number) {
     enabled: !!siteId,
   });
 }
-
 
 export function useGetSiteIsPublic(siteId?: string | number) {
   return useQuery({

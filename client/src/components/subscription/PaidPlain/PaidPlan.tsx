@@ -2,18 +2,19 @@ import { Shield } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { DateTime } from "luxon";
-import { Alert } from "../ui/alert";
-import { Button } from "../ui/button";
-import { Card, CardContent } from "../ui/card";
-import { Progress } from "../ui/progress";
-import { BACKEND_URL } from "../../lib/const";
-import { getStripePrices } from "../../lib/stripe";
-import { formatDate } from "../../lib/subscription/planUtils";
-import { useStripeSubscription } from "../../lib/subscription/useStripeSubscription";
-import { UsageChart } from "../UsageChart";
+import { Alert } from "../../ui/alert";
+import { Button } from "../../ui/button";
+import { Card, CardContent } from "../../ui/card";
+import { Progress } from "../../ui/progress";
+import { BACKEND_URL } from "../../../lib/const";
+import { getStripePrices } from "../../../lib/stripe";
+import { formatDate } from "../../../lib/subscription/planUtils";
+import { useStripeSubscription } from "../../../lib/subscription/useStripeSubscription";
+import { UsageChart } from "../../UsageChart";
 import { authClient } from "@/lib/auth";
+import { PlanDialog } from "./PlanDialog";
 
-export function ProPlan() {
+export function PaidPlan() {
   const { data: activeSubscription, isLoading, error: subscriptionError, refetch } = useStripeSubscription();
 
   const { data: activeOrg } = authClient.useActiveOrganization();
@@ -27,6 +28,7 @@ export function ProPlan() {
 
   const [isProcessing, setIsProcessing] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
+  const [showPlanDialog, setShowPlanDialog] = useState(false);
 
   const eventLimit = activeSubscription?.eventLimit || 0;
   const currentUsage = activeSubscription?.monthlyEventCount || 0;
@@ -35,15 +37,27 @@ export function ProPlan() {
 
   const stripePlan = getStripePrices().find(p => p.name === activeSubscription?.planName);
 
+  const isPro = activeSubscription?.planName?.startsWith("pro");
+
   const currentPlanDetails = activeSubscription
     ? {
-        id: "pro",
-        name: "Pro",
+        id: isPro ? "pro" : "standard",
+        name: isPro ? "Pro" : "Standard",
         price: `$${stripePlan?.price}`,
         interval: stripePlan?.interval,
-        description: "Advanced analytics for growing projects",
-        features: ["5 year data retention", "Priority support"],
-        color: "bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-800 dark:to-emerald-800",
+        description: isPro ? "Premium features for professional teams" : "Advanced analytics for growing projects",
+        features: isPro
+          ? [
+              "5+ year data retention",
+              "Session replays",
+              "Unlimited team members",
+              "Unlimited websites",
+              "Priority support",
+            ]
+          : ["1 year data retention", "Standard support", "Core analytics features"],
+        color: isPro
+          ? "bg-gradient-to-br from-purple-50 to-indigo-100 dark:from-purple-800 dark:to-indigo-800"
+          : "bg-gradient-to-br from-green-50 to-emerald-100 dark:from-green-800 dark:to-emerald-800",
         icon: <Shield className="h-5 w-5" />,
       }
     : null;
@@ -90,7 +104,7 @@ export function ProPlan() {
     }
   };
 
-  const handleChangePlan = () => createPortalSession("subscription_update");
+  const handleChangePlan = () => setShowPlanDialog(true);
   const handleViewSubscription = () => createPortalSession();
   const handleCancelSubscription = () => createPortalSession("subscription_cancel");
 
@@ -119,6 +133,12 @@ export function ProPlan() {
   return (
     <div className="space-y-6">
       {actionError && <Alert variant="destructive">{actionError}</Alert>}
+      <PlanDialog
+        open={showPlanDialog}
+        onOpenChange={setShowPlanDialog}
+        currentPlanName={activeSubscription?.planName}
+        hasActiveSubscription={!!activeSubscription}
+      />
       <Card>
         <CardContent>
           <div className="space-y-6 mt-3 p-2">
@@ -134,8 +154,8 @@ export function ProPlan() {
                 <p className="text-neutral-400 text-sm">{formatRenewalDate()}</p>
               </div>
               <div className="space-x-2">
-                <Button variant="success" onClick={handleChangePlan} disabled={isProcessing}>
-                  {isProcessing ? "Processing..." : "Change Plan"}
+                <Button variant="success" onClick={handleChangePlan}>
+                  Change Plan
                 </Button>
                 <Button variant="outline" onClick={handleViewSubscription} disabled={isProcessing}>
                   View Details
@@ -162,7 +182,7 @@ export function ProPlan() {
                       <p className="text-sm text-amber-700 dark:text-amber-300">
                         <strong>Usage limit reached!</strong> You've exceeded your plan's event limit.
                       </p>
-                      <Button variant="success" size="sm" onClick={handleChangePlan} disabled={isProcessing}>
+                      <Button variant="success" size="sm" onClick={handleChangePlan}>
                         Upgrade Plan
                       </Button>
                     </div>

@@ -1,19 +1,11 @@
 import { eq } from "drizzle-orm";
 import { FastifyReply, FastifyRequest } from "fastify";
+import { DateTime } from "luxon";
 import Stripe from "stripe";
 import { db } from "../../db/postgres/postgres.js";
 import { organization } from "../../db/postgres/schema.js";
-import { DEFAULT_EVENT_LIMIT, getStripePrices, StripePlan } from "../../lib/const.js";
+import { DEFAULT_EVENT_LIMIT, getStripePrices } from "../../lib/const.js";
 import { stripe } from "../../lib/stripe.js";
-import { DateTime } from "luxon";
-
-// Function to find plan details by price ID
-function findPlanDetails(priceId: string): StripePlan | undefined {
-  return getStripePrices().find(
-    (plan: StripePlan) =>
-      plan.priceId === priceId || (plan.annualDiscountPriceId && plan.annualDiscountPriceId === priceId)
-  );
-}
 
 function getStartOfMonth() {
   return DateTime.now().startOf("month").toJSDate();
@@ -62,7 +54,7 @@ export async function getSubscriptionInner(organizationId: string) {
       }
 
       // 3. Find corresponding plan details from your constants
-      const planDetails = findPlanDetails(priceId);
+      const planDetails = getStripePrices().find(plan => plan.priceId === priceId);
 
       if (!planDetails) {
         console.error("Plan details not found for price ID:", priceId);
@@ -71,6 +63,7 @@ export async function getSubscriptionInner(organizationId: string) {
           id: subscription.id,
           planName: "Unknown Plan", // Indicate missing details
           status: subscription.status,
+          createdAt: new Date(subscription.created * 1000),
           currentPeriodStart: new Date(subscriptionItem.current_period_start * 1000),
           currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
           cancelAtPeriodEnd: subscription.cancel_at_period_end,
@@ -84,7 +77,9 @@ export async function getSubscriptionInner(organizationId: string) {
       const responseData = {
         id: subscription.id,
         planName: planDetails.name,
+        isPro: planDetails.name.includes("pro"),
         status: subscription.status,
+        createdAt: new Date(subscription.created * 1000),
         currentPeriodStart: new Date(subscriptionItem.current_period_start * 1000),
         currentPeriodEnd: new Date(subscriptionItem.current_period_end * 1000),
         cancelAtPeriodEnd: subscription.cancel_at_period_end,
