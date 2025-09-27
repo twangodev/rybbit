@@ -10,7 +10,7 @@ import { useSubdivisions } from "../../../../../lib/geo";
 import { MapComponent } from "../../../components/shared/Map";
 import { Button } from "../../../../../components/ui/button";
 
-type Tab = "countries" | "regions" | "languages" | "cities" | "map";
+type Tab = "countries" | "regions" | "languages" | "cities" | "map" | "timezones";
 
 function getCountryCity(value: string) {
   if (value.split("-").length === 2) {
@@ -49,6 +49,7 @@ export function Countries() {
               <TabsTrigger value="cities">Cities</TabsTrigger>
               <TabsTrigger value="languages">Languages</TabsTrigger>
               <TabsTrigger value="map">Map</TabsTrigger>
+              <TabsTrigger value="timezones">Timezones</TabsTrigger>
             </TabsList>
             {tab !== "map" && (
               <div>
@@ -162,6 +163,28 @@ export function Countries() {
                   {getLanguageName(e.value)}
                 </div>
               )}
+              expanded={expanded}
+              close={close}
+            />
+          </TabsContent>
+          <TabsContent value="timezones">
+            <StandardSection
+              filterParameter="timezone"
+              title="Timezones"
+              getValue={e => e.value}
+              getKey={e => e.value}
+              // getFilterLabel={e => getLanguageName(e.value) ?? ""}
+              // getLabel={e => (
+              //   <div className="flex gap-2 items-center">
+              //     {getCountryFromLanguage(e.value) ? (
+              //       <CountryFlag country={getCountryFromLanguage(e.value)!} />
+              //     ) : (
+              //       <Globe className="w-5 h-5" />
+              //     )}
+              //     {getLanguageName(e.value)}
+              //   </div>
+              // )}
+              getLabel={e => e.value}
               expanded={expanded}
               close={close}
             />

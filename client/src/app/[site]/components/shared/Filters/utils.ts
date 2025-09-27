@@ -51,6 +51,26 @@ export function getParameterNameLabel(parameter: FilterParameter) {
       return "OS Version";
     case "user_id":
       return "User ID";
+    case "timezone":
+      return "Timezone";
+    case "vpn":
+      return "VPN";
+    case "crawler":
+      return "Crawler";
+    case "datacenter":
+      return "Datacenter";
+    case "company":
+      return "Company";
+    case "company_type":
+      return "Company Type";
+    case "company_domain":
+      return "Company Domain";
+    case "asn_org":
+      return "ASN Org";
+    case "asn_type":
+      return "ASN Type";
+    case "asn_domain":
+      return "ASN Domain";
     default:
       return parameter;
   }
