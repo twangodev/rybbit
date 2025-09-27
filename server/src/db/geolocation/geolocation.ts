@@ -176,7 +176,7 @@ async function getLocationFromIPAPI(ips: string[]): Promise<Record<string, Locat
 
     if (!response.ok) {
       logger.error(`IPAPI request failed: ${response.status} ${response.statusText}`);
-      return {};
+      return getLocationFromLocal(ips);
     }
 
     const data = (await response.json()) as Record<string, IPAPIResponse>;
@@ -226,15 +226,9 @@ async function getLocationFromIPAPI(ips: string[]): Promise<Record<string, Locat
   }
 }
 
-export async function getLocation(ips: string[], useLocal?: boolean): Promise<Record<string, LocationResponse>> {
-  const dedupedIps = [...new Set(ips)];
-
-  if (IS_CLOUD && !useLocal) {
-    return getLocationFromIPAPI(dedupedIps);
-  }
-
+async function getLocationFromLocal(ips: string[]): Promise<Record<string, LocationResponse>> {
   const responses = await Promise.all(
-    dedupedIps.map(async ip => {
+    ips.map(ip => {
       try {
         return (reader as ExtendedReader).city(ip);
       } catch (error) {
@@ -246,8 +240,18 @@ export async function getLocation(ips: string[], useLocal?: boolean): Promise<Re
   const results: Record<string, LocationResponse> = {};
 
   responses.forEach((response, index) => {
-    results[dedupedIps[index]] = extractLocationData(response);
+    results[ips[index]] = extractLocationData(response);
   });
 
   return results;
+}
+
+export async function getLocation(ips: string[], useLocal?: boolean): Promise<Record<string, LocationResponse>> {
+  const dedupedIps = [...new Set(ips)];
+
+  if (IS_CLOUD && !useLocal) {
+    return getLocationFromIPAPI(dedupedIps);
+  }
+
+  return getLocationFromLocal(dedupedIps);
 }
