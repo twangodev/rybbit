@@ -226,10 +226,10 @@ async function getLocationFromIPAPI(ips: string[]): Promise<Record<string, Locat
   }
 }
 
-export async function getLocation(ips: string[]): Promise<Record<string, LocationResponse>> {
+export async function getLocation(ips: string[], useLocal?: boolean): Promise<Record<string, LocationResponse>> {
   const dedupedIps = [...new Set(ips)];
 
-  if (IS_CLOUD) {
+  if (IS_CLOUD && !useLocal) {
     return getLocationFromIPAPI(dedupedIps);
   }
 
