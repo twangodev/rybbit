@@ -22,6 +22,7 @@ export async function getSubscriptionInner(organizationId: string) {
       stripeCustomerId: organization.stripeCustomerId,
       monthlyEventCount: organization.monthlyEventCount,
       createdAt: organization.createdAt,
+      name: organization.name,
     })
     .from(organization)
     .where(eq(organization.id, organizationId))
@@ -31,6 +32,19 @@ export async function getSubscriptionInner(organizationId: string) {
 
   if (!org) {
     return null;
+  }
+
+  if (org.name.includes("AppSumo")) {
+    return {
+      id: null,
+      planName: "free",
+      status: "active",
+      eventLimit: 1000000,
+      currentPeriodEnd: getStartOfNextMonth(),
+      currentPeriodStart: getStartOfMonth(),
+      monthlyEventCount: org.monthlyEventCount || 0,
+      appSumoPlan: "1m",
+    };
   }
 
   // Check if organization has an active Stripe subscription

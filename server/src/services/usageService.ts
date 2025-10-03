@@ -73,10 +73,7 @@ class UsageService {
         })
         .from(member)
         .innerJoin(user, eq(member.userId, user.id))
-        .where(and(
-          eq(member.organizationId, organizationId),
-          eq(member.role, "owner")
-        ));
+        .where(and(eq(member.organizationId, organizationId), eq(member.role, "owner")));
 
       return owners.length > 0 ? owners[0].email : null;
     } catch (error) {
@@ -115,6 +112,9 @@ class UsageService {
   }): Promise<[number, string | null]> {
     if (orgData.name === "tomato 2" || orgData.name === "Zam") {
       return [Infinity, this.getStartOfMonth()];
+    }
+    if (orgData.name.includes("AppSumo")) {
+      return [1000000, this.getStartOfMonth()];
     }
     if (!orgData.stripeCustomerId) {
       // No Stripe customer ID, use default limit and start of current month
@@ -300,15 +300,8 @@ class UsageService {
             // Send email to the owner if found
             if (ownerEmail) {
               try {
-                await sendLimitExceededEmail(
-                  ownerEmail,
-                  orgData.name,
-                  eventCount,
-                  eventLimit
-                );
-                this.logger.info(
-                  `Sent limit exceeded email to owner ${ownerEmail} for organization ${orgData.name}`
-                );
+                await sendLimitExceededEmail(ownerEmail, orgData.name, eventCount, eventLimit);
+                this.logger.info(`Sent limit exceeded email to owner ${ownerEmail} for organization ${orgData.name}`);
               } catch (error) {
                 this.logger.error(
                   error as Error,
@@ -316,9 +309,7 @@ class UsageService {
                 );
               }
             } else {
-              this.logger.warn(
-                `No owner found for organization ${orgData.name}, skipping limit exceeded email`
-              );
+              this.logger.warn(`No owner found for organization ${orgData.name}, skipping limit exceeded email`);
             }
           }
 
