@@ -1,29 +1,26 @@
 "use client";
 
 import { FilterParameter } from "@rybbit/shared";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { scalePow } from "d3-scale";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
-import { scalePow } from "d3-scale";
-import { round } from "lodash";
+import { useEffect, useMemo, useRef, useState } from "react";
 
+import { useSingleCol } from "@/api/analytics/useSingleCol";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
-import { SubHeader } from "../components/SubHeader/SubHeader";
-import { useSingleCol } from "@/api/analytics/useSingleCol";
-import { CountryFlag } from "../components/shared/icons/CountryFlag";
-import { useCountries, useSubdivisions } from "../../../lib/geo";
 import { getCountryPopulation } from "../../../lib/countryPopulation";
+import { useCountries, useSubdivisions } from "../../../lib/geo";
 import { addFilter } from "../../../lib/store";
-import { ButtonGroup } from "../../../components/ui/button-group";
-import { Button } from "../../../components/ui/button";
+import { CountryFlag } from "../components/shared/icons/CountryFlag";
+import { SubHeader } from "../components/SubHeader/SubHeader";
+import MapViewSelector, { MapView } from "./components/ModeSelector";
 
 interface TooltipContent {
   name: string;
   code: string;
   count: number;
   percentage: number;
-  perCapita?: number;
 }
 
 interface TooltipPosition {
@@ -38,10 +35,12 @@ export default function GlobePage() {
 
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 });
-  const [mapView, setMapView] = useState<"countries" | "subdivisions">("countries");
+  const [mapView, setMapView] = useState<MapView>("countries");
+  const [mapLoaded, setMapLoaded] = useState(false);
 
   const { data: countryData } = useSingleCol({ parameter: "country" });
   const { data: subdivisionData } = useSingleCol({ parameter: "region", limit: 10000 });
+
   const { data: countriesGeoData } = useCountries();
   const { data: subdivisionsGeoData } = useSubdivisions();
 
@@ -97,6 +96,7 @@ export default function GlobePage() {
       .range([`hsla(${h}, ${s}, ${l}, 0.05)`, `hsla(${h}, ${s}, ${l}, 0.8)`]);
   }, [processedCountryData, processedSubdivisionData, mapView]);
 
+  // Initialize map once
   useEffect(() => {
     if (!mapContainer.current) return;
 
@@ -104,47 +104,61 @@ export default function GlobePage() {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/dark-v11", // Available: streets-v12, outdoors-v12, light-v11, dark-v11, satellite-v9, satellite-streets-v12, navigation-day-v1, navigation-night-v1
-      projection: { name: "globe" }, // Options: globe, mercator, naturalEarth, equalEarth, winkelTripel, albers, lambertConformalConic
-      zoom: 1.5, // Range: 0-22
-      center: [0, 20], // [longitude, latitude]
-      pitch: 0, // Range: 0-85 (degrees, 0 = top-down view)
-      bearing: 0, // Range: 0-360 (degrees, rotation)
-      antialias: true, // Improves rendering quality
-      attributionControl: false, // Removes Mapbox attribution link
+      style: "mapbox://styles/mapbox/dark-v11",
+      projection: { name: "globe" },
+      zoom: 1.5,
+      center: [0, 20],
+      pitch: 0,
+      bearing: 0,
+      antialias: true,
+      attributionControl: false,
     });
 
     map.current.on("style.load", () => {
       if (!map.current) return;
 
       map.current.setFog({
-        color: "rgb(61, 76, 89)", // Color of atmosphere near horizon
-        "high-color": "rgb(36, 92, 223)", // Color of atmosphere away from horizon
-        "horizon-blend": 0.01, // Range: 0-1, atmosphere thickness at horizon
-        "space-color": "rgb(12, 12, 16)", // Background space color
-        "star-intensity": 0.6, // Range: 0-1, brightness of stars
+        color: "rgb(61, 76, 89)",
+        "high-color": "rgb(36, 92, 223)",
+        "horizon-blend": 0.01,
+        "space-color": "rgb(12, 12, 16)",
+        "star-intensity": 0.6,
       });
 
-      // Add GeoJSON source and layer when both data are ready
-      if (countriesGeoData && processedCountryData) {
-        // Create a copy of the GeoJSON data and add color to each feature
-        const geoDataCopy = JSON.parse(JSON.stringify(countriesGeoData));
-        geoDataCopy.features.forEach((feature: any) => {
-          const code = feature.properties?.ISO_A2;
-          const foundData = processedCountryData.find((d: any) => d.value === code);
-          const count = foundData?.count || 0;
-          const color = count > 0 ? colorScale(count) : "rgba(140, 140, 140, 0.5)";
-          feature.properties.fillColor = color;
-          feature.properties.count = count;
-        });
+      setMapLoaded(true);
+    });
 
-        // Add source
+    return () => {
+      map.current?.remove();
+      map.current = null;
+    };
+  }, []);
+
+  // Add/update countries layer
+  useEffect(() => {
+    if (!map.current || !countriesGeoData || !processedCountryData) return;
+
+    const addCountriesLayer = () => {
+      if (!map.current) return;
+
+      const geoDataCopy = JSON.parse(JSON.stringify(countriesGeoData));
+      geoDataCopy.features.forEach((feature: any) => {
+        const code = feature.properties?.ISO_A2;
+        const foundData = processedCountryData.find((d: any) => d.value === code);
+        const count = foundData?.count || 0;
+        const color = count > 0 ? colorScale(count) : "rgba(140, 140, 140, 0.5)";
+        feature.properties.fillColor = color;
+        feature.properties.count = count;
+      });
+
+      if (map.current.getSource("countries")) {
+        (map.current.getSource("countries") as mapboxgl.GeoJSONSource).setData(geoDataCopy);
+      } else {
         map.current.addSource("countries", {
           type: "geojson",
           data: geoDataCopy,
         });
 
-        // Add fill layer with data-driven color
         map.current.addLayer({
           id: "countries-fill",
           type: "fill",
@@ -154,11 +168,10 @@ export default function GlobePage() {
             "fill-opacity": 0.6,
           },
           layout: {
-            visibility: mapView === "countries" ? "visible" : "none",
+            visibility: "visible",
           },
         });
 
-        // Add outline layer
         map.current.addLayer({
           id: "countries-outline",
           type: "line",
@@ -169,11 +182,10 @@ export default function GlobePage() {
             "line-opacity": 0.3,
           },
           layout: {
-            visibility: mapView === "countries" ? "visible" : "none",
+            visibility: "visible",
           },
         });
 
-        // Countries event handlers
         map.current.on("mousemove", "countries-fill", e => {
           if (!map.current || !e.features || e.features.length === 0) return;
           map.current.getCanvas().style.cursor = "pointer";
@@ -181,18 +193,18 @@ export default function GlobePage() {
           const feature = e.features[0];
           const code = feature.properties?.ISO_A2;
           const name = feature.properties?.ADMIN;
+          const count = feature.properties?.count || 0;
 
-          const foundData = processedCountryData.find((d: any) => d.value === code);
-          const count = foundData?.count || 0;
+          // Get percentage from current data
+          const currentData = countryData?.data;
+          const foundData = currentData?.find((d: any) => d.value === code);
           const percentage = foundData?.percentage || 0;
-          const perCapita = foundData?.perCapita || 0;
 
           setTooltipContent({
             name,
             code,
             count,
             percentage,
-            perCapita,
           });
         });
 
@@ -215,19 +227,36 @@ export default function GlobePage() {
           });
         });
       }
+    };
 
-      // Add subdivisions layer
-      if (subdivisionsGeoData && processedSubdivisionData) {
-        const geoDataCopy = JSON.parse(JSON.stringify(subdivisionsGeoData));
-        geoDataCopy.features.forEach((feature: any) => {
-          const code = feature.properties?.iso_3166_2;
-          const foundData = processedSubdivisionData.find((d: any) => d.value === code);
-          const count = foundData?.count || 0;
-          const color = count > 0 ? colorScale(count) : "rgba(140, 140, 140, 0.5)";
-          feature.properties.fillColor = color;
-          feature.properties.count = count;
-        });
+    // Just call it directly - the function will handle whether source exists or not
+    addCountriesLayer();
+  }, [countriesGeoData, processedCountryData, colorScale]);
 
+  // Add/update subdivisions layer
+  useEffect(() => {
+    if (!map.current || !subdivisionsGeoData || !processedSubdivisionData) return;
+
+    const addSubdivisionsLayer = () => {
+      if (!map.current) {
+        return;
+      }
+
+      const geoDataCopy = JSON.parse(JSON.stringify(subdivisionsGeoData));
+      geoDataCopy.features.forEach((feature: any) => {
+        const code = feature.properties?.iso_3166_2;
+        const foundData = processedSubdivisionData.find((d: any) => d.value === code);
+        const count = foundData?.count || 0;
+        const color = count > 0 ? colorScale(count) : "rgba(140, 140, 140, 0.5)";
+        feature.properties.fillColor = color;
+        feature.properties.count = count;
+      });
+
+      const hasSource = !!map.current.getSource("subdivisions");
+
+      if (hasSource) {
+        (map.current.getSource("subdivisions") as mapboxgl.GeoJSONSource).setData(geoDataCopy);
+      } else {
         map.current.addSource("subdivisions", {
           type: "geojson",
           data: geoDataCopy,
@@ -242,7 +271,7 @@ export default function GlobePage() {
             "fill-opacity": 0.6,
           },
           layout: {
-            visibility: mapView === "subdivisions" ? "visible" : "none",
+            visibility: "none",
           },
         });
 
@@ -256,11 +285,10 @@ export default function GlobePage() {
             "line-opacity": 0.3,
           },
           layout: {
-            visibility: mapView === "subdivisions" ? "visible" : "none",
+            visibility: "none",
           },
         });
 
-        // Subdivisions event handlers
         map.current.on("mousemove", "subdivisions-fill", e => {
           if (!map.current || !e.features || e.features.length === 0) return;
           map.current.getCanvas().style.cursor = "pointer";
@@ -268,18 +296,18 @@ export default function GlobePage() {
           const feature = e.features[0];
           const code = feature.properties?.iso_3166_2;
           const name = feature.properties?.name;
+          const count = feature.properties?.count || 0;
 
-          const foundData = processedSubdivisionData.find((d: any) => d.value === code);
-          const count = foundData?.count || 0;
+          // Get percentage from current data
+          const currentData = subdivisionData?.data;
+          const foundData = currentData?.find((d: any) => d.value === code);
           const percentage = foundData?.percentage || 0;
-          const perCapita = foundData?.perCapita || 0;
 
           setTooltipContent({
             name,
             code,
             count,
             percentage,
-            perCapita,
           });
         });
 
@@ -302,55 +330,33 @@ export default function GlobePage() {
           });
         });
       }
-    });
-
-    return () => {
-      map.current?.remove();
-      map.current = null;
     };
-  }, [countriesGeoData, subdivisionsGeoData, processedCountryData, processedSubdivisionData, colorScale, mapView]);
+
+    // Just call it directly - the function will handle whether source exists or not
+    addSubdivisionsLayer();
+  }, [subdivisionsGeoData, processedSubdivisionData, colorScale, mapLoaded]);
 
   // Toggle layer visibility when mapView changes
   useEffect(() => {
-    if (!map.current) return;
+    if (!map.current || !mapLoaded) return;
 
-    const updateLayerVisibility = () => {
-      if (map.current?.getLayer("countries-fill")) {
-        map.current.setLayoutProperty(
-          "countries-fill",
-          "visibility",
-          mapView === "countries" ? "visible" : "none"
-        );
-      }
-      if (map.current?.getLayer("countries-outline")) {
-        map.current.setLayoutProperty(
-          "countries-outline",
-          "visibility",
-          mapView === "countries" ? "visible" : "none"
-        );
-      }
-      if (map.current?.getLayer("subdivisions-fill")) {
-        map.current.setLayoutProperty(
-          "subdivisions-fill",
-          "visibility",
-          mapView === "subdivisions" ? "visible" : "none"
-        );
-      }
-      if (map.current?.getLayer("subdivisions-outline")) {
-        map.current.setLayoutProperty(
-          "subdivisions-outline",
-          "visibility",
-          mapView === "subdivisions" ? "visible" : "none"
-        );
-      }
-    };
-
-    if (map.current.isStyleLoaded()) {
-      updateLayerVisibility();
-    } else {
-      map.current.once("styledata", updateLayerVisibility);
+    if (map.current.getLayer("countries-fill")) {
+      const countriesVisibility = mapView === "countries" ? "visible" : "none";
+      map.current.setLayoutProperty("countries-fill", "visibility", countriesVisibility);
     }
-  }, [mapView]);
+    if (map.current.getLayer("countries-outline")) {
+      const countriesVisibility = mapView === "countries" ? "visible" : "none";
+      map.current.setLayoutProperty("countries-outline", "visibility", countriesVisibility);
+    }
+    if (map.current.getLayer("subdivisions-fill")) {
+      const subdivisionsVisibility = mapView === "subdivisions" ? "visible" : "none";
+      map.current.setLayoutProperty("subdivisions-fill", "visibility", subdivisionsVisibility);
+    }
+    if (map.current.getLayer("subdivisions-outline")) {
+      const subdivisionsVisibility = mapView === "subdivisions" ? "visible" : "none";
+      map.current.setLayoutProperty("subdivisions-outline", "visibility", subdivisionsVisibility);
+    }
+  }, [mapView, mapLoaded]);
 
   return (
     <DisabledOverlay message="Globe" featurePath="globe">
@@ -375,14 +381,7 @@ export default function GlobePage() {
           />
           <div className="absolute bottom-4 left-4 z-99999">
             <div className="flex flex-col p-2 md:p-3 bg-neutral-900 rounded-lg shadow-lg border border-neutral-750 w-[300px] md:w-[400px]">
-              <ButtonGroup>
-                <Button variant="outline" onClick={() => setMapView("countries")}>
-                  Countries
-                </Button>
-                <Button variant="outline" onClick={() => setMapView("subdivisions")}>
-                  States
-                </Button>
-              </ButtonGroup>
+              <MapViewSelector mapView={mapView} setMapView={setMapView} />
             </div>
           </div>
         </div>
