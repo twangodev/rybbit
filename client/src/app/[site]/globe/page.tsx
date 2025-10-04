@@ -12,9 +12,11 @@ import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { SubHeader } from "../components/SubHeader/SubHeader";
 import { useSingleCol } from "@/api/analytics/useSingleCol";
 import { CountryFlag } from "../components/shared/icons/CountryFlag";
-import { useCountries } from "../../../lib/geo";
+import { useCountries, useSubdivisions } from "../../../lib/geo";
 import { getCountryPopulation } from "../../../lib/countryPopulation";
 import { addFilter } from "../../../lib/store";
+import { ButtonGroup } from "../../../components/ui/button-group";
+import { Button } from "../../../components/ui/button";
 
 interface TooltipContent {
   name: string;
@@ -36,9 +38,12 @@ export default function GlobePage() {
 
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 });
+  const [mapView, setMapView] = useState<"countries" | "subdivisions">("countries");
 
   const { data: countryData } = useSingleCol({ parameter: "country" });
+  const { data: subdivisionData } = useSingleCol({ parameter: "region", limit: 10000 });
   const { data: countriesGeoData } = useCountries();
+  const { data: subdivisionsGeoData } = useSubdivisions();
 
   // Process data to include per capita metrics
   const processedCountryData = useMemo(() => {
@@ -54,9 +59,24 @@ export default function GlobePage() {
     });
   }, [countryData?.data]);
 
+  const processedSubdivisionData = useMemo(() => {
+    if (!subdivisionData?.data) return null;
+
+    return subdivisionData.data.map((item: any) => {
+      const countryCode = item.value?.split("-")[0];
+      const population = getCountryPopulation(countryCode);
+      const perCapitaValue = population > 0 ? item.count / (population / 10) : 0;
+      return {
+        ...item,
+        perCapita: perCapitaValue,
+      };
+    });
+  }, [subdivisionData?.data]);
+
   // Create color scale
   const colorScale = useMemo(() => {
-    if (!processedCountryData) return () => "#eee";
+    const dataToUse = mapView === "countries" ? processedCountryData : processedSubdivisionData;
+    if (!dataToUse) return () => "#eee";
 
     const getComputedColor = (cssVar: string) => {
       const hslValues = getComputedStyle(document.documentElement).getPropertyValue(cssVar).trim();
@@ -68,14 +88,14 @@ export default function GlobePage() {
     const hslValues = hslMatch ? hslMatch[1].split(" ") : ["0", "0%", "50%"];
     const [h, s, l] = hslValues;
 
-    const values = processedCountryData.map((d: any) => d.count);
+    const values = dataToUse.map((d: any) => d.count);
     const maxValue = Math.max(...values);
 
     return scalePow<string>()
       .exponent(0.4)
       .domain([0, maxValue])
       .range([`hsla(${h}, ${s}, ${l}, 0.05)`, `hsla(${h}, ${s}, ${l}, 0.8)`]);
-  }, [processedCountryData]);
+  }, [processedCountryData, processedSubdivisionData, mapView]);
 
   useEffect(() => {
     if (!mapContainer.current) return;
@@ -91,6 +111,7 @@ export default function GlobePage() {
       pitch: 0, // Range: 0-85 (degrees, 0 = top-down view)
       bearing: 0, // Range: 0-360 (degrees, rotation)
       antialias: true, // Improves rendering quality
+      attributionControl: false, // Removes Mapbox attribution link
     });
 
     map.current.on("style.load", () => {
@@ -132,6 +153,9 @@ export default function GlobePage() {
             "fill-color": ["get", "fillColor"],
             "fill-opacity": 0.6,
           },
+          layout: {
+            visibility: mapView === "countries" ? "visible" : "none",
+          },
         });
 
         // Add outline layer
@@ -144,24 +168,14 @@ export default function GlobePage() {
             "line-width": 0.5,
             "line-opacity": 0.3,
           },
-        });
-
-        // Add hover layer
-        map.current.addLayer({
-          id: "countries-hover",
-          type: "fill",
-          source: "countries",
-          paint: {
-            "fill-color": "transparent",
-            "fill-opacity": 0,
+          layout: {
+            visibility: mapView === "countries" ? "visible" : "none",
           },
-          filter: ["==", "ISO_A2", ""],
         });
 
-        // Add hover and click handlers
+        // Countries event handlers
         map.current.on("mousemove", "countries-fill", e => {
           if (!map.current || !e.features || e.features.length === 0) return;
-
           map.current.getCanvas().style.cursor = "pointer";
 
           const feature = e.features[0];
@@ -180,16 +194,12 @@ export default function GlobePage() {
             percentage,
             perCapita,
           });
-
-          // Highlight hovered country
-          map.current.setFilter("countries-hover", ["==", "ISO_A2", code]);
         });
 
         map.current.on("mouseleave", "countries-fill", () => {
           if (!map.current) return;
           map.current.getCanvas().style.cursor = "";
           setTooltipContent(null);
-          map.current.setFilter("countries-hover", ["==", "ISO_A2", ""]);
         });
 
         map.current.on("click", "countries-fill", e => {
@@ -205,13 +215,142 @@ export default function GlobePage() {
           });
         });
       }
+
+      // Add subdivisions layer
+      if (subdivisionsGeoData && processedSubdivisionData) {
+        const geoDataCopy = JSON.parse(JSON.stringify(subdivisionsGeoData));
+        geoDataCopy.features.forEach((feature: any) => {
+          const code = feature.properties?.iso_3166_2;
+          const foundData = processedSubdivisionData.find((d: any) => d.value === code);
+          const count = foundData?.count || 0;
+          const color = count > 0 ? colorScale(count) : "rgba(140, 140, 140, 0.5)";
+          feature.properties.fillColor = color;
+          feature.properties.count = count;
+        });
+
+        map.current.addSource("subdivisions", {
+          type: "geojson",
+          data: geoDataCopy,
+        });
+
+        map.current.addLayer({
+          id: "subdivisions-fill",
+          type: "fill",
+          source: "subdivisions",
+          paint: {
+            "fill-color": ["get", "fillColor"],
+            "fill-opacity": 0.6,
+          },
+          layout: {
+            visibility: mapView === "subdivisions" ? "visible" : "none",
+          },
+        });
+
+        map.current.addLayer({
+          id: "subdivisions-outline",
+          type: "line",
+          source: "subdivisions",
+          paint: {
+            "line-color": "#ffffff",
+            "line-width": 0.5,
+            "line-opacity": 0.3,
+          },
+          layout: {
+            visibility: mapView === "subdivisions" ? "visible" : "none",
+          },
+        });
+
+        // Subdivisions event handlers
+        map.current.on("mousemove", "subdivisions-fill", e => {
+          if (!map.current || !e.features || e.features.length === 0) return;
+          map.current.getCanvas().style.cursor = "pointer";
+
+          const feature = e.features[0];
+          const code = feature.properties?.iso_3166_2;
+          const name = feature.properties?.name;
+
+          const foundData = processedSubdivisionData.find((d: any) => d.value === code);
+          const count = foundData?.count || 0;
+          const percentage = foundData?.percentage || 0;
+          const perCapita = foundData?.perCapita || 0;
+
+          setTooltipContent({
+            name,
+            code,
+            count,
+            percentage,
+            perCapita,
+          });
+        });
+
+        map.current.on("mouseleave", "subdivisions-fill", () => {
+          if (!map.current) return;
+          map.current.getCanvas().style.cursor = "";
+          setTooltipContent(null);
+        });
+
+        map.current.on("click", "subdivisions-fill", e => {
+          if (!e.features || e.features.length === 0) return;
+
+          const feature = e.features[0];
+          const code = feature.properties?.iso_3166_2;
+
+          addFilter({
+            parameter: "region" as FilterParameter,
+            value: [code],
+            type: "equals",
+          });
+        });
+      }
     });
 
     return () => {
       map.current?.remove();
       map.current = null;
     };
-  }, [countriesGeoData, processedCountryData, colorScale]);
+  }, [countriesGeoData, subdivisionsGeoData, processedCountryData, processedSubdivisionData, colorScale, mapView]);
+
+  // Toggle layer visibility when mapView changes
+  useEffect(() => {
+    if (!map.current) return;
+
+    const updateLayerVisibility = () => {
+      if (map.current?.getLayer("countries-fill")) {
+        map.current.setLayoutProperty(
+          "countries-fill",
+          "visibility",
+          mapView === "countries" ? "visible" : "none"
+        );
+      }
+      if (map.current?.getLayer("countries-outline")) {
+        map.current.setLayoutProperty(
+          "countries-outline",
+          "visibility",
+          mapView === "countries" ? "visible" : "none"
+        );
+      }
+      if (map.current?.getLayer("subdivisions-fill")) {
+        map.current.setLayoutProperty(
+          "subdivisions-fill",
+          "visibility",
+          mapView === "subdivisions" ? "visible" : "none"
+        );
+      }
+      if (map.current?.getLayer("subdivisions-outline")) {
+        map.current.setLayoutProperty(
+          "subdivisions-outline",
+          "visibility",
+          mapView === "subdivisions" ? "visible" : "none"
+        );
+      }
+    };
+
+    if (map.current.isStyleLoaded()) {
+      updateLayerVisibility();
+    } else {
+      map.current.once("styledata", updateLayerVisibility);
+    }
+  }, [mapView]);
 
   return (
     <DisabledOverlay message="Globe" featurePath="globe">
@@ -230,10 +369,20 @@ export default function GlobePage() {
           <SubHeader />
         </div>
         <div className="absolute top-0 left-0 right-0 bottom-0 z-10">
-          <div ref={mapContainer} className="w-full h-full" />
+          <div
+            ref={mapContainer}
+            className="w-full h-full [&_.mapboxgl-ctrl-bottom-left]:!hidden [&_.mapboxgl-ctrl-logo]:!hidden"
+          />
           <div className="absolute bottom-4 left-4 z-99999">
             <div className="flex flex-col p-2 md:p-3 bg-neutral-900 rounded-lg shadow-lg border border-neutral-750 w-[300px] md:w-[400px]">
-              fdss
+              <ButtonGroup>
+                <Button variant="outline" onClick={() => setMapView("countries")}>
+                  Countries
+                </Button>
+                <Button variant="outline" onClick={() => setMapView("subdivisions")}>
+                  States
+                </Button>
+              </ButtonGroup>
             </div>
           </div>
         </div>
