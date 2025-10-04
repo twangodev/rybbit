@@ -20,11 +20,7 @@ export const World = ({ width }: { width: number }) => {
   const globeEl = useRef<any>(null);
   const size = useWindowSize();
 
-  const [minutes] = useAtom(minutesAtom);
-
-  const { data: liveSessionLocations, isLoading: isLiveSessionLocationsLoading } = useGetLiveSessionLocations(
-    Number(minutes)
-  );
+  const { data: liveSessionLocations, isLoading: isLiveSessionLocationsLoading } = useGetLiveSessionLocations();
 
   const { data: countries = { features: [] } } = useQuery({
     queryKey: ["countries"],

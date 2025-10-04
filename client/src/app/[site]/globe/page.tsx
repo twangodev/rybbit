@@ -14,8 +14,10 @@ import { useMapbox } from "./hooks/useMapbox";
 import { useCountriesLayer } from "./hooks/useCountriesLayer";
 import { useSubdivisionsLayer } from "./hooks/useSubdivisionsLayer";
 import { useLayerVisibility } from "./hooks/useLayerVisibility";
+import { useRealtimeHexbinsLayer } from "./hooks/useRealtimeHexbinsLayer";
 import { createColorScale } from "./utils/colorScale";
 import { processCountryData, processSubdivisionData } from "./utils/processData";
+import { useGetLiveSessionLocations } from "../../../api/analytics/useGetLiveSessionLocations";
 
 interface TooltipContent {
   name: string;
@@ -39,6 +41,7 @@ export default function GlobePage() {
 
   const { data: countryData } = useSingleCol({ parameter: "country" });
   const { data: subdivisionData } = useSingleCol({ parameter: "region", limit: 10000 });
+  const { data: liveSessionLocations } = useGetLiveSessionLocations();
 
   const { data: countriesGeoData } = useCountries();
   const { data: subdivisionsGeoData } = useSubdivisions();
@@ -71,6 +74,13 @@ export default function GlobePage() {
     subdivisionData,
     setTooltipContent,
     mapLoaded,
+  });
+
+  useRealtimeHexbinsLayer({
+    map,
+    liveSessionLocations,
+    mapLoaded,
+    minutes: 30,
   });
 
   useLayerVisibility(map, mapView, mapLoaded);

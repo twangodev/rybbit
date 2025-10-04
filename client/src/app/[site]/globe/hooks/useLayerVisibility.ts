@@ -38,5 +38,12 @@ export function useLayerVisibility(
         mapView === "subdivisions" ? "visible" : "none"
       );
     }
+    if (map.current.getLayer("realtime-hexbins-layer")) {
+      map.current.setLayoutProperty(
+        "realtime-hexbins-layer",
+        "visibility",
+        mapView === "realtime" ? "visible" : "none"
+      );
+    }
   }, [mapView, mapLoaded, map]);
 }
