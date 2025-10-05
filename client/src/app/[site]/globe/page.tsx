@@ -1,7 +1,7 @@
 "use client";
 
 import "mapbox-gl/dist/mapbox-gl.css";
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 
 import { useSingleCol } from "@/api/analytics/useSingleCol";
 import { DisabledOverlay } from "../../../components/DisabledOverlay";
@@ -9,7 +9,7 @@ import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { useCountries, useSubdivisions } from "../../../lib/geo";
 import { CountryFlag } from "../components/shared/icons/CountryFlag";
 import { SubHeader } from "../components/SubHeader/SubHeader";
-import MapViewSelector, { MapView } from "./components/ModeSelector";
+import MapViewSelector from "./components/ModeSelector";
 import { useMapbox } from "./hooks/useMapbox";
 import { useCountriesLayer } from "./hooks/useCountriesLayer";
 import { useSubdivisionsLayer } from "./hooks/useSubdivisionsLayer";
@@ -19,26 +19,14 @@ import { createColorScale } from "./utils/colorScale";
 import { processCountryData, processSubdivisionData } from "./utils/processData";
 import { useGetSessionLocations } from "../../../api/analytics/useGetSessionLocations";
 import { GlobeSessions } from "./components/GlobeSessions";
-
-interface TooltipContent {
-  name: string;
-  code: string;
-  count: number;
-  percentage: number;
-}
-
-interface TooltipPosition {
-  x: number;
-  y: number;
-}
+import { useGlobeStore } from "./globeStore";
 
 export default function GlobePage() {
   useSetPageTitle("Rybbit · Globe");
   const mapContainer = useRef<HTMLDivElement>(null);
 
-  const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
-  const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 });
-  const [mapView, setMapView] = useState<MapView>("coordinates");
+  const { tooltipContent, tooltipPosition, mapView, setTooltipContent, setTooltipPosition, setMapView } =
+    useGlobeStore();
 
   const { data: countryData } = useSingleCol({ parameter: "country" });
   const { data: subdivisionData } = useSingleCol({ parameter: "region", limit: 10000 });
@@ -112,7 +100,7 @@ export default function GlobePage() {
             className="w-full h-full [&_.mapboxgl-ctrl-bottom-left]:!hidden [&_.mapboxgl-ctrl-logo]:!hidden"
           />
           <div className="absolute bottom-0 left-4 z-99999">
-            <MapViewSelector mapView={mapView} setMapView={setMapView} />
+            <MapViewSelector />
           </div>
           <div className="absolute bottom-[60px] left-4 z-99999">
             <GlobeSessions />
