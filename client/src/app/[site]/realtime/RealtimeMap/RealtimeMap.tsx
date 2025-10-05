@@ -1,6 +1,6 @@
 "use client";
 
-import { useGetLiveSessionLocations } from "@/api/analytics/useGetLiveSessionLocations";
+import { useGetSessionLocations } from "@/api/analytics/useGetSessionLocations";
 import { scaleSqrt } from "d3-scale";
 import { Feature, GeoJsonObject } from "geojson";
 import { Layer } from "leaflet";
@@ -28,7 +28,7 @@ interface TooltipPosition {
 }
 
 export function RealtimeMap() {
-  const { data: liveSessionLocations, isLoading: isLiveSessionLocationsLoading } = useGetLiveSessionLocations();
+  const { data: liveSessionLocations, isLoading: isLiveSessionLocationsLoading } = useGetSessionLocations();
   const { data: countriesGeoData } = useCountries();
   const [currentZoom, setCurrentZoom] = useState(1.5); // Initial zoom level
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);

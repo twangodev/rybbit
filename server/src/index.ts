@@ -19,7 +19,7 @@ import { getErrorBucketed } from "./api/analytics/getErrorBucketed.js";
 import { getErrorEvents } from "./api/analytics/getErrorEvents.js";
 import { getErrorNames } from "./api/analytics/getErrorNames.js";
 import { getJourneys } from "./api/analytics/getJourneys.js";
-import { getLiveSessionLocations } from "./api/analytics/getLiveSessionLocations.js";
+import { getSessionLocations } from "./api/analytics/getSessionLocations.js";
 import { getLiveUsercount } from "./api/analytics/getLiveUsercount.js";
 import { getOrgEventCount } from "./api/analytics/getOrgEventCount.js";
 import { getOverview } from "./api/analytics/getOverview.js";
@@ -218,7 +218,7 @@ const ANALYTICS_ROUTES = [
   "/api/users/",
   "/api/user/info/",
   "/api/user/session-count/",
-  "/api/live-session-locations/",
+  "/api/session-locations/",
   "/api/funnels/",
   "/api/funnel/",
   "/api/journeys/",
@@ -302,7 +302,7 @@ server.get("/api/users/:site", getUsers);
 server.get("/api/user/:userId/sessions/:site", getUserSessions);
 server.get("/api/user/session-count/:site", getUserSessionCount);
 server.get("/api/user/info/:userId/:site", getUserInfo);
-server.get("/api/live-session-locations/:site", getLiveSessionLocations);
+server.get("/api/session-locations/:site", getSessionLocations);
 server.get("/api/funnels/:site", getFunnels);
 server.get("/api/journeys/:site", getJourneys);
 server.post("/api/funnel/:site", getFunnel);

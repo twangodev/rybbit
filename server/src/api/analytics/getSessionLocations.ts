@@ -3,7 +3,7 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
 import { getFilterStatement, getTimeStatement, processResults } from "./utils.js";
 
-export async function getLiveSessionLocations(
+export async function getSessionLocations(
   req: FastifyRequest<{
     Params: {
       site: string;

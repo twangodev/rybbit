@@ -17,7 +17,7 @@ import { useLayerVisibility } from "./hooks/useLayerVisibility";
 import { useCoordinatesLayer } from "./hooks/useCoordinatesLayer";
 import { createColorScale } from "./utils/colorScale";
 import { processCountryData, processSubdivisionData } from "./utils/processData";
-import { useGetLiveSessionLocations } from "../../../api/analytics/useGetLiveSessionLocations";
+import { useGetSessionLocations } from "../../../api/analytics/useGetSessionLocations";
 import { GlobeSessions } from "./components/GlobeSessions";
 
 interface TooltipContent {
@@ -56,7 +56,7 @@ export default function GlobePage() {
 
   const { data: countryData } = useSingleCol({ parameter: "country" });
   const { data: subdivisionData } = useSingleCol({ parameter: "region", limit: 10000 });
-  const { data: liveSessionLocations } = useGetLiveSessionLocations();
+  const { data: liveSessionLocations } = useGetSessionLocations();
 
   const { data: countriesGeoData } = useCountries();
   const { data: subdivisionsGeoData } = useSubdivisions();

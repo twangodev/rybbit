@@ -91,7 +91,9 @@ export async function getSessions(req: FastifyRequest<GetSessionsRequest>, res: 
           countIf(type = 'custom_event') AS events,
           countIf(type = 'error') AS errors,
           countIf(type = 'outbound') AS outbound,
-          argMax(ip, timestamp) AS ip
+          argMax(ip, timestamp) AS ip,
+          argMax(lat, timestamp) AS lat,
+          argMax(lon, timestamp) AS lon
       FROM events
       WHERE
           site_id = {siteId:Int32}

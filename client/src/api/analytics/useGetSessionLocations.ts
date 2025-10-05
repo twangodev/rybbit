@@ -9,10 +9,10 @@ export type LiveSessionLocation = {
   city: string;
 };
 
-export function useGetLiveSessionLocations() {
+export function useGetSessionLocations() {
   const { time, site, filters } = useStore();
   return useQuery<LiveSessionLocation[]>({
-    queryKey: ["live-session-locations", site, time, filters],
+    queryKey: ["session-locations", site, time, filters],
     queryFn: () => {
       const queryParams = {
         ...getQueryParams(time),
@@ -26,7 +26,7 @@ export function useGetLiveSessionLocations() {
         ),
       };
 
-      return authedFetch(`/live-session-locations/${site}`, queryParams).then((res: any) => res.data);
+      return authedFetch(`/session-locations/${site}`, queryParams).then((res: any) => res.data);
     },
   });
 }

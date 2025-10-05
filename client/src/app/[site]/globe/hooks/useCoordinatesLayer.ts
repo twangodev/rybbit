@@ -2,9 +2,10 @@ import { useEffect } from "react";
 import mapboxgl from "mapbox-gl";
 import { scaleSequentialSqrt } from "d3-scale";
 import { interpolateYlOrRd } from "d3-scale-chromatic";
-import { LiveSessionLocation } from "../../../../api/analytics/useGetLiveSessionLocations";
+import { LiveSessionLocation } from "../../../../api/analytics/useGetSessionLocations";
 import { addFilter } from "../../../../lib/store";
 import { FilterParameter } from "@rybbit/shared/dist/filters";
+import { round } from "lodash";
 
 const getSizeMultiplier = (total: number) => {
   if (total <= 10) return 4; // Very large dots
@@ -139,7 +140,7 @@ export function useCoordinatesLayer({
           const count = feature.properties?.count || 0;
 
           // Get the feature's coordinates
-          const coordinates = (feature.geometry as any).coordinates.slice();
+          const coordinates = (feature.geometry as any).coordinates.slice().map((c: number) => round(c, 4));
 
           setPopoverContent({
             city,
