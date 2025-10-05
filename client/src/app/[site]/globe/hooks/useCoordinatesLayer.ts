@@ -8,7 +8,6 @@ import { FilterParameter } from "@rybbit/shared/dist/filters";
 import { round } from "lodash";
 
 const getSizeMultiplier = (total: number) => {
-  if (total <= 10) return 4; // Very large dots
   if (total <= 50) return 3; // Large dots
   if (total <= 200) return 2; // Medium dots
   if (total <= 500) return 1.5; // Small-medium dots
@@ -84,12 +83,25 @@ export function useCoordinatesLayer({
               0,
               ["interpolate", ["linear"], ["get", "count"], 1, 1 * sizeMultiplier, highest, 3 * sizeMultiplier],
               5,
-              ["interpolate", ["linear"], ["get", "count"], 1, 2 * sizeMultiplier, highest, 5 * sizeMultiplier],
+              ["interpolate", ["linear"], ["get", "count"], 1, 3 * sizeMultiplier, highest, 7 * sizeMultiplier],
               10,
-              ["interpolate", ["linear"], ["get", "count"], 1, 4 * sizeMultiplier, highest, 10 * sizeMultiplier],
+              ["interpolate", ["linear"], ["get", "count"], 1, 7 * sizeMultiplier, highest, 15 * sizeMultiplier],
               15,
-              ["interpolate", ["linear"], ["get", "count"], 1, 8 * sizeMultiplier, highest, 20 * sizeMultiplier],
+              ["interpolate", ["linear"], ["get", "count"], 1, 15 * sizeMultiplier, highest, 30 * sizeMultiplier],
             ],
+            // "circle-radius": [
+            //   "interpolate",
+            //   ["exponential", 2],
+            //   ["zoom"],
+            //   0,
+            //   ["interpolate", ["linear"], ["get", "count"], 1, 1 * sizeMultiplier, highest, 3 * sizeMultiplier],
+            //   5,
+            //   ["interpolate", ["linear"], ["get", "count"], 1, 2 * sizeMultiplier, highest, 5 * sizeMultiplier],
+            //   10,
+            //   ["interpolate", ["linear"], ["get", "count"], 1, 4 * sizeMultiplier, highest, 10 * sizeMultiplier],
+            //   15,
+            //   ["interpolate", ["linear"], ["get", "count"], 1, 8 * sizeMultiplier, highest, 20 * sizeMultiplier],
+            // ],
             "circle-color": singleColor,
             "circle-opacity": 0.7,
             "circle-stroke-width": 1,
