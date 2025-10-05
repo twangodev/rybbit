@@ -20,8 +20,6 @@ export function useCoordinatesLayer({
   liveSessionLocations,
   mapLoaded,
   minutes,
-  setPopoverContent,
-  setPopoverPosition,
   setTooltipContent,
   mapView,
 }: {
@@ -29,8 +27,6 @@ export function useCoordinatesLayer({
   liveSessionLocations: LiveSessionLocation[] | undefined;
   mapLoaded: boolean;
   minutes: number;
-  setPopoverContent: (content: any) => void;
-  setPopoverPosition: (position: { x: number; y: number }) => void;
   setTooltipContent: (content: any) => void;
   mapView: string;
 }) {
@@ -142,13 +138,6 @@ export function useCoordinatesLayer({
           // Get the feature's coordinates
           const coordinates = (feature.geometry as any).coordinates.slice().map((c: number) => round(c, 4));
 
-          setPopoverContent({
-            city,
-            count,
-            lat: coordinates[1],
-            lng: coordinates[0],
-          });
-
           addFilter({
             parameter: "lat" as FilterParameter,
             value: [coordinates[1]],
@@ -170,5 +159,5 @@ export function useCoordinatesLayer({
     };
 
     addCoordinatesLayer();
-  }, [liveSessionLocations, mapLoaded, map, minutes, setPopoverContent, setPopoverPosition, setTooltipContent]);
+  }, [liveSessionLocations, mapLoaded, map, minutes, setTooltipContent]);
 }

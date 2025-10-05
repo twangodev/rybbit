@@ -1,7 +1,7 @@
-import { ArrowRight, ExternalLink, FileText, MousePointerClick } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronUp, ExternalLink, FileText, MousePointerClick } from "lucide-react";
 import { DateTime } from "luxon";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { animals, colors, uniqueNamesGenerator } from "unique-names-generator";
 import { useCurrentSite } from "../../../../api/admin/sites";
 import { GetSessionsResponse, useGetSessionsInfinite } from "../../../../api/analytics/userSessions";
@@ -15,7 +15,8 @@ import {
 import { Badge } from "../../../../components/ui/badge";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../../../../components/ui/tooltip";
 import { formatShortDuration, hour12, userLocale } from "../../../../lib/dateTimeUtils";
-import { formatter } from "../../../../lib/utils";
+import { cn, formatter } from "../../../../lib/utils";
+import { Button } from "../../../../components/ui/button";
 
 // Function to truncate path for display
 function truncatePath(path: string, maxLength: number = 32) {
@@ -24,6 +25,38 @@ function truncatePath(path: string, maxLength: number = 32) {
 
   // Keep the beginning of the path with ellipsis
   return `${path.substring(0, maxLength)}...`;
+}
+
+function SessionCardSkeleton() {
+  return (
+    <div className="rounded-lg bg-neutral-850 border border-neutral-800 overflow-hidden p-2 space-y-2 animate-pulse">
+      <div className="flex justify-between border-b border-neutral-700 pb-2">
+        <div className="flex items-center gap-2">
+          <div className="h-4 w-24 bg-neutral-700 rounded" />
+          <div className="h-4 w-4 bg-neutral-700 rounded" />
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div className="h-3 w-20 bg-neutral-700 rounded" />
+          <div className="h-3 w-1 bg-neutral-700 rounded" />
+          <div className="h-3 w-10 bg-neutral-700 rounded hidden md:block" />
+        </div>
+      </div>
+      <div className="flex space-x-2 items-center">
+        <div className="h-6 w-6 bg-neutral-700 rounded" />
+        <div className="h-6 w-6 bg-neutral-700 rounded" />
+        <div className="h-6 w-6 bg-neutral-700 rounded" />
+        <div className="h-6 w-6 bg-neutral-700 rounded" />
+        <div className="h-6 w-16 bg-neutral-700 rounded" />
+        <div className="h-6 w-16 bg-neutral-700 rounded" />
+        <div className="h-6 w-20 bg-neutral-700 rounded" />
+      </div>
+      <div className="items-center flex-1 min-w-0 hidden md:flex gap-2">
+        <div className="h-3 w-32 bg-neutral-700 rounded" />
+        <div className="h-3 w-3 bg-neutral-700 rounded" />
+        <div className="h-3 w-32 bg-neutral-700 rounded" />
+      </div>
+    </div>
+  );
 }
 
 function SessionCard({ session }: { session: GetSessionsResponse[number] }) {
@@ -131,6 +164,8 @@ function SessionCard({ session }: { session: GetSessionsResponse[number] }) {
 export function GlobeSessions() {
   const { data, isLoading, error, fetchNextPage, hasNextPage, isFetchingNextPage } = useGetSessionsInfinite();
 
+  const [expanded, setExpanded] = useState(false);
+
   // Combine all pages of data
   const flattenedData = useMemo(() => {
     if (!data) return [];
@@ -139,11 +174,22 @@ export function GlobeSessions() {
 
   return (
     <div className="space-y-2 bg-neutral-900 p-2 rounded-lg w-[371px]">
-      <div className="text-sm text-neutral-300 font-medium">SESSIONS</div>
-      <div className="space-y-2 max-h-[calc(100vh-210px)] overflow-y-auto">
-        {flattenedData.map(session => (
-          <SessionCard key={session.session_id} session={session} />
-        ))}
+      <div className="text-sm text-neutral-300 font-medium flex items-center justify-between">
+        SESSIONS
+        <Button variant="ghost" size="smIcon" onClick={() => setExpanded(!expanded)}>
+          {expanded ? <ChevronDown className="w-4 h-4" /> : <ChevronUp className="w-4 h-4" />}
+        </Button>
+      </div>
+      <div className={cn("space-y-2 overflow-y-auto", expanded ? "max-h-[calc(100vh-210px)]" : "max-h-[210px]")}>
+        {isLoading ? (
+          <>
+            <SessionCardSkeleton />
+            <SessionCardSkeleton />
+            <SessionCardSkeleton />
+          </>
+        ) : (
+          flattenedData.map(session => <SessionCard key={session.session_id} session={session} />)
+        )}
       </div>
     </div>
   );

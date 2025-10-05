@@ -32,26 +32,12 @@ interface TooltipPosition {
   y: number;
 }
 
-interface PopoverContent {
-  city: string;
-  count: number;
-  lat: number;
-  lng: number;
-}
-
-interface PopoverPosition {
-  x: number;
-  y: number;
-}
-
 export default function GlobePage() {
   useSetPageTitle("Rybbit · Globe");
   const mapContainer = useRef<HTMLDivElement>(null);
 
   const [tooltipContent, setTooltipContent] = useState<TooltipContent | null>(null);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 });
-  const [popoverContent, setPopoverContent] = useState<PopoverContent | null>(null);
-  const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ x: 0, y: 0 });
   const [mapView, setMapView] = useState<MapView>("coordinates");
 
   const { data: countryData } = useSingleCol({ parameter: "country" });
@@ -98,8 +84,6 @@ export default function GlobePage() {
     liveSessionLocations,
     mapLoaded,
     minutes: 30,
-    setPopoverContent,
-    setPopoverPosition,
     setTooltipContent,
     mapView,
   });
@@ -130,7 +114,7 @@ export default function GlobePage() {
           <div className="absolute bottom-0 left-4 z-99999">
             <MapViewSelector mapView={mapView} setMapView={setMapView} />
           </div>
-          <div className="absolute top-[105px] left-4 z-99999">
+          <div className="absolute bottom-[60px] left-4 z-99999">
             <GlobeSessions />
           </div>
         </div>
@@ -150,29 +134,6 @@ export default function GlobePage() {
             <div>
               <span className="font-bold text-accent-400">{tooltipContent.count.toLocaleString()}</span>{" "}
               <span className="text-neutral-300">({tooltipContent.percentage.toFixed(1)}%) sessions</span>
-            </div>
-          </div>
-        )}
-        {popoverContent && (
-          <div className="absolute bottom-4 right-4 z-50">
-            <div className="flex flex-col p-2 md:p-3 bg-neutral-900 rounded-lg shadow-lg border border-neutral-750 w-[300px] md:w-[400px]">
-              <button
-                onClick={() => setPopoverContent(null)}
-                className="absolute top-2 right-2 text-neutral-400 hover:text-neutral-200 transition-colors"
-              >
-                ✕
-              </button>
-              <div className="font-semibold text-base mb-2">{popoverContent.city}</div>
-              <div className="space-y-1">
-                <div>
-                  <span className="text-neutral-400">Visitors: </span>
-                  <span className="font-bold text-accent-400">{popoverContent.count.toLocaleString()}</span>
-                </div>
-                <div className="text-xs text-neutral-400">
-                  <div>Lat: {popoverContent.lat.toFixed(4)}</div>
-                  <div>Lng: {popoverContent.lng.toFixed(4)}</div>
-                </div>
-              </div>
             </div>
           </div>
         )}
