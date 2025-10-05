@@ -15,7 +15,7 @@ export function Header() {
         <div className="flex flex-col px-2 md:px-4">
           <DemoSignupBanner />
           <FreePlanBanner />
-          <UsageBanners />
+          {/* <UsageBanners /> */}
           <NoData />
         </div>
       )}

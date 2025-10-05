@@ -251,6 +251,8 @@ export const filterParamSchema = z.enum([
   "browser_version",
   "operating_system_version",
   "user_id",
+  "lat",
+  "lon",
 ]);
 
 /**

@@ -3,7 +3,7 @@ import { Globe2, HouseIcon, Radio } from "lucide-react";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
-export type MapView = "countries" | "subdivisions" | "realtime";
+export type MapView = "countries" | "subdivisions" | "coordinates";
 
 export default function MapViewSelector({
   mapView,
@@ -24,9 +24,9 @@ export default function MapViewSelector({
             <HouseIcon className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
             Subdivisions
           </TabsTrigger>
-          <TabsTrigger value="tab-3" className="group" onClick={() => setMapView("realtime")}>
+          <TabsTrigger value="tab-3" className="group" onClick={() => setMapView("coordinates")}>
             <Radio className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
-            Realtime
+            Coordinates
           </TabsTrigger>
         </TabsList>
         <ScrollBar orientation="horizontal" />
