@@ -51,6 +51,10 @@ export function getParameterNameLabel(parameter: FilterParameter) {
       return "OS Version";
     case "user_id":
       return "User ID";
+    case "lat":
+      return "Lat";
+    case "lon":
+      return "Lon";
     default:
       return parameter;
   }

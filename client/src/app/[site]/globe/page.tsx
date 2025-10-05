@@ -14,10 +14,11 @@ import { useMapbox } from "./hooks/useMapbox";
 import { useCountriesLayer } from "./hooks/useCountriesLayer";
 import { useSubdivisionsLayer } from "./hooks/useSubdivisionsLayer";
 import { useLayerVisibility } from "./hooks/useLayerVisibility";
-import { useCoordinatesLayer } from "./hooks/useRealtimeCoordinatesLayer";
+import { useCoordinatesLayer } from "./hooks/useCoordinatesLayer";
 import { createColorScale } from "./utils/colorScale";
 import { processCountryData, processSubdivisionData } from "./utils/processData";
 import { useGetLiveSessionLocations } from "../../../api/analytics/useGetLiveSessionLocations";
+import { GlobeSessions } from "./components/GlobeSessions";
 
 interface TooltipContent {
   name: string;
@@ -78,6 +79,7 @@ export default function GlobePage() {
     countryData,
     setTooltipContent,
     mapLoaded,
+    mapView,
   });
 
   useSubdivisionsLayer({
@@ -88,6 +90,7 @@ export default function GlobePage() {
     subdivisionData,
     setTooltipContent,
     mapLoaded,
+    mapView,
   });
 
   useCoordinatesLayer({
@@ -98,6 +101,7 @@ export default function GlobePage() {
     setPopoverContent,
     setPopoverPosition,
     setTooltipContent,
+    mapView,
   });
 
   useLayerVisibility(map, mapView, mapLoaded);
@@ -125,6 +129,9 @@ export default function GlobePage() {
           />
           <div className="absolute bottom-0 left-4 z-99999">
             <MapViewSelector mapView={mapView} setMapView={setMapView} />
+          </div>
+          <div className="absolute top-16 left-4 z-99999">
+            <GlobeSessions />
           </div>
         </div>
         {tooltipContent && (

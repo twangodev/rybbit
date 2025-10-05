@@ -3,6 +3,8 @@ import mapboxgl from "mapbox-gl";
 import { scaleSequentialSqrt } from "d3-scale";
 import { interpolateYlOrRd } from "d3-scale-chromatic";
 import { LiveSessionLocation } from "../../../../api/analytics/useGetLiveSessionLocations";
+import { addFilter } from "../../../../lib/store";
+import { FilterParameter } from "@rybbit/shared/dist/filters";
 
 const getSizeMultiplier = (total: number) => {
   if (total <= 10) return 4; // Very large dots
@@ -20,6 +22,7 @@ export function useCoordinatesLayer({
   setPopoverContent,
   setPopoverPosition,
   setTooltipContent,
+  mapView,
 }: {
   map: React.RefObject<mapboxgl.Map | null>;
   liveSessionLocations: LiveSessionLocation[] | undefined;
@@ -28,6 +31,7 @@ export function useCoordinatesLayer({
   setPopoverContent: (content: any) => void;
   setPopoverPosition: (position: { x: number; y: number }) => void;
   setTooltipContent: (content: any) => void;
+  mapView: string;
 }) {
   useEffect(() => {
     if (!map.current || !liveSessionLocations || !mapLoaded) return;
@@ -96,7 +100,7 @@ export function useCoordinatesLayer({
             "circle-stroke-opacity": 0.3,
           },
           layout: {
-            visibility: "none",
+            visibility: mapView === "coordinates" ? "visible" : "none",
           },
         });
 
@@ -142,6 +146,18 @@ export function useCoordinatesLayer({
             count,
             lat: coordinates[1],
             lng: coordinates[0],
+          });
+
+          addFilter({
+            parameter: "lat" as FilterParameter,
+            value: [coordinates[1]],
+            type: "equals",
+          });
+
+          addFilter({
+            parameter: "lon" as FilterParameter,
+            value: [coordinates[0]],
+            type: "equals",
           });
         });
       }

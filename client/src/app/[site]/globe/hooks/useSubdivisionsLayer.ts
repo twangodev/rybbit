@@ -11,6 +11,7 @@ interface UseSubdivisionsLayerProps {
   subdivisionData: any;
   setTooltipContent: (content: any) => void;
   mapLoaded: boolean;
+  mapView: string;
 }
 
 export function useSubdivisionsLayer({
@@ -21,6 +22,7 @@ export function useSubdivisionsLayer({
   subdivisionData,
   setTooltipContent,
   mapLoaded,
+  mapView,
 }: UseSubdivisionsLayerProps) {
   useEffect(() => {
     if (!map.current || !subdivisionsGeoData || !processedSubdivisionData || !mapLoaded) return;
@@ -55,7 +57,7 @@ export function useSubdivisionsLayer({
             "fill-opacity": 0.6,
           },
           layout: {
-            visibility: "none",
+            visibility: mapView === "subdivisions" ? "visible" : "none",
           },
         });
 
@@ -69,7 +71,7 @@ export function useSubdivisionsLayer({
             "line-opacity": 0.3,
           },
           layout: {
-            visibility: "none",
+            visibility: mapView === "subdivisions" ? "visible" : "none",
           },
         });
 

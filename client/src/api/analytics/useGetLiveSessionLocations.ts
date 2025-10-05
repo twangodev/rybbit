@@ -16,7 +16,14 @@ export function useGetLiveSessionLocations() {
     queryFn: () => {
       const queryParams = {
         ...getQueryParams(time),
-        filters,
+        filters: filters.filter(
+          f =>
+            f.parameter !== "lat" &&
+            f.parameter !== "lon" &&
+            f.parameter !== "city" &&
+            f.parameter !== "country" &&
+            f.parameter !== "region"
+        ),
       };
 
       return authedFetch(`/live-session-locations/${site}`, queryParams).then((res: any) => res.data);

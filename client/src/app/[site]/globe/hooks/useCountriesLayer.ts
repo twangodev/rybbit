@@ -11,6 +11,7 @@ interface UseCountriesLayerProps {
   countryData: any;
   setTooltipContent: (content: any) => void;
   mapLoaded: boolean;
+  mapView: string;
 }
 
 export function useCountriesLayer({
@@ -21,6 +22,7 @@ export function useCountriesLayer({
   countryData,
   setTooltipContent,
   mapLoaded,
+  mapView,
 }: UseCountriesLayerProps) {
   useEffect(() => {
     if (!map.current || !countriesGeoData || !processedCountryData || !mapLoaded) return;
@@ -55,7 +57,7 @@ export function useCountriesLayer({
             "fill-opacity": 0.6,
           },
           layout: {
-            visibility: "visible",
+            visibility: mapView === "countries" ? "visible" : "none",
           },
         });
 
@@ -69,7 +71,7 @@ export function useCountriesLayer({
             "line-opacity": 0.3,
           },
           layout: {
-            visibility: "visible",
+            visibility: mapView === "countries" ? "visible" : "none",
           },
         });
 

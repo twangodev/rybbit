@@ -390,14 +390,14 @@ export const goForward = () => {
 
 export const addFilter = (filter: Filter) => {
   const { filters, setFilters } = useStore.getState();
-  const filterExists = filters.some(
-    f =>
-      f.parameter === filter.parameter &&
-      f.type === filter.type &&
-      JSON.stringify(f.value) === JSON.stringify(filter.value)
+  const filterExists = filters.findIndex(
+    f => f.parameter === filter.parameter && f.type === filter.type
+    // JSON.stringify(f.value) === JSON.stringify(filter.value)
   );
-  if (!filterExists) {
+  if (filterExists === -1) {
     setFilters([...filters, filter]);
+  } else {
+    setFilters(filters.map((f, i) => (i === filterExists ? filter : f)));
   }
 };
 

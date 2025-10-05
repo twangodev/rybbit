@@ -22,6 +22,8 @@ import {
 } from "../TooltipIcons/TooltipIcons";
 import { Badge } from "../ui/badge";
 import { SessionDetails } from "./SessionDetails";
+import { Avatar } from "../Avatar";
+import { Channel } from "../Channel";
 
 interface SessionCardProps {
   session: GetSessionsResponse[number];
@@ -60,7 +62,8 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
       <div className="p-3 cursor-pointer" onClick={handleCardClick}>
         <div className="flex items-center gap-2">
           <div className="hidden md:flex items-center gap-2">
-            <span className="text-xs font-mono text-gray-400">{session.user_id.slice(0, 12)}</span>
+            {/* <span className="text-xs font-mono text-gray-400">{session.user_id.slice(0, 12)}</span> */}
+            <Avatar size={24} name={session.user_id.slice(0, 12)} />
           </div>
 
           {/* Icons section */}
@@ -80,7 +83,7 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
             />
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="outline" className="flex items-center gap-1 bg-neutral-800 text-gray-300">
+                <Badge className="flex items-center gap-1 bg-neutral-800 text-gray-300">
                   <FileText className="w-4 h-4 text-blue-500" />
                   <span>{formatter(session.pageviews)}</span>
                 </Badge>
@@ -89,31 +92,14 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
             </Tooltip>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="outline" className="flex items-center gap-1 bg-neutral-800 text-gray-300">
+                <Badge className="flex items-center gap-1 bg-neutral-800 text-gray-300">
                   <MousePointerClick className="w-4 h-4 text-amber-500" />
                   <span>{formatter(session.events)}</span>
                 </Badge>
               </TooltipTrigger>
               <TooltipContent>Events</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="flex items-center gap-1 bg-neutral-800 text-gray-300">
-                  <TriangleAlert className="w-4 h-4 text-red-500" />
-                  <span>{formatter(session.errors)}</span>
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>Errors</TooltipContent>
-            </Tooltip>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="flex items-center gap-1 bg-neutral-800 text-gray-300">
-                  <ExternalLink className="w-4 h-4 text-purple-500" />
-                  <span>{formatter(session.outbound)}</span>
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent>Outbound Clicks</TooltipContent>
-            </Tooltip>
+            <Channel channel={session.channel} referrer={session.referrer} />
           </div>
 
           {/* Pages section with tooltips for long paths */}
@@ -145,7 +131,7 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
 
           {/* Time information */}
 
-          <div className="flex items-center gap-4 text-xs text-gray-300">
+          <div className="flex items-center gap-1.5 text-xs text-gray-300">
             <span className="text-gray-400">
               {DateTime.fromSQL(session.session_start, {
                 zone: "utc",
@@ -154,6 +140,7 @@ export function SessionCard({ session, onClick, userId }: SessionCardProps) {
                 .toLocal()
                 .toFormat(hour12 ? "MMM d, h:mm a" : "dd MMM, HH:mm")}
             </span>
+            <span className="text-gray-400">•</span>
             <span className="hidden md:block">{duration}</span>
           </div>
 

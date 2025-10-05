@@ -261,7 +261,7 @@ export const filterParamSchema = z.enum([
 const filterSchema = z.object({
   parameter: filterParamSchema,
   type: filterTypeSchema,
-  value: z.array(z.string()),
+  value: z.array(z.string().or(z.number())),
 });
 
 // =============================================================================
