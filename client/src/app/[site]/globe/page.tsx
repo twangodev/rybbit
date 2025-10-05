@@ -51,7 +51,7 @@ export default function GlobePage() {
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition>({ x: 0, y: 0 });
   const [popoverContent, setPopoverContent] = useState<PopoverContent | null>(null);
   const [popoverPosition, setPopoverPosition] = useState<PopoverPosition>({ x: 0, y: 0 });
-  const [mapView, setMapView] = useState<MapView>("countries");
+  const [mapView, setMapView] = useState<MapView>("coordinates");
 
   const { data: countryData } = useSingleCol({ parameter: "country" });
   const { data: subdivisionData } = useSingleCol({ parameter: "region", limit: 10000 });
@@ -123,10 +123,8 @@ export default function GlobePage() {
             ref={mapContainer}
             className="w-full h-full [&_.mapboxgl-ctrl-bottom-left]:!hidden [&_.mapboxgl-ctrl-logo]:!hidden"
           />
-          <div className="absolute bottom-4 left-4 z-99999">
+          <div className="absolute bottom-0 left-4 z-99999">
             <MapViewSelector mapView={mapView} setMapView={setMapView} />
-            {/* <div className="flex flex-col p-2 md:p-3 bg-neutral-900 rounded-lg shadow-lg border border-neutral-750 w-[300px] md:w-[400px]">
-            </div> */}
           </div>
         </div>
         {tooltipContent && (

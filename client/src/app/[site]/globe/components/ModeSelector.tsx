@@ -16,17 +16,17 @@ export default function MapViewSelector({
     <Tabs defaultValue="tab-1">
       <ScrollArea>
         <TabsList className="mb-3">
-          <TabsTrigger value="tab-1" onClick={() => setMapView("countries")}>
+          <TabsTrigger value="tab-1" className="group" onClick={() => setMapView("coordinates")}>
+            <Radio className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
+            Coordinates
+          </TabsTrigger>
+          <TabsTrigger value="tab-2" onClick={() => setMapView("countries")}>
             <Globe2 className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
             Countries
           </TabsTrigger>
-          <TabsTrigger value="tab-2" className="group" onClick={() => setMapView("subdivisions")}>
+          <TabsTrigger value="tab-3" className="group" onClick={() => setMapView("subdivisions")}>
             <HouseIcon className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
             Subdivisions
-          </TabsTrigger>
-          <TabsTrigger value="tab-3" className="group" onClick={() => setMapView("coordinates")}>
-            <Radio className="-ms-0.5 me-1.5 opacity-60" size={16} aria-hidden="true" />
-            Coordinates
           </TabsTrigger>
         </TabsList>
         <ScrollBar orientation="horizontal" />
