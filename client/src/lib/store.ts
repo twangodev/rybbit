@@ -27,6 +27,8 @@ export const SESSION_PAGE_FILTERS: FilterParameter[] = [
   "utm_term",
   "utm_content",
   "user_id",
+  "lat",
+  "lon",
 ];
 
 export const SESSION_REPLAY_PAGE_FILTERS: FilterParameter[] = [

@@ -1,6 +1,9 @@
-import { ArrowRight, FileText, MousePointerClick } from "lucide-react";
+import { ArrowRight, ExternalLink, FileText, MousePointerClick } from "lucide-react";
 import { DateTime } from "luxon";
+import Link from "next/link";
 import { useMemo } from "react";
+import { animals, colors, uniqueNamesGenerator } from "unique-names-generator";
+import { useCurrentSite } from "../../../../api/admin/sites";
 import { GetSessionsResponse, useGetSessionsInfinite } from "../../../../api/analytics/userSessions";
 import { Channel } from "../../../../components/Channel";
 import {
@@ -29,12 +32,25 @@ function SessionCard({ session }: { session: GetSessionsResponse[number] }) {
   const end = DateTime.fromSQL(session.session_end);
   const totalSeconds = Math.floor(end.diff(start).milliseconds / 1000);
   const duration = formatShortDuration(totalSeconds);
+  const siteId = useCurrentSite();
+
+  const name = uniqueNamesGenerator({
+    dictionaries: [colors, animals],
+    separator: " ",
+    style: "capital",
+    seed: session.user_id,
+  });
 
   return (
     <div className="rounded-lg bg-neutral-850 border border-neutral-800 overflow-hidden p-2 space-y-2">
       <div className="flex justify-between border-b border-neutral-700 pb-2">
-        <div className="flex space-x-2 items-center text-sm font-medium">Placeholder Name</div>
-        <div className="flex space-x-2 items-center">
+        <div className="text-sm text-neutral-100 flex items-center gap-2">
+          {name}{" "}
+          <Link href={`/${siteId.site?.id}/user/${session.user_id}`}>
+            <ExternalLink className="w-4 h-4 text-gray-400" />
+          </Link>
+        </div>
+        <div className="flex space-x-2 items-center pr-2">
           <div className="flex items-center gap-1.5 text-xs text-gray-300">
             <span className="text-gray-400">
               {DateTime.fromSQL(session.session_start, {
@@ -123,8 +139,8 @@ export function GlobeSessions() {
 
   return (
     <div className="space-y-2 bg-neutral-900 p-2 rounded-lg w-[371px]">
-      <div className="text-sm text-gray-400">Sessions</div>
-      <div className="space-y-2 max-h-[80vh] overflow-y-auto">
+      <div className="text-sm text-neutral-300 font-medium">SESSIONS</div>
+      <div className="space-y-2 max-h-[calc(100vh-210px)] overflow-y-auto">
         {flattenedData.map(session => (
           <SessionCard key={session.session_id} session={session} />
         ))}

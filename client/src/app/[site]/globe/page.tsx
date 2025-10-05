@@ -130,7 +130,7 @@ export default function GlobePage() {
           <div className="absolute bottom-0 left-4 z-99999">
             <MapViewSelector mapView={mapView} setMapView={setMapView} />
           </div>
-          <div className="absolute top-16 left-4 z-99999">
+          <div className="absolute top-[105px] left-4 z-99999">
             <GlobeSessions />
           </div>
         </div>
