@@ -38,7 +38,7 @@ export type GetSessionsResponse = {
 }[];
 
 export function useGetSessionsInfinite(userId?: string) {
-  const { time, site, filters } = useStore();
+  const { time, site } = useStore();
 
   // Get the appropriate time parameters using getQueryParams
   const timeParams = getQueryParams(time);

@@ -191,12 +191,7 @@ export function PaidPlan() {
               </div>
             </div>
 
-            {organizationId && (
-              <div className="space-y-2">
-                <h3 className="font-medium text-sm text-neutral-400 mb-2">Last 30 Days</h3>
-                <UsageChart organizationId={organizationId} startDate={startDate} endDate={endDate} />
-              </div>
-            )}
+            {organizationId && <UsageChart organizationId={organizationId} startDate={startDate} endDate={endDate} />}
 
             {isAnnualPlan && (
               <div className="pt-2 pb-0 px-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-md border border-emerald-100 dark:border-emerald-800">

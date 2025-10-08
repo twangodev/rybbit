@@ -17,6 +17,7 @@ interface SubscriptionData {
   trialDaysRemaining?: number;
   message?: string; // For expired trial message
   isPro?: boolean;
+  appSumoPlan?: string;
 }
 
 export function useStripeSubscription() {

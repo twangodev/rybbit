@@ -1,39 +1,22 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { ReactNode } from "react";
+import { trackAdEvent } from "@/lib/trackAdEvent";
+import Link from "next/link";
 
 interface TrackedButtonProps {
-  children: ReactNode;
-  eventName: string;
-  eventData?: Record<string, any>;
-  className?: string;
-  onClick?: () => void;
+  href: string;
+  eventName: "signup" | "demo" | "login" | "github";
+  eventProps: Record<string, string | number | boolean>;
+  className: string;
+  children: React.ReactNode;
 }
 
-declare global {
-  interface Window {
-    dataLayer?: any[];
-  }
-}
-
-export function TrackedButton({ children, eventName, eventData = {}, className, onClick }: TrackedButtonProps) {
-  const handleClick = () => {
-    if (typeof window !== "undefined" && window.dataLayer) {
-      window.dataLayer.push({
-        event: eventName,
-        ...eventData,
-      });
-    }
-
-    if (onClick) {
-      onClick();
-    }
-  };
-
+export function TrackedButton({ href, eventName, eventProps, className, children }: TrackedButtonProps) {
   return (
-    <button className={className} onClick={handleClick}>
-      {children}
-    </button>
+    <Link href={href} className="w-full sm:w-auto">
+      <button onClick={() => trackAdEvent(eventName, eventProps)} className={className}>
+        {children}
+      </button>
+    </Link>
   );
 }

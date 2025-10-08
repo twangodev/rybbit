@@ -11,6 +11,7 @@ import { useSetPageTitle } from "../../../../hooks/useSetPageTitle";
 import { FreePlan } from "../../../../components/subscription/FreePlan";
 import { Building } from "lucide-react";
 import { authClient } from "@/lib/auth";
+import { AppSumoPlan } from "../../../../components/subscription/AppSumoPlan";
 
 export default function OrganizationSubscriptionPage() {
   useSetPageTitle("Rybbit · Organization Subscription");
@@ -61,6 +62,10 @@ export default function OrganizationSubscriptionPage() {
 
     if (activeSubscription.isTrial) {
       return <TrialPlan />;
+    }
+
+    if (activeSubscription.appSumoPlan) {
+      return <AppSumoPlan />;
     }
 
     return <PaidPlan />;

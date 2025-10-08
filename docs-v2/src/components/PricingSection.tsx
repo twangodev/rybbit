@@ -5,7 +5,7 @@ import { Check, X, CheckCircle } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-import { TrackedButton } from "./TrackedButton";
+import { trackAdEvent } from "@/lib/trackAdEvent";
 
 // Available event tiers for the slider
 const EVENT_TIERS = [100_000, 250_000, 500_000, 1_000_000, 2_000_000, 5_000_000, 10_000_000, "Custom"];
@@ -196,15 +196,14 @@ export function PricingSection() {
                 </div>
 
                 <Link href="https://app.rybbit.io/signup" className="w-full block">
-                  <TrackedButton
-                    eventName="signup_click"
-                    eventData={{ location: "pricing" }}
+                  <button
+                    onClick={() => trackAdEvent("signup", { location: "pricing" })}
                     data-rybbit-event="signup"
                     data-rybbit-prop-location="free"
                     className="w-full bg-neutral-700 hover:bg-neutral-600 text-white font-medium px-5 py-3 rounded-lg border border-neutral-600 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-neutral-400 focus:ring-opacity-50 cursor-pointer"
                   >
                     Start for free
-                  </TrackedButton>
+                  </button>
                 </Link>
                 <div className="space-y-3 mt-6 mb-3">
                   {FREE_FEATURES.map((item, i) => (
@@ -253,15 +252,14 @@ export function PricingSection() {
                   </Link>
                 ) : (
                   <Link href="https://app.rybbit.io/signup" className="w-full block">
-                    <TrackedButton
-                      eventName="signup_click"
-                      eventData={{ location: "pricing" }}
+                    <button
+                      onClick={() => trackAdEvent("signup", { location: "pricing" })}
                       data-rybbit-event="signup"
                       data-rybbit-prop-location="standard"
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer"
                     >
                       Try for free
-                    </TrackedButton>
+                    </button>
                   </Link>
                 )}
 
@@ -280,7 +278,7 @@ export function PricingSection() {
                   ) : (
                     <>
                       <CheckCircle className="w-3 h-3" />
-                      We don&apos;t ask for your credit card
+                      We don&apos;t ask for your credit card. 60 day money back guarantee.
                     </>
                   )}
                 </p>
@@ -319,15 +317,14 @@ export function PricingSection() {
                   </Link>
                 ) : (
                   <Link href="https://app.rybbit.io/signup" className="w-full block">
-                    <TrackedButton
-                      eventName="signup_click"
-                      eventData={{ location: "pricing" }}
+                    <button
+                      onClick={() => trackAdEvent("signup", { location: "pricing" })}
                       data-rybbit-event="signup"
                       data-rybbit-prop-location="pro"
                       className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-5 py-3 rounded-lg shadow-lg shadow-emerald-900/20 transform hover:-translate-y-0.5 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-opacity-50 cursor-pointer"
                     >
                       Try for free
-                    </TrackedButton>
+                    </button>
                   </Link>
                 )}
 
@@ -346,7 +343,7 @@ export function PricingSection() {
                   ) : (
                     <>
                       <CheckCircle className="w-3 h-3" />
-                      We don&apos;t ask for your credit card
+                      We don&apos;t ask for your credit card. 60 day money back guarantee.
                     </>
                   )}
                 </p>

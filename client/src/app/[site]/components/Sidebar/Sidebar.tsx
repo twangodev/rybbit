@@ -6,6 +6,8 @@ import {
   File,
   Funnel,
   Gauge,
+  Globe,
+  Globe2,
   LayoutDashboard,
   Map,
   MousePointerClick,
@@ -58,17 +60,23 @@ function SidebarContent() {
           href={getTabPath("main")}
           icon={<LayoutDashboard className="w-4 h-4" />}
         />
-        <SidebarComponents.Item
+        {/* <SidebarComponents.Item
           label="Realtime"
           active={isActiveTab("realtime")}
           href={getTabPath("realtime")}
           icon={<Earth className="w-4 h-4" />}
-        />
-        <SidebarComponents.Item
+        /> */}
+        {/* <SidebarComponents.Item
           label="Map"
           active={isActiveTab("map")}
           href={getTabPath("map")}
           icon={<Map className="w-4 h-4" />}
+        /> */}
+        <SidebarComponents.Item
+          label="Globe"
+          active={isActiveTab("globe")}
+          href={getTabPath("globe")}
+          icon={<Globe2 className="w-4 h-4" />}
         />
         {IS_CLOUD && (
           <SidebarComponents.Item

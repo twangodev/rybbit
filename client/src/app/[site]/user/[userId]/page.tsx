@@ -6,8 +6,8 @@ import {
   Calendar,
   CalendarCheck,
   Clock,
+  Eye,
   Files,
-  FileText,
   Monitor,
   MousePointerClick,
   Smartphone,
@@ -17,19 +17,20 @@ import { DateTime } from "luxon";
 import { useParams, useRouter } from "next/navigation";
 import { useUserInfo } from "../../../../api/analytics/userInfo";
 import { useGetUserSessionCount } from "../../../../api/analytics/userSessions";
+import { Avatar, generateName } from "../../../../components/Avatar";
+import { Badge } from "../../../../components/ui/badge";
 import { Button } from "../../../../components/ui/button";
 import { Skeleton } from "../../../../components/ui/skeleton";
 import { useSetPageTitle } from "../../../../hooks/useSetPageTitle";
+import { formatDuration } from "../../../../lib/dateTimeUtils";
 import { useGetRegionName } from "../../../../lib/geo";
 import { getCountryName, getLanguageName } from "../../../../lib/utils";
-import { formatDuration } from "../../../../lib/dateTimeUtils";
 import { Browser } from "../../components/shared/icons/Browser";
 import { CountryFlag } from "../../components/shared/icons/CountryFlag";
 import { OperatingSystem } from "../../components/shared/icons/OperatingSystem";
-import { VisitCalendar } from "./components/Calendar";
-import { Avatar } from "../../../../components/Avatar";
 import { MobileSidebar } from "../../components/Sidebar/MobileSidebar";
-import { Badge } from "../../../../components/ui/badge";
+import { VisitCalendar } from "./components/Calendar";
+import { EventIcon, PageviewIcon } from "../../../../components/EventIcons";
 
 export default function UserPage() {
   useSetPageTitle("Rybbit · User");
@@ -48,21 +49,23 @@ export default function UserPage() {
     router.push(`/${site}/users`);
   };
 
+  const name = generateName(userId as string);
+
   return (
     <div className="p-2 md:p-4 max-w-[1300px] mx-auto space-y-3">
-      <Button onClick={handleBackClick} className="w-full sm:w-max">
+      <MobileSidebar />
+      <Button onClick={handleBackClick} className="w-max" variant="ghost">
         <ArrowLeft className="h-4 w-4" />
         Back to Users
       </Button>
       <div className="mb-4">
-        <h1 className="mb-4 flex items-center gap-2 justify-between">
-          <div className="text-2xl font-bold flex items-center gap-2">
+        <h1 className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Avatar size={48} id={userId as string} />
             <div>
-              <MobileSidebar />
+              <div className="text-lg font-bold">{name}</div>
+              <span className="text-neutral-300 text-sm">ID: {userId}</span>
             </div>
-
-            <Avatar size={40} name={userId as string} />
-            {userId?.slice(0, 12)}
           </div>
           {data?.ip && (
             <Badge variant="outline" className="flex gap-1 text-neutral-300">
@@ -177,14 +180,14 @@ export default function UserPage() {
               </div>
               <div className="bg-neutral-900 p-3 rounded-lg flex flex-col gap-1 border border-neutral-800  flex-grow">
                 <div className="text-xs text-neutral-400 flex items-center gap-1">
-                  <FileText className="w-4 h-4" />
+                  <PageviewIcon />
                   Pageviews
                 </div>
                 <div className="font-semibold">{data?.pageviews}</div>
               </div>
               <div className="bg-neutral-900 p-3 rounded-lg flex flex-col gap-1 border border-neutral-800  flex-grow">
                 <div className="text-xs text-neutral-400 flex items-center gap-1">
-                  <MousePointerClick className="w-4 h-4" />
+                  <EventIcon />
                   Events
                 </div>
                 <div className="font-semibold">{data?.events}</div>

@@ -10,6 +10,7 @@ import {
   Link,
   LogIn,
   LogOut,
+  MapPin,
   MapPinHouse,
   MapPinned,
   Maximize,
@@ -155,6 +156,16 @@ export const FilterOptions: {
     label: "UTM Term",
     value: "utm_term",
     icon: <Tag className="h-4 w-4" />,
+  },
+  {
+    label: "Lat",
+    value: "lat",
+    icon: <MapPin className="h-4 w-4" />,
+  },
+  {
+    label: "Lon",
+    value: "lon",
+    icon: <MapPin className="h-4 w-4" />,
   },
 ];
 

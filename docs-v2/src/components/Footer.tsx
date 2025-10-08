@@ -181,6 +181,16 @@ export function Footer() {
                 </Link>
               </li>
               <li>
+                <Link href="/terms-and-conditions" className="text-neutral-400 hover:text-white transition-colors">
+                  Terms and Conditions
+                </Link>
+              </li>
+              <li>
+                <Link href="/security" className="text-neutral-400 hover:text-white transition-colors">
+                  Security
+                </Link>
+              </li>
+              <li>
                 <a href="mailto:hello@rybbit.io" className="text-neutral-400 hover:text-white transition-colors">
                   Support
                 </a>
@@ -193,7 +203,12 @@ export function Footer() {
         <div className="pt-8 border-t border-neutral-800">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-sm text-neutral-400">© {new Date().getFullYear()} Rybbit. All rights reserved.</div>
-            <div className="text-sm text-neutral-400">Made with ❤️ by frogs</div>
+            <div className="text-sm text-neutral-400">
+              Made with ❤️ by frogs{" "}
+              <a href="https://tomato.gg" target="_blank" title="Tomato.gg">
+                🐸🍅
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -51,7 +51,7 @@ function ownerMessage(message: string, featurePath?: string, requiredPlan?: "pro
   );
 }
 
-function userMessage(message: string, featurePath?: string, requiredPlan?: "pro" | "standard") {
+function userMessage(message: string, featurePath?: string) {
   return (
     <div className="bg-neutral-900 rounded-lg  border border-neutral-700 shadow-xl flex flex-col gap-3 p-4">
       <div className="flex gap-3">
@@ -117,9 +117,7 @@ export const DisabledOverlay: React.FC<DisabledOverlayProps> = ({
       <div className="absolute inset-0 flex items-center justify-center z-10" style={borderRadiusStyle}>
         {showMessage && (
           <div className="flex items-center justify-center">
-            {site?.isOwner
-              ? ownerMessage(message, featurePath, requiredPlan)
-              : userMessage(message, featurePath, requiredPlan)}
+            {site?.isOwner ? ownerMessage(message, featurePath, requiredPlan) : userMessage(message, featurePath)}
           </div>
         )}
       </div>

@@ -166,10 +166,9 @@ const COMPARISON_FEATURES = [
 
 interface FeatureCellProps {
   value: boolean | string;
-  isPro?: boolean;
 }
 
-function FeatureCell({ value, isPro = false }: FeatureCellProps) {
+function FeatureCell({ value }: FeatureCellProps) {
   if (typeof value === "boolean") {
     return value ? (
       <Check className="h-5 w-5 text-emerald-400 mx-auto" />
@@ -257,7 +256,7 @@ export function ComparisonSection() {
                     <FeatureCell value={feature.standard} />
                   </div>
                   <div className="flex items-center justify-center px-6">
-                    <FeatureCell value={feature.pro} isPro={true} />
+                    <FeatureCell value={feature.pro} />
                   </div>
                 </div>
               ))}

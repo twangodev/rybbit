@@ -53,7 +53,7 @@ export function useGetGoals({
     queryFn: async () => {
       return authedFetch<GoalsResponse>(`/goals/${site}`, {
         ...timeParams,
-        filteredFilters,
+        filters: filteredFilters,
         page,
         pageSize,
         sort,

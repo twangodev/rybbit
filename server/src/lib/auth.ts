@@ -9,7 +9,7 @@ import { db } from "../db/postgres/postgres.js";
 import * as schema from "../db/postgres/schema.js";
 import { user } from "../db/postgres/schema.js";
 import { DISABLE_SIGNUP } from "./const.js";
-import { sendEmail, sendInvitationEmail } from "./resend.js";
+import { sendEmail, sendInvitationEmail } from "./email/email.js";
 
 dotenv.config();
 

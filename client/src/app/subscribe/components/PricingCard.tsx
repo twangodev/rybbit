@@ -5,8 +5,16 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { BACKEND_URL } from "@/lib/const";
 import { authClient } from "@/lib/auth";
-import { EVENT_TIERS, STANDARD_FEATURES, PRO_FEATURES, FREE_FEATURES, findPriceForTier, formatEventTier } from "./utils";
+import {
+  EVENT_TIERS,
+  STANDARD_FEATURES,
+  PRO_FEATURES,
+  FREE_FEATURES,
+  findPriceForTier,
+  formatEventTier,
+} from "./utils";
 import { getStripePrices } from "../../../lib/stripe";
+import { trackAdEvent } from "../../../lib/trackAdEvent";
 
 export function PricingCard({ isLoggedIn }: { isLoggedIn: boolean }) {
   const stripePrices = getStripePrices();
@@ -66,6 +74,7 @@ export function PricingCard({ isLoggedIn }: { isLoggedIn: boolean }) {
       });
 
       const data = await response.json();
+      trackAdEvent("checkout", { tier: selectedTierPrice.name });
 
       if (!response.ok) {
         throw new Error(data.error || "Failed to create checkout session.");

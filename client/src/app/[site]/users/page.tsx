@@ -15,9 +15,11 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useGetUsers, UsersResponse } from "../../../api/analytics/users";
-import { Button } from "../../../components/ui/button";
+import { Avatar, generateName } from "../../../components/Avatar";
+import { DisabledOverlay } from "../../../components/DisabledOverlay";
 import { Pagination } from "../../../components/pagination";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "../../../components/ui/tooltip";
+import { Button } from "../../../components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../../../components/ui/tooltip";
 import { useSetPageTitle } from "../../../hooks/useSetPageTitle";
 import { USER_PAGE_FILTERS } from "../../../lib/store";
 import { getCountryName } from "../../../lib/utils";
@@ -25,8 +27,6 @@ import { Browser } from "../components/shared/icons/Browser";
 import { CountryFlag } from "../components/shared/icons/CountryFlag";
 import { OperatingSystem } from "../components/shared/icons/OperatingSystem";
 import { SubHeader } from "../components/SubHeader/SubHeader";
-import { DisabledOverlay } from "../../../components/DisabledOverlay";
-import { Avatar } from "../../../components/Avatar";
 
 // Set up column helper
 const columnHelper = createColumnHelper<UsersResponse>();
@@ -97,13 +97,11 @@ export default function UsersPage() {
   // Define table columns with consistent Title Case capitalization
   const columns = [
     columnHelper.accessor("user_id", {
-      header: "User ID",
+      header: "User",
       cell: info => (
-        <Link href={`/${site}/user/${info.getValue()}`}>
-          <div className=" truncate flex items-center gap-2 text-neutral-250 hover:text-neutral-100 hover:underline">
-            <Avatar size={20} name={info.getValue() as string} />
-            {info.getValue().slice(0, 12)}
-          </div>
+        <Link href={`/${site}/user/${info.getValue()}`} className="flex items-center gap-2 hover:underline">
+          <Avatar size={20} id={info.getValue() as string} />
+          <span className="max-w-24 truncate">{generateName(info.getValue())}</span>
         </Link>
       ),
     }),

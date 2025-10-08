@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
 import { cn } from "@/lib/utils";
 import { Suspense } from "react";
-import { enrichTweet, type TweetProps, type TwitterComponents } from "react-tweet";
+import { enrichTweet, type TweetProps } from "react-tweet";
 import { getTweet, type Tweet } from "react-tweet/api";
-import { TweetHeader, TweetBody, TweetMedia } from "./TweetClient";
+import { TweetBody, TweetHeader, TweetMedia } from "./TweetClient";
 
 const Skeleton = ({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) => {
   return <div className={cn("rounded-md bg-primary/10", className)} {...props} />;

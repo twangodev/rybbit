@@ -1,23 +1,21 @@
-import { FastifyRequest, FastifyReply } from "fastify";
+import { FilterParams } from "@rybbit/shared";
+import { FastifyReply, FastifyRequest } from "fastify";
 import { clickhouse } from "../../db/clickhouse/clickhouse.js";
-import { processResults } from "./utils.js";
-import SqlString from "sqlstring";
+import { getFilterStatement, getTimeStatement, processResults } from "./utils.js";
 
-export async function getLiveSessionLocations(
+export async function getSessionLocations(
   req: FastifyRequest<{
     Params: {
       site: string;
     };
-    Querystring: {
-      time: number;
-    };
+    Querystring: FilterParams<{}>;
   }>,
   res: FastifyReply
 ) {
   const { site } = req.params;
-  if (isNaN(Number(req.query.time))) {
-    return res.status(400).send({ error: "Invalid time" });
-  }
+
+  const filterStatement = getFilterStatement(req.query.filters);
+  const timeStatement = getTimeStatement(req.query);
 
   const result = await clickhouse.query({
     query: `
@@ -31,7 +29,8 @@ WITH stuff AS (
         events
     WHERE
         site_id = {site:Int32}
-        AND timestamp > now() - interval ${SqlString.escape(Number(req.query.time))} minute
+        ${timeStatement}
+        ${filterStatement}
     GROUP BY
         session_id
 )

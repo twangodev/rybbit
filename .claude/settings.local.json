@@ -39,7 +39,9 @@
       "WebFetch(domain:usefathom.com)",
       "WebSearch",
       "WebFetch(domain:umami.is)",
-      "WebFetch(domain:posthog.com)"
+      "WebFetch(domain:posthog.com)",
+      "WebFetch(domain:rybbit.io)",
+      "WebFetch(domain:docs.mapbox.com)"
     ]
   },
   "enableAllProjectMcpServers": false
